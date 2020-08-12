@@ -1,0 +1,25 @@
+.table {
+    tr {
+        td {
+            padding: 10px 15px;
+        }
+    }
+
+    &.table-striped {
+        thead {
+            tr {
+                background: #fff;
+            }
+        }
+
+        tbody {
+            tr:nth-of-type(even) {
+                background: #fff;
+            }
+
+            tr:nth-of-type(odd) {
+                background: #f3f6fd;
+            }
+        }
+    }
+}

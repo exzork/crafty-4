@@ -1,0 +1,126 @@
+////////// COLOR VARIABLES //////////
+$default-text-color: #fff;
+$body-text-color: #fff;
+$content-bg:#1c1e2f;
+$accent-color: #222437;
+$footer-bg: $accent-color;
+$footer-color:$default-text-color;
+$text-muted:#b9c0d3;
+$text-gray: #4d4c4c;
+$body-color: $default-text-color;
+$border-color: #383e5d;
+$footer-height: 60px;
+$card-bg:$accent-color;
+$card-accent-color: #030aac;
+$card-dropshadow: 0 0 0 0 darken($accent-color, 5%);
+$iconholder-primary-bg:#2944b5;
+$iconholder-primary-color: #fff;
+$iconholder-primary-border-color:#4e55c5;
+$boxed-layout-bg: lighten($content-bg, 3%);
+$dropdown-bg: $accent-color;
+$dropdown-hover-bg: lighten($accent-color, 5%);
+$dropdown-hover-color: $white;
+////////// COLOR VARIABLES //////////
+
+////////// SIDEBAR ////////
+$sidebar-width-lg: 270px;
+$sidebar-width-mini: 185px;
+$sidebar-width-icon: 70px;
+$sidebar-light-bg: $white;
+$sidebar-box-shadow: 0 0 3px 1px #a7a3a3;
+$sidebar-gradient-color-1: #222437;
+$sidebar-gradient-color-2:#222437;
+$sidebar-gradient:linear-gradient(to top, $sidebar-gradient-color-1, $sidebar-gradient-color-2);
+$sidebar-light-menu-color: #fff;
+$sidebar-light-submenu-color: $sidebar-light-menu-color;
+$sidebar-light-category-color: rgba(255, 255, 255, 0.7);
+$sidebar-light-menu-icon-color: $sidebar-light-menu-color;
+$sidebar-light-menu-arrow-color: $text-muted;
+
+$sidebar-light-menu-active-bg: #fff;
+$sidebar-light-menu-active-color: #fff;
+
+$sidebar-light-menu-hover-bg: $sidebar-light-menu-active-bg;
+$sidebar-light-menu-hover-color: #0b0b0b;
+$sidebar-light-submenu-hover-bg: initial;
+$sidebar-light-submenu-hover-color: #000;
+$sidebar-light-submenu-line-color: rgba(255, 255, 255, 0.74);
+$sidebar-navlink-menu-item-hover-color:darken($sidebar-light-menu-color, 5%);
+$sidebar-nav-item-profile-border-color:1px solid rgba(#fff, 0.11);
+$sidebar-nav-item-profile-bg:rgba(255, 255, 255, 0.1);
+$sidebar-nav-item-profile-color: #fff;
+$sidebar-nav-category-border-color:rgba(255, 255, 255, 0.13);
+$sidebar-nav-item-dot-color:#fff;
+
+
+$sidebar-dark-bg: #252C46;
+$sidebar-dark-menu-color: #9F9EA3;
+$sidebar-dark-menu-active-bg: lighten($sidebar-dark-bg, 5%);
+$sidebar-dark-menu-active-color: $white;
+$sidebar-dark-menu-hover-bg: $sidebar-dark-menu-active-bg;
+$sidebar-dark-menu-hover-color: $sidebar-dark-menu-color;
+$sidebar-dark-submenu-color: $sidebar-dark-menu-color;
+$sidebar-dark-submenu-hover-bg: initial;
+$sidebar-dark-submenu-hover-color: #000;
+$sidebar-dark-category-color: #999999;
+$sidebar-dark-menu-icon-color: #9F9EA3;
+$sidebar-dark-profile-name-color: #404852;
+$sidebar-dark-profile-title-color: #8d9498;
+$sidebar-menu-font-size: 15px;
+$sidebar-icon-size: 16px;
+$sidebar-menu-padding: 15px 30px 15px 70px;
+$sidebar-menu-padding-rtl: 15px 70px 15px 30px;
+$nav-link-height: 52px;
+$sidebar-submenu-padding: 0 0 0 4rem;
+$sidebar-submenu-font-size: $sidebar-menu-font-size;
+$sidebar-submenu-item-padding: .75rem 1rem;
+$sidebar-icon-font-size: .9375rem;
+$sidebar-arrow-font-size: .625rem;
+$sidebar-profile-bg: transparent;
+$sidebar-profile-padding: 0rem 1.625rem 2.25rem 1.188rem;
+$sidebar-mini-menu-padding: .8125rem 1rem .8125rem 1rem;
+$sidebar-icon-only-menu-padding: .5rem 1.625rem .5rem 1.188rem;
+$sidebar-icon-only-submenu-width: 200px;
+$sidebar-icon-only-collapse-shadow: 0 1px 15px 1px rgba(113, 106, 202, .08);
+$rtl-sidebar-submenu-padding: 0 3.45rem 0 0;
+$sidebar-light-submenu-line-color: darken($sidebar-gradient-color-1, 5%);
+///////// SIDEBAR ////////
+
+///////// NAVBAR ////////
+$navbar-bg: $sidebar-gradient-color-1;
+$navbar-height: 63px;
+$navbar-light-color:$default-text-color;
+$navbar-font-size: $sidebar-menu-font-size;
+$navbar-icon-font-size: 1.25rem;
+$navbar-dropdown-toggle-arrow-color:grey;
+$navbar-count-indicator-bg:#FF0017;
+$navbar-dropdown-border-color:rgba(182, 182, 182, 0.1);
+$navbar-dropdown-box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.13);
+$navbar-menu-wrapper-color:$default-text-color;
+$navbar-menu-wrapper-box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.13);
+///////// NAVBAR ////////
+
+$page-header-toolbar-btn-color: theme-color(primary);
+$table-color:$body-color;
+$table-head-cell-color:$body-color;
+$popover-bg: lighten($card-bg, 4%);
+$popover-arrow-color: $popover-bg;
+$input-bg: lighten($card-bg, 4%);
+
+$calendar-header-toolbar-bg:$white;
+$fc-body-bg: $white;
+$fc-button-bg:theme-color(primary);
+$fc-button-color: #fff;
+$fc-state-active-bg:darken(theme-color(primary), 5%);
+$fc-state-active-color:$white;
+
+$fc-navigation-button-bg:$white;
+$fc-navigation-button-color: theme-color(primary);
+$fc-today-button-bg:theme-color(primary);
+$fc-today-button-color: #fff;
+$fc-head-container-bg:#f7f7f7;
+$fc-event-bg:theme-color(success);
+$fc-event-color:$white;
+$fc-more-cell-color:theme-color(dark);
+
+$progressbar-bg: lighten($card-bg, 8%);

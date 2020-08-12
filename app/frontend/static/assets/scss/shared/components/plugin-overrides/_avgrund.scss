@@ -1,0 +1,96 @@
+/* Avgrund Popup */
+
+.avgrund-popin {
+	position: absolute;
+	background: $avgrund-popin-bg;
+	padding: 37px 33px;
+	overflow: hidden;
+	visibility: hidden;
+	opacity: 0;
+	top: 50%;
+	left: 50%;
+	z-index: 1000;
+	font-size: $default-font-size;
+	font-family: $type-1;
+	font-weight: initial;
+	line-height: 1.85;
+	border-radius: 10px;
+	transform: scale(0.8);
+
+	p {
+		font-size: $default-font-size;
+		font-family: $type-1;
+		font-weight: initial;
+	}
+}
+
+.avgrund-overlay {
+	background: $modal-backdrop-bg;
+	width: 100%;
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	z-index: 101;
+	visibility: hidden;
+	opacity: 0;
+	filter: alpha(opacity=0);
+}
+
+.avgrund-ready .avgrund-overlay,
+.avgrund-ready .avgrund-popin,
+body.avgrund-ready {
+	transform-origin: 50% 50%;
+	transition: 0.3s all ease-out;
+}
+
+body.avgrund-active {
+	overflow: hidden;
+}
+
+.avgrund-active .avgrund-popin {
+	visibility: visible;
+	opacity: 1;
+	transform: scale(1.1);
+}
+
+.avgrund-active .avgrund-overlay {
+	visibility: visible;
+	opacity: 0.5;
+	height: 20000px;
+}
+
+.avgrund-popin.stack {
+	transform: scale(1.5);
+}
+
+.avgrund-active .avgrund-popin.stack {
+	transform: scale(1.1);
+}
+
+.avgrund-active .avgrund-blur {}
+
+/* Optional close button styles */
+
+.avgrund-close {
+	display: block;
+	color: $avgrund-close-color;
+	background: $body-color;
+	font-size: 10px;
+	text-decoration: none;
+	text-transform: uppercase;
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	height: 17px;
+	width: 17px;
+	text-align: center;
+	line-height: 16px;
+	border-radius: 50px;
+
+	&:hover {
+		color: $avgrund-close-color;
+		text-decoration: none;
+	}
+}

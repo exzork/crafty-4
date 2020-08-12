@@ -1,0 +1,493 @@
+@mixin menu-style {
+    @media (min-width: $grid-breakpoints-md) {
+        position: absolute;
+        width: calc(100% - 1px);
+        left: 0;
+        right: 0;
+        top: $navbar-bottom-height;
+        z-index: 999;
+        background: $horizontal-bottom-menu-item-bg-hover;
+        border-top: none;
+        box-shadow: 0 8px 5px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    @media (max-width: $grid-breakpoints-md) {
+        position: relative;
+        top: 0;
+        padding-top: 20px;
+        box-shadow: none;
+    }
+}
+
+.navbar {
+    &.horizontal-layout {
+        font-family: $type-1;
+        background: $horizontal-top-menu-bg;
+        box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.08);
+
+        .nav-top {
+            padding: 0px 15px;
+
+            .navbar-brand-wrapper {
+                width: $navbar-brand-wrapper-width;
+                height: $navbar-height;
+
+                .navbar-brand {
+                    color: $white;
+                    font-size: 1.5rem;
+                    line-height: 55px;
+                    margin-right: 0;
+                    padding: 0.25rem 0;
+
+                    &:active,
+                    &:focus,
+                    &:hover {
+                        color: lighten(color(gray-dark), 10%);
+                    }
+
+                    img {
+                        max-width: 100%;
+                        height: 28px;
+                        margin: auto;
+                        vertical-align: middle;
+                    }
+                }
+
+                .brand-logo-mini {
+                    display: none;
+
+                    img {
+                        width: auto;
+                        max-width: 100%;
+                        height: 28px;
+                        margin-left: 0;
+                    }
+                }
+
+                @media (max-width: $grid-breakpoints-sm) {
+                    width: $navbar-brand-wrapper-mini-width;
+
+                    .brand-logo {
+                        display: none;
+                    }
+
+                    .brand-logo-mini {
+                        display: block;
+                    }
+                }
+            }
+
+            .navbar-menu-wrapper {
+                color: $white;
+                padding-left: 15px;
+                width: calc(100% - #{$navbar-brand-wrapper-width});
+                position: relative;
+
+                @media (max-width: 992px) {
+                    position: unset;
+                }
+
+                .search-box {
+                    transition: 0.3s ease;
+                    transition-property: position, width, height, background-color;
+
+                    .input-group-text {
+                        padding-right: 0;
+                        border-top: none;
+                        border-right: none;
+                        border-bottom: none;
+                    }
+
+                    .form-control {
+                        border: none;
+                        font-weight: 600;
+                        transition: 0.3s ease;
+                        transition-property: position, width, height, background-color;
+                    }
+
+                    .search-close {
+                        display: none;
+                    }
+
+                    &.search-mode {
+                        position: absolute;
+                        top: 0px;
+                        right: 0;
+                        left: 0;
+                        bottom: 0;
+                        display: flex;
+                        z-index: 99;
+                        height: 100%;
+                        width: 100%;
+
+                        .input-group-text {
+                            font-size: 24px;
+                        }
+
+                        .form-control {
+                            height: 100%;
+                            font-size: 20px;
+                            font-weight: 500;
+
+                            @include placeholder {
+                                font-size: inherit;
+                                font-weight: inherit;
+                            }
+                        }
+
+                        .search-close {
+                            display: block;
+                            position: absolute;
+                            top: 50%;
+                            transform: translateY(-50%);
+                            right: 0;
+                            z-index: 99;
+                            font-size: 24px;
+                            padding: 10px;
+                            color: theme-color(primary);
+                        }
+                    }
+                }
+
+                .navbar-nav {
+                    flex-direction: row;
+                    align-items: center;
+
+                    .nav-item {
+                        margin-left: 1rem;
+                        margin-right: 1rem;
+
+                        .nav-link {
+                            color: $horizontal-menu-item-color;
+                            font-size: $navbar-font-size;
+                            vertical-align: middle;
+
+                            i {
+                                font-size: $navbar-icon-font-size;
+                                vertical-align: middle;
+                            }
+                        }
+
+                        &.user-dropdown {
+                            display: flex;
+                            border-left: 1px solid $border-color;
+                            padding-left: 20px;
+                            margin-left: 25px;
+
+                            .dropdown-toggle {
+                                &:after {
+                                    content: "\F1d9";
+                                    font-family: "Material Design Icons";
+                                    font-size: 25px;
+                                }
+                            }
+
+                            .nav-link {
+                                padding-top: 0;
+                                padding-bottom: 0;
+
+                                .wrapper {
+                                    color: $horizontal-menu-item-color;
+                                    text-align: right;
+
+                                    .profile-text {
+                                        font-size: 16px;
+                                        font-weight: 500;
+                                        margin-bottom: 5px;
+                                    }
+
+                                    .user-designation {
+                                        opacity: 0.66;
+                                    }
+                                }
+
+                                .display-avatar {
+                                    margin-left: 10px;
+                                }
+                            }
+                        }
+                    }
+
+                    &.quick-link {
+                        .nav-item {
+                            .nav-link {
+                                margin-right: 10px;
+                                font-weight: 500;
+                                font-size: 14px;
+                            }
+
+                            &.active {
+                                .nav-link {
+                                    color: theme-color(primary);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                .navbar-toggler {
+                    display: none;
+
+                    @media (max-width: $grid-breakpoints-md) {
+                        display: block;
+                        padding-right: 0;
+                    }
+                }
+
+                @media (max-width: $grid-breakpoints-sm) {
+                    width: calc(100% - #{$navbar-brand-wrapper-mini-width});
+                }
+            }
+        }
+
+        .nav-bottom {
+            position: relative;
+            top: 0;
+            right: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            transition-duration: 3s;
+            transition-property: left, right;
+            background: $horizontal-bottom-menu-item-bg;
+
+            @media (max-width: $grid-breakpoints-md) {
+                display: none;
+            }
+
+            .page-navigation {
+                float: left;
+                position: relative;
+                width: 100%;
+                height: $navbar-bottom-height;
+                z-index: 99;
+                background: $horizontal-bottom-menu-item-bg;
+                transition-duration: 0.2s;
+                transition-property: background, box-shadow;
+
+                @media (max-width: $grid-breakpoints-md) {
+                    border: none;
+                }
+
+                >.nav-item {
+                    line-height: 1;
+                    width: 16.66%;
+                    text-align: center;
+
+                    @media (max-width: $grid-breakpoints-md) {
+                        display: block;
+                        width: 100%;
+                        border-right: none;
+                        text-align: left;
+                        background: $horizontal-bottom-menu-item-bg;
+                    }
+
+                    &:last-child {
+                        border-right: none;
+                    }
+
+                    >.nav-link {
+                        color: $horizontal-bottom-menu-item-color;
+                        line-height: 1;
+                        font-weight: 600;
+                        transition-duration: 0.2s;
+                        height: $navbar-bottom-height;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        white-space: nowrap;
+
+                        @media (max-width: $grid-breakpoints-md) {
+                            justify-content: start;
+                            background: $horizontal-bottom-menu-item-bg;
+                        }
+
+                        .link-icon {
+                            margin-right: 10px;
+                            font-size: 1.3rem;
+                            color: $horizontal-bottom-menu-item-color;
+
+                            .rtl & {
+                                margin-right: 0;
+                                margin-left: 10px;
+                            }
+                        }
+
+                        .menu-arrow {
+                            margin-left: 5px;
+                            font-size: 15px;
+                            display: inline-block;
+                            transform: rotate(0deg);
+                            transform-origin: center;
+                            transition-duration: $action-transition-duration;
+
+                            &:before {
+                                font: normal normal normal 24px/1 "Material Design Icons";
+                                content: "\F35D";
+                                font-size: inherit;
+                            }
+                        }
+                    }
+
+                    &:hover {
+                        .submenu {
+                            display: block;
+                            background: $horizontal-bottom-menu-item-bg-hover;
+                        }
+
+                        >.nav-link {
+                            background: darken($horizontal-bottom-menu-item-bg, 4%);
+
+                            .menu-arrow {
+                                transform: rotate(-180deg);
+                            }
+                        }
+                    }
+
+                    &.active {
+                        >.nav-link {
+                            background: darken($horizontal-bottom-menu-item-bg, 4%);
+                            color: $white;
+
+                            .link-icon,
+                            .menu-arrow {
+                                color: $white;
+                            }
+                        }
+                    }
+
+                    .submenu {
+                        display: none;
+                        animation-name: dropdownAnimation;
+                        animation-duration: $action-transition-duration;
+                        animation-fill-mode: both;
+
+                        ul {
+                            list-style-type: none;
+                            padding-left: 0;
+
+                            li {
+                                display: block;
+                                line-height: 20px;
+
+                                a {
+                                    display: block;
+                                    padding: 5px 10px;
+                                    font-weight: 600;
+                                    color: $horizontal-submenu-menu-color;
+                                    text-decoration: none;
+                                    text-align: left;
+                                    margin: 4px 0;
+                                    font-size: 14px;
+                                    font-weight: 400;
+                                    opacity: 0.8;
+                                    @include ellipsor;
+                                    transition-duration: 0.2s;
+                                    transition-property: background;
+                                    border-radius: 6px;
+
+                                    &:hover {
+                                        background: rgba(theme-color(primary), 0.1);
+                                    }
+                                }
+
+                                &.active {
+                                    a {
+                                        background: rgba(theme-color(primary), 0.1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    &:not(.mega-menu) {
+                        .submenu {
+                            position: relative;
+                            top: -100%;
+
+                            @media (max-width: $grid-breakpoints-md) {
+                                top: 0;
+                            }
+
+                            ul {
+                                @include menu-style;
+                                padding: 15px;
+
+                                @media (max-width: $grid-breakpoints-md) {
+                                    padding: 0 23px;
+                                }
+                            }
+                        }
+                    }
+
+                    &.mega-menu {
+                        .submenu {
+                            @include menu-style;
+                            top: calc($navbar-bottom-height - 2px);
+                            left: 0;
+                            padding: 25px;
+
+                            .category-heading {
+                                font-size: 14px;
+                                font-weight: 500;
+                                text-align: left;
+                                color: theme-color(primary);
+                                padding-bottom: 15px;
+                                border-bottom: 1px solid rgba($border-color, 0.6);
+                            }
+
+                            @media (max-width: $grid-breakpoints-md) {
+                                padding: 20px 32px;
+
+                                .col-group-wrapper {
+                                    margin-left: 0;
+                                    margin-right: 0;
+
+                                    .col-group {
+                                        padding-left: 0;
+                                        padding-right: 0;
+                                        margin-bottom: 20px;
+
+                                        .category-heading {
+                                            margin-bottom: 0;
+
+                                            &:after {
+                                                display: none;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            &.header-toggled {
+                @media (max-width: $grid-breakpoints-md) {
+                    display: block;
+                    background: transparent;
+                }
+            }
+
+            &.fixed-top {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 999;
+
+                @media (max-width: $grid-breakpoints-md) {
+                    position: relative;
+                }
+
+                .page-navigation {
+                    margin-bottom: 0;
+                    border-bottom: none;
+                    box-shadow: 0 8px 5px 0 rgba(0, 0, 0, 0.06);
+                }
+            }
+        }
+    }
+}

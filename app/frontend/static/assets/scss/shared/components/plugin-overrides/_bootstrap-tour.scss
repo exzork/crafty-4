@@ -1,0 +1,51 @@
+/* Bootstrap Tour */
+.tour-tour {
+  padding: 0;
+  border: 0;
+  font-family: $type-1;
+  background: $tour-bg;
+
+  .popover-title {
+    background: $popover-title-bg;
+    color: $popover-title-color;
+    font-size: 0.8125rem;
+    font-family: $type-1;
+    padding: 0.75rem;
+  }
+
+  &.left {
+    .arrow {
+      &:after {
+        border-left-color: $popover-title-bg;
+      }
+    }
+  }
+
+  &.right {
+    .arrow {
+      &:after {
+        border-right-color: $popover-title-bg;
+      }
+    }
+  }
+
+  &.top {
+    .arrow {
+      &:after {
+        border-top-color: $popover-title-bg;
+      }
+    }
+  }
+
+  &.bottom {
+    .arrow {
+      &:after {
+        border-bottom-color: $popover-title-bg;
+      }
+    }
+  }
+}
+
+.tour-step-background {
+  display: none;
+}

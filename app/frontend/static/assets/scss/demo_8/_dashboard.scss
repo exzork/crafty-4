@@ -1,0 +1,77 @@
+.top-selling-product-list {
+    .list-group-item {
+        border-radius: 0px;
+        border-left: none;
+        border-right: none;
+        display: flex;
+        align-items: center;
+
+        .img-thumbnail {
+            width: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            border-radius: 0px;
+
+            img {
+                display: block;
+                margin: auto;
+                width: auto;
+                max-width: 45px;
+            }
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        .product-description {
+            h5 {
+                margin-bottom: 7px;
+                font-weight: 500;
+            }
+
+            p {
+                margin-bottom: 0px;
+                line-height: 10px;
+                color: $text-muted;
+            }
+
+            small {
+                color: $text-muted;
+            }
+
+            .br-widget {
+                margin-left: 10px;
+
+                a {
+                    &:after {
+                        content: "\f4d2";
+                        font-family: "Material Design Icons";
+                    }
+                }
+            }
+        }
+
+        .product-price {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            margin-left: auto;
+
+            h4,
+            p {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    &:last-child {
+        .list-group-item {
+            &:last-child {
+                border-radius: 0px;
+            }
+        }
+    }
+}

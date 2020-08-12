@@ -1,0 +1,27 @@
+.main-panel {
+    position: relative;
+    padding: 75px 15px 0px 15px;
+    max-width: 1300px;
+    margin: auto;
+
+    @media (max-width: $grid-breakpoints-md) {
+        padding: 35px 15px 0px 15px;
+    }
+}
+
+.page-body-wrapper {
+    padding-left: 0;
+    padding-right: 0;
+    background: $content-bg;
+
+}
+
+.content-wrapper {
+    padding: $content-warpper-padding;
+    margin: 30px 0 0 0;
+    background: #f9fafc;
+    width: 100%;
+    flex-grow: 1;
+    min-height: 100vh;
+    height: 100%;
+}

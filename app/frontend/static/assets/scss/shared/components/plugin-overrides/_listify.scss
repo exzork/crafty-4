@@ -1,0 +1,28 @@
+/* Listify */
+.listify-list {
+  input {
+    border: 1px solid $border-color;
+    color: $text-muted;
+    background: $input-bg;
+  }
+
+  ul.list {
+    list-style: none;
+    padding-left: 0;
+
+    li {
+      display: block;
+      border-bottom: $border-property;
+      padding: 15px 10px;
+
+      h5 {
+        color: theme-color("primary");
+      }
+
+      p {
+        color: $text-muted;
+        margin: 0;
+      }
+    }
+  }
+}

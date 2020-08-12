@@ -1,0 +1,26 @@
+$bluish-gradient: linear-gradient(30deg, theme-color(primary), #814eff);
+$navbar-brand-wrapper-width: 185px;
+$navbar-brand-wrapper-mini-width: 70px;
+$menu-break-point: 1020px;
+$horizontal-navbar-height: 135px;
+$navbar-height: 63px;
+$navbar-font-size: 12px;
+$navbar-icon-font-size: 1.25rem;
+$horizontal-top-menu-bg: $white;
+$horizontal-menu-padding: 0 1rem;
+$horizontal-menu-height: 57px;
+$navbar-bottom-height: 50px;
+$horizontal-bottom-menu-item-bg: #0404FC;
+$horizontal-bottom-menu-item-bg-hover: $white;
+$horizontal-submenu-menu-color: $black;
+$horizontal-bottom-menu-item-color: $white;
+$horizontal-menu-item-color: #202339;
+$horizontal-menu-submenu-color: $horizontal-menu-item-color;
+$horizontal-menu-font-size: .875rem;
+$horizontal-menu-item-padding: .75rem 0;
+$horizontal-menu-icon-font-size: .9375rem;
+$horizontal-menu-submenu-item-padding: .85rem 0;
+
+$footer-bg: $content-bg;
+$footer-color: color(dark);
+$footer-height: 60px;

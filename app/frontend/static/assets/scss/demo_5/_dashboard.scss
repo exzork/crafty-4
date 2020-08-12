@@ -1,0 +1,31 @@
+.calendar-widget {
+  .calendar-widget-header {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid $border-color-primary;
+    padding: 15px;
+    border: 1px solid #dadfea;
+  }
+
+  .calendar-form-wrapper {
+    display: flex;
+    align-items: center;
+    width: 50%;
+    min-width: 300px;
+
+    .form-control {
+      border-radius: 0px;
+    }
+
+    .btn {
+      white-space: nowrap;
+      height: 44px;
+    }
+  }
+
+  .fc-header-toolbar {
+    @media (max-width: $grid-breakpoints-md) {
+      display: none;
+    }
+  }
+}

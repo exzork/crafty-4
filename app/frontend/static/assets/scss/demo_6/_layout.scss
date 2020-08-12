@@ -1,0 +1,132 @@
+body {
+    color: #232329;
+}
+
+.hero-banner {
+    height: 415px;
+    width: 100%;
+    display: block;
+    background-image: linear-gradient(to bottom, #d41459, #911a6c);
+
+    @media (max-width: $grid-breakpoints-md) {
+        height: 300px;
+    }
+}
+
+
+.page-body-wrapper {
+    padding-left: 0;
+    padding-right: 0;
+
+    .main-panel {
+        background: #F0F5F8;
+    }
+}
+
+.sidebar-menu {
+    width: $sidemenu-width;
+    min-width: $sidemenu-width;
+
+    @media (max-width: $grid-breakpoints-lg) {
+        position: fixed;
+        top: 0;
+        left: -$sidemenu-width;
+        border-radius: 0;
+        z-index: 99;
+        overflow-y: auto;
+        transition: 0.3s ease-in-out;
+
+        &.sidebar-open {
+            left: 0px;
+        }
+    }
+}
+
+.content-aside-right {
+    width: $content-aside-right-width;
+    min-width: $content-aside-right-width;
+    margin-left: auto;
+
+    @media (max-width: $grid-breakpoints-xl) {
+        position: fixed;
+        top: 0;
+        right: -$content-aside-right-width;
+        border-radius: 0;
+        z-index: 999;
+        overflow-y: auto;
+        max-height: 100vh;
+        overflow-y: auto;
+        transition: 0.3s ease-in-out;
+
+        &.content-aside-right-open {
+            right: 0;
+        }
+    }
+}
+
+.content-area {
+    width: calc(100% - #{$sidemenu-width});
+    display: grid;
+    grid-template-rows: auto auto;
+
+    @media (max-width: $grid-breakpoints-lg) {
+        width: 100%;
+        display: block;
+    }
+
+    .page-header {
+        grid-column-start: 1;
+        grid-column-end: 3;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 50px 20px 20px 20px;
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin: 0;
+            color: #fff;
+        }
+
+        @media (max-width: $grid-breakpoints-md) {
+            padding-top: 125px;
+        }
+    }
+
+    .content-area-inner {
+        grid-column-start: 1;
+        grid-row-start: 2;
+        grid-column-end: 3;
+        width: calc(100% - #{$content-aside-right-width});
+        min-width: calc(100% - #{$content-aside-right-width});
+        padding-left: 20px;
+        padding-right: 20px;
+
+        @media (max-width: $grid-breakpoints-xl) {
+            width: 100%;
+            display: block;
+        }
+    }
+
+    .content-aside-right {
+        grid-column-start: 2;
+        grid-row-start: 2;
+    }
+}
+
+.content-wrapper {
+    margin-top: -300px;
+    display: flex;
+    align-items: flex-start;
+    padding-bottom: 40px;
+}
+
+.chat-open-overlay {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    z-index: 99;
+}

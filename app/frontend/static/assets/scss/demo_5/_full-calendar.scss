@@ -1,0 +1,307 @@
+/* Full Calendar */
+
+#calendar {
+  .fc-header-toolbar {
+    background: $white;
+    padding: 20px;
+    margin-bottom: 0;
+    border-left: 1px solid $border-color;
+    border-right: 1px solid $border-color;
+
+    .fc-button-group {
+      border-radius: 0px;
+      border: none;
+
+      .fc-button {
+        box-shadow: none;
+        padding: 5px 20px;
+        height: 45px;
+        margin-right: 0;
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 1.33;
+        border-radius: 0px;
+        background: #fff;
+        border-color: $border-color;
+        color: $text-muted;
+        text-shadow: none;
+        transition-duration: 0.3s;
+
+        &:not(:first-child):not(:last-child) {
+          border-right: 1px solid $border-color;
+          border-left: 1px solid $border-color;
+        }
+
+        &:first-letter {
+          text-transform: uppercase;
+        }
+
+        &.fc-state-active {
+          color: #664eeb;
+        }
+
+        &.fc-next-button,
+        &.fc-prev-button {
+          box-shadow: none;
+          padding: 5px 10px;
+          height: 45px;
+          margin-right: 0;
+          font-size: 15px;
+          font-weight: 500;
+          line-height: 1.33;
+          border-radius: 0px;
+          background: #fff;
+          border-color: $border-color;
+          color: $text-muted;
+          text-shadow: none;
+          transition-duration: 0.3s;
+
+          span {
+            overflow: visible;
+            top: -4px;
+
+            &:after {
+              font-family: 'themify';
+              display: block;
+              line-height: 21px;
+              font-size: 18px;
+            }
+          }
+        }
+
+        &.fc-prev-button {
+          span {
+            &:after {
+              content: "\e64a";
+            }
+          }
+        }
+
+        &.fc-next-button {
+          span {
+            &:after {
+              content: "\e649";
+            }
+          }
+        }
+      }
+    }
+
+    .fc-today-button {
+      box-shadow: none;
+      padding: 5px 20px;
+      height: 45px;
+      margin-right: 0;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.33;
+      border-radius: 0px;
+      background: #fff;
+      border-color: $border-color;
+      color: $text-muted;
+      text-shadow: none;
+      transition-duration: 0.3s;
+
+      &:first-letter {
+        text-transform: uppercase;
+      }
+    }
+
+    .fc-center {
+      h2 {
+        margin-top: 10px;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: $text-muted;
+        text-transform: uppercase;
+      }
+    }
+  }
+
+  .fc-view-container {
+    .fc-view {
+      background: #fff;
+      border-top: 1px solid $border-color;
+      border-left: 1px solid $border-color;
+      border-right: 1px solid $border-color;
+
+      table {
+        thead.fc-head {
+          tr {
+            td {
+              .fc-widget-header {
+                border: none;
+
+                table {
+                  thead {
+                    border: none;
+
+                    tr {
+                      th.fc-day-header {
+                        text-transform: uppercase;
+                        padding: 13px 10px;
+                        font-weight: 400;
+                        border-color: $border-color;
+                        font-size: $default-font-size;
+                      }
+                    }
+                  }
+                }
+              }
+
+              &.fc-head-container {
+                border-color: #f7f7f7;
+                border-bottom: none;
+                border-top: none;
+              }
+            }
+          }
+        }
+
+        tbody.fc-body {
+          background: $white;
+
+          tr {
+            td.fc-widget-content {
+              border-color: $border-color;
+              border-left: none;
+              background-image: linear-gradient(to top, rgba(255, 255, 255, 0), rgba(92, 107, 192, 0.02));
+
+              .fc-day-grid-container {
+                .fc-day-grid {
+                  .fc-row {
+                    border-color: $border-color;
+
+                    .fc-bg {
+                      table {
+                        tr {
+                          td {
+                            border-color: $border-color;
+                          }
+                        }
+                      }
+                    }
+
+                    .fc-content-skeleton {
+                      table {
+                        thead {
+                          tr {
+                            td.fc-day-top {
+                              padding: 8px;
+                              font-size: $default-font-size;
+                              font-weight: 700;
+                              color: #8c97b2;
+                            }
+                          }
+                        }
+
+                        tbody {
+                          tr {
+                            td {
+                              &.fc-event-container {
+                                .fc-h-event {
+                                  border: none;
+                                  padding: 10px 25px;
+                                  border-radius: 0px;
+                                  height: 35px;
+                                  position: relative;
+
+                                  &:before {
+                                    content: "";
+                                    position: absolute;
+                                    top: 0;
+                                    left: 0;
+                                    bottom: 0;
+                                    height: 100%;
+                                    width: 3px;
+                                  }
+
+                                  .fc-content {
+                                    display: flex;
+                                    flex-direction: column-reverse;
+                                    margin-top: 5px;
+
+                                    .fc-title {
+                                      font-size: 12px;
+                                      font-weight: 500;
+                                    }
+
+                                    .fc-time {
+                                      font-size: 10px;
+                                      font-weight: 300;
+                                    }
+                                  }
+
+                                  &.event-invers-danger {
+                                    &:before {
+                                      content: "";
+                                      background-color: theme-color(danger) !important;
+                                    }
+
+                                    background-color: rgba(theme-color(danger), 0.3) !important;
+                                    color: theme-color(danger);
+                                  }
+
+                                  &.event-invers-primary {
+                                    &:before {
+                                      content: "";
+                                      background-color: theme-color(primary) !important;
+                                    }
+
+                                    background-color: rgba(theme-color(primary), 0.3) !important;
+                                    color: theme-color(primary);
+
+                                  }
+
+                                  &.event-invers-success {
+                                    &:before {
+                                      content: "";
+                                      background-color: theme-color(success) !important;
+                                    }
+
+                                    background-color: rgba(theme-color(success), 0.3) !important;
+                                    color: theme-color(success);
+                                  }
+
+                                  &.event-invers-warning {
+                                    &:before {
+                                      content: "";
+                                      background-color: theme-color(warning) !important;
+                                    }
+
+                                    background-color: rgba(theme-color(warning), 0.08) !important;
+                                    color: theme-color(warning);
+                                  }
+
+                                  &.event-invers-info {
+                                    &:before {
+                                      content: "";
+                                      background-color: theme-color(info) !important;
+                                    }
+
+                                    background-color: rgba(theme-color(info), 0.3) !important;
+                                    color: theme-color(info);
+                                  }
+                                }
+                              }
+
+                              &.fc-more-cell {
+                                font-weight: 600;
+                                color: theme-color(dark);
+                                padding: 0 7px;
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

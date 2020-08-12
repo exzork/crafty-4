@@ -1,0 +1,35 @@
+.legend-list {
+    list-style-type: none;
+
+    li {
+        display: inline-block;
+
+        .legend-dots {
+            height: 10px;
+            width: 10px;
+        }
+    }
+}
+
+#salesOverview-legend {
+    margin-left: auto;
+
+    ul {
+        list-style-type: none;
+        padding-left: 0;
+
+        li {
+            display: inline-block;
+            margin-right: 20px;
+            color: $text-muted;
+
+            span {
+                display: inline-block;
+                height: 10px;
+                width: 10px;
+                margin-right: 10px;
+                border-radius: 100%;
+            }
+        }
+    }
+}

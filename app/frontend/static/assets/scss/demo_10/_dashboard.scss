@@ -1,0 +1,138 @@
+.subscribe-overview-card {
+    .nav-tabs {
+        display: flex;
+        border-bottom: none;
+
+        .nav-item {
+            display: flex;
+            border-radius: 2px;
+            box-shadow: 0 4px 8px 0 rgba(42, 55, 71, 0.15);
+            margin: 5px;
+            width: calc(100% / 3 - 7px);
+
+            .nav-link {
+                display: flex;
+                flex-direction: column;
+                border: none;
+                padding: 15px 0px;
+                border-radius: 2px;
+                width: 100%;
+
+                i {
+                    text-align: center;
+                    margin-right: 0px;
+                    margin-left: 0px;
+                    margin-bottom: 5px;
+                }
+
+                &.active {
+                    background: theme-color(success);
+                    color: #fff;
+                }
+            }
+
+            &:last-child {
+                margin-right: 0px;
+            }
+
+            &:first-child {
+                margin-left: 0px;
+            }
+        }
+    }
+
+    .tab-content {
+        .tab-pane {
+            position: relative;
+
+            .badge-group {
+                display: flex;
+                justify-content: space-between;
+                position: absolute;
+                bottom: 0px;
+                right: 5px;
+                left: 15px;
+                margin-bottom: 15px;
+
+
+                .badge {
+                    color: $text-muted;
+                    background: #fff;
+                    border-radius: 4px;
+                    margin-right: 10px;
+                    padding: 8px 10px;
+                    box-shadow: 0 4px 8px 0 rgba(42, 55, 71, 0.15);
+                    transition: 0.3s ease;
+
+                    &.active {
+                        color: #fff;
+                        background: theme-color(success);
+                    }
+                }
+            }
+        }
+    }
+}
+
+.social-earnings-card {}
+
+.card-footer-toolbar {
+    display: flex;
+
+    .footer-col {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 33.33%;
+        padding: 15px 0px;
+
+        &:after {
+            content: "";
+            position: absolute;
+            display: block;
+            right: 0px;
+            top: 15px;
+            bottom: 0px;
+            height: 40px;
+            width: 1px;
+            background: $border-color;
+        }
+
+        &:last-child {
+            &:after {
+                display: none;
+            }
+        }
+
+        p {
+            font-weight: 500;
+            margin-bottom: 0;
+        }
+    }
+}
+
+.weather-card-bg {
+    background: url("../../images/dashboard/weather-card.jpg") no-repeat center;
+    background-size: cover;
+}
+
+.overall-progress-bg {
+    background: url("../../images/dashboard/progress-card-bg.jpg") no-repeat center;
+    background-size: cover;
+}
+
+.card-background-bg {
+    background: url("../../images/dashboard/profile-card.jpg") no-repeat center;
+    background-size: cover;
+}
+
+.overall-progress-card {
+    .dot-indicator {
+        width: 15px;
+        height: 15px;
+        border-width: 3px;
+        border-style: solid;
+    }
+}

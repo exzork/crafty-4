@@ -1,0 +1,48 @@
+#circleProgress_1,
+#circleProgress_2,
+#circleProgress_3 {
+    width: 40px;
+    min-width: 40px;
+}
+
+.dashboard-quick-link {
+    padding-left: 20px;
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+
+        .nav-link {
+            color: $text-muted;
+            border-right: 2px solid #dedede;
+            padding: 5px 20px;
+            font-weight: 300;
+
+            i {
+                color: $text-muted;
+            }
+
+            &:hover {
+                color: #000;
+
+                i {
+                    color: inherit;
+                }
+            }
+        }
+
+        &:last-child {
+            .nav-link {
+                border-right: none;
+            }
+        }
+    }
+}
+
+.dashboard-kpi-cards {
+    >.card {
+        border-radius: 1px;
+        border: 1px solid rgba(46, 91, 255, 0.19);
+        box-shadow: 0 10px 20px 0 rgba(46, 91, 255, 0.07);
+    }
+}

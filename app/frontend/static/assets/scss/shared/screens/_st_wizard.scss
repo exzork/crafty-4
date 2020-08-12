@@ -1,0 +1,75 @@
+.st-wizard-wrapper {
+    .st-wizard-steps {
+        display: inline-flex;
+        border-top: 1px solid $border-color;
+        border-bottom: 1px solid $border-color;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        margin-top: 25px;
+        width: 100%;
+
+        .wizard-step {
+            display: inline-flex;
+            align-items: center;
+            color: $text-muted;
+            border-right: 1px solid $border-color;
+            margin-right: 20px;
+            padding-right: 10%;
+            text-decoration: none;
+            pointer-events: none;
+
+            &:last-child {
+                border-right: none;
+                margin-right: 0px;
+                padding-right: 0px;
+            }
+
+            .step-number {
+                font-size: 40px;
+                font-weight: 600;
+                margin-bottom: 0;
+                margin-right: 10px;
+                color: inherit;
+                font-weight: 500;
+            }
+
+            .step-details {
+                margin-bottom: 0;
+                display: flex;
+                align-items: center;
+                color: inherit;
+                font-weight: 500;
+                line-height: 18px;
+
+                @media (max-width: 578px) {
+                    display: none;
+                }
+            }
+
+            &.done {
+                color: theme-color(primary);
+                pointer-events: auto;
+            }
+        }
+    }
+
+    .wizard-footer {
+        display: flex;
+        align-items: center;
+        border-top: 1px solid $border-color;
+        margin-top: 35px;
+        padding-top: 30px;
+
+        .terms-checkbox {
+            display: none;
+            margin-top: 0px;
+            margin-bottom: 0;
+        }
+
+        .wrapper {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+        }
+    }
+}

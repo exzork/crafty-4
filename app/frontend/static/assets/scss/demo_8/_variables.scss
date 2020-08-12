@@ -1,0 +1,55 @@
+////////// COLOR VARIABLES //////////
+$content-bg: #eaeff8;
+$footer-bg: $content-bg;
+$footer-color: color(dark);
+$border-color: #f2f2f2;
+$footer-height: 60px;
+$content-wrapper-padding-x: 1.7rem;
+$content-wrapper-padding-y:1.5rem;
+////////// COLOR VARIABLES //////////
+
+////////// SIDEBAR ////////
+$sidebar-width-lg: 275px;
+$sidebar-width-mini: 185px;
+$sidebar-width-icon: 70px;
+$sidebar-bg:#0a1727;
+$sidebar-menu-color: #fff;
+$sidebar-menu-active-bg: #fafbfc;
+$sidebar-menu-item-active-bg: theme-color(primary);
+$sidebar-menu-item-active-hover-bg: $sidebar-menu-item-active-bg;
+$sidebar-menu-active-color: #fff;
+$sidebar-menu-hover-bg: $sidebar-bg;
+$sidebar-menu-hover-color: #fff;
+$sidebar-menu-icon-hover-color: $sidebar-menu-hover-color;
+$sidebar-submenu-color: $sidebar-menu-color;
+$sidebar-submenu-hover-bg: initial;
+$sidebar-submenu-hover-color: #000;
+$sidebar-category-color: #999999;
+$sidebar-menu-icon-color: $sidebar-menu-color;
+$sidebar-profile-name-color: #404852;
+$sidebar-profile-title-color: #8d9498;
+$sidebar-menu-font-size: 14px;
+$sidebar-icon-size: 16px;
+$sidebar-menu-padding: 16px 0px 15px 0px;
+$nav-link-height: 52px;
+$sidebar-submenu-padding: 15px 10px 25px 15px;
+$sidebar-submenu-font-size: $sidebar-menu-font-size;
+$sidebar-submenu-item-padding: 10px 10px 10px 6px;
+$sidebar-icon-font-size: 0.9375rem;
+$sidebar-arrow-font-size: 0.625rem;
+$sidebar-profile-bg: transparent;
+$sidebar-profile-padding: 0rem 1.625rem 2.25rem 1.188rem;
+$sidebar-mini-menu-padding: 0.8125rem 1rem 0.8125rem 1rem;
+$sidebar-icon-only-menu-padding: 0.5rem 1.625rem 0.5rem 1.188rem;
+$sidebar-icon-only-submenu-padding: 0 0 0 1.5rem;
+$sidebar-icon-only-submenu-width: 200px;
+$rtl-sidebar-submenu-padding: 0 3.45rem 0 0;
+///////// SIDEBAR ////////
+
+///////// NAVBAR ////////
+$navbar-height: 75px;
+$navbar-bg: $content-bg;
+$navbar-light-color: #202339;
+$navbar-font-size: $sidebar-menu-font-size;
+$navbar-icon-font-size: 25px;
+///////// NAVBAR ////////

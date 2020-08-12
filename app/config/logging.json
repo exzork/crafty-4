@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "commander": {
+      "format": "%(asctime)s - [Commander] - %(levelname)-8s - %(name)s - %(message)s"
+    }
+  },
+
+  "handlers": {
+    "console": {
+      "class": "logging.StreamHandler",
+      "formatter": "commander",
+      "stream": "ext://sys.stdout"
+    },
+
+    "main_file_handler": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "formatter": "commander",
+      "filename": "app/logs/commander.log",
+      "maxBytes": 5242880,
+      "backupCount": 20,
+      "encoding": "utf8"
+    },
+    "session_file_handler": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "formatter": "commander",
+      "filename": "app/logs/session.log",
+      "backupCount": 0,
+      "encoding": "utf8"
+    }
+  },
+
+  "loggers": {
+    "": {
+      "level": "INFO",
+      "handlers": ["main_file_handler", "session_file_handler"],
+      "propagate": false
+    }
+  }
+}

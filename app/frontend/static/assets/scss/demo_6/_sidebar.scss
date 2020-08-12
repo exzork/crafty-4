@@ -1,0 +1,189 @@
+.sidebar-menu {
+    background: #fff;
+    min-height: 100vh;
+    height: 100%;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.1);
+
+    >.nav {
+        display: flex;
+        padding: 25px 30px 10px 30px;
+
+        >.nav-item {
+            width: 100%;
+            overflow: hidden;
+
+            >.nav-link {
+                display: flex;
+                align-items: center;
+                background: #fff;
+                padding: 10px 10px 10px 17px;
+                border-radius: 10px 10px 0 0;
+                transition: 0.3s ease;
+                transition-property: "background", "color", "box-shadow";
+                position: relative;
+                z-index: 1;
+
+                &:after {
+                    content: "";
+                    display: block;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    left: 0;
+                    bottom: 0;
+                    z-index: 0;
+                    transition: 0.6s ease;
+                    box-shadow: 0 4px 7px 0 rgba(0, 0, 0, 0.0);
+                }
+
+                .menu-icons {
+                    color: #232329;
+                    margin-right: 15px;
+                    font-size: 20px;
+                }
+
+                .menu-title {
+                    color: #121212;
+                    font-size: 14px;
+                    font-weight: 500;
+                }
+
+                .menu-arrow {
+                    margin-left: auto;
+
+                    &:before {
+                        content: "\f140";
+                        font-family: "Material Design Icons";
+                        font-style: normal;
+                        color: #e3e8e8;
+                        font-size: 20px;
+                    }
+                }
+
+                .badge {
+                    margin-left: auto;
+                    height: 18px;
+                    line-height: 0.8;
+                    text-align: center;
+                }
+
+                &[aria-expanded="true"] {
+                    background-color: #f0f5f8;
+
+                    &:after {
+                        content: "";
+                        box-shadow: 0 4px 7px 0 rgba(0, 0, 0, 0.05);
+                    }
+                }
+            }
+
+            &.nav-category {
+                font-size: 14px;
+                font-weight: 500;
+                color: #d4d4d4;
+                margin: 20px 0 15px 20px;
+            }
+
+            .collapse,
+            .collapsing {
+                .sub-menu {
+                    background-color: #fff;
+                    border-radius: 0px 0px 6px 6px;
+                    padding: 15px 0px;
+                    transition-duration: 0.3s;
+
+                    .nav-item {
+                        .nav-link {
+                            position: relative;
+                            font-size: 14px;
+                            font-weight: normal;
+                            font-style: normal;
+                            font-stretch: normal;
+                            line-height: 1.36;
+                            letter-spacing: normal;
+                            padding: 6px 15px 6px 50px;
+                            color: #706f6f;
+                            transition: 0.3s ease;
+                            transition-property: color;
+
+                            &:before {
+                                content: "";
+                                position: absolute;
+                                left: 24px;
+                                top: 11px;
+                                height: 7px;
+                                width: 7px;
+                                border: 2px solid #979797;
+                                background: transparent;
+                                border-radius: 100%;
+                                transition: 0.3s ease-in;
+                                transition-property: border-color;
+                            }
+
+                            &:hover {
+                                color: $primary-color;
+
+                                &:before {
+                                    border-color: $primary-color;
+                                    background: $primary-color;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                &.show,
+                &.collapsing {
+                    .sub-menu {
+                        background-color: #f0f5f8;
+                        border-radius: 0px 0px 6px 6px;
+                    }
+                }
+            }
+        }
+    }
+
+    .account-bar {
+        padding: 20px 55px 25px 55px;
+
+        .bar-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            .action-link {
+                i {
+                    color: #e3e8e8;
+                    font-size: 20px;
+                }
+            }
+
+            .profile-wrapper {
+                position: relative;
+
+                .dot-indicator {
+                    position: absolute;
+                    bottom: 0px;
+                    right: 0px;
+                    width: 12px;
+                    height: 12px;
+                    border: 2px solid #fff;
+                }
+            }
+        }
+
+        .btn {
+            margin-top: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 13px 20px;
+        }
+    }
+
+    .sidebar-footer {
+        padding: 20px 35px 35px 35px;
+        border-top: 1px solid $border-color-light;
+    }
+}

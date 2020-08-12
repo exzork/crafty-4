@@ -1,0 +1,130 @@
+body {
+    color: #232329;
+}
+
+.hero-banner {
+    height: 570px;
+    width: 100%;
+    display: block;
+    background-image: $gradient-bg;
+
+    @media (max-width: $grid-breakpoints-md) {
+        height: 325px;
+    }
+}
+
+.page-body-wrapper {
+    padding-left: 0;
+    padding-right: 0;
+
+    .main-panel {
+        background: #fff;
+    }
+}
+
+.sidebar-menu {
+    width: $sidemenu-width;
+    min-width: $sidemenu-width;
+
+    @media (max-width: $grid-breakpoints-lg) {
+        position: fixed;
+        top: 0;
+        left: -$sidemenu-width;
+        background-image: $gradient-bg;
+        box-shadow: 0 0 15px 0px rgba(0, 0, 0, 0.2);
+        padding: 60px 20px;
+        border-radius: 0;
+        z-index: 99;
+        overflow-y: auto;
+        transition: 0.3s ease-in-out;
+
+        .nav {
+            .nav-item {
+                .nav-link {
+                    width: 105px;
+                    height: 105px;
+                    padding: 10px 0px 10px 0px;
+                }
+            }
+        }
+
+        .sidebar-footer {
+            .progress-wrapper {
+                .progress-wrapper-inner {
+                    display: flex;
+                    flex-direction: column;
+
+                    .progress-balance {
+                        margin-left: 0;
+                    }
+                }
+            }
+        }
+
+        .sidebar-footer-bottom {
+            ul {
+                li {
+                    a {
+                        color: #fff;
+                    }
+                }
+            }
+
+            p {
+                color: #fff;
+            }
+        }
+
+        &.sidebar-open {
+            left: 0px;
+        }
+    }
+}
+
+.content-area {
+    width: 100%;
+    padding-left: 40px;
+    display: block;
+
+    @media (max-width: $grid-breakpoints-lg) {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 5px 0px 20px 0px;
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin: 0;
+            color: #fff;
+        }
+
+        @media (max-width: $grid-breakpoints-md) {
+            padding-top: 145px;
+        }
+    }
+}
+
+.content-wrapper {
+    margin-top: -465px;
+    display: flex;
+    align-items: flex-start;
+    padding-bottom: 40px;
+    padding-left: 15px;
+    padding-right: 15px;
+
+    @media (max-width: $grid-breakpoints-md) {
+        margin-top: -320px;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    @media (max-width: $grid-breakpoints-sm) {
+        margin-top: -380px;
+    }
+}

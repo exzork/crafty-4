@@ -1,0 +1,45 @@
+.stats_card {
+    .card {
+        box-shadow: rgba(46, 91, 255, 0.08);
+        position: relative;
+    }
+
+    .icon-wrapper {
+        position: absolute;
+        top: -10px;
+        left: 0px;
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:after {
+            content: "";
+            width: 42px;
+            height: 21px;
+            border-radius: 16px;
+            -webkit-filter: blur(10px);
+            filter: blur(10px);
+        }
+
+        i {
+            font-size: 22px;
+            color: #fff;
+        }
+    }
+
+    .wrapper {
+        padding: 25px 0;
+        margin-left: 60px;
+
+        p {
+            display: inline-block;
+        }
+
+        h4 {
+            margin-bottom: 0;
+        }
+    }
+}

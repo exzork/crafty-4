@@ -1,0 +1,167 @@
+.nav-tabs-wrapper {
+    .screen-navigation-tab {
+        position: relative;
+        border-bottom: none;
+
+        >.nav-item {
+            display: block;
+
+            >.nav-link {
+                padding: 20px 30px;
+                border-radius: 0px;
+                font-family: $type-1;
+                font-size: 13px;
+                font-weight: 500;
+                background: $secondary-color;
+                color: #fff;
+                border-width: 1px;
+                border-style: solid;
+                border-color: $primary-color;
+                border-top: none;
+                border-left: none;
+                transition: 0.25s ease;
+
+                &:hover {
+                    background: lighten($secondary-color, 5%);
+                    border-top: none;
+                    border-left: none;
+                    color: #fff;
+                }
+            }
+
+            .submenu {
+                position: absolute;
+                top: calc(100% + 1px);
+                right: 0px;
+                left: 0;
+                background: #fff;
+                z-index: 99;
+
+
+                .nav-submenu {
+                    display: none;
+                    padding: 15px 40px 15px 30px;
+
+                    >.nav-item {
+                        margin-right: 15px;
+
+                        &:last-child {
+                            margin-right: 0;
+                        }
+
+                        .nav-link {
+                            color: #706f6f;
+                            padding: 8px 12px 8px 0px;
+                            font-size: 14px;
+                            transition: 0.3s ease-in;
+                            transition-property: "color";
+                            border: none;
+
+                            .submenu-icons {
+                                margin-right: 10px;
+                                color: #e3e8e8;
+                                transition: 0.45s ease;
+                                transition-property: "color";
+                            }
+
+                            &:hover {
+                                color: $secondary-color;
+
+                                .submenu-icons {
+                                    color: inherit;
+                                }
+                            }
+                        }
+
+                        &:first-child {
+                            .nav-link {
+                                padding-left: 0;
+                            }
+                        }
+
+                        &.export-link {
+                            border: 1px solid #027bff;
+                            color: #000;
+                            font-family: $type-1;
+                            font-weight: bold;
+                            margin-left: auto;
+                            padding-left: 12px;
+                        }
+                    }
+                }
+
+                @media (max-width: $grid-breakpoints-md) {
+                    position: relative;
+
+                    .nav-submenu {
+                        flex-direction: column;
+                        padding-left: 20px;
+                        padding-right: 20px;
+
+                        .nav-item {
+                            margin-right: 0;
+
+                            .nav-link {
+                                padding: 20px 0px;
+                            }
+
+                            &.export-link {
+                                display: block;
+                                margin-left: 0;
+                                text-align: center;
+                            }
+                        }
+                    }
+                }
+            }
+
+            &.active {
+                >.nav-link {
+                    background: #fff;
+                    color: #664eeb;
+                }
+
+                @media (min-width: $grid-breakpoints-md) {
+                    .submenu {
+                        .nav-submenu {
+                            display: flex;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: $grid-breakpoints-md) {
+    .nav-tabs-wrapper {
+        position: fixed;
+        left: -300px;
+        width: 300px;
+        top: 0;
+        bottom: 0;
+        overflow-y: scroll;
+        max-height: 100vh;
+        height: 100vh;
+        z-index: 9999;
+        background: $secondary-color;
+        transition: 0.3s ease left;
+
+        .screen-navigation-tab {
+            display: flex;
+            flex-direction: column;
+
+            .nav-item {
+                &.active {
+                    .nav-link {
+                        border: none;
+                    }
+                }
+            }
+        }
+
+        &.sidemenu-opened {
+            left: 0px;
+        }
+    }
+}

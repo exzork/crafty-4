@@ -1,0 +1,50 @@
+.content-aside-right {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.1);
+    padding: 30px 20px 30px 30px;
+
+    .activity-lists {
+        list-style: none;
+        padding-left: 0;
+        margin-bottom: 0;
+
+        .activity-list {
+            display: flex;
+            margin-bottom: 25px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+
+            .profile-image {
+                margin-right: 20px;
+            }
+
+            .activity-content {
+                display: flex;
+                flex-direction: column;
+
+                .profile-image-name {
+                    margin-bottom: 0;
+                    font-size: 14px;
+                    font-weight: 500;
+                }
+
+                .activity-text {
+                    margin-bottom: 0;
+                    font-size: 12px;
+                    font-weight: 500;
+                    color: $text-muted;
+                }
+
+                .activity-time {
+                    margin-bottom: 0;
+                    font-size: 12px;
+                    font-weight: 500;
+                    color: $text-muted;
+                }
+            }
+        }
+    }
+}

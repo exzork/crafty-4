@@ -1,0 +1,43 @@
+.traffic-report-cards {
+    border-radius: 6px;
+
+    .card {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 15px 25px;
+
+        i {
+            font-size: 35px;
+            display: inline-block;
+            margin-right: 15px;
+        }
+
+        p {
+            margin-bottom: 0;
+        }
+
+        h6 {
+            margin-bottom: 0;
+            font-weight: 500;
+        }
+    }
+}
+
+.traffic-card-slider {
+    .noUi-pips {
+        .noUi-value {
+            font-size: 13px;
+            font-weight: 400;
+            color: #676c7b;
+        }
+
+        &.noUi-pips-horizontal {
+            .noUi-marker {
+                &:nth-child(even) {
+                    height: 5px !important;
+                }
+            }
+        }
+    }
+}

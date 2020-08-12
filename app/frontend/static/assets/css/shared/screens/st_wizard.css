@@ -1,0 +1,15 @@
+.st-wizard-wrapper .st-wizard-steps .wizard-step {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  color: theme-color(primary);
+  padding-top: 10px;
+  margin-top: 25px; }
+  .st-wizard-wrapper .st-wizard-steps .wizard-step .step-number {
+    font-size: 40px;
+    font-weight: 600;
+    margin-bottom: 0; }
+  .st-wizard-wrapper .st-wizard-steps .wizard-step .step-details {
+    margin-bottom: 0; }
+
+/*# sourceMappingURL=st_wizard.css.map */

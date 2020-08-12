@@ -1,0 +1,163 @@
+/* === Import Bootstrap functions and variables === */
+
+@import "../../../../node_modules/bootstrap/scss/functions";
+@import "../../../../node_modules/bootstrap/scss/variables";
+/*-------------------------------------------------------------------*/
+
+/* === Import template variables === */
+
+@import "../shared/variables";
+@import "../demo_1/variables";
+@import "./variables";
+/*-------------------------------------------------------------------*/
+
+/* === Boostrap Main SCSS === */
+
+@import "../../../../node_modules/bootstrap/scss/bootstrap";
+/*-------------------------------------------------------------------*/
+
+/* === Template mixins === */
+
+@import "../shared/mixins/animation";
+@import "../shared/mixins/accordions";
+@import "../shared/mixins/background";
+@import "../shared/mixins/badges";
+@import "../shared/mixins/blockqoute";
+@import "../shared/mixins/breadcrumbs";
+@import "../shared/mixins/buttons";
+@import "../shared/mixins/cards";
+@import "../shared/mixins/misc";
+@import "../shared/mixins/no-ui-slider";
+@import "../shared/mixins/pagination";
+@import "../shared/mixins/text";
+@import "../shared/mixins/popovers";
+@import "../shared/mixins/tabs";
+@import "../shared/mixins/tooltips";
+/*-------------------------------------------------------------------*/
+
+/* === Core Styles === */
+
+@import "../shared/reset";
+@import "../shared/fonts";
+@import "../shared/functions";
+@import "../shared/typography";
+@import "../shared/misc";
+@import "../shared/utilities";
+@import "../shared/demo";
+@import "../shared/dashboard";
+/*-------------------------------------------------------------------*/
+
+/* === Components === */
+
+@import "../demo_1/nav";
+@import "../demo_1/navbar";
+@import "../demo_1/sidebar";
+@import "../demo_1/footer";
+@import "../demo_1/layouts";
+@import "../demo_1/card";
+@import "../demo_1/misc";
+@import "../demo_1/dashboard";
+
+@import "../shared/components/accordions";
+@import "../shared/components/badges";
+@import "../shared/components/bootstrap-alerts";
+@import "../shared/components/bootstrap-progress";
+@import "../shared/components/buttons";
+@import "../shared/components/breadcrumbs";
+@import "../shared/components/cards";
+@import "../shared/components/checkbox-radio";
+@import "../shared/components/dropdown";
+@import "../shared/components/forms";
+@import "../shared/components/google-maps";
+@import "../shared/components/icons";
+@import "../shared/components/lists";
+@import "../shared/components/loaders/loaders";
+@import "../shared/components/modals";
+@import "../shared/components/new-account";
+@import "../shared/components/pagination";
+@import "../shared/components/popovers";
+@import "../shared/components/portfolio";
+@import "../shared/components/preview";
+@import "../shared/components/pricing-table";
+@import "../shared/components/tables";
+@import "../shared/components/tabs";
+@import "../shared/components/settings-panel";
+@import "../shared/components/todo-list";
+@import "../shared/components/tooltips";
+@import "../shared/components/user-profile";
+@import "../shared/components/widgets";
+@import "../shared/components/timeline/timeline-horizontal";
+@import "../shared/components/timeline/timeline-vertical";
+@import "../shared/components/timeline";
+@import "../shared/components/kanban";
+@import "../shared/components/chat";
+/*-------------------------------------------------------------------*/
+
+/* === Email === */
+
+@import "../shared/components/mail-components/mail-sidebar";
+@import "../shared/components/mail-components/view-controller/mail-list-container";
+@import "../shared/components/mail-components/view-controller/messagecontent";
+@import "../shared/components/mail-components/view-controller/view-controller";
+/*-------------------------------------------------------------------*/
+
+/* === Plugin overrides === */
+
+@import "../shared/components/plugin-overrides/ace";
+@import "../shared/components/plugin-overrides/avgrund";
+@import "../shared/components/plugin-overrides/bootstrap-tour";
+@import "../shared/components/plugin-overrides/chartjs";
+@import "../shared/components/plugin-overrides/chartist";
+@import "../shared/components/plugin-overrides/codemirror";
+@import "../shared/components/plugin-overrides/colcade";
+@import "../shared/components/plugin-overrides/colorpicker";
+@import "../shared/components/plugin-overrides/context-menu";
+@import "../shared/components/plugin-overrides/clockpicker";
+@import "../shared/components/plugin-overrides/data-tables";
+@import "../shared/components/plugin-overrides/datepicker";
+@import "../shared/components/plugin-overrides/dropify";
+@import "../shared/components/plugin-overrides/dropzone";
+@import "../shared/components/plugin-overrides/flot-chart";
+@import "../shared/components/plugin-overrides/google-charts";
+@import "../shared/components/plugin-overrides/icheck";
+@import "../shared/components/plugin-overrides/jquery-file-upload";
+@import "../shared/components/plugin-overrides/js-grid";
+@import "../shared/components/plugin-overrides/jvectormap";
+@import "../shared/components/plugin-overrides/light-gallery";
+@import "../shared/components/plugin-overrides/listify";
+@import "../shared/components/plugin-overrides/no-ui-slider";
+@import "../shared/components/plugin-overrides/owl-carousel";
+@import "../shared/components/plugin-overrides/progressbar-js";
+@import "../shared/components/plugin-overrides/pws-tabs";
+@import "../shared/components/plugin-overrides/quill";
+@import "../shared/components/plugin-overrides/rating";
+@import "../shared/components/plugin-overrides/select2";
+@import "../shared/components/plugin-overrides/summernote";
+@import "../shared/components/plugin-overrides/sweet-alert";
+@import "../shared/components/plugin-overrides/switchery";
+@import "../shared/components/plugin-overrides/tags";
+@import "../shared/components/plugin-overrides/tinymce";
+@import "../shared/components/plugin-overrides/toast";
+@import "../shared/components/plugin-overrides/typeahead";
+@import "../shared/components/plugin-overrides/wysieditor";
+@import "../shared/components/plugin-overrides/x-editable";
+@import "../shared/components/plugin-overrides/wizard";
+/*-------------------------------------------------------------------*/
+
+/* === Landing screens === */
+
+@import "../shared/screens/auth";
+@import "../shared/screens/error";
+@import "../shared/screens/lock-screen";
+@import "../shared/screens/landing";
+@import "../shared/screens/profile-page";
+@import "../shared/components/product-tile";
+@import "../shared/screens/project-list";
+@import "../shared/screens/st_wizard";
+@import "../shared/screens/invoice";
+@import "../shared/screens/tickets";
+/*-------------------------------------------------------------------*/
+
+
+@import "../demo_1/components/modals";
+@import "../demo_1/components/full-calendar";
