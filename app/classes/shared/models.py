@@ -92,12 +92,20 @@ class db_builder:
                 Webhooks
             ])
 
-    def default_settings(self):
+    @staticmethod
+    def default_settings():
         Users.insert({
             Users.username: 'Admin',
             Users.password: helper.encode_pass('asdfasdf'),
             Users.api_token: helper.random_string_generator(32),
             Users.enabled: True
         }).execute()
+
+    @staticmethod
+    def is_fresh_install():
+        if helper.check_file_exists(helper.db_path):
+            return False
+
+        return True
 
 installer = db_builder()

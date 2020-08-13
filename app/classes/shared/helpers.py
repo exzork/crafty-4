@@ -141,6 +141,11 @@ class Helpers:
             pass
 
     @staticmethod
+    def get_time_as_string():
+        now = datetime.now()
+        return now.strftime("%m/%d/%Y, %H:%M:%S")
+
+    @staticmethod
     def check_file_exists(path: str):
         logger.debug('Looking for path: {}'.format(path))
 

@@ -89,8 +89,10 @@ if __name__ == '__main__':
     # this should always be last
     tasks_manager.start_main_kill_switch_watcher()
 
-    installer.create_tables()
-    installer.default_settings()
+    # do our installer stuff
+    if installer.is_fresh_install():
+        installer.create_tables()
+        installer.default_settings()
 
     # our main loop
     while True:
