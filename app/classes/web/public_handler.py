@@ -38,9 +38,12 @@ class PublicHandler(BaseHandler):
         self.clear_cookie("user")
         self.clear_cookie("user_data")
 
-        error = bleach.clean(self.get_argument('error', ""))
-        template = "public/404.html"
+        # print(page)
 
+        if page is None:
+            self.redirect("public/login")
+
+        error = bleach.clean(self.get_argument('error', ""))
 
         if error:
             error_msg = "Invalid Login!"
@@ -56,4 +59,45 @@ class PublicHandler(BaseHandler):
             context = {'error': error_msg}
 
         self.render(template, data=context)
+
+    def post(self, page=None):
+
+        if page == 'login':
+            next_page = "/public/login"
+
+            entered_email = bleach.clean(self.get_argument('email'))
+            entered_password = bleach.clean(self.get_argument('password'))
+
+            user_data = Users.get_or_none(Users.email_address == entered_email)
+
+            # if we already have a user with this email...
+            if not user_data:
+                next_page = "/public/login?error=Login_Failed"
+                self.redirect(next_page)
+                return False
+
+            login_result = helper.verify_pass(entered_password, user_data.password)
+
+            # Valid Login
+            if login_result:
+                self.set_current_user(entered_email)
+                logger.info("User: {} Logged in from IP: {}".format(entered_email, self.get_remote_ip()))
+
+                Users.update({
+                    Users.last_ip: self.get_remote_ip()
+                }).execute()
+
+                cookie_data = {
+                    "user_email": user_data.email_address,
+                    "user_id": user_data,
+                    "account_type": str(user_data.account_type).upper(),
+
+                }
+
+                self.set_secure_cookie('user_data', json.dumps(cookie_data))
+
+                next_page = "/pro/dashboard"
+                self.redirect(next_page)
+        else:
+            self.redirect("/public/login")
 

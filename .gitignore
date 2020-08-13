@@ -1,5 +1,6 @@
 **/logs
 *.log
+*.sqlite
 
 __pycache__/
 *.py[cod]

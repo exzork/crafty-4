@@ -31,6 +31,7 @@
                 <img src="/static/assets/images/logo_long.jpg">
               </div>
                 <form action="/public/login" method="post">
+                  {% raw xsrf_form_html() %}
                   <div class="form-group">
                     <label class="label">Email</label>
                     <div class="input-group">

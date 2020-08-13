@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 try:
     from OpenSSL import crypto
+    from argon2 import PasswordHasher
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e, e.name))
@@ -29,23 +30,24 @@ class Helpers:
         self.root_dir = os.path.abspath(os.path.curdir)
         self.config_dir = os.path.join(self.root_dir, 'app', 'config')
         self.session_file = os.path.join(self.root_dir, 'session.lock')
+        self.settings_file = os.path.join(self.root_dir, 'config.ini')
         self.webroot = os.path.join(self.root_dir, 'app', 'frontend')
-        self.db_path = os.path.join(self.root_dir, 'app', 'config', 'commander.sqlite')
+        self.db_path = os.path.join(self.root_dir, 'commander.sqlite')
+        self.passhasher = PasswordHasher()
         self.exiting = False
 
     def get_setting(self, section, key):
-        config_file = os.path.join(self.config_dir, 'config.ini')
 
         try:
             our_config = configparser.ConfigParser()
-            our_config.read(config_file)
+            our_config.read(self.settings_file)
 
             if our_config.has_option(section, key):
                 return our_config[section][key]
 
         except Exception as e:
-            logger.critical("Config File Error: Unable to read {} due to {}".format(config_file, e))
-            console.critical("Config File Error: Unable to read {} due to {}".format(config_file, e))
+            logger.critical("Config File Error: Unable to read {} due to {}".format(self.settings_file, e))
+            console.critical("Config File Error: Unable to read {} due to {}".format(self.settings_file, e))
 
         return False
 
@@ -82,6 +84,17 @@ class Helpers:
             console.critical("Unable to create exit file!")
             sys.exit(1)
 
+    def encode_pass(self, password):
+        return self.passhasher.hash(password)
+
+    def verify_pass(self, password, currenthash):
+        try:
+            self.passhasher.verify(currenthash, password)
+            return True
+        except:
+            pass
+            return False
+
     @staticmethod
     def check_writeable(path: str):
         filename = os.path.join(path, "tempfile.txt")
@@ -97,20 +110,20 @@ class Helpers:
             return False
 
     def ensure_logging_setup(self):
-        log_file = os.path.join(os.path.curdir, 'app', 'logs', 'commander.log')
+        log_file = os.path.join(os.path.curdir, 'logs', 'commander.log')
 
         logger.info("Checking app directory writable")
 
-        writeable = self.check_writeable(os.path.join(os.path.curdir, 'app'))
+        writeable = self.check_writeable(self.root_dir)
 
         # if not writeable, let's bomb out
         if not writeable:
-            logger.critical("Unable to write to app directory!")
+            logger.critical("Unable to write to {} directory!".format(self.root_dir))
             sys.exit(1)
 
         # ensure the log directory is there
         try:
-            os.makedirs(os.path.join(os.path.curdir, 'app', 'logs'))
+            os.makedirs(os.path.join(self.root_dir, 'logs'))
         except Exception as e:
             pass
 
@@ -121,9 +134,9 @@ class Helpers:
             console.critical("Unable to open log file!")
             sys.exit(1)
 
-        # del any old session.log file as this is a new session
+        # del any old session.lock file as this is a new session
         try:
-            os.remove(os.path.join(os.path.curdir, "app", "logs", "session.log"))
+            os.remove(self.session_file)
         except:
             pass
 
@@ -307,5 +320,6 @@ class Helpers:
         random_generator(3, abcdef) = adf
         """
         return ''.join(random.choice(chars) for x in range(size))
+
 
 helper = Helpers()

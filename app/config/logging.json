@@ -17,7 +17,7 @@
     "main_file_handler": {
       "class": "logging.handlers.RotatingFileHandler",
       "formatter": "commander",
-      "filename": "app/logs/commander.log",
+      "filename": "logs/commander.log",
       "maxBytes": 5242880,
       "backupCount": 20,
       "encoding": "utf8"
@@ -25,7 +25,7 @@
     "session_file_handler": {
       "class": "logging.handlers.RotatingFileHandler",
       "formatter": "commander",
-      "filename": "app/logs/session.log",
+      "filename": "logs/session.log",
       "backupCount": 0,
       "encoding": "utf8"
     }

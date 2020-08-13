@@ -84,7 +84,10 @@ class webserver:
         debug_errors = helper.get_setting("WEB", 'show_errors')
         cookie_secret = helper.get_setting("WEB", 'cookie_secret')
 
-        if cookie_secret.lower == "random" or cookie_secret is False:
+        if cookie_secret is False:
+            cookie_secret = helper.random_string_generator(32)
+
+        if cookie_secret.lower == "random":
             cookie_secret = helper.random_string_generator(32)
 
         if not lang:
@@ -114,6 +117,7 @@ class webserver:
 
         handlers = [
             (r'/', PublicHandler),
+            (r'/public/(.*)', PublicHandler),
             ]
 
         app = tornado.web.Application(

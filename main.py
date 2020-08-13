@@ -8,7 +8,7 @@ import logging.config
 """ Our custom classes / pip packages """
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
-
+from app.classes.shared.models import installer
 from app.classes.shared.tasks import tasks_manager
 
 def do_intro():
@@ -88,6 +88,9 @@ if __name__ == '__main__':
 
     # this should always be last
     tasks_manager.start_main_kill_switch_watcher()
+
+    installer.create_tables()
+    installer.default_settings()
 
     # our main loop
     while True:
