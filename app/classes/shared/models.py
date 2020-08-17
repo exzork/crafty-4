@@ -1,15 +1,18 @@
+import os
 import sys
 import logging
 import datetime
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
+from app.classes.minecraft.server_props import ServerProps
 
 logger = logging.getLogger(__name__)
 
 try:
     from peewee import *
     from playhouse.shortcuts import model_to_dict
+    import yaml
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e, e.name))
@@ -59,6 +62,23 @@ class Host_Stats(BaseModel):
         table_name = "host_stats"
 
 
+class Servers(BaseModel):
+    server_id = AutoField()
+    created = DateTimeField(default=datetime.datetime.now)
+    server_name = CharField(default="Server")
+    path = CharField(default="")
+    executable = CharField(default="")
+    log_path = CharField(default="")
+    execution_command = CharField(default="")
+    auto_start = BooleanField(default=0)
+    auto_start_delay = IntegerField(default=10)
+    crash_detection = BooleanField(default=0)
+    stop_command = CharField(default="stop")
+
+    class Meta:
+        table_name = "servers"
+
+
 class Webhooks(BaseModel):
     id = AutoField()
     name = CharField(max_length=64, unique=True)
@@ -80,6 +100,7 @@ class Backups(BaseModel):
     class Meta:
         table_name = 'backups'
 
+
 class db_builder:
 
     @staticmethod
@@ -89,7 +110,8 @@ class db_builder:
                 Backups,
                 Users,
                 Host_Stats,
-                Webhooks
+                Webhooks,
+                Servers
             ])
 
     @staticmethod
@@ -105,7 +127,25 @@ class db_builder:
     def is_fresh_install():
         if helper.check_file_exists(helper.db_path):
             return False
-
         return True
 
+
+class db_shortcuts:
+
+    def return_rows(self, query):
+        rows = []
+
+        if query:
+            for s in query:
+                rows.append(model_to_dict(s))
+        else:
+            rows.append({})
+        return rows
+
+    def get_all_defined_servers(self):
+        query = Servers.select()
+        return self.return_rows(query)
+
+
 installer = db_builder()
+db_helper = db_shortcuts()

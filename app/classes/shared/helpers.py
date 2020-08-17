@@ -32,7 +32,7 @@ class Helpers:
         self.session_file = os.path.join(self.root_dir, 'session.lock')
         self.settings_file = os.path.join(self.root_dir, 'config.ini')
         self.webroot = os.path.join(self.root_dir, 'app', 'frontend')
-        self.db_path = os.path.join(self.root_dir, 'commander.sqlite')
+        self.db_path = os.path.join(self.root_dir, 'crafty.sqlite')
         self.passhasher = PasswordHasher()
         self.exiting = False
 
@@ -74,6 +74,15 @@ class Helpers:
 
         return version_data
 
+    def get_version_string(self):
+
+        version_data = self.get_version()
+        # set some defaults if we don't get version_data from our helper
+        version = "{}.{}.{}".format(version_data.get('major', '?'),
+                                    version_data.get('minor', '?'),
+                                    version_data.get('sub', '?'))
+        return str(version)
+
     def do_exit(self):
         exit_file = os.path.join(self.root_dir, 'exit.txt')
         try:
@@ -111,6 +120,7 @@ class Helpers:
 
     def ensure_logging_setup(self):
         log_file = os.path.join(os.path.curdir, 'logs', 'commander.log')
+        session_log_file = os.path.join(os.path.curdir, 'logs', 'session.log')
 
         logger.info("Checking app directory writable")
 
@@ -136,7 +146,7 @@ class Helpers:
 
         # del any old session.lock file as this is a new session
         try:
-            os.remove(self.session_file)
+            os.remove(session_log_file)
         except:
             pass
 
@@ -326,5 +336,11 @@ class Helpers:
         """
         return ''.join(random.choice(chars) for x in range(size))
 
+    @staticmethod
+    def is_os_windows():
+        if os.name == 'nt':
+            return True
+        else:
+            return False
 
 helper = Helpers()

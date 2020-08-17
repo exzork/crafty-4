@@ -10,21 +10,16 @@ from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
 from app.classes.shared.models import installer
 from app.classes.shared.tasks import tasks_manager
+from app.classes.minecraft.controller import controller
 
 def do_intro():
-    logger.info("***** Commander Agent Launched *****")
+    logger.info("***** Crafty Controller Started *****")
 
-    version_data = helper.get_version()
-
-    # set some defaults if we don't get version_data from our helper
-    version = "{}.{}.{}".format(version_data.get('major', '?'),
-                                version_data.get('minor', '?'),
-                                version_data.get('sub', '?'))
+    version = helper.get_version_string()
 
     intro = """
     {lines}
     #\t\tWelcome to Crafty Controller - v.{version}\t\t      #
-    #\t\t\t   Codename: Commander \t\t\t\t      #
     {lines}
     #   \tServer Manager / Web Portal for your Minecraft server \t      #
     #   \t\tHomepage: www.craftycontrol.com\t\t\t      #
@@ -85,6 +80,10 @@ if __name__ == '__main__':
     helper.create_session_file(ignore=args.ignore)
 
     tasks_manager.start_webserver()
+    tasks_manager.start_scheduler()
+
+    # slowing down reporting just for a 1/2 second so messages look cleaner
+    time.sleep(.5)
 
     # this should always be last
     tasks_manager.start_main_kill_switch_watcher()
@@ -94,7 +93,14 @@ if __name__ == '__main__':
         installer.create_tables()
         installer.default_settings()
 
-    # our main loop
+    # init servers
+    logger.info("Initializing all servers defined")
+    console.info("Initializing all servers defined")
+
+    controller.init_all_servers()
+    servers = controller.list_defined_servers()
+
+    # our main loop - eventually a shell
     while True:
         if tasks_manager.get_main_thread_run_status():
             sys.exit(0)

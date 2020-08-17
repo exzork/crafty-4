@@ -5,11 +5,12 @@ import tornado.escape
 import bleach
 
 from app.classes.shared.console import console
-from app.classes.shared.models import Users
+from app.classes.shared.models import Users, installer
 from app.classes.web.base_handler import BaseHandler
-
+from app.classes.minecraft.controller import controller
 
 logger = logging.getLogger(__name__)
+
 
 class PanelHandler(BaseHandler):
 
@@ -24,6 +25,8 @@ class PanelHandler(BaseHandler):
             'version_data': "version_data_here",
             'user_data': user_data
         }
+
+        servers = controller.list_defined_servers()
 
         if page == 'unauthorized':
             template = "panel/denied.html"

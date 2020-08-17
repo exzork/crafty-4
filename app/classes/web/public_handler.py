@@ -40,7 +40,9 @@ class PublicHandler(BaseHandler):
         self.clear_cookie("user")
         self.clear_cookie("user_data")
 
-        # print(page)
+        page_data = {
+            'version': helper.get_version_string()
+            }
 
         error = bleach.clean(self.get_argument('error', ""))
 
@@ -51,19 +53,14 @@ class PublicHandler(BaseHandler):
 
         # sensible defaults
         template = "public/404.html"
-        page_data = "{}"
-
-        # if we have no page, let's go to login
-        if page is None:
-            self.redirect("public/login")
 
         if page == "login":
             template = "public/login.html"
-            page_data = {'error': error_msg}
+            page_data['error'] = error_msg
 
-        # our default 404 template
+        # if we have no page, let's go to login
         else:
-            page_data = {'error': error_msg}
+            self.redirect("public/login")
 
         self.render(template, data=page_data)
 
