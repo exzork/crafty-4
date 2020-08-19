@@ -64,6 +64,7 @@ class Controller:
     @staticmethod
     def list_defined_servers():
         servers = db_helper.get_all_defined_servers()
+        return servers
 
     def list_running_servers(self):
         running_servers = []

@@ -54,9 +54,7 @@ class Host_Stats(BaseModel):
     mem_percent = FloatField(default=0)
     mem_usage = CharField(default="")
     mem_total = CharField(default="")
-    disk_percent = FloatField(default=0)
-    disk_usage = CharField(default="")
-    disk_total = CharField(default="")
+    disk_json = TextField(default="")
 
     class Meta:
         table_name = "host_stats"
@@ -111,7 +109,7 @@ class db_builder:
                 Users,
                 Host_Stats,
                 Webhooks,
-                Servers
+                Servers,
             ])
 
     @staticmethod
@@ -145,6 +143,10 @@ class db_shortcuts:
     def get_all_defined_servers(self):
         query = Servers.select()
         return self.return_rows(query)
+
+    def get_latest_hosts_stats(self):
+        query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()
+        return model_to_dict(query)
 
 
 installer = db_builder()

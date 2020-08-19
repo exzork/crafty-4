@@ -8,6 +8,8 @@ from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
 from app.classes.web.base_handler import BaseHandler
 from app.classes.minecraft.controller import controller
+from app.classes.shared.models import db_helper
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,12 +23,20 @@ class PanelHandler(BaseHandler):
 
         template = "panel/denied.html"
 
+
         page_data = {
             'version_data': "version_data_here",
-            'user_data': user_data
-        }
+            'user_data': user_data,
+            'server_stats': {
+                'total': len(controller.list_defined_servers()),
+                'running': len(controller.list_running_servers()),
+                'stopped': (len(controller.list_defined_servers()) - len(controller.list_running_servers()))
+            },
+            'hosts_data': db_helper.get_latest_hosts_stats()
 
-        servers = controller.list_defined_servers()
+        }
+        print(page_data['hosts_data'])
+
 
         if page == 'unauthorized':
             template = "panel/denied.html"

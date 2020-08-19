@@ -12,6 +12,7 @@ from app.classes.shared.models import installer
 from app.classes.shared.tasks import tasks_manager
 from app.classes.minecraft.controller import controller
 
+
 def do_intro():
     logger.info("***** Crafty Controller Started *****")
 
@@ -56,7 +57,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-i', '--ignore',
                         action='store_true',
-                        help="Ignore session.json files"
+                        help="Ignore session.lock files"
                         )
 
     parser.add_argument('-v', '--verbose',
@@ -85,6 +86,9 @@ if __name__ == '__main__':
     # slowing down reporting just for a 1/2 second so messages look cleaner
     time.sleep(.5)
 
+    # start stats logging
+    tasks_manager.start_stats_recording()
+
     # this should always be last
     tasks_manager.start_main_kill_switch_watcher()
 
@@ -92,6 +96,8 @@ if __name__ == '__main__':
     if installer.is_fresh_install():
         installer.create_tables()
         installer.default_settings()
+
+    # installer.create_tables()
 
     # init servers
     logger.info("Initializing all servers defined")

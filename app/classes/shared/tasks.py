@@ -9,6 +9,8 @@ from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.web.tornado import webserver
 from app.classes.minecraft import server_props
+from app.classes.minecraft.stats import stats
+from app.classes.minecraft.controller import controller
 
 logger = logging.getLogger(__name__)
 
@@ -45,15 +47,16 @@ class TasksManager:
             time.sleep(5)
 
     def _main_graceful_exit(self):
-        # commander.stop_all_servers()
-        logger.info("***** Crafty Shutting Down *****\n\n")
-        console.info("***** Crafty Shutting Down *****\n\n")
         try:
             os.remove(helper.session_file)
             os.remove(os.path.join(helper.root_dir, 'exit.txt'))
             os.remove(os.path.join(helper.root_dir, '.header'))
+            controller.stop_all_servers()
         except:
             pass
+
+        logger.info("***** Crafty Shutting Down *****\n\n")
+        console.info("***** Crafty Shutting Down *****\n\n")
         self.main_thread_exiting = True
 
     def start_webserver(self):
@@ -80,6 +83,12 @@ class TasksManager:
             schedule.run_pending()
             time.sleep(1)
 
+    @staticmethod
+    def start_stats_recording():
+        stats_update_frequency = int(helper.get_setting("CRAFTY", 'stats_update_frequency'))
+        logger.info("Stats collection frequency set to {stats} seconds".format(stats=stats_update_frequency))
+        console.info("Stats collection frequency set to {stats} seconds".format(stats=stats_update_frequency))
+        schedule.every(stats_update_frequency).seconds.do(stats.record_stats)
 
 
 tasks_manager = TasksManager()
