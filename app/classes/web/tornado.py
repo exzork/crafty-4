@@ -20,6 +20,7 @@ try:
     import tornado.httpserver
     from app.classes.web.public_handler import PublicHandler
     from app.classes.web.panel_handler import PanelHandler
+    from app.classes.web.default_handler import DefaultHandler
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e, e.name))
@@ -117,7 +118,7 @@ class webserver:
         tornado.locale.set_default_locale(lang)
 
         handlers = [
-            (r'/', PublicHandler),
+            (r'/', DefaultHandler),
             (r'/public/(.*)', PublicHandler),
             (r'/panel/(.*)', PanelHandler),
             ]

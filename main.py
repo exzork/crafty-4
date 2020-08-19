@@ -97,8 +97,6 @@ if __name__ == '__main__':
         installer.create_tables()
         installer.default_settings()
 
-    # installer.create_tables()
-
     # init servers
     logger.info("Initializing all servers defined")
     console.info("Initializing all servers defined")

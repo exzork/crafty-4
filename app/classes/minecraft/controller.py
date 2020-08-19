@@ -27,7 +27,6 @@ class Controller:
             self.servers_list = []
 
         servers = db_helper.get_all_defined_servers()
-        print(servers)
 
         for s in servers:
             settings_file = os.path.join(s['path'], 'server.properties')

@@ -60,7 +60,7 @@ class PublicHandler(BaseHandler):
 
         # if we have no page, let's go to login
         else:
-            self.redirect("public/login")
+            self.redirect("/public/login")
 
         self.render(template, data=page_data)
 
