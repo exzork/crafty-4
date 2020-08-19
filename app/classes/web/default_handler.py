@@ -7,17 +7,8 @@ logger = logging.getLogger(__name__)
 
 class DefaultHandler(BaseHandler):
 
-    def get(self, page=None):
-
-        # sensible defaults
-        template = "public/404.html"
-
-        self.render(template)
-
-    def post(self, page=None):
-
-        # sensible defaults
-        template = "public/404.html"
-
-        self.render(template)
+    # Override prepare() instead of get() to cover all possible HTTP methods.
+    def prepare(self):
+        self.set_status(404)
+        self.render("public/404.html")
 

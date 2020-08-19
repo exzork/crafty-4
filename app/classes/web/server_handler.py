@@ -14,14 +14,14 @@ from app.classes.shared.models import db_helper
 logger = logging.getLogger(__name__)
 
 
-class PanelHandler(BaseHandler):
+class ServerHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self, page):
         # name = tornado.escape.json_decode(self.current_user)
         user_data = json.loads(self.get_secure_cookie("user_data"))
 
-        template = "panel/denied.html"
+        template = "public/404.html"
 
 
         page_data = {
@@ -37,16 +37,8 @@ class PanelHandler(BaseHandler):
         }
         # print(page_data['hosts_data'])
 
-        # if no servers defined, let's go to the build server area
-        if page_data['server_stats']['total'] == 0:
-            self.set_status(301)
-            self.redirect("/server/step1")
+        print(page)
 
-        if page == 'unauthorized':
-            template = "panel/denied.html"
-
-        elif page == 'dashboard':
-            template = "panel/dashboard.html"
 
         self.render(
             template,
