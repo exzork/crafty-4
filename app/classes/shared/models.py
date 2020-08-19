@@ -114,9 +114,15 @@ class db_builder:
 
     @staticmethod
     def default_settings():
+
+        default_data = helper.find_default_password()
+
+        username = default_data.get("username", 'Admin')
+        password = default_data.get("password", 'crafty')
+
         Users.insert({
-            Users.username: 'Admin',
-            Users.password: helper.encode_pass('asdfasdf'),
+            Users.username: username,
+            Users.password: helper.encode_pass(password),
             Users.api_token: helper.random_string_generator(32),
             Users.enabled: True
         }).execute()
@@ -136,8 +142,6 @@ class db_shortcuts:
         if query:
             for s in query:
                 rows.append(model_to_dict(s))
-        else:
-            rows.append({})
         return rows
 
     def get_all_defined_servers(self):

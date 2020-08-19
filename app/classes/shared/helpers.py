@@ -343,4 +343,18 @@ class Helpers:
         else:
             return False
 
+    def find_default_password(self):
+        default_file = os.path.join(self.root_dir, "default.json")
+        data = {}
+
+        if self.check_file_exists(default_file):
+            with open(default_file, 'r') as f:
+                data = json.load(f)
+
+            os.remove(default_file)
+
+        return data
+
+
+
 helper = Helpers()
