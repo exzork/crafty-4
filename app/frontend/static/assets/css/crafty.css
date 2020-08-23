@@ -1,0 +1,9 @@
+.select-css option {
+    background-color: #1C1E2F;
+    color: white
+}
+
+.select-css option:checked {
+    background-color: #1C1E2F;
+    color: white
+}

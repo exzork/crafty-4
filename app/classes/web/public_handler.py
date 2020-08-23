@@ -40,27 +40,28 @@ class PublicHandler(BaseHandler):
         self.clear_cookie("user")
         self.clear_cookie("user_data")
 
+        error = bleach.clean(self.get_argument('error', "Invalid Login!"))
+
         page_data = {
-            'version': helper.get_version_string()
+            'version': helper.get_version_string(),
+            'error': error
             }
-
-        error = bleach.clean(self.get_argument('error', ""))
-
-        if error:
-            error_msg = "Invalid Login!"
-        else:
-            error_msg = ""
 
         # sensible defaults
         template = "public/404.html"
 
         if page == "login":
             template = "public/login.html"
-            page_data['error'] = error_msg
+
+        elif page == 404:
+            template = "public/404.html"
+
+        elif page == "error":
+            template = "public/error.html"
 
         # if we have no page, let's go to login
         else:
-            template = "public/404.html"
+            self.redirect('/public/login')
 
         self.render(template, data=page_data)
 

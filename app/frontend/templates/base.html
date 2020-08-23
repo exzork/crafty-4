@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/static/assets/vendors/ti-icons/css/themify-icons.css">
     <link rel="stylesheet" href="/static/assets/vendors/typicons/typicons.css">
     <link rel="stylesheet" href="/static/assets/vendors/css/vendor.bundle.base.css">
+
     <!-- endinject -->
 
     <!-- Plugin css for this page -->
@@ -23,6 +24,7 @@
     <!-- End Layout styles -->
 
     <link rel="shortcut icon" href="/static/assets/images/favicon.png" />
+    <link rel="stylesheet" href="/static/assets/css/crafty.css">
   </head>
 
   <body class="dark-theme">
@@ -87,29 +89,20 @@
       </div>
       <!-- page-body-wrapper ends -->
     </div>
-    <!-- container-scroller -->
-    <!-- plugins:js -->
+
+
     <script src="/static/assets/vendors/js/vendor.bundle.base.js"></script>
-    <!-- endinject -->
-    <!-- Plugin js for this page -->
     <script src="/static/assets/js/shared/off-canvas.js"></script>
     <script src="/static/assets/js/shared/hoverable-collapse.js"></script>
-<!--    <script src="/static/assets/vendors/chart.js/Chart.min.js"></script>-->
-<!--    <script src="/static/assets/vendors/jvectormap/jquery-jvectormap.min.js"></script>-->
-<!--    <script src="/static/assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js"></script>-->
-<!--    <script src="/static/assets/vendors/justgage/raphael-2.1.4.min.js"></script>-->
-
-    <!-- End plugin js for this page -->
-    <!-- inject:js -->
-
-<!--    <script src="/static/assets/js/shared/hoverable-collapse.js"></script>-->
     <script src="/static/assets/js/shared/misc.js"></script>
-<!--    <script src="/static/assets/js/shared/settings.js"></script>-->
-<!--    <script src="/static/assets/js/shared/todolist.js"></script>-->
-    <script src="https://kit.fontawesome.com/b539899a58.js" crossorigin="anonymous"></script>
-    <!-- endinject -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
+    <script src="//kit.fontawesome.com/b539899a58.js" crossorigin="anonymous"></script>
+
+
+    {% block js %}
     <!-- Custom js for this page -->
-    <script src="/static/assets/js/demo_3/dashboard_2.js"></script>
     <!-- End custom js for this page -->
+    {% end %}
+
   </body>
 </html>

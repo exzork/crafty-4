@@ -11,6 +11,7 @@ from app.classes.web.tornado import webserver
 from app.classes.minecraft import server_props
 from app.classes.minecraft.stats import stats
 from app.classes.minecraft.controller import controller
+from app.classes.minecraft.serverjars import server_jar_obj
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +90,14 @@ class TasksManager:
         logger.info("Stats collection frequency set to {stats} seconds".format(stats=stats_update_frequency))
         console.info("Stats collection frequency set to {stats} seconds".format(stats=stats_update_frequency))
         schedule.every(stats_update_frequency).seconds.do(stats.record_stats)
+
+    @staticmethod
+    def serverjar_cache_refresher():
+        logger.info("Refreshing serverjars.com cache on start")
+        server_jar_obj.refresh_cache()
+
+        logger.info("Scheduling Serverjars.com cache refresh service every 12 hours")
+        schedule.every(12).hours.do(server_jar_obj.refresh_cache)
 
 
 tasks_manager = TasksManager()

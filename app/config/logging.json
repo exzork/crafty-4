@@ -3,7 +3,10 @@
   "disable_existing_loggers": false,
   "formatters": {
     "commander": {
-      "format": "%(asctime)s - [Commander] - %(levelname)-8s - %(name)s - %(message)s"
+      "format": "%(asctime)s - [Crafty] - %(levelname)-8s - %(name)s - %(message)s"
+    },
+    "tornado_access": {
+      "format": "%(asctime)s - [Tornado] - [Access] - %(levelname)s - %(message)s"
     }
   },
 
@@ -28,6 +31,14 @@
       "filename": "logs/session.log",
       "backupCount": 0,
       "encoding": "utf8"
+    },
+    "tornado_access_file_handler": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "formatter": "tornado_access",
+      "filename": "logs/tornado-access.log",
+      "maxBytes": 10485760,
+      "backupCount": 20,
+      "encoding": "utf8"
     }
   },
 
@@ -35,6 +46,11 @@
     "": {
       "level": "INFO",
       "handlers": ["main_file_handler", "session_file_handler"],
+      "propagate": false
+    },
+    "tornado.access": {
+      "level": "INFO",
+      "handlers": ["tornado_access_file_handler"],
       "propagate": false
     }
   }

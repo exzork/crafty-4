@@ -63,6 +63,7 @@ class Host_Stats(BaseModel):
 class Servers(BaseModel):
     server_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
+    server_uuid = CharField(default="")
     server_name = CharField(default="Server")
     path = CharField(default="")
     executable = CharField(default="")
@@ -139,9 +140,14 @@ class db_shortcuts:
     def return_rows(self, query):
         rows = []
 
-        if query:
-            for s in query:
-                rows.append(model_to_dict(s))
+        try:
+            if query.count() > 0:
+                for s in query:
+                    rows.append(model_to_dict(s))
+        except Exception as e:
+            logger.warning("Database Error: {}".format(e))
+            pass
+
         return rows
 
     def get_all_defined_servers(self):

@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import time
 import uuid
 import string
 import base64
@@ -29,12 +30,27 @@ class Helpers:
     def __init__(self):
         self.root_dir = os.path.abspath(os.path.curdir)
         self.config_dir = os.path.join(self.root_dir, 'app', 'config')
+        self.webroot = os.path.join(self.root_dir, 'app', 'frontend')
+        self.servers_dir = os.path.join(self.root_dir, 'servers')
+
         self.session_file = os.path.join(self.root_dir, 'session.lock')
         self.settings_file = os.path.join(self.root_dir, 'config.ini')
-        self.webroot = os.path.join(self.root_dir, 'app', 'frontend')
+
         self.db_path = os.path.join(self.root_dir, 'crafty.sqlite')
+        self.serverjar_cache = os.path.join(self.config_dir, 'serverjars.json')
         self.passhasher = PasswordHasher()
         self.exiting = False
+
+    def is_file_older_than_x_days(self, file, days=1):
+        if self.check_file_exists(file):
+            file_time = os.path.getmtime(file)
+            # Check against 24 hours
+            if (time.time() - file_time) / 3600 > 24 * days:
+                return True
+            else:
+                return False
+        logger.error("{} does not exits".format(file))
+        return False
 
     def get_setting(self, section, key):
 
@@ -254,8 +270,7 @@ class Helpers:
         return b64_bytes.decode("utf-8")
 
     def create_uuid(self):
-        id = str(uuid.uuid4())
-        return self.base64_encode_string(id).replace("\n", '')
+        return str(uuid.uuid4())
 
     def ensure_dir_exists(self, path):
         """

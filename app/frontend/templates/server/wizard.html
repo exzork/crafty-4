@@ -1,0 +1,105 @@
+{% extends ../base.html %}
+
+{% block title %}Crafty Controller - New Server{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+    <div class="row">
+      <div class="col-sm-6 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+
+            <h4>Create a New Server</h4>
+            <br />
+            <p class="card-description">
+
+              <form method="post">
+                {% raw xsrf_form_html() %}
+                <div class="row">
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <h4 class="card-title" style="margin-bottom:20px;">Server Type</h4>
+
+                      <select class="form-control form-control-lg select-css" id="server" name="server">
+                        {% for s in data['server_types'] %}
+                          {% for v in data['server_types'][s] %}
+                            <option value="{{ s }}|{{ v }}">{{ s.capitalize() }} - {{ v }}</option>
+                          {% end %}
+                        {% end %}
+                      </select>
+
+                    </div>
+                  </div>
+
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <label for="server_name">Server Name</label>
+                      <input type="text" class="form-control" id="server_name" name="server_name" value="My New Server">
+                    </div>
+                  </div>
+
+                </div>
+                <br />
+                <h4 class="card-title">Quick Settings <small> - Don't worry, you can change these later</small></h4>
+                <hr>
+                <div class="row">
+
+                  <div class="col-sm-3">
+                    <div class="form-group">
+                      <label for="min_memory">Min Memory <small> - Size in GB</small></label>
+                      <input type="number" class="form-control" id="min_memory" name="min_memory" value="1" step="0.5" min="0.5">
+                    </div>
+                  </div>
+
+                  <div class="col-sm-3 offset-1">
+                    <div class="form-group">
+                      <label for="max_memory">Max Memory <small> - Size in GB</small></label>
+                      <input type="number" class="form-control" id="max_memory" name="max_memory" value="2" step="0.5" min="0.5">
+                    </div>
+                  </div>
+
+                  <div class="col-sm-3 offset-1">
+                    <div class="form-group">
+                      <label for="port">Server Port <small> - 25565  default</small></label>
+                      <input type="number" class="form-control" id="port" name="port" value="25565" step="1" min="1">
+                    </div>
+                  </div>
+
+                </div>
+                <button type="submit" class="btn btn-primary mr-2">Build My Server!</button>
+                <button type="reset" class="btn btn-danger mr-2">Reset Form</button>
+
+              </form>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+{% end %}
+
+{% block js%}
+
+<script>
+  $( document ).ready(function() {
+  console.log('ready');
+    $("#min_memory").change(function(){
+    check_sizes();
+    });
+  });
+
+  function check_sizes(){
+    max_mem = parseFloat($('#max_memory').val());
+    min_mem = parseFloat($('#min_memory').val());
+    if (max_mem < min_mem){
+      bootbox.alert({
+        title: 'Memory Warning',
+        message: 'Min Memory is Higher than Max Memory'
+      });
+    }
+  }
+
+</script>
+{% end %}
