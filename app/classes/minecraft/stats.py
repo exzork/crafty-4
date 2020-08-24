@@ -10,7 +10,7 @@ import datetime
 from app.classes.shared.helpers import helper
 from app.classes.minecraft.mc_ping import ping
 from app.classes.minecraft.controller import controller
-from app.classes.shared.models import Host_Stats
+from app.classes.shared.models import Host_Stats, Server_Stats
 
 logger = logging.getLogger(__name__)
 
@@ -204,10 +204,10 @@ class Stats:
 
         return server_stats_list
 
-    # todo: add stats to db
     def record_stats(self):
         stats_to_send = self.get_node_stats()
         node_stats = stats_to_send.get('node_stats')
+
         Host_Stats.insert({
             Host_Stats.boot_time: node_stats.get('boot_time', "Unknown"),
             Host_Stats.cpu_usage: round(node_stats.get('cpu_usage', 0), 2),
@@ -220,10 +220,27 @@ class Stats:
             Host_Stats.disk_json: node_stats.get('disk_data', '{}')
         }).execute()
 
+        server_stats = stats_to_send.get('servers')
+
+        for server in server_stats:
+            Server_Stats.insert({
+                Server_Stats.server_id: server.get('id', 0),
+                Server_Stats.started: server.get('started', ""),
+                Server_Stats.running: server.get('running', ""),
+                Server_Stats.cpu: server.get('cpu', ""),
+                Server_Stats.mem: server.get('mem', ""),
+                Server_Stats.world_name: server.get('world_name', ""),
+                Server_Stats.world_size: server.get('world_size', ""),
+                Server_Stats.server_port: server.get('server_port', ""),
+                Server_Stats.int_ping_results: server.get('int_ping_results', ""),
+            }).execute()
+
         # delete 1 week old data
         max_age = int(helper.get_setting("CRAFTY", "history_max_age"))
         now = datetime.datetime.now()
         last_week = now.day - max_age
+
         Host_Stats.delete().where(Host_Stats.time < last_week).execute()
+        Server_Stats.delete().where(Server_Stats.created < last_week).execute()
 
 stats = Stats()

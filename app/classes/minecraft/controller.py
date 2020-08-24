@@ -29,7 +29,24 @@ class Controller:
         servers = db_helper.get_all_defined_servers()
 
         for s in servers:
+
+            # if this server path no longer exists - let's warn and bomb out
+            if not helper.check_path_exits(s['path']):
+                logger.warning("Unable to find server {} at path {}. Skipping this server".format(s['server_name'],
+                                                                                                  s['path']))
+
+                console.warning("Unable to find server {} at path {}. Skipping this server".format(s['server_name'],
+                                                                                                   s['path']))
+                continue
+
             settings_file = os.path.join(s['path'], 'server.properties')
+
+            # if the properties file isn't there, let's warn
+            if not helper.check_file_exists(settings_file):
+                logger.error("Unable to find {}. Skipping this server.".format(settings_file))
+                console.error("Unable to find {}. Skipping this server.".format(settings_file))
+                continue
+
             settings = ServerProps(settings_file)
 
             temp_server_dict = {

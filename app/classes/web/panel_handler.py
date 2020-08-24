@@ -10,7 +10,6 @@ from app.classes.web.base_handler import BaseHandler
 from app.classes.minecraft.controller import controller
 from app.classes.shared.models import db_helper
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -23,15 +22,17 @@ class PanelHandler(BaseHandler):
 
         template = "panel/denied.html"
 
+        defined_servers = controller.list_defined_servers()
 
         page_data = {
             'version_data': "version_data_here",
             'user_data': user_data,
             'server_stats': {
-                'total': len(controller.list_defined_servers()),
+                'total': len(defined_servers),
                 'running': len(controller.list_running_servers()),
                 'stopped': (len(controller.list_defined_servers()) - len(controller.list_running_servers()))
             },
+            'menu_servers': defined_servers,
             'hosts_data': db_helper.get_latest_hosts_stats()
 
         }
@@ -46,6 +47,8 @@ class PanelHandler(BaseHandler):
             template = "panel/denied.html"
 
         elif page == 'dashboard':
+            page_data['servers'] = db_helper.get_all_servers_stats()
+
             template = "panel/dashboard.html"
 
         self.render(

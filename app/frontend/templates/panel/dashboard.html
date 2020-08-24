@@ -44,8 +44,8 @@
 
                 </div>
                 <div class="wrapper my-auto ml-auto ml-lg-4">
-                  <p class="mb-0 text-success">{{ data['server_stats']['total'] }} {{_('Online')}}</p>
-                  <p class="mb-0 text-warning"> {{ data['server_stats']['running'] }} {{_('Shutdown')}}</p>
+                  <p class="mb-0 text-success">{{ data['server_stats']['running'] }} {{_('Online')}}</p>
+                  <p class="mb-0 text-warning"> {{ data['server_stats']['stopped'] }} {{_('Shutdown')}}</p>
                 </div>
               </div>
             </div>
@@ -94,144 +94,62 @@
               <thead>
                 <tr class="rounded">
                   <th>Server</th>
+                  <th>Actions</th>
                   <th>CPU</th>
                   <th>Memory</th>
-                  <th>Disk</th>
+                  <th>World</th>
                   <th>Players</th>
                   <th>Status</th>
-
                 </tr>
               </thead>
               <tbody>
+                {% for server in data['servers'] %}
                 <tr>
                   <td>
-                    <i class="fas fa-server"></i> Bedwarz </td>
+                    <i class="fas fa-server"></i>
+                    <a href="/panel/server_detail?id={{s['server_id']}}">
+                      {{ server['server_id']['server_name'] }}
+                    </a>
+                  </td>
+
+                  <td>
+                    {% if server['started'] == True %}
+                      <a hidden data-id="server['server_id']['server_id']" class="play_button hidden"><i class="fas fa-play"></i></a> &nbsp;
+                      <a data-id="server['server_id']['server_id']" class="stop_button"><i class="fas fa-stop"></i></a> &nbsp;
+                      <a data-id="server['server_id']['server_id']" class="restart_button"><i class="fas fa-sync"></i></a> &nbsp;
+                    {% else %}
+                      <a data-id="server['server_id']['server_id']" class="play_button"><i class="fas fa-play"></i></a> &nbsp;
+                      <a hidden data-id="server['server_id']['server_id']" class="stop_button hidden"><i class="fas fa-stop"></i></a> &nbsp;
+                      <a hidden data-id="server['server_id']['server_id']" class="restart_button hidden"><i class="fas fa-sync"></i></a> &nbsp;
+                    {% end %}
+                  </td>
+
                   <td>
                     <div class="progress">
-                      <div class="progress-bar bg-success" role="progressbar" style="width: 24%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
+                      <div class="progress-bar bg-success" role="progressbar" style="width: {{server['cpu']}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div class="progress">
+                      <div class="progress-bar bg-danger" role="progressbar" style="{{server['mem']}}%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                   </td>
                   <td>
-                    <div class="progress">
-                      <div class="progress-bar bg-danger" role="progressbar" style="width: 85%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
+                    {{ server['world_name'] }} : {{ server['world_size'] }}
                   </td>
                   <td>
-                    <div class="progress">
-                      <div class="progress-bar bg-warning" role="progressbar" style="width: 75%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
+                    {{ server['int_ping_results'] }}
                   </td>
                   <td>
-                    7
-                  </td>
-                  <td>
+                    {% if server['started'] == True %}
                     <i class="fas fa-thumbs-up"></i> <span class="text-success">Online</span>
+                    {% else %}
+                    <i class="fas fa-thumbs-down"></i> <span class="text-danger">Offline</span>
+                    {% end %}
                   </td>
                 </tr>
-
-                <tr>
-                    <td>
-                      <i class="fas fa-server"></i> Lobby </td>
-                    <td>
-                      <div class="progress">
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: 60%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="progress">
-                        <div class="progress-bar bg-danger" role="progressbar" style="width: 85%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="progress">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 40%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </td>
-                    <td>
-                      3
-                    </td>
-                    <td>
-                      <i class="fas fa-thumbs-up"></i> <span class="text-success">Online</span>
-                    </td>
-                  </tr>
-
-                <tr>
-                    <td>
-                      <i class="fas fa-server"></i> Bedwarz </td>
-                    <td>
-                      <div class="progress">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 10%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="progress">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 12%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="progress">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 40%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </td>
-                    <td>
-                    0
-                    </td>
-                    <td>
-                      <i class="fas fa-thumbs-up"></i> <span class="text-success">Online</span>
-                    </td>
-                  </tr>
-
-                <tr>
-                    <td>
-                      <i class="fas fa-server"></i> Creative </td>
-                    <td>
-                      <div class="progress">
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: 60%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="progress">
-                        <div class="progress-bar bg-danger" role="progressbar" style="width: 85%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="progress">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 40%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </td>
-                    <td>
-                    5
-                    </td>
-                    <td>
-                      <i class="fas fa-thumbs-up"></i> <span class="text-success">Online</span>
-                    </td>
-                  </tr>
-
-                <tr>
-                    <td>
-                      <i class="fas fa-server"></i> Survival </td>
-                    <td>
-                      <div class="progress">
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="progress">
-                        <div class="progress-bar bg-danger" role="progressbar" style="width: 85%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="progress">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 40%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </td>
-                    <td>
-                      3
-                    </td>
-                    <td>
-                      <i class="fas fa-thumbs-up"></i> <span class="text-success">Online</span>
-                    </td>
-                  </tr>
+                {% end %}
 
               </tbody>
             </table>
@@ -240,6 +158,8 @@
       </div>
     </div>
   </div>
+
+
 
 </div>
 <!-- content-wrapper ends -->

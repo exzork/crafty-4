@@ -31,7 +31,6 @@ class ServerHandler(BaseHandler):
 
         template = "public/404.html"
 
-
         page_data = {
             'version_data': "version_data_here",
             'user_data': user_data,

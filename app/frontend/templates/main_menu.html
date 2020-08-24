@@ -21,21 +21,12 @@
               </a>
               <div class="collapse" id="page-layouts">
                 <ul class="nav flex-column sub-menu">
-                  <li class="nav-item">
-                    <a class="nav-link" href="pages/layout/boxed-layout.html">Bungee Proxy</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="pages/layout/rtl-layout.html">Lobby</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="pages/layout/rtl-layout.html">Bedwarz</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="pages/layout/rtl-layout.html">Creative</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="pages/layout/rtl-layout.html">Survival</a>
-                  </li>
+                  {% for s in data['menu_servers'] %}
+                    <li class="nav-item">
+                      <a class="nav-link" href="/panel/server_detail?id={{s['server_id']}}">{{s['server_name']}}</a>
+                    </li>
+                  {% end %}
+
                 </ul>
               </div>
             </li>

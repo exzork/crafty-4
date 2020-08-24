@@ -75,9 +75,25 @@ class Servers(BaseModel):
     stop_command = CharField(default="stop")
     server_port = IntegerField(default=25565)
 
-
     class Meta:
         table_name = "servers"
+
+
+class Server_Stats(BaseModel):
+    stats_id = AutoField()
+    created = DateTimeField(default=datetime.datetime.now)
+    server_id = ForeignKeyField(Servers, backref='server')
+    started = CharField(default="")
+    running = BooleanField(default=False)
+    cpu = FloatField(default=0)
+    mem = FloatField(default=0)
+    world_name = CharField(default="")
+    world_size = CharField(default="")
+    server_port = IntegerField(default=25565)
+    int_ping_results = CharField(default="")
+
+    class Meta:
+        table_name = "server_stats"
 
 
 class Webhooks(BaseModel):
@@ -113,6 +129,7 @@ class db_builder:
                 Host_Stats,
                 Webhooks,
                 Servers,
+                Server_Stats
             ])
 
     @staticmethod
@@ -154,6 +171,10 @@ class db_shortcuts:
 
     def get_all_defined_servers(self):
         query = Servers.select()
+        return self.return_rows(query)
+
+    def get_all_servers_stats(self):
+        query = Server_Stats.select().order_by(Server_Stats.stats_id.desc()).limit(1)
         return self.return_rows(query)
 
     def get_latest_hosts_stats(self):
