@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/static/assets/vendors/flag-icon-css/css/flag-icon.min.css">
     <link rel="stylesheet" href="/static/assets/vendors/ti-icons/css/themify-icons.css">
     <link rel="stylesheet" href="/static/assets/vendors/typicons/typicons.css">
+    <link rel="stylesheet" href="/static/assets/vendors/fontawesome5/css/all.css">
     <link rel="stylesheet" href="/static/assets/vendors/css/vendor.bundle.base.css">
 
     <!-- endinject -->
@@ -96,8 +97,19 @@
     <script src="/static/assets/js/shared/hoverable-collapse.js"></script>
     <script src="/static/assets/js/shared/misc.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
-    <script src="//kit.fontawesome.com/b539899a58.js" crossorigin="anonymous"></script>
 
+    <script>
+      //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+      function getCookie(name) {
+        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+        return r ? r[1] : undefined;
+    }
+
+    <!-- tool tips -->
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    })
+    </script>
 
     {% block js %}
     <!-- Custom js for this page -->

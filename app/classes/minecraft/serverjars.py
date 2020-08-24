@@ -156,7 +156,7 @@ class ServerJars:
         logger.error("Got {} code from download, escaping".format(r.status_code))
         return False
 
-    # todo: build server
+    # todo: import server
     def build_server(self, server: str, version: str, name: str, min_mem: int, max_mem: int, port: int):
         server_id = helper.create_uuid()
         server_dir = os.path.join(helper.servers_dir, server_id)
@@ -177,7 +177,7 @@ class ServerJars:
             Servers.server_uuid: server_id,
             Servers.path: server_dir,
             Servers.executable: jar_file,
-            Servers.execution_command: 'java -Xms{}G -Xmx{}G -jar /var/opt/minecraft/server/paperclip.jar nogui'.format(min_mem, max_mem),
+            Servers.execution_command: 'java -Xms{}G -Xmx{}G -jar {} nogui'.format(min_mem, max_mem, full_jar_path),
             Servers.auto_start: False,
             Servers.auto_start_delay: 10,
             Servers.crash_detection: False,

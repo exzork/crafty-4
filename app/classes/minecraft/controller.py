@@ -86,20 +86,18 @@ class Controller:
     def list_running_servers(self):
         running_servers = []
 
-        if len(self.servers_list) > 0:
+        # for each server
+        for s in self.servers_list:
 
-            # for each server
-            for s in self.servers_list:
-
-                # is the server running?
-                srv_obj = s['server_obj']
-                running = srv_obj.check_running()
-                # if so, let's add a dictionary to the list of running servers
-                if running:
-                    running_servers.append({
-                        'id': srv_obj.server_id,
-                        'name': srv_obj.name
-                    })
+            # is the server running?
+            srv_obj = s['server_obj']
+            running = srv_obj.check_running()
+            # if so, let's add a dictionary to the list of running servers
+            if running:
+                running_servers.append({
+                    'id': srv_obj.server_id,
+                    'name': srv_obj.name
+                })
 
         return running_servers
 

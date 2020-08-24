@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 import json
 import time
@@ -9,12 +10,21 @@ import threading
 import schedule
 import logging.config
 
-from pexpect.popen_spawn import PopenSpawn
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 
+
 logger = logging.getLogger(__name__)
+
+
+try:
+    from pexpect.popen_spawn import PopenSpawn
+
+except ModuleNotFoundError as e:
+    logger.critical("Import Error: Unable to load {} module".format(e, e.name))
+    console.critical("Import Error: Unable to load {} module".format(e, e.name))
+    sys.exit(1)
 
 
 class Server:
@@ -93,6 +103,8 @@ class Server:
             helper.do_exit()
 
     def start_server(self):
+        from app.classes.minecraft.stats import stats
+
         # fail safe in case we try to start something already running
         if self.check_running():
             logger.error("Server is already running - Cancelling Startup")
@@ -143,6 +155,7 @@ class Server:
                 logger.info("Server {} running with PID {}".format(self.name, self.PID))
                 console.info("Server {} running with PID {}".format(self.name, self.PID))
                 self.is_crashed = False
+                stats.record_stats()
         else:
             logger.warning("Server PID {} died right after starting - is this a server config issue?".format(self.PID))
             console.warning("Server PID {} died right after starting - is this a server config issue?".format(self.PID))
@@ -161,16 +174,59 @@ class Server:
             self.server_thread.join()
 
     def stop_server(self):
-        if self.settings['stop_command_needed']:
+        from app.classes.minecraft.stats import stats
+        if self.settings['stop_command']:
             self.send_command(self.settings['stop_command'])
+
+            running = self.check_running()
+            x = 0
+
+            # caching the name and pid number
+            server_name = self.name
+            server_pid = self.PID
+
+            while running:
+                x = x+1
+                logger.info("Server {} is still running - waiting 2s to see if it stops".format(server_name))
+                console.info("Server {} is still running - waiting 2s to see if it stops".format(server_name))
+                console.info("Server has {} seconds to respond before we force it down".format(int(60-(x*2))))
+                running = self.check_running()
+                time.sleep(2)
+
+                # if we haven't closed in 60 seconds, let's just slam down on the PID
+                if x >= 30:
+                    logger.info("Server {} is still running - Forcing the process down".format(server_name))
+                    console.info("Server {} is still running - Forcing the process down".format(server_name))
+                    self.killpid(server_pid)
+
+            logger.info("Stopped Server {} with PID {}".format(server_name, server_pid))
+            console.info("Stopped Server {} with PID {}".format(server_name, server_pid))
+
         else:
             self.killpid(self.PID)
 
+        # massive resetting of variables
+        self.cleanup_server_object()
+
+        stats.record_stats()
+
+    def restart_threaded_server(self):
+
+        # if not already running, let's just start
+        if not self.check_running():
+            self.run_threaded_server()
+        else:
+            self.stop_threaded_server()
+            time.sleep(2)
+            self.run_threaded_server()
+
     def cleanup_server_object(self):
-        self.process = None
         self.PID = None
         self.start_time = None
-        self.name = None
+        self.restart_count = 0
+        self.is_crashed = False
+        self.updating = False
+        self.process = None
 
     def check_running(self, shutting_down=False):
         # if process is None, we never tried to start
@@ -217,9 +273,7 @@ class Server:
                         self.is_crashed = True
                         return False
 
-                self.process = None
-                self.PID = None
-                self.name = None
+                self.cleanup_server_object()
                 return False
 
         return True

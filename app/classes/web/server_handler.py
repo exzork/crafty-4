@@ -31,6 +31,8 @@ class ServerHandler(BaseHandler):
 
         template = "public/404.html"
 
+        defined_servers = controller.list_defined_servers()
+
         page_data = {
             'version_data': "version_data_here",
             'user_data': user_data,
@@ -39,7 +41,8 @@ class ServerHandler(BaseHandler):
                 'running': len(controller.list_running_servers()),
                 'stopped': (len(controller.list_defined_servers()) - len(controller.list_running_servers()))
             },
-            'hosts_data': db_helper.get_latest_hosts_stats()
+            'hosts_data': db_helper.get_latest_hosts_stats(),
+            'menu_servers': defined_servers,
 
         }
 
@@ -64,6 +67,22 @@ class ServerHandler(BaseHandler):
             'user_data': user_data,
         }
 
+        if page == "command":
+            server_id = bleach.clean(self.get_argument("id", None))
+            command = bleach.clean(self.get_argument("command", None))
+
+            if server_id is not None:
+                svr = controller.get_server_obj(server_id)
+
+                if command == "start_server":
+                    svr.run_threaded_server()
+
+                if command == "stop_server":
+                    svr.stop_threaded_server()
+
+                if command == "restart_server":
+                    svr.restart_threaded_server()
+
         if page == "step1":
 
             server = bleach.clean(self.get_argument('server', ''))
@@ -74,10 +93,9 @@ class ServerHandler(BaseHandler):
 
             server_parts = server.split("|")
 
-            success = server_jar_obj.build_server(server_parts[0], server_parts[1],server_name,min_mem, max_mem, port)
+            success = server_jar_obj.build_server(server_parts[0], server_parts[1], server_name, min_mem, max_mem, port)
             if success:
                 self.redirect("/panel/dashboard")
-
 
         self.render(
             template,

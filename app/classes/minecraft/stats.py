@@ -2,7 +2,6 @@ import os
 import json
 import time
 import psutil
-#import requests
 import logging
 import datetime
 
@@ -181,10 +180,13 @@ class Stats:
             logger.debug("Pinging {} on port {}".format(internal_ip, server_port))
             int_mc_ping = ping(internal_ip, int(server_port))
 
-            int_data = "Unable to connect"
+            int_data = False
+            ping_data = {}
 
+            # if we got a good ping return, let's parse it
             if int_mc_ping:
-                int_data = self.parse_server_ping(int_mc_ping)
+                int_data = True
+                ping_data = self.parse_server_ping(int_mc_ping)
 
             server_stats = {
                 'id': server_id,
@@ -195,7 +197,12 @@ class Stats:
                 'world_name': world_name,
                 'world_size': self.get_world_size(world_path),
                 'server_port': server_port,
-                'int_ping_results': int_data
+                'int_ping_results': int_data,
+                'online': ping_data.get("online", False),
+                "max": ping_data.get("max", False),
+                'players': ping_data.get("players", False),
+                'desc': ping_data.get("server_description", False),
+                'version': ping_data.get("server_version", False)
             }
 
             # add this servers data to the stack
@@ -223,6 +230,7 @@ class Stats:
         server_stats = stats_to_send.get('servers')
 
         for server in server_stats:
+
             Server_Stats.insert({
                 Server_Stats.server_id: server.get('id', 0),
                 Server_Stats.started: server.get('started', ""),
@@ -232,7 +240,12 @@ class Stats:
                 Server_Stats.world_name: server.get('world_name', ""),
                 Server_Stats.world_size: server.get('world_size', ""),
                 Server_Stats.server_port: server.get('server_port', ""),
-                Server_Stats.int_ping_results: server.get('int_ping_results', ""),
+                Server_Stats.int_ping_results: server.get('int_ping_results', False),
+                Server_Stats.online: server.get("online", False),
+                Server_Stats.max: server.get("max", False),
+                Server_Stats.players: server.get("players", False),
+                Server_Stats.desc: server.get("desc", False),
+                Server_Stats.version: server.get("version", False)
             }).execute()
 
         # delete 1 week old data

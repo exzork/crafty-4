@@ -113,25 +113,25 @@
                   </td>
 
                   <td>
-                    {% if server['started'] == True %}
-                      <a hidden data-id="server['server_id']['server_id']" class="play_button hidden"><i class="fas fa-play"></i></a> &nbsp;
-                      <a data-id="server['server_id']['server_id']" class="stop_button"><i class="fas fa-stop"></i></a> &nbsp;
-                      <a data-id="server['server_id']['server_id']" class="restart_button"><i class="fas fa-sync"></i></a> &nbsp;
+
+                    {% if server['running']%}
+                      <a class="stop_button" data-id="{{server['server_id']['server_id']}}"> <i class="fas fa-stop"></i></a> &nbsp;
+                      <a class="restart_button" data-id="{{server['server_id']['server_id']}}"> <i class="fas fa-sync"></i></a> &nbsp;
                     {% else %}
-                      <a data-id="server['server_id']['server_id']" class="play_button"><i class="fas fa-play"></i></a> &nbsp;
-                      <a hidden data-id="server['server_id']['server_id']" class="stop_button hidden"><i class="fas fa-stop"></i></a> &nbsp;
-                      <a hidden data-id="server['server_id']['server_id']" class="restart_button hidden"><i class="fas fa-sync"></i></a> &nbsp;
+                      <a data-id="{{server['server_id']['server_id']}}" class="play_button"><i class="fas fa-play"></i></a> &nbsp;
                     {% end %}
                   </td>
 
                   <td>
-                    <div class="progress">
+                    <div class="progress" data-toggle="tooltip" data-placement="top" title="{{server['cpu']}}">
                       <div class="progress-bar bg-success" role="progressbar" style="width: {{server['cpu']}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+
                     </div>
+                    {{server['cpu']}}
                   </td>
 
                   <td>
-                    <div class="progress">
+                    <div class="progress" data-toggle="tooltip" data-placement="top" title="{{server['mem']}}">
                       <div class="progress-bar bg-danger" role="progressbar" style="{{server['mem']}}%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                   </td>
@@ -139,10 +139,16 @@
                     {{ server['world_name'] }} : {{ server['world_size'] }}
                   </td>
                   <td>
-                    {{ server['int_ping_results'] }}
+                    {% if server['int_ping_results'] == True %}
+                      {{ server['online'] }} / {{ server['max'] }} Max<br />
+                      {{ server['desc'] }} <br />
+                      {{ server['version'] }}
+                    {% else %}
+                      {{ _("Unable to connect to server") }}
+                    {% end %}
                   </td>
                   <td>
-                    {% if server['started'] == True %}
+                    {% if server['running'] %}
                     <i class="fas fa-thumbs-up"></i> <span class="text-success">Online</span>
                     {% else %}
                     <i class="fas fa-thumbs-down"></i> <span class="text-danger">Offline</span>
@@ -165,5 +171,64 @@
 <!-- content-wrapper ends -->
 
 
+
+{% end %}
+
+{% block js %}
+<script>
+
+function send_command (server_id, command){
+  <!--  this getCookie function is in base.html-->
+  var token = getCookie("_xsrf");
+
+  $.ajax({
+    type: "POST",
+    headers: {'X-XSRFToken': token},
+    url: '/server/command?command=' + command + '&id=' + server_id,
+    success: function(data){
+      console.log("got response:");
+      console.log(data);
+      setTimeout(function(){ location.reload(); }, 10000);
+
+    }
+  });
+}
+
+$( document ).ready(function() {
+  console.log('ready for JS!')
+
+  $( ".play_button" ).click(function() {
+    server_id = $(this).attr("data-id");
+    send_command(server_id, 'start_server');
+    bootbox.alert({
+      backdrop: true,
+      title: "Sending your command",
+      message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; Please be patient while we start the server<br /> This screen will refresh in a moment </div>'
+    });
+  });
+
+  $( ".stop_button" ).click(function() {
+    console.log("stopping server");
+    server_id = $(this).attr("data-id");
+    send_command(server_id, 'stop_server');
+    bootbox.alert({
+      backdrop: true,
+      title: "Sending your command",
+      message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; Please be patient while we stop the server<br /> This screen will refresh in a moment </div>'
+    });
+  });
+
+  $( ".restart_button" ).click(function() {
+    server_id = $(this).attr("data-id");
+    send_command(server_id, 'restart_server');
+    bootbox.alert({
+      backdrop: true,
+      title: "Sending your command",
+      message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; Please be patient while we restart the server<br /> This screen will refresh in a moment </div>'
+    });
+  });
+
+});
+</script>
 
 {% end %}

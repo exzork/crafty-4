@@ -28,6 +28,8 @@ class BaseModel(Model):
     class Meta:
         database = database
 
+# todo: access logs
+
 
 class Users(BaseModel):
     user_id = AutoField()
@@ -91,9 +93,27 @@ class Server_Stats(BaseModel):
     world_size = CharField(default="")
     server_port = IntegerField(default=25565)
     int_ping_results = CharField(default="")
+    online = IntegerField(default=0)
+    max = IntegerField(default=0)
+    players = CharField(default="")
+    desc = CharField(default="Unable to Connect")
+    version = CharField(default="")
+
 
     class Meta:
         table_name = "server_stats"
+
+
+class Commands(BaseModel):
+    command_id = AutoField()
+    created = DateTimeField(default=datetime.datetime.now)
+    server_id = ForeignKeyField(Servers, backref='server')
+    user = ForeignKeyField(Users, backref='user')
+    source_ip = CharField(default='127.0.0.1')
+    command = CharField(default='')
+
+    class Meta:
+        table_name = "commands"
 
 
 class Webhooks(BaseModel):
@@ -129,7 +149,8 @@ class db_builder:
                 Host_Stats,
                 Webhooks,
                 Servers,
-                Server_Stats
+                Server_Stats,
+                Commands
             ])
 
     @staticmethod

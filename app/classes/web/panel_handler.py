@@ -48,7 +48,13 @@ class PanelHandler(BaseHandler):
 
         elif page == 'dashboard':
             page_data['servers'] = db_helper.get_all_servers_stats()
-
+            for s in page_data['servers']:
+                try:
+                    data = json.loads(s['int_ping_results'])
+                    print(data)
+                    s['int_ping_results'] = data
+                except:
+                    pass
             template = "panel/dashboard.html"
 
         self.render(
