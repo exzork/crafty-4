@@ -65,8 +65,6 @@ class ServerHandler(BaseHandler):
             'user_data': user_data,
         }
 
-        print(page)
-
         if page == "step1":
 
             server = bleach.clean(self.get_argument('server', ''))

@@ -178,7 +178,7 @@ class Stats:
             internal_ip = server_data.get('server_ip', "127.0.0.1")
             server_port = server_settings.get('server_port', "25565")
 
-            logger.debug("Pinging %s on port %s", internal_ip, server_port)
+            logger.debug("Pinging {} on port {}".format(internal_ip, server_port))
             int_mc_ping = ping(internal_ip, int(server_port))
 
             int_data = "Unable to connect"
@@ -194,7 +194,7 @@ class Stats:
                 'mem': p_stats.get('memory_usage', '0'),
                 'world_name': world_name,
                 'world_size': self.get_world_size(world_path),
-                'server_port': s['server_settings']['server-port'],
+                'server_port': server_port,
                 'int_ping_results': int_data
             }
 

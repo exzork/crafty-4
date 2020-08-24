@@ -8,6 +8,7 @@ from datetime import datetime
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.shared.models import Servers
+from app.classes.minecraft.controller import controller
 from app.classes.minecraft.server_props import ServerProps
 
 logger = logging.getLogger(__name__)
@@ -180,15 +181,16 @@ class ServerJars:
             Servers.auto_start: False,
             Servers.auto_start_delay: 10,
             Servers.crash_detection: False,
-            Servers.log_path:"{}/logs/latest.log".format(server_dir),
-            Servers.stop_command:'stop'
+
+            Servers.log_path: "{}/logs/latest.log".format(server_dir),
+            Servers.stop_command: 'stop'
         }).execute()
 
 
         try:
             # place a file in the dir saying it's owned by crafty
             with open(os.path.join(server_dir, "crafty_managed.txt"), 'w') as f:
-                f.write("The server in this directory is managed by Crafty Controller.\n Leave this file alone please")
+                f.write("The server in this directory is managed by Crafty Controller.\n Leave this directory/files alone please")
                 f.close()
 
             # do a eula.txt
@@ -204,6 +206,9 @@ class ServerJars:
         except Exception as e:
             logger.error("Unable to create required server files due to :{}".format(e))
             return False
+
+        # let's re-init all servers
+        controller.init_all_servers()
 
         return True
 

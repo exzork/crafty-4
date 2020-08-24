@@ -89,6 +89,10 @@ class TasksManager:
         stats_update_frequency = int(helper.get_setting("CRAFTY", 'stats_update_frequency'))
         logger.info("Stats collection frequency set to {stats} seconds".format(stats=stats_update_frequency))
         console.info("Stats collection frequency set to {stats} seconds".format(stats=stats_update_frequency))
+        # one for now,
+        stats.record_stats()
+
+        # one for later
         schedule.every(stats_update_frequency).seconds.do(stats.record_stats)
 
     @staticmethod

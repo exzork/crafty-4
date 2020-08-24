@@ -35,12 +35,12 @@ class PanelHandler(BaseHandler):
             'hosts_data': db_helper.get_latest_hosts_stats()
 
         }
-        # print(page_data['hosts_data'])
 
         # if no servers defined, let's go to the build server area
         if page_data['server_stats']['total'] == 0:
             self.set_status(301)
             self.redirect("/server/step1")
+            return False
 
         if page == 'unauthorized':
             template = "panel/denied.html"

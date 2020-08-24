@@ -86,6 +86,11 @@ if __name__ == '__main__':
     # slowing down reporting just for a 1/2 second so messages look cleaner
     time.sleep(.5)
 
+    # do our installer stuff
+    if installer.is_fresh_install():
+        installer.create_tables()
+        installer.default_settings()
+
     # start stats logging
     tasks_manager.start_stats_recording()
 
@@ -94,11 +99,6 @@ if __name__ == '__main__':
 
     # this should always be last
     tasks_manager.start_main_kill_switch_watcher()
-
-    # do our installer stuff
-    if installer.is_fresh_install():
-        installer.create_tables()
-        installer.default_settings()
 
     # init servers
     logger.info("Initializing all servers defined")
