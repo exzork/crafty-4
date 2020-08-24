@@ -91,6 +91,13 @@ if __name__ == '__main__':
         installer.create_tables()
         installer.default_settings()
 
+    # init servers
+    logger.info("Initializing all servers defined")
+    console.info("Initializing all servers defined")
+
+    controller.init_all_servers()
+    servers = controller.list_defined_servers()
+
     # start stats logging
     tasks_manager.start_stats_recording()
 
@@ -100,12 +107,7 @@ if __name__ == '__main__':
     # this should always be last
     tasks_manager.start_main_kill_switch_watcher()
 
-    # init servers
-    logger.info("Initializing all servers defined")
-    console.info("Initializing all servers defined")
 
-    controller.init_all_servers()
-    servers = controller.list_defined_servers()
 
     # our main loop - eventually a shell
     while True:
