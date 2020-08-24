@@ -15,5 +15,6 @@ env.bak/
 venv.bak/
 
 .idea/
+servers/
 
 app/config/web
