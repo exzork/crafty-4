@@ -16,5 +16,6 @@ venv.bak/
 
 .idea/
 servers/
+session.lock
 
 app/config/web
