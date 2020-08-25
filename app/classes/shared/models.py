@@ -89,6 +89,7 @@ class Server_Stats(BaseModel):
     running = BooleanField(default=False)
     cpu = FloatField(default=0)
     mem = FloatField(default=0)
+    mem_percent = FloatField(default=0)
     world_name = CharField(default="")
     world_size = CharField(default="")
     server_port = IntegerField(default=25565)

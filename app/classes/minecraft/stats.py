@@ -42,6 +42,7 @@ class Stats:
             process_stats = {
                 'cpu_usage': 0,
                 'memory_usage': 0,
+                'mem_percentage': 0
             }
             return process_stats
 
@@ -61,6 +62,7 @@ class Stats:
                 process_stats = {
                     'cpu_usage': real_cpu,
                     'memory_usage': helper.human_readable_file_size(p.memory_info()[0]),
+                    'mem_percentage': round(p.memory_percent(), 0)
                 }
             return process_stats
 
@@ -192,8 +194,9 @@ class Stats:
                 'id': server_id,
                 'started': server_obj.get_start_time(),
                 'running': server_obj.check_running(),
-                'cpu': p_stats.get('cpu_usage', '0'),
-                'mem': p_stats.get('memory_usage', '0'),
+                'cpu': p_stats.get('cpu_usage', 0),
+                'mem': p_stats.get('memory_usage', 0),
+                "mem_percent": p_stats.get('mem_percentage', 0),
                 'world_name': world_name,
                 'world_size': self.get_world_size(world_path),
                 'server_port': server_port,
@@ -207,7 +210,6 @@ class Stats:
 
             # add this servers data to the stack
             server_stats_list.append(server_stats)
-
 
         return server_stats_list
 
@@ -234,9 +236,10 @@ class Stats:
             Server_Stats.insert({
                 Server_Stats.server_id: server.get('id', 0),
                 Server_Stats.started: server.get('started', ""),
-                Server_Stats.running: server.get('running', ""),
-                Server_Stats.cpu: server.get('cpu', ""),
-                Server_Stats.mem: server.get('mem', ""),
+                Server_Stats.running: server.get('running', False),
+                Server_Stats.cpu: server.get('cpu', 0),
+                Server_Stats.mem: server.get('mem', 0),
+                Server_Stats.mem_percent: server.get('mem_percent', 0),
                 Server_Stats.world_name: server.get('world_name', ""),
                 Server_Stats.world_size: server.get('world_size', ""),
                 Server_Stats.server_port: server.get('server_port', ""),

@@ -127,13 +127,14 @@
                       <div class="progress-bar bg-success" role="progressbar" style="width: {{server['cpu']}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
 
                     </div>
-                    {{server['cpu']}}
+                    {{server['cpu']}}%
                   </td>
 
                   <td>
                     <div class="progress" data-toggle="tooltip" data-placement="top" title="{{server['mem']}}">
-                      <div class="progress-bar bg-danger" role="progressbar" style="{{server['mem']}}%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
+                      <div class="progress-bar bg-success" role="progressbar" style="width: {{server['mem_percent']}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
+                    {{server['mem_percent']}}% - {{server['mem']}}
                   </td>
                   <td>
                     {{ server['world_name'] }} : {{ server['world_size'] }}

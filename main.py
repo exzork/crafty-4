@@ -107,8 +107,6 @@ if __name__ == '__main__':
     # this should always be last
     tasks_manager.start_main_kill_switch_watcher()
 
-
-
     # our main loop - eventually a shell
     while True:
         if tasks_manager.get_main_thread_run_status():
