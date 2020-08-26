@@ -7,3 +7,32 @@
     background-color: #1C1E2F;
     color: white
 }
+
+
+.sidebar > .nav > .nav-item:not(.nav-profile) > .nav-link:before {
+    content: none;
+    position: absolute;
+    left: 30px;
+    right: 50%;
+    width: 10px;
+    height: 10px;
+    border-radius: 100%;
+    border: 2px solid #fff;
+    display: block;
+}
+
+.sidebar > .nav > .nav-item:not(.nav-profile) > .nav-link:before {
+    content: none;
+    position: absolute;
+    left: 30px;
+    right: 50%;
+    width: 10px;
+    height: 10px;
+    border-radius: 100%;
+    border: 2px solid #fff;
+    display: block;
+}
+
+.sidebar > .nav .nav-item .nav-link, .collapsed{
+    padding: 15px 30px;
+}
