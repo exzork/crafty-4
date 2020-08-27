@@ -202,7 +202,7 @@ class ServerJars:
 
             # setup server.properties with the port
             with open(os.path.join(server_dir, "server.properties"), "w") as f:
-                f.write("server_port={}".format(port))
+                f.write("server-port={}".format(port))
                 f.close()
 
         except Exception as e:
