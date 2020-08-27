@@ -18,5 +18,6 @@ venv.bak/
 servers/
 session.lock
 .header
+default.json
 
 app/config/web

@@ -67,7 +67,7 @@
                   </div>
 
                 </div>
-                <button type="submit" class="btn btn-primary mr-2">Build My Server!</button>
+                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg()">Build My Server!</button>
                 <button type="reset" class="btn btn-danger mr-2">Reset Form</button>
 
               </form>
@@ -89,6 +89,13 @@
     check_sizes();
     });
   });
+
+  function wait_msg(){
+    bootbox.alert({
+        title: 'Downloading Server...',
+        message: '<i class="fas fa-cloud-download"></i> Please be patient as we download the server'
+      });
+  }
 
   function check_sizes(){
     max_mem = parseFloat($('#max_memory').val());

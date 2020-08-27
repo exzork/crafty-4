@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import time
+import shutil
 import logging
 from datetime import datetime
 
@@ -142,18 +143,17 @@ class ServerJars:
 
     def download_jar(self, server, version, path):
         base_url = "https://serverjars.com/api/fetchJar/{server}/{version}".format(server=server, version=version)
-        r = requests.get(base_url, timeout=2)
-        if r.status_code in [200, 201]:
 
+        # open a file stream
+        with requests.get(base_url, timeout=2, stream=True) as r:
             try:
-                with open(path, 'bw') as output:
-                    output.write(r.content)
-                    return True
+                with open(path, 'wb') as output:
+                    shutil.copyfileobj(r.raw, output)
+
             except Exception as e:
                 logger.error("Unable to save jar to {path} due to error:{error}".format(path=path, error=e))
                 pass
 
-        logger.error("Got {} code from download, escaping".format(r.status_code))
         return False
 
     # todo: import server
@@ -168,6 +168,8 @@ class ServerJars:
 
         # download the jar
         self.download_jar(server, version, full_jar_path)
+
+        time.sleep(3)
 
         # todo: verify the MD5
 

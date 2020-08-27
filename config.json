@@ -1,0 +1,12 @@
+{
+  "https": true,
+  "http_port": 8000,
+  "https_port": 8443,
+  "language": "en_EN",
+  "cookie_expire": 30,
+  "cookie_secret": "random",
+  "show_errors": true,
+  "history_max_age": 7,
+  "stats_update_frequency": 5,
+  "delete_default_json": false
+}

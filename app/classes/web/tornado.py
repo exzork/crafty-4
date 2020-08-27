@@ -80,27 +80,24 @@ class webserver:
         # let's verify we have an SSL cert
         helper.create_self_signed_cert()
 
-        http_port = helper.get_setting("WEB", 'http_port')
-        https_port = helper.get_setting("WEB", 'https_port')
+        http_port = helper.get_setting('http_port')
+        https_port = helper.get_setting('https_port')
 
-        lang = helper.get_setting("WEB", 'language')
-        debug_errors = helper.get_setting("WEB", 'show_errors')
-        cookie_secret = helper.get_setting("WEB", 'cookie_secret')
+        lang = helper.get_setting('language')
+        debug_errors = helper.get_setting('show_errors')
+        cookie_secret = helper.get_setting('cookie_secret')
 
         if cookie_secret is False:
-            cookie_secret = helper.random_string_generator(32)
-
-        if cookie_secret.lower == "random":
             cookie_secret = helper.random_string_generator(32)
 
         if not lang:
             lang = "en_EN"
 
         if not http_port:
-            port = 8000
+            http_port = 8000
 
         if not https_port:
-            port = 8443
+            https_port = 8443
 
         cert_objects = {
             'certfile': os.path.join(helper.config_dir, 'web', 'certs', 'commander.cert.pem'),

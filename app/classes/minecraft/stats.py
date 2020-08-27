@@ -232,7 +232,6 @@ class Stats:
         server_stats = stats_to_send.get('servers')
 
         for server in server_stats:
-
             Server_Stats.insert({
                 Server_Stats.server_id: server.get('id', 0),
                 Server_Stats.started: server.get('started', ""),
@@ -252,7 +251,7 @@ class Stats:
             }).execute()
 
         # delete 1 week old data
-        max_age = int(helper.get_setting("CRAFTY", "history_max_age"))
+        max_age = helper.get_setting("history_max_age")
         now = datetime.datetime.now()
         last_week = now.day - max_age
 

@@ -196,8 +196,14 @@ class db_shortcuts:
         return self.return_rows(query)
 
     def get_all_servers_stats(self):
-        query = Server_Stats.select().order_by(Server_Stats.stats_id.desc()).limit(1)
-        return self.return_rows(query)
+        servers = self.get_all_defined_servers()
+        server_data = []
+
+        for s in servers:
+            latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
+            server_data.append({'server_data': s, "stats": self.return_rows(latest)})
+        # print(server_data)
+        return server_data
 
     def get_latest_hosts_stats(self):
         query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()

@@ -24,7 +24,7 @@ class PublicHandler(BaseHandler):
 
     def set_current_user(self, user):
 
-        expire_days = helper.get_setting("WEB", 'cookie_expire')
+        expire_days = helper.get_setting('cookie_expire')
 
         # if helper comes back with false
         if not expire_days:
@@ -111,6 +111,6 @@ class PublicHandler(BaseHandler):
 
                 next_page = "/panel/dashboard"
                 self.redirect(next_page)
-        else:
+
             self.redirect("/public/login")
 

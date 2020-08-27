@@ -34,7 +34,7 @@ class Helpers:
         self.servers_dir = os.path.join(self.root_dir, 'servers')
 
         self.session_file = os.path.join(self.root_dir, 'session.lock')
-        self.settings_file = os.path.join(self.root_dir, 'config.ini')
+        self.settings_file = os.path.join(self.root_dir, 'config.json')
 
         self.db_path = os.path.join(self.root_dir, 'crafty.sqlite')
         self.serverjar_cache = os.path.join(self.config_dir, 'serverjars.json')
@@ -52,14 +52,19 @@ class Helpers:
         logger.error("{} does not exits".format(file))
         return False
 
-    def get_setting(self, section, key):
+    def get_setting(self, key):
 
         try:
-            our_config = configparser.ConfigParser()
-            our_config.read(self.settings_file)
+            with open(self.settings_file, "r") as f:
+                data = json.load(f)
 
-            if our_config.has_option(section, key):
-                return our_config[section][key]
+            if key in data.keys():
+                return data.get(key)
+
+            else:
+                logger.error("Config File Error: setting {} does not exist".format(key))
+                console.error("Config File Error: setting {} does not exist".format(key))
+                return False
 
         except Exception as e:
             logger.critical("Config File Error: Unable to read {} due to {}".format(self.settings_file, e))
@@ -366,7 +371,10 @@ class Helpers:
             with open(default_file, 'r') as f:
                 data = json.load(f)
 
-            os.remove(default_file)
+            del_json = helper.get_setting('delete_default_json')
+
+            if del_json:
+                os.remove(default_file)
 
         return data
 
