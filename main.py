@@ -11,6 +11,7 @@ from app.classes.shared.helpers import helper
 from app.classes.shared.models import installer
 from app.classes.shared.tasks import tasks_manager
 from app.classes.minecraft.controller import controller
+from app.classes.shared.cmd import MainPrompt
 
 
 def do_intro():
@@ -107,8 +108,11 @@ if __name__ == '__main__':
     # this should always be last
     tasks_manager.start_main_kill_switch_watcher()
 
+    Crafty = MainPrompt()
+    Crafty.cmdloop()
+
     # our main loop - eventually a shell
-    while True:
-        if tasks_manager.get_main_thread_run_status():
-            sys.exit(0)
-        time.sleep(1)
+    # while True:
+    #     if tasks_manager.get_main_thread_run_status():
+    #         sys.exit(0)
+    #     time.sleep(1)
