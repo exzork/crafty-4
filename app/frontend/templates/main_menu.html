@@ -21,9 +21,12 @@
               </a>
               <div class="collapse" id="page-layouts">
                 <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                      <a class="nav-link" href="/server/step1"><i class="fas fa-plus-circle"></i> &nbsp; Add New Server</a>
+                    </li>
                   {% for s in data['menu_servers'] %}
                     <li class="nav-item">
-                      <a class="nav-link" href="/panel/server_detail?id={{s['server_id']}}">{{s['server_name']}}</a>
+                      <a class="nav-link" href="/panel/server_detail?id={{s['server_id']}}"><i class="fas fa-server"></i> &nbsp; {{s['server_name']}}</a>
                     </li>
                   {% end %}
 
@@ -73,7 +76,7 @@
             </li>
 
             <li class="nav-item">
-              <a class="nav-link" href="pages/samples/widgets.html">
+              <a class="nav-link" href="/panel/credits">
                 <i class="fas fa-heart"></i> &nbsp;
                 <span class="menu-title">Credits</span>
               </a>

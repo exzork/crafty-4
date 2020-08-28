@@ -32,11 +32,15 @@
                   <h5 class="mb-1 font-weight-medium text-primary"> Host</h5>
                   <h3 class="mb-0 font-weight-semibold"> <i class="fas fa-chart-line"></i></h3>
 
-
                 </div>
                 <div class="wrapper my-auto ml-auto ml-lg-4">
-                  <p class="mb-0 text-success">{{ data.get('hosts_data').get('cpu_usage') }} {{ _('CPU Usage') }}</p>
-                  <p class="mb-0 text-danger">{{ data.get('hosts_data').get('mem_percent') }}% {{ _('Memory Usage') }}</p>
+                  <p class="mb-0 text-success" data-toggle="tooltip" data-placement="top" data-html="true" title="CPU Cores: {{ data.get('hosts_data').get('cpu_cores') }} <br /> CPU Cur Freq: {{ data.get('hosts_data').get('cpu_cur_freq') }} <br /> CPU Max Freq: {{ data.get('hosts_data').get('cpu_max_freq') }}" >
+                    {{ data.get('hosts_data').get('cpu_usage') }} {{ _('CPU Usage') }}
+
+                  </p>
+                  <p class="mb-0 text-danger" data-toggle="tooltip" data-placement="top" title="Memory Usage: {{ data.get('hosts_data').get('mem_usage') }}" >
+                    {{ data.get('hosts_data').get('mem_percent') }}% {{ _('Memory Usage') }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -89,11 +93,11 @@
     <div class="col-md-12 col-lg-12 grid-margin stretch-card">
       <div class="card">
         <div class="card-header header-sm d-flex justify-content-between align-items-center">
-          <h4 class="card-title">All Servers</h4>
+          <h4 class="card-title"><i class="fas fa-server"></i> &nbsp;All Servers</h4>
           <div class="d-md-none">
             <small>Can't see everything on mobile?<br /> Try scrolling the table sideways.</small>
           </div>
-
+          <div><a class="nav-link" href="/server/step1"><i class="fas fa-plus-circle"></i> &nbsp; Add New Server</a></div>
         </div>
         <div class="card-body">
 

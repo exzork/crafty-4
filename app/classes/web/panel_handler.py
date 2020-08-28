@@ -46,6 +46,9 @@ class PanelHandler(BaseHandler):
         if page == 'unauthorized':
             template = "panel/denied.html"
 
+        elif page == 'credits':
+            template = "panel/credits.html"
+
         elif page == 'dashboard':
             page_data['servers'] = db_helper.get_all_servers_stats()
 
@@ -55,6 +58,7 @@ class PanelHandler(BaseHandler):
                     s['int_ping_results'] = data
                 except:
                     pass
+
             template = "panel/dashboard.html"
 
         self.render(
