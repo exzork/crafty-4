@@ -132,15 +132,30 @@
 
                   <td>
                     <div class="progress" data-toggle="tooltip" data-placement="top" title="{{server['stats'][0]['cpu']}}">
-                      <div class="progress-bar bg-success" role="progressbar" style="width: {{server['stats'][0]['cpu']}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-
+                      <div class="progress-bar
+                      {% if server['stats'][0]['cpu'] <= 33 %}
+                      bg-success
+                      {% elif 34 <= server['stats'][0]['cpu'] <= 66 %}
+                      bg-warning
+                      {% else %}
+                      bg-danger
+                      {% end %}
+                      " role="progressbar" style="width: {{server['stats'][0]['cpu']}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                     {{server['stats'][0]['cpu']}}%
                   </td>
 
                   <td>
                     <div class="progress" data-toggle="tooltip" data-placement="top" title="{{server['stats'][0]['mem']}}">
-                      <div class="progress-bar bg-success" role="progressbar" style="width: {{server['stats'][0]['mem_percent']}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                      <div class="progress-bar
+                      {% if server['stats'][0]['mem_percent'] <= 33 %}
+                      bg-success
+                      {% elif 34 <= server['stats'][0]['mem_percent'] <= 66 %}
+                      bg-warning
+                      {% else %}
+                      bg-danger
+                      {% end %}
+                      " role="progressbar" style="width: {{server['stats'][0]['mem_percent']}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                     {{server['stats'][0]['mem_percent']}}% - {{server['stats'][0]['mem']}}
                   </td>
