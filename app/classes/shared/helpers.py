@@ -52,7 +52,7 @@ class Helpers:
         logger.error("{} does not exits".format(file))
         return False
 
-    def get_setting(self, key):
+    def get_setting(self, key, default_return=False):
 
         try:
             with open(self.settings_file, "r") as f:
@@ -64,13 +64,13 @@ class Helpers:
             else:
                 logger.error("Config File Error: setting {} does not exist".format(key))
                 console.error("Config File Error: setting {} does not exist".format(key))
-                return False
+                return default_return
 
         except Exception as e:
             logger.critical("Config File Error: Unable to read {} due to {}".format(self.settings_file, e))
             console.critical("Config File Error: Unable to read {} due to {}".format(self.settings_file, e))
 
-        return False
+        return default_return
 
     def get_local_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

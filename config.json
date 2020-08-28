@@ -8,5 +8,6 @@
   "show_errors": true,
   "history_max_age": 7,
   "stats_update_frequency": 5,
-  "delete_default_json": false
+  "delete_default_json": false,
+  "show_contribute_link": true
 }

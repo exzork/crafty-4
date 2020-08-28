@@ -1,0 +1,116 @@
+{% extends ../base.html %}
+
+{% block meta %}
+<!--  <meta http-equiv="refresh" content="60">-->
+{% end %}
+
+{% block title %}Crafty Controller - Blank Page{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        <h4 class="page-title">Contribute</h4>
+      </div>
+    </div>
+
+  </div>
+  <!-- Page Title Header Ends-->
+
+  <div class="row">
+
+    <div class="col-md-3 grid-margin">
+      <div class="card">
+        <div class="card-body">
+
+          <h4 class="card-title">Recurring Support</h4>
+
+          <div class="media-body">
+            <p class="card-text">
+              Patrons get access to several perks, such as behind the scenes videos, posts, and updates.
+              Patrons also get access to a Crafty Controller PE (Patreon Edition) with additional functions not in other versions of Crafty.
+            </p>
+            <br />
+            <div class="text-center">
+              <a href="https://www.patreon.com/bePatron?u=27882946" data-patreon-widget-type="become-patron-button">Become a Patron!</a><script async src="https://c6.patreon.com/becomePatronButton.bundle.js"></script>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 grid-margin">
+      <div class="card">
+        <div class="card-body">
+
+          <h4 class="card-title">One Time Support</h4>
+
+          <div class="media-body">
+            <p class="card-text">
+              Contribute via Paypal, you can contribute any amount, as often or as little as you want.
+              Please understand that while PayPal calls this a "Donation"; this is not a charitable donation and can not be claimed
+              as a charitable donation for tax purposes
+            </p>
+            <br />
+            <div class="text-center">
+              <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                <input type="hidden" name="cmd" value="_donations" />
+                <input type="hidden" name="business" value="H2HNTLFZAJRXG" />
+                <input type="hidden" name="currency_code" value="USD" />
+                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+                <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 grid-margin">
+      <div class="card">
+        <div class="card-body">
+
+          <h4 class="card-title">Volunteer Time!</h4>
+
+          <div class="media-body">
+            <p class="card-text">
+              Join the discord and volunteer to help others solve issues, write documentation, translate Crafty into a new language.
+              Come for the support, stay for the community. We have a very strong community full of people who are great to be around.
+            </p>
+            <br />
+            <div class="text-center">
+              <a href="https://discord.gg/9VJPhCE" target="_blank" class="btn btn-sm btn-info">Join Discord</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+
+
+
+</div>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+<script>
+
+$( document ).ready(function() {
+  console.log('ready for JS!')
+
+});
+</script>
+
+{% end %}

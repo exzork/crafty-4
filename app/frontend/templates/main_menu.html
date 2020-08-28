@@ -82,12 +82,14 @@
               </a>
             </li>
 
+            {% if data['show_contribute'] %}
             <li class="nav-item">
-              <a class="nav-link" href="pages/samples/widgets.html">
+              <a class="nav-link" href="/panel/contribute">
                 <i class="fas fa-donate"></i> &nbsp;
                 <span class="menu-title">Contribute</span>
               </a>
             </li>
+            {% end %}
 
 
           </ul>
