@@ -44,7 +44,7 @@ class ServerHandler(BaseHandler):
             },
             'hosts_data': db_helper.get_latest_hosts_stats(),
             'menu_servers': defined_servers,
-
+            'show_contribute': True
         }
 
         if page == "step1":
