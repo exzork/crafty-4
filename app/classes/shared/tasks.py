@@ -8,10 +8,11 @@ import threading
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.web.tornado import webserver
-from app.classes.minecraft import server_props
+
 from app.classes.minecraft.stats import stats
-from app.classes.minecraft.controller import controller
+from app.classes.shared.controller import controller
 from app.classes.minecraft.serverjars import server_jar_obj
+from app.classes.shared.models import db_helper
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,9 @@ class TasksManager:
 
         self.schedule_thread = threading.Thread(target=self.scheduler_thread, daemon=True, name="scheduler")
 
+        self.command_thread = threading.Thread(target=self.command_watcher, daemon=True, name="command_watcher")
+        self.command_thread.start()
+
     def get_main_thread_run_status(self):
         return self.main_thread_exiting
 
@@ -46,6 +50,16 @@ class TasksManager:
                 logger.info("Found Exit File, stopping everything")
                 self._main_graceful_exit()
             time.sleep(5)
+
+    def command_watcher(self):
+        while True:
+            # select any commands waiting to be processed
+            commands = db_helper.get_unactioned_commands()
+
+            time.sleep(1)
+
+    # def parse_command(self, command):
+
 
     def _main_graceful_exit(self):
         try:

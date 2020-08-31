@@ -28,8 +28,6 @@ class BaseModel(Model):
     class Meta:
         database = database
 
-# todo: access logs
-
 
 class Users(BaseModel):
     user_id = AutoField()
@@ -112,6 +110,7 @@ class Commands(BaseModel):
     user = ForeignKeyField(Users, backref='user')
     source_ip = CharField(default='127.0.0.1')
     command = CharField(default='')
+    executed = BooleanField(default=False)
 
     class Meta:
         table_name = "commands"
@@ -205,10 +204,14 @@ class db_shortcuts:
         # print(server_data)
         return server_data
 
-    def get_latest_hosts_stats(self):
+    @staticmethod
+    def get_latest_hosts_stats():
         query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()
         return model_to_dict(query)
 
+    def get_unactioned_commands(self):
+        query = Commands.select().where(Commands.executed == False)
+        return self.return_rows(query)
 
 installer = db_builder()
 db_helper = db_shortcuts()

@@ -236,7 +236,7 @@ class Helpers:
                 data = json.loads(file_data)
                 pid = data.get('pid')
                 started = data.get('started')
-                console.critical("Another commander agent seems to be running...\npid: {} \nstarted on: {}".format(pid, started))
+                console.critical("Another Crafty Controller agent seems to be running...\npid: {} \nstarted on: {}".format(pid, started))
             except Exception as e:
                 pass
 

@@ -8,7 +8,7 @@ import datetime
 
 from app.classes.shared.helpers import helper
 from app.classes.minecraft.mc_ping import ping
-from app.classes.minecraft.controller import controller
+from app.classes.shared.controller import controller
 from app.classes.shared.models import Host_Stats, Server_Stats
 
 logger = logging.getLogger(__name__)
@@ -161,7 +161,7 @@ class Stats:
 
             server_id = s.get('server_id', None)
 
-            logger.info('Getting stats for server: {}'.format(server_id))
+            logger.debug('Getting stats for server: {}'.format(server_id))
 
             # get our server object, settings and data dictionaries
             server_obj = s.get('server_obj', None)

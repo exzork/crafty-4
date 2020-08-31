@@ -4,7 +4,7 @@ import logging
 
 from app.classes.shared.console import console
 from app.classes.web.base_handler import BaseHandler
-from app.classes.minecraft.controller import controller
+from app.classes.shared.controller import controller
 from app.classes.shared.models import db_helper, Servers
 from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.minecraft.stats import stats

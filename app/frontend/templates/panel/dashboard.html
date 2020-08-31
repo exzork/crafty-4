@@ -161,7 +161,13 @@
                       {% end %}
                       " role="progressbar" style="width: {{server['stats'][0]['mem_percent']}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
-                    {{server['stats'][0]['mem_percent']}}% - {{server['stats'][0]['mem']}}
+                    {{server['stats'][0]['mem_percent']}}% -
+
+                    {% if server['stats'][0]['mem'] == 0 %}
+                      0 MB
+                    {% else %}
+                      {{server['stats'][0]['mem']}}
+                    {% end %}
                   </td>
                   <td>
                     {{ server['stats'][0]['world_name'] }} : {{ server['stats'][0]['world_size'] }}
@@ -169,11 +175,16 @@
                   <td>
                     {% if server['stats'][0]['int_ping_results'] %}
                       {{ server['stats'][0]['online'] }} / {{ server['stats'][0]['max'] }} Max<br />
-                      {{ server['stats'][0]['desc'] }} <br />
-                      {{ server['stats'][0]['version'] }}
-                    {% else %}
-                      {{ _("Unable to connect to server") }}
+
+                      {% if server['stats'][0]['desc'] != 'False' %}
+                        {{ server['stats'][0]['desc'] }} <br />
+                      {% end %}
+
+                      {% if server['stats'][0]['version'] != 'False' %}
+                        {{ server['stats'][0]['version'] }}
+                      {% end %}
                     {% end %}
+
                   </td>
                   <td>
                     {% if server['stats'][0]['running'] %}
