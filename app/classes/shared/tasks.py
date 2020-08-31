@@ -55,6 +55,22 @@ class TasksManager:
         while True:
             # select any commands waiting to be processed
             commands = db_helper.get_unactioned_commands()
+            for c in commands:
+
+                svr = controller.get_server_obj(c['server_id']['server_id'])
+                command = c.get('command', None)
+
+                if command == 'start_server':
+                    svr.run_threaded_server()
+
+                elif command == 'stop_server':
+                    svr.stop_threaded_server()
+
+                elif command == "restart_server":
+                    svr.restart_threaded_server()
+
+                db_helper.mark_command_complete(c.get('command_id', None))
+
 
             time.sleep(1)
 

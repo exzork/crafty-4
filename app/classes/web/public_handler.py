@@ -7,7 +7,7 @@ import tornado.escape
 from app.classes.shared.helpers import helper
 from app.classes.web.base_handler import BaseHandler
 from app.classes.shared.console import console
-from app.classes.shared.models import Users, fn
+from app.classes.shared.models import Users, fn, db_helper
 
 logger = logging.getLogger(__name__)
 
@@ -100,11 +100,13 @@ class PublicHandler(BaseHandler):
                     Users.last_login: helper.get_time_as_string()
                 }).where(Users.username == entered_username).execute()
 
+                # log this login
+                db_helper.add_to_audit_log(user_data.user_id, "Logged in", None, self.get_remote_ip())
+
                 cookie_data = {
                     "username": user_data.username,
-                    "user_id": user_data.id,
+                    "user_id": user_data.user_id,
                     "account_type": user_data.allowed_servers,
-
                 }
 
                 self.set_secure_cookie('user_data', json.dumps(cookie_data))

@@ -174,7 +174,7 @@ class ServerJars:
         # todo: verify the MD5
 
         # put data in the db
-        Servers.insert({
+        new_id = Servers.insert({
             Servers.server_name: name,
             Servers.server_uuid: server_id,
             Servers.path: server_dir,
@@ -212,6 +212,6 @@ class ServerJars:
         # let's re-init all servers
         controller.init_all_servers()
 
-        return True
+        return new_id
 
 server_jar_obj = ServerJars()

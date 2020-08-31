@@ -48,8 +48,6 @@ class ServerHandler(BaseHandler):
             'show_contribute': helper.get_setting("show_contribute_link", True)
         }
 
-
-
         if page == "step1":
 
             page_data['server_types'] = server_jar_obj.get_serverjar_data()
@@ -77,16 +75,7 @@ class ServerHandler(BaseHandler):
             command = bleach.clean(self.get_argument("command", None))
 
             if server_id is not None:
-                svr = controller.get_server_obj(server_id)
-
-                if command == "start_server":
-                    svr.run_threaded_server()
-
-                if command == "stop_server":
-                    svr.stop_threaded_server()
-
-                if command == "restart_server":
-                    svr.restart_threaded_server()
+                db_helper.send_command(user_data['user_id'], server_id, self.get_remote_ip(), command)
 
         if page == "step1":
 
@@ -98,9 +87,13 @@ class ServerHandler(BaseHandler):
 
             server_parts = server.split("|")
 
-            success = server_jar_obj.build_server(server_parts[0], server_parts[1], server_name, min_mem, max_mem, port)
+            new_server_id = server_jar_obj.build_server(server_parts[0], server_parts[1], server_name, min_mem, max_mem, port)
 
-            if success:
+            if new_server_id:
+                db_helper.add_to_audit_log(user_data['user_id'],
+                                           "Created server {} named {}".format(server, server_name),
+                                           new_server_id,
+                                           self.get_remote_ip())
                 stats.record_stats()
                 self.redirect("/panel/dashboard")
 

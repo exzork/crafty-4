@@ -43,6 +43,16 @@ class Users(BaseModel):
     class Meta:
         table_name = "users"
 
+class Audit_Log(BaseModel):
+    audit_id = AutoField()
+    created = DateTimeField(default=datetime.datetime.now)
+    user_name = CharField(default="")
+    user_id = IntegerField(default=0)
+    source_ip = CharField(default='127.0.0.1')
+    server_id = IntegerField(default=None)
+    log_msg = TextField(default='')
+
+
 
 class Host_Stats(BaseModel):
     time = DateTimeField(default=datetime.datetime.now)
@@ -150,7 +160,8 @@ class db_builder:
                 Webhooks,
                 Servers,
                 Server_Stats,
-                Commands
+                Commands,
+                Audit_Log
             ])
 
     @staticmethod
@@ -190,6 +201,10 @@ class db_shortcuts:
 
         return rows
 
+    def get_server_data_by_id(self, server_id):
+        query = Servers.get_by_id(server_id)
+        return model_to_dict(query)
+
     def get_all_defined_servers(self):
         query = Servers.select()
         return self.return_rows(query)
@@ -201,7 +216,6 @@ class db_shortcuts:
         for s in servers:
             latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
             server_data.append({'server_data': s, "stats": self.return_rows(latest)})
-        # print(server_data)
         return server_data
 
     @staticmethod
@@ -210,8 +224,52 @@ class db_shortcuts:
         return model_to_dict(query)
 
     def get_unactioned_commands(self):
-        query = Commands.select().where(Commands.executed == False)
+        query = Commands.select().where(Commands.executed == 0)
         return self.return_rows(query)
+
+    def get_server_friendly_name(self, server_id):
+        server_data = self.get_server_data_by_id(server_id)
+        friendly_name = "{}-{}".format(server_data.get('server_id', 0), server_data.get('server_name', None))
+        return friendly_name
+
+    def send_command(self, user_id, server_id, remote_ip, command):
+
+        server_name = self.get_server_friendly_name(server_id)
+
+        self.add_to_audit_log(user_id, "Issued Command {} for Server: {}".format(command, server_name),
+                              server_id, remote_ip)
+
+        Commands.insert({
+            Commands.server_id: server_id,
+            Commands.user: user_id,
+            Commands.source_ip: remote_ip,
+            Commands.command: command
+        }).execute()
+
+    @staticmethod
+    def mark_command_complete(command_id=None):
+        if command_id is not None:
+            logger.debug("Marking Command {} completed".format(command_id))
+            Commands.update({
+                Commands.executed: True
+            }).where(Commands.command_id == command_id).execute()
+
+
+    @staticmethod
+    def add_to_audit_log(user_id, log_msg, server_id=None, source_ip=None):
+        logger.debug("Adding to audit log User:{} - Message: {} ".format(user_id, log_msg))
+        user_data = Users.get_by_id(user_id)
+
+        audit_msg = "{} {}".format(str(user_data.username).capitalize(), log_msg)
+
+        Audit_Log.insert({
+            Audit_Log.user_name: user_data.username,
+            Audit_Log.user_id: user_id,
+            Audit_Log.server_id: server_id,
+            Audit_Log.log_msg: audit_msg,
+            Audit_Log.source_ip: source_ip
+        }).execute()
+
 
 installer = db_builder()
 db_helper = db_shortcuts()
