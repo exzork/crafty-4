@@ -9,7 +9,7 @@ from app.classes.shared.console import console
 
 from app.classes.shared.models import db_helper
 
-from app.classes.minecraft.server import Server
+from app.classes.shared.server import Server
 from app.classes.minecraft.server_props import ServerProps
 
 logger = logging.getLogger(__name__)

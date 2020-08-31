@@ -67,8 +67,8 @@ class Server:
             schedule.every(delay).seconds.do(self.run_scheduled_server)
 
     def run_scheduled_server(self):
-        console.info("Starting Minecraft server ID: {} - {}".format(self.server_id, self.name))
-        logger.info("Starting Minecraft server {}".format(self.server_id, self.name))
+        console.info("Starting server ID: {} - {}".format(self.server_id, self.name))
+        logger.info("Starting server {}".format(self.server_id, self.name))
         self.run_threaded_server()
 
         # remove the scheduled job since it's ran
