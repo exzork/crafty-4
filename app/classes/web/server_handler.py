@@ -8,6 +8,7 @@ from app.classes.minecraft.controller import controller
 from app.classes.shared.models import db_helper, Servers
 from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.minecraft.stats import stats
+from app.classes.shared.helpers import helper
 
 
 logger = logging.getLogger(__name__)
@@ -44,6 +45,7 @@ class ServerHandler(BaseHandler):
             },
             'hosts_data': db_helper.get_latest_hosts_stats(),
             'menu_servers': defined_servers,
+            'show_contribute': helper.get_setting("show_contribute_link", True)
 
         }
 
@@ -66,6 +68,7 @@ class ServerHandler(BaseHandler):
         page_data = {
             'version_data': "version_data_here",
             'user_data': user_data,
+            'show_contribute': helper.get_setting("show_contribute_link", True)
         }
 
         if page == "command":
