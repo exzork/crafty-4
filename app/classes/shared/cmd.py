@@ -42,7 +42,7 @@ class MainPrompt(cmd.Cmd):
 
     def do_exit(self, line):
         logger.info("Stopping all server daemons / threads")
-        console.info("Stopping all server daemons / threads")
+        console.info("Stopping all server daemons / threads - This may take a few seconds")
         self._clean_shutdown()
         while True:
             if tasks_manager.get_main_thread_run_status():

@@ -1,0 +1,99 @@
+{% extends ../base.html %}
+
+{% block meta %}
+<!--  <meta http-equiv="refresh" content="60">-->
+{% end %}
+
+{% block title %}Crafty Controller - Server Details{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        <h4 class="page-title">
+          Server Details - {{ data['server_stats'][0]['server_id']['server_name'] }}
+
+        </h4>
+      </div>
+    </div>
+
+  </div>
+  <!-- Page Title Header Ends-->
+
+  <div class="row">
+
+    <div class="col-sm-12 grid-margin">
+      <div class="card">
+        <div class="card-body  pt-0">
+
+            <div class="row ">
+              <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=term" role="tab" aria-selected="true">
+                  <i class="fas fa-terminal"></i>Terminal</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#message-2-2" role="tab" aria-selected="false">
+                  <i class="fas fa-file-signature"></i>Logs</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#campaigns-2-3" role="tab" aria-selected="false">
+                  <i class="fas fa-clock"></i>Schedule</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#influencers-2-4" role="tab" aria-selected="false">
+                  <i class="fas fa-save"></i>Backup</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#payments-2-5" role="tab" aria-selected="false">
+                  <i class="fas fa-folder-tree"></i>Files</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#analytics-2-6" role="tab" aria-selected="false">
+                  <i class="fas fa-cogs"></i>Config</a>
+              </li>
+            </ul>
+
+              <div class="col-md-11">
+                <div class="input-group">
+                  <textarea id="virt_console" rows="20" readonly class="form-control" style="background-color:#2a2c44;"></textarea>
+                </div>
+                <br />
+                <div class="input-group">
+                  <input type="text" class="form-control" id="server_command" name="server_command" placeholder="Enter your server command" autofocus="">
+                  <span class="input-group-btn ml-5">
+                    <button id="submit" class="btn btn-sm btn-info" type="button">Send Command</button>
+                  </span>
+                </div>
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+{{ data['server_stats'] }}
+
+
+
+</div>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+<script>
+
+$( document ).ready(function() {
+  console.log('ready for JS!')
+
+});
+</script>
+
+{% end %}

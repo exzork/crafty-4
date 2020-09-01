@@ -202,7 +202,11 @@ class db_shortcuts:
         return rows
 
     def get_server_data_by_id(self, server_id):
-        query = Servers.get_by_id(server_id)
+        try:
+            query = Servers.get_by_id(server_id)
+        except DoesNotExist:
+            return {}
+
         return model_to_dict(query)
 
     def get_all_defined_servers(self):
@@ -217,6 +221,15 @@ class db_shortcuts:
             latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
             server_data.append({'server_data': s, "stats": self.return_rows(latest)})
         return server_data
+
+    def get_server_stats_by_id(self, server_id):
+        stats = Server_Stats.select().where(Server_Stats.server_id == server_id).order_by(Server_Stats.created.desc()).limit(1)
+        return self.return_rows(stats)
+
+    def server_id_exists(self, server_id):
+        if not self.get_server_data_by_id(server_id):
+            return False
+        return True
 
     @staticmethod
     def get_latest_hosts_stats():
@@ -253,7 +266,6 @@ class db_shortcuts:
             Commands.update({
                 Commands.executed: True
             }).where(Commands.command_id == command_id).execute()
-
 
     @staticmethod
     def add_to_audit_log(user_id, log_msg, server_id=None, source_ip=None):

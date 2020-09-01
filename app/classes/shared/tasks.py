@@ -51,7 +51,8 @@ class TasksManager:
                 self._main_graceful_exit()
             time.sleep(5)
 
-    def command_watcher(self):
+    @staticmethod
+    def command_watcher():
         while True:
             # select any commands waiting to be processed
             commands = db_helper.get_unactioned_commands()
@@ -73,8 +74,6 @@ class TasksManager:
 
 
             time.sleep(1)
-
-    # def parse_command(self, command):
 
 
     def _main_graceful_exit(self):

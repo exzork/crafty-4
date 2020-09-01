@@ -7,7 +7,8 @@
   "cookie_secret": "random",
   "show_errors": true,
   "history_max_age": 7,
-  "stats_update_frequency": 5,
+  "stats_update_frequency": 60,
+  "max_stats_count": 1000,
   "delete_default_json": false,
-  "show_contribute_link": false
+  "show_contribute_link": true
 }

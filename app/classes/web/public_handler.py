@@ -77,13 +77,13 @@ class PublicHandler(BaseHandler):
 
             # if we don't have a user
             if not user_data:
-                next_page = "/public/login?error=Login_Failed"
+                next_page = "/public/error?error=Login_Failed"
                 self.redirect(next_page)
                 return False
 
             # if they are disabled
             if not user_data.enabled:
-                next_page = "/public/login?error=Login_Failed"
+                next_page = "/public/error?error=Login_Failed"
                 self.redirect(next_page)
                 return False
 

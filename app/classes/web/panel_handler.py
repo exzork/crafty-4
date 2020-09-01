@@ -18,15 +18,15 @@ class PanelHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self, page):
-        # name = tornado.escape.json_decode(self.current_user)
         user_data = json.loads(self.get_secure_cookie("user_data"))
+        error = bleach.clean(self.get_argument('error', "WTF Error!"))
 
         template = "panel/denied.html"
 
         defined_servers = controller.list_defined_servers()
 
         page_data = {
-            'version_data': "version_data_here",
+            'version_data': helper.get_version_string(),
             'user_data': user_data,
             'server_stats': {
                 'total': len(defined_servers),
@@ -35,7 +35,8 @@ class PanelHandler(BaseHandler):
             },
             'menu_servers': defined_servers,
             'hosts_data': db_helper.get_latest_hosts_stats(),
-            'show_contribute': helper.get_setting("show_contribute_link", True)
+            'show_contribute': helper.get_setting("show_contribute_link", True),
+            'error': error
         }
 
         # if no servers defined, let's go to the build server area
@@ -46,6 +47,9 @@ class PanelHandler(BaseHandler):
 
         if page == 'unauthorized':
             template = "panel/denied.html"
+
+        elif page == "error":
+            template = "public/error.html"
 
         elif page == 'credits':
             template = "panel/credits.html"
@@ -66,8 +70,31 @@ class PanelHandler(BaseHandler):
             template = "panel/dashboard.html"
 
         elif page == 'server_detail':
+            server_id = self.get_argument('id', None)
+            subpage = bleach.clean(self.get_argument('subpage', ""))
 
-            template = "panel/server_details.html"
+            if server_id is None:
+                self.redirect("/panel/error?error=Invalid Server ID")
+                return False
+            else:
+                server_id = bleach.clean(server_id)
+
+                # does this server id exist?
+                if not db_helper.server_id_exists(server_id):
+                    self.redirect("/panel/error?error=Invalid Server ID")
+                    return False
+
+            valid_subpages = ['term']
+
+            if subpage not in valid_subpages:
+                subpage = 'term'
+
+            # server_data isn't needed since the server_stats also pulls server data
+            # page_data['server_data'] = db_helper.get_server_data_by_id(server_id)
+            page_data['server_stats'] = db_helper.get_server_stats_by_id(server_id)
+
+            # template = "panel/server_details.html"
+            template = "panel/server_{subpage}.html".format(subpage=subpage)
 
 
         self.render(
