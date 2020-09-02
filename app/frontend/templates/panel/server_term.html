@@ -24,14 +24,58 @@
   </div>
   <!-- Page Title Header Ends-->
 
+    <div class="row">
+
+      <div class="col-sm-12 grid-margin">
+        <div class="card">
+          <div class="card-body pt-3 pb-3">
+            <div class="row">
+              <div class="col-sm-3 mr-2">
+                <b>Server Status:</b>
+                {% if data['server_stats'][0]['running'] %}
+                  <span class="text-success">Online</span><br />
+                  <b>Server Started:</b> {{ data['server_stats'][0]['started'] }}
+                {% else %}
+                  <span class="text-danger">Offline</span><br />
+                  <b>Server Started:</b> Not Started
+                {% end %}
+              </div>
+
+              <div class="col-sm-3 mr-2">
+                <b>CPU:</b> {{ data['server_stats'][0]['cpu'] }}% <br />
+                <b>Mem:</b> {{ data['server_stats'][0]['mem'] }} <br />
+                {% if data['server_stats'][0]['int_ping_results'] %}
+                <b>Players:</b> {{ data['server_stats'][0]['online'] }} / {{ data['server_stats'][0]['max'] }}<br />
+                {% else %}
+                <b>Players:</b> 0/0<br />
+                {% end %}
+              </div>
+
+              <div class="col-sm-3 mr-2">
+                {% if data['server_stats'][0]['version'] != 'False' %}
+                  <b>Server:</b> {{ data['server_stats'][0]['version'] }} <br />
+                  <b>Desc:</b> {{ data['server_stats'][0]['desc'] }} <br />
+                {% else %}
+                  <b>Server:</b> Unable To Connect <br />
+                  <b>Desc:</b> Unable To Connect <br />
+                {% end %}
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
   <div class="row">
 
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
 
-            <div class="row ">
-              <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
+            <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
               <li class="nav-item">
                 <a class="nav-link active" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=term" role="tab" aria-selected="true">
                   <i class="fas fa-terminal"></i>Terminal</a>
@@ -56,22 +100,28 @@
                 <a class="nav-link" href="#analytics-2-6" role="tab" aria-selected="false">
                   <i class="fas fa-cogs"></i>Config</a>
               </li>
+              <li>
+                <label class="p-0 m-0">
+                    <input type="checkbox" name="stop_scroll" id="stop_scroll" />
+                    {{ _('Stop Refresh') }}
+                </label>
+              </li>
             </ul>
 
-              <div class="col-md-11">
-                <div class="input-group">
-                  <textarea id="virt_console" rows="20" readonly class="form-control" style="background-color:#2a2c44;"></textarea>
-                </div>
-                <br />
-                <div class="input-group">
-                  <input type="text" class="form-control" id="server_command" name="server_command" placeholder="Enter your server command" autofocus="">
-                  <span class="input-group-btn ml-5">
-                    <button id="submit" class="btn btn-sm btn-info" type="button">Send Command</button>
-                  </span>
-                </div>
-            </div>
-          </div>
 
+            <div class="col-md-12">
+              <div class="input-group">
+                <div id="virt_console" class="" style="font-size: .8em; padding: 5px 10px; border: 1px solid #383e5d; background-color:#2a2c44;height:500px; overflow: scroll;"></div>
+              </div>
+              <br />
+
+              <div class="input-group">
+                <input type="text" class="form-control" id="server_command" name="server_command" placeholder="Enter your server command" autofocus="">
+                <span class="input-group-btn ml-5">
+                  <button id="submit" class="btn btn-sm btn-info" type="button">Send Command</button>
+                </span>
+              </div>
+            </div>
 
         </div>
       </div>
@@ -89,11 +139,85 @@
 
 {% block js %}
 <script>
+    function get_server_log(){
+      if( !$("#stop_scroll").is(':checked')){
+        $.ajax({
+            type: 'GET',
+            url: '/ajax/server_log?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+            dataType: 'text',
+            success: function (data) {
+                console.log('Got Log From Server')
+                $('#virt_console').html(data);
+                scroll();
+             },
+        });
+      }
+    }
 
-$( document ).ready(function() {
-  console.log('ready for JS!')
+    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+    function getCookie(name) {
+        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+        return r ? r[1] : undefined;
+    }
 
-});
+    $( document ).ready(function() {
+        console.log( "ready!" );
+        get_server_log()
+
+        setInterval(function(){
+            get_server_log() // this will run after every 5 seconds
+        }, 1500);
+    });
+
+    $('#server_command').on('keydown', function (e) {
+            if (e.which == 13){
+                $(this).attr("disabled", "disabled"); //Disable textbox to prevent multiple submit
+                send_command_to_server()
+                $(this).removeAttr("disabled"); //Enable the textbox again if needed.
+                $(this).focus();
+            }
+            else if (e.which == 38){
+                last_command = $('#last_command').val()
+                $("#server_command").val(last_command)
+            }
+
+   });
+
+    $("#submit").click(function(e) {
+        e.preventDefault();
+        send_command_to_server();
+
+    });
+
+    function scroll(){
+        var logview = $('#virt_console');
+        if(logview.length)
+           logview.scrollTop(logview[0].scrollHeight - logview.height());
+    }
+
+
+    function send_command_to_server(){
+        var server_command = $("#server_command").val()
+        console.log(server_command)
+        $("#last_command").val(server_command)
+
+        var token = getCookie("_xsrf")
+
+        data_to_send = { command :server_command,  }
+
+        console.log('sending command: ' + server_command)
+        $.ajax({
+          type: "POST",
+          headers: {'X-XSRFToken': token},
+          url: '/ajax/send_command?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+          data: data_to_send,
+          success: function(data){
+            console.log("got response:");
+            console.log(data);
+            $("#server_command").val('')
+          },
+        });
+    }
 </script>
 
 {% end %}

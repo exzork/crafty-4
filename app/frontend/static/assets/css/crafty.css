@@ -36,3 +36,27 @@
 .sidebar > .nav .nav-item .nav-link, .collapsed{
     padding: 15px 30px;
 }
+
+.mc-log-time{
+    color:#19d895;
+}
+
+.mc-log-info{
+    color:#8862e0;
+}
+
+.mc-log-warn{
+    color:#ffaf00;
+}
+
+.mc-log-error{
+    color:#ff6258;
+}
+
+.mc-log-keyword{
+    color:#2196f3;
+}
+
+.scrollable-element {
+  scrollbar-color: red yellow;
+}

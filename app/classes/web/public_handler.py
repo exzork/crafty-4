@@ -101,7 +101,7 @@ class PublicHandler(BaseHandler):
                 }).where(Users.username == entered_username).execute()
 
                 # log this login
-                db_helper.add_to_audit_log(user_data.user_id, "Logged in", None, self.get_remote_ip())
+                db_helper.add_to_audit_log(user_data.user_id, "Logged in", 0, self.get_remote_ip())
 
                 cookie_data = {
                     "username": user_data.username,

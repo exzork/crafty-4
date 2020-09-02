@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import json
 import time
@@ -8,7 +9,7 @@ import base64
 import socket
 import random
 import logging
-import configparser
+
 from datetime import datetime
 from socket import gethostname
 
@@ -124,6 +125,64 @@ class Helpers:
         except:
             pass
             return False
+
+    def log_colors(self, line):
+        # our regex replacements
+        # note these are in a tuple
+
+        user_keywords = self.get_setting('keywords')
+
+        replacements = [
+            (r'(\[.+?/INFO\])', r'<span class="mc-log-info">\1</span>'),
+            (r'(\[.+?/WARN\])', r'<span class="mc-log-warn">\1</span>'),
+            (r'(\[.+?/ERROR\])', r'<span class="mc-log-error">\1</span>'),
+            (r'(\w+?\[/\d+?\.\d+?\.\d+?\.\d+?\:\d+?\])', r'<span class="mc-log-keyword">\1</span>'),
+            (r'\[(\d\d:\d\d:\d\d)\]', r'<span class="mc-log-time">[\1]</span>'),
+        ]
+
+        # highlight users keywords
+        for keyword in user_keywords:
+            search_replace = (r'({})'.format(keyword), r'<span class="mc-log-keyword">\1</span>')
+            replacements.append(search_replace)
+
+        for old, new in replacements:
+            line = re.sub(old, new, line, flags=re.IGNORECASE)
+
+        return line
+
+    def tail_file(self, file_name, number_lines=20):
+        if not self.check_file_exists(file_name):
+            logger.warning("Unable to find file to tail: {}".format(file_name))
+            return ["Unable to find file to tail: {}".format(file_name)]
+
+        # length of lines is X char here
+        avg_line_length = 255
+
+        # create our buffer number - number of lines * avg_line_length
+        line_buffer = number_lines * avg_line_length
+
+        # open our file
+        with open(file_name, 'r') as f:
+
+            # seek
+            f.seek(0, 2)
+
+            # get file size
+            fsize = f.tell()
+
+            # set pos @ last n chars (buffer from above = number of lines * avg_line_length)
+            f.seek(max(fsize-line_buffer, 0), 0)
+
+            # read file til the end
+            try:
+                lines = f.readlines()
+
+            except Exception as e:
+                logger.warning('Unable to read a line in the file:{} - due to error: {}'.format(file_name, e))
+                pass
+
+        # now we are done getting the lines, let's return it
+        return lines
 
     @staticmethod
     def check_writeable(path: str):
@@ -334,7 +393,7 @@ class Helpers:
         cert.get_subject().CN = gethostname()
         cert.set_serial_number(1000)
         cert.gmtime_adj_notBefore(0)
-        cert.gmtime_adj_notAfter(10 * 365 * 24 * 60 * 60)
+        cert.gmtime_adj_notAfter(365 * 24 * 60 * 60)
         cert.set_issuer(cert.get_subject())
         cert.set_pubkey(k)
         cert.sign(k, 'sha256')
