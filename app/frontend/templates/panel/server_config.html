@@ -1,0 +1,178 @@
+{% extends ../base.html %}
+
+{% block meta %}
+<!--  <meta http-equiv="refresh" content="60">-->
+{% end %}
+
+{% block title %}Crafty Controller - Server Details{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        <h4 class="page-title">
+          Server Details - {{ data['server_stats'][0]['server_id']['server_name'] }}
+            <br />
+            <small>UUID: {{ data['server_stats'][0]['server_id']['server_uuid']  }}</small>
+        </h4>
+      </div>
+    </div>
+
+  </div>
+  <!-- Page Title Header Ends-->
+
+ {% include "parts/details_stats.html %}
+
+  <div class="row">
+
+    <div class="col-sm-12 grid-margin">
+      <div class="card">
+        <div class="card-body  pt-0">
+            <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=term" role="tab" aria-selected="false">
+                  <i class="fas fa-file-signature"></i>Terminal</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=logs" role="tab" aria-selected="false">
+                  <i class="fas fa-file-signature"></i>Logs</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=tasks" role="tab" aria-selected="false">
+                  <i class="fas fa-clock"></i>Schedule</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="false">
+                  <i class="fas fa-save"></i>Backup</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=files" role="tab" aria-selected="false">
+                  <i class="fas fa-folder-tree"></i>Files</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=config" role="tab" aria-selected="true">
+                  <i class="fas fa-cogs"></i>Config</a>
+              </li>
+
+            </ul>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12">
+              <form class="forms-sample" method="post" action="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}">
+                  {% raw xsrf_form_html() %}
+
+                  <div class="form-group">
+                    <label for="server_name">Server Name <small class="text-muted ml-1"> - What you wish to call this thing</small> </label>
+                    <input type="text" class="form-control" id="server_name" value="{{ data['server_stats'][0]['server_id']['server_name']  }}" placeholder="Server Name" >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="server_path">Server Path <small class="text-muted ml-1"> - Absolute full path</small> </label>
+                    <input type="text" class="form-control" id="server_path" value="{{ data['server_stats'][0]['server_id']['path']  }}" placeholder="Server Path" >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="log_path">Server Log Location <small class="text-muted ml-1"> - Absolute full path to the log file</small> </label>
+                    <input type="text" class="form-control" id="log_path" value="{{ data['server_stats'][0]['server_id']['log_path']  }}" placeholder="Server Log" >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="executable">Server Executable <small class="text-muted ml-1"> - Just the executable file</small> </label>
+                    <input type="text" class="form-control" id="executable" value="{{ data['server_stats'][0]['server_id']['executable']  }}" placeholder="Server Executable" >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="execution_command">Server Execution Command <small class="text-muted ml-1"> - What will be launched in a hidden terminal</small> </label>
+                    <input type="text" class="form-control" id="execution_command" value="{{ data['server_stats'][0]['server_id']['execution_command']  }}" placeholder="Server Execution Command" >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="auto_start_delay">Server Stop Command <small class="text-muted ml-1"> - Command to send the program to stop it</small> </label>
+                    <input type="text" class="form-control" id="stop_command" value="{{ data['server_stats'][0]['server_id']['stop_command']  }}" placeholder="Server Stop Command" >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="auto_start_delay">Server Autostart Delay <small class="text-muted ml-1"> - Delay before auto starting (if enabled below)</small> </label>
+                    <input type="number" class="form-control" id="auto_start_delay" value="{{ data['server_stats'][0]['server_id']['auto_start_delay']  }}" step="1" max="999" min="10" >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="server_port">Server Port <small class="text-muted ml-1"> - Port crafty should connect to for stats</small> </label>
+                    <input type="number" class="form-control" id="server_port" value="{{ data['server_stats'][0]['server_id']['server_port']  }}" step="1" max="65566" min="1" >
+                  </div>
+
+                  <div class="form-check-flat">
+                    <label for="auto_start" class="form-check-label ml-4 mb-4">
+                        {% if data['server_stats'][0]['server_id']['auto_start'] %}
+                            <input type="checkbox" class="form-check-input" id="auto_start" name="auto_start" checked="" >Server Auto Start
+                        {% else %}
+                            <input type="checkbox" class="form-check-input" id="auto_start" name="auto_start" >Server Auto Start
+                        {% end %}
+                    </label>
+
+                    <label for="crash_detection" class="form-check-label ml-4 mb-4">
+                        {% if data['server_stats'][0]['server_id']['auto_start'] %}
+                            <input type="checkbox" class="form-check-input" id="crash_detection" name="auto_start" checked="" >Server Crash Detection
+                        {% else %}
+                            <input type="checkbox" class="form-check-input" id="crash_detection" name="auto_start" >Server Crash Detection
+                        {% end %}
+                    </label>
+
+                  </div>
+
+                  <button type="submit" class="btn btn-success mr-2">Submit</button>
+                  <button type="reset" class="btn btn-light">Cancel</button>
+                </form>
+            </div>
+
+                <div class="col-md-6 col-sm-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="card-title">Blockquotes</h4>
+                    <p class="card-description"> Wrap content inside <code>&lt;blockquote class="blockquote"&gt;</code> </p>
+                    <blockquote class="blockquote">
+                      <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
+                    </blockquote>
+                  </div>
+
+                </div>
+            </div>
+            </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+{{ data['server_stats'] }}
+
+
+
+</div>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+<script>
+
+
+    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+    function getCookie(name) {
+        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+        return r ? r[1] : undefined;
+    }
+
+    $( document ).ready(function() {
+        console.log( "ready!" );
+
+    });
+
+
+</script>
+
+{% end %}

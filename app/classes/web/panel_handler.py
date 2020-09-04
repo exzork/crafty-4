@@ -84,7 +84,7 @@ class PanelHandler(BaseHandler):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return False
 
-            valid_subpages = ['term', 'logs']
+            valid_subpages = ['term', 'logs', 'config']
 
             if subpage not in valid_subpages:
                 subpage = 'term'
