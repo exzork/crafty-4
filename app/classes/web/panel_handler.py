@@ -8,7 +8,7 @@ from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
 from app.classes.web.base_handler import BaseHandler
 from app.classes.shared.controller import controller
-from app.classes.shared.models import db_helper
+from app.classes.shared.models import db_helper, Servers
 from app.classes.shared.helpers import helper
 
 logger = logging.getLogger(__name__)
@@ -101,3 +101,46 @@ class PanelHandler(BaseHandler):
             template,
             data=page_data
         )
+
+    @tornado.web.authenticated
+    def post(self, page):
+
+        if page == 'server_detail':
+            server_id = self.get_argument('id', None)
+            server_name = self.get_argument('server_name', None)
+            server_path = self.get_argument('server_path', None)
+            log_path = self.get_argument('log_path', None)
+            executable = self.get_argument('executable', None)
+            execution_command = self.get_argument('execution_command', None)
+            stop_command = self.get_argument('stop_command', None)
+            auto_start_delay = self.get_argument('auto_start_delay', None)
+            server_port = self.get_argument('server_port', None)
+            auto_start = self.get_argument('auto_start', '0')
+            crash_detection = self.get_argument('crash_detection', '0')
+            subpage = self.get_argument('subpage', None)
+
+            if server_id is None:
+                self.redirect("/panel/error?error=Invalid Server ID")
+                return False
+            else:
+                server_id = bleach.clean(server_id)
+
+                # does this server id exist?
+                if not db_helper.server_id_exists(server_id):
+                    self.redirect("/panel/error?error=Invalid Server ID")
+                    return False
+
+            Servers.update({
+                Servers.server_name: server_name,
+                Servers.path: server_path,
+                Servers.log_path: log_path,
+                Servers.executable: executable,
+                Servers.execution_command: execution_command,
+                Servers.stop_command: stop_command,
+                Servers.auto_start_delay: auto_start_delay,
+                Servers.server_port: server_port,
+                Servers.auto_start: auto_start,
+                Servers.crash_detection: crash_detection,
+            }).where(Servers.server_id == server_id).execute()
+
+            self.redirect("/panel/server_detail?id={}&subpage=config".format(server_id))

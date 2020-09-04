@@ -62,7 +62,6 @@ class AjaxHandler(BaseHandler):
             else:
                 log_lines = helper.get_setting('virtual_terminal_lines')
 
-            print(log_lines)
             data = helper.tail_file(server_data['log_path'], log_lines)
 
             for d in data:

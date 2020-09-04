@@ -62,47 +62,49 @@
 
             <div class="row">
                 <div class="col-md-6 col-sm-12">
-              <form class="forms-sample" method="post" action="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}">
+              <form class="forms-sample" method="post" action="/panel/server_detail">
                   {% raw xsrf_form_html() %}
+                  <input type="hidden" name="id" value="{{ data['server_stats'][0]['server_id']['server_id'] }}">
+                  <input type="hidden" name="subpage" value="config">
 
                   <div class="form-group">
-                    <label for="server_name">Server Name <small class="text-muted ml-1"> - What you wish to call this thing</small> </label>
-                    <input type="text" class="form-control" id="server_name" value="{{ data['server_stats'][0]['server_id']['server_name']  }}" placeholder="Server Name" >
+                    <label for="server_name">Server Name <small class="text-muted ml-1"> - What you wish to call this server</small> </label>
+                    <input type="text" class="form-control" name="server_name" id="server_name" value="{{ data['server_stats'][0]['server_id']['server_name']  }}" placeholder="Server Name" >
                   </div>
 
                   <div class="form-group">
-                    <label for="server_path">Server Path <small class="text-muted ml-1"> - Absolute full path</small> </label>
-                    <input type="text" class="form-control" id="server_path" value="{{ data['server_stats'][0]['server_id']['path']  }}" placeholder="Server Path" >
+                    <label for="server_path">Server Path <small class="text-muted ml-1"> - Absolute full path (not including executable)</small> </label>
+                    <input type="text" class="form-control" name="server_path" id="server_path" value="{{ data['server_stats'][0]['server_id']['path']  }}" placeholder="Server Path" >
                   </div>
 
                   <div class="form-group">
                     <label for="log_path">Server Log Location <small class="text-muted ml-1"> - Absolute full path to the log file</small> </label>
-                    <input type="text" class="form-control" id="log_path" value="{{ data['server_stats'][0]['server_id']['log_path']  }}" placeholder="Server Log" >
+                    <input type="text" class="form-control" name="log_path" id="log_path" value="{{ data['server_stats'][0]['server_id']['log_path']  }}" placeholder="Server Log" >
                   </div>
 
                   <div class="form-group">
                     <label for="executable">Server Executable <small class="text-muted ml-1"> - Just the executable file</small> </label>
-                    <input type="text" class="form-control" id="executable" value="{{ data['server_stats'][0]['server_id']['executable']  }}" placeholder="Server Executable" >
+                    <input type="text" class="form-control" name="executable" id="executable" value="{{ data['server_stats'][0]['server_id']['executable']  }}" placeholder="Server Executable" >
                   </div>
 
                   <div class="form-group">
                     <label for="execution_command">Server Execution Command <small class="text-muted ml-1"> - What will be launched in a hidden terminal</small> </label>
-                    <input type="text" class="form-control" id="execution_command" value="{{ data['server_stats'][0]['server_id']['execution_command']  }}" placeholder="Server Execution Command" >
+                    <input type="text" class="form-control" name="execution_command" id="execution_command" value="{{ data['server_stats'][0]['server_id']['execution_command']  }}" placeholder="Server Execution Command" >
                   </div>
 
                   <div class="form-group">
-                    <label for="auto_start_delay">Server Stop Command <small class="text-muted ml-1"> - Command to send the program to stop it</small> </label>
-                    <input type="text" class="form-control" id="stop_command" value="{{ data['server_stats'][0]['server_id']['stop_command']  }}" placeholder="Server Stop Command" >
+                    <label for="stop_command">Server Stop Command <small class="text-muted ml-1"> - Command to send the program to stop it</small> </label>
+                    <input type="text" class="form-control" name="stop_command" id="stop_command" value="{{ data['server_stats'][0]['server_id']['stop_command']  }}" placeholder="Server Stop Command" >
                   </div>
 
                   <div class="form-group">
                     <label for="auto_start_delay">Server Autostart Delay <small class="text-muted ml-1"> - Delay before auto starting (if enabled below)</small> </label>
-                    <input type="number" class="form-control" id="auto_start_delay" value="{{ data['server_stats'][0]['server_id']['auto_start_delay']  }}" step="1" max="999" min="10" >
+                    <input type="number" class="form-control" name="auto_start_delay" id="auto_start_delay" value="{{ data['server_stats'][0]['server_id']['auto_start_delay']  }}" step="1" max="999" min="10" >
                   </div>
 
                   <div class="form-group">
                     <label for="server_port">Server Port <small class="text-muted ml-1"> - Port crafty should connect to for stats</small> </label>
-                    <input type="number" class="form-control" id="server_port" value="{{ data['server_stats'][0]['server_id']['server_port']  }}" step="1" max="65566" min="1" >
+                    <input type="number" class="form-control" name="server_port" id="server_port" value="{{ data['server_stats'][0]['server_id']['server_port']  }}" step="1" max="65566" min="1" >
                   </div>
 
                   <div class="form-check-flat">
@@ -116,9 +118,9 @@
 
                     <label for="crash_detection" class="form-check-label ml-4 mb-4">
                         {% if data['server_stats'][0]['server_id']['auto_start'] %}
-                            <input type="checkbox" class="form-check-input" id="crash_detection" name="auto_start" checked="" >Server Crash Detection
+                            <input type="checkbox" class="form-check-input" id="crash_detection" name="crash_detection" checked="" >Server Crash Detection
                         {% else %}
-                            <input type="checkbox" class="form-check-input" id="crash_detection" name="auto_start" >Server Crash Detection
+                            <input type="checkbox" class="form-check-input" id="crash_detection" name="crash_detection" >Server Crash Detection
                         {% end %}
                     </label>
 
@@ -132,10 +134,25 @@
                 <div class="col-md-6 col-sm-12">
                 <div class="card">
                   <div class="card-body">
-                    <h4 class="card-title">Blockquotes</h4>
-                    <p class="card-description"> Wrap content inside <code>&lt;blockquote class="blockquote"&gt;</code> </p>
+                    <h4 class="card-title">Server Config Area</h4>
+                    <p class="card-description"> Here is where you can change the configuration of your server</p>
                     <blockquote class="blockquote">
-                      <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
+                      <p class="mb-0">
+                          It is recommended to <code>NOT</code> change the paths of a server managed by Crafty.
+                          Changing paths <code>CAN</code> break things, especially on Linux type operating systems where
+                          file permissions are more locked down.
+                          <br /><br/>
+                          If you feel you have to change a where a server is located
+                          you may do so as long as you give the "Crafty" user permission to read / write to the server path.
+                          <br />
+                          <br />
+                          On Linux this is best done by executing the following:<br />
+                          <code>
+                              sudo chown crafty:crafty /path/to/your/server -R<br />
+                              sudo chmod 2775 /path/to/your/server -R<br />
+                          </code>
+
+                      </p>
                     </blockquote>
                   </div>
 
@@ -147,10 +164,6 @@
       </div>
     </div>
   </div>
-
-{{ data['server_stats'] }}
-
-
 
 </div>
 <!-- content-wrapper ends -->
