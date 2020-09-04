@@ -113,10 +113,10 @@ class PanelHandler(BaseHandler):
             executable = self.get_argument('executable', None)
             execution_command = self.get_argument('execution_command', None)
             stop_command = self.get_argument('stop_command', None)
-            auto_start_delay = self.get_argument('auto_start_delay', None)
+            auto_start_delay = self.get_argument('auto_start_delay', '10')
             server_port = self.get_argument('server_port', None)
-            auto_start = self.get_argument('auto_start', '0')
-            crash_detection = self.get_argument('crash_detection', '0')
+            auto_start = int(float(self.get_argument('auto_start', '0')))
+            crash_detection = int(float(self.get_argument('crash_detection', '0')))
             subpage = self.get_argument('subpage', None)
 
             if server_id is None:
@@ -142,5 +142,12 @@ class PanelHandler(BaseHandler):
                 Servers.auto_start: auto_start,
                 Servers.crash_detection: crash_detection,
             }).where(Servers.server_id == server_id).execute()
+
+            user_data = json.loads(self.get_secure_cookie("user_data"))
+
+            db_helper.add_to_audit_log(user_data['user_id'],
+                                       "Edited server {} named {}".format(server_id, server_name),
+                                       server_id,
+                                       self.get_remote_ip())
 
             self.redirect("/panel/server_detail?id={}&subpage=config".format(server_id))

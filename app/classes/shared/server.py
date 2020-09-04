@@ -235,6 +235,7 @@ class Server:
 
         try:
             running = psutil.pid_exists(self.PID)
+            logger.info("Checking if PID: {} is running".format(self.PID))
 
         except Exception as e:
             logger.error("Unable to find if server PID exists: {}".format(self.PID))
