@@ -40,6 +40,7 @@ class AjaxHandler(BaseHandler):
 
         elif page == 'server_log':
             server_id = self.get_argument('id', None)
+            full_log = self.get_argument('full', False)
 
             if server_id is None:
                 logger.warning("Server ID not found in server_log ajax call")
@@ -56,7 +57,12 @@ class AjaxHandler(BaseHandler):
             if server_data['log_path']:
                 logger.warning("Server ID not found in server_log ajax call")
 
-            log_lines = helper.get_setting('virtual_terminal_lines')
+            if full_log:
+                log_lines = helper.get_setting('max_log_lines')
+            else:
+                log_lines = helper.get_setting('virtual_terminal_lines')
+
+            print(log_lines)
             data = helper.tail_file(server_data['log_path'], log_lines)
 
             for d in data:

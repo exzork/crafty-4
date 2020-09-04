@@ -1,0 +1,43 @@
+<div class="row">
+      <div class="col-sm-12 grid-margin">
+        <div class="card">
+          <div class="card-body pt-3 pb-3">
+            <div class="row">
+              <div class="col-sm-3 mr-2">
+                <b>Server Status:</b>
+                {% if data['server_stats'][0]['running'] %}
+                  <span class="text-success">Online</span><br />
+                  <b>Server Started:</b> {{ data['server_stats'][0]['started'] }}
+                {% else %}
+                  <span class="text-danger">Offline</span><br />
+                  <b>Server Started:</b> Not Started
+                {% end %}
+              </div>
+
+              <div class="col-sm-3 mr-2">
+                <b>CPU:</b> {{ data['server_stats'][0]['cpu'] }}% <br />
+                <b>Mem:</b> {{ data['server_stats'][0]['mem'] }} <br />
+                {% if data['server_stats'][0]['int_ping_results'] %}
+                <b>Players:</b> {{ data['server_stats'][0]['online'] }} / {{ data['server_stats'][0]['max'] }}<br />
+                {% else %}
+                <b>Players:</b> 0/0<br />
+                {% end %}
+              </div>
+
+              <div class="col-sm-3 mr-2">
+                {% if data['server_stats'][0]['version'] != 'False' %}
+                  <b>Server:</b> {{ data['server_stats'][0]['version'] }} <br />
+                  <b>Desc:</b> {{ data['server_stats'][0]['desc'] }} <br />
+                {% else %}
+                  <b>Server:</b> Unable To Connect <br />
+                  <b>Desc:</b> Unable To Connect <br />
+                {% end %}
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+  </div>

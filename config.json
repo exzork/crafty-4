@@ -11,6 +11,7 @@
   "max_stats_count": 1000,
   "delete_default_json": false,
   "show_contribute_link": true,
-  "virtual_terminal_lines": 100,
+  "virtual_terminal_lines": 10,
+  "max_log_lines": 700,
   "keywords": ["help", "chunk"]
 }
