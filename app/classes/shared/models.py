@@ -171,13 +171,16 @@ class db_builder:
 
         username = default_data.get("username", 'admin')
         password = default_data.get("password", 'crafty')
-
+        api_token = helper.random_string_generator(32)
+        
         Users.insert({
             Users.username: username,
             Users.password: helper.encode_pass(password),
-            Users.api_token: helper.random_string_generator(32),
+            Users.api_token: api_token,
             Users.enabled: True
         }).execute()
+
+        console.info("API token is {}".format(api_token))
 
     @staticmethod
     def is_fresh_install():
