@@ -169,7 +169,7 @@ class db_builder:
 
         default_data = helper.find_default_password()
 
-        username = default_data.get("username", 'Admin')
+        username = default_data.get("username", 'admin')
         password = default_data.get("password", 'crafty')
 
         Users.insert({
