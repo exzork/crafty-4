@@ -141,7 +141,8 @@ class ServerJars:
         response = self._get_api_result(url)
         return response
 
-    def download_jar(self, server, version, path):
+    @staticmethod
+    def download_jar(server, version, path):
         base_url = "https://serverjars.com/api/fetchJar/{server}/{version}".format(server=server, version=version)
 
         # open a file stream

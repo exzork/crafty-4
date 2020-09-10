@@ -181,9 +181,10 @@ class Controller:
         server_stop = "stop"
 
         # download the jar
-        server_jar_obj.download_jar(server, version, full_jar_path, server_command, server_file)
+        server_jar_obj.download_jar(server, version, full_jar_path)
 
-        self.register_server(name, server_id, server_dir, server_command, server_file, server_log_file, server_stop)
+        new_id = self.register_server(name, server_id, server_dir, server_command, server_file, server_log_file, server_stop)
+        return new_id
 
     # todo - Do import server
     def import_server(self):
