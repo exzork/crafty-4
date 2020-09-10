@@ -9,7 +9,7 @@ from datetime import datetime
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.shared.models import Servers
-from app.classes.shared.controller import controller
+# from app.classes.shared.controller import controller
 from app.classes.minecraft.server_props import ServerProps
 
 logger = logging.getLogger(__name__)
@@ -156,62 +156,5 @@ class ServerJars:
 
         return False
 
-    # todo: import server
-    def build_server(self, server: str, version: str, name: str, min_mem: int, max_mem: int, port: int):
-        server_id = helper.create_uuid()
-        server_dir = os.path.join(helper.servers_dir, server_id)
-        jar_file = "{server}-{version}.jar".format(server=server, version=version)
-        full_jar_path = os.path.join(server_dir, jar_file)
-
-        # make the dir - perhaps a UUID?
-        helper.ensure_dir_exists(server_dir)
-
-        # download the jar
-        self.download_jar(server, version, full_jar_path)
-
-        time.sleep(3)
-
-        # todo: verify the MD5
-
-        # put data in the db
-        new_id = Servers.insert({
-            Servers.server_name: name,
-            Servers.server_uuid: server_id,
-            Servers.path: server_dir,
-            Servers.executable: jar_file,
-            Servers.execution_command: 'java -Xms{}G -Xmx{}G -jar {} nogui'.format(min_mem, max_mem, full_jar_path),
-            Servers.auto_start: False,
-            Servers.auto_start_delay: 10,
-            Servers.crash_detection: False,
-
-            Servers.log_path: "{}/logs/latest.log".format(server_dir),
-            Servers.stop_command: 'stop'
-        }).execute()
-
-
-        try:
-            # place a file in the dir saying it's owned by crafty
-            with open(os.path.join(server_dir, "crafty_managed.txt"), 'w') as f:
-                f.write("The server in this directory is managed by Crafty Controller.\n Leave this directory/files alone please")
-                f.close()
-
-            # do a eula.txt
-            with open(os.path.join(server_dir, "eula.txt"), 'w') as f:
-                f.write("eula=true")
-                f.close()
-
-            # setup server.properties with the port
-            with open(os.path.join(server_dir, "server.properties"), "w") as f:
-                f.write("server-port={}".format(port))
-                f.close()
-
-        except Exception as e:
-            logger.error("Unable to create required server files due to :{}".format(e))
-            return False
-
-        # let's re-init all servers
-        controller.init_all_servers()
-
-        return new_id
 
 server_jar_obj = ServerJars()

@@ -157,10 +157,10 @@
                     </div>
                     <div class="text-center">
                         {% if  data['server_stats'][0]['running'] %}
-                            <a href="/panel/command" class="btn btn-sm btn-danger disabled">Delete Server</a><br />
+                            <a class="btn btn-sm btn-danger disabled">Delete Server</a><br />
                             <small>Please stop the server before deleting it</small>
                         {% else %}
-                            <a class="btn btn-sm btn-danger">Delete Server</a>
+                            <a href="/panel/command" class="btn btn-sm btn-danger">Delete Server</a>
                         {% end %}
 
                     </div>

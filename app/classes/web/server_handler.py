@@ -87,7 +87,8 @@ class ServerHandler(BaseHandler):
 
             server_parts = server.split("|")
 
-            new_server_id = server_jar_obj.build_server(server_parts[0], server_parts[1], server_name, min_mem, max_mem, port)
+            # todo: add server type check here and call the correct server add functions if not a jar
+            new_server_id = controller.create_jar_server(server_parts[0], server_parts[1], server_name, min_mem, max_mem, port)
 
             if new_server_id:
                 db_helper.add_to_audit_log(user_data['user_id'],

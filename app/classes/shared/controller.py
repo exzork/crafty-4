@@ -7,10 +7,11 @@ import yaml
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 
-from app.classes.shared.models import db_helper
+from app.classes.shared.models import db_helper, Servers
 
 from app.classes.shared.server import Server
 from app.classes.minecraft.server_props import ServerProps
+from app.classes.minecraft.serverjars import server_jar_obj
 
 logger = logging.getLogger(__name__)
 
@@ -149,6 +150,76 @@ class Controller:
 
         logger.info("All Servers Stopped")
         console.info("All Servers Stopped")
+
+    def create_jar_server(self, server: str, version: str, name: str, min_mem: int, max_mem: int, port: int):
+        server_id = helper.create_uuid()
+        server_dir = os.path.join(helper.servers_dir, server_id)
+
+        server_file = "{server}-{version}.jar".format(server=server, version=version)
+        full_jar_path = os.path.join(server_dir, server_file)
+
+        # make the dir - perhaps a UUID?
+        helper.ensure_dir_exists(server_dir)
+
+        try:
+            # do a eula.txt
+            with open(os.path.join(server_dir, "eula.txt"), 'w') as f:
+                f.write("eula=true")
+                f.close()
+
+            # setup server.properties with the port
+            with open(os.path.join(server_dir, "server.properties"), "w") as f:
+                f.write("server-port={}".format(port))
+                f.close()
+
+        except Exception as e:
+            logger.error("Unable to create required server files due to :{}".format(e))
+            return False
+
+        server_command = 'java -Xms{}G -Xmx{}G -jar {} nogui'.format(min_mem, max_mem, full_jar_path)
+        server_log_file = "{}/logs/latest.log".format(server_dir)
+        server_stop = "stop"
+
+        # download the jar
+        server_jar_obj.download_jar(server, version, full_jar_path, server_command, server_file)
+
+        self.register_server(name, server_id, server_dir, server_command, server_file, server_log_file, server_stop)
+
+    # todo - Do import server
+    def import_server(self):
+        print("todo")
+
+    def register_server(self, name: str, server_id: str, server_dir: str, server_command: str, server_file: str,
+                        server_log_file: str, server_stop: str):
+        # put data in the db
+        new_id = Servers.insert({
+            Servers.server_name: name,
+            Servers.server_uuid: server_id,
+            Servers.path: server_dir,
+            Servers.executable: server_file,
+            Servers.execution_command: server_command,
+            Servers.auto_start: False,
+            Servers.auto_start_delay: 10,
+            Servers.crash_detection: False,
+            Servers.log_path: server_log_file,
+            Servers.stop_command: server_stop
+        }).execute()
+
+        try:
+            # place a file in the dir saying it's owned by crafty
+            with open(os.path.join(server_dir, "crafty_managed.txt"), 'w') as f:
+                f.write(
+                    "The server is managed by Crafty Controller.\n Leave this directory/files alone please")
+                f.close()
+
+        except Exception as e:
+            logger.error("Unable to create required server files due to :{}".format(e))
+            return False
+
+        # let's re-init all servers
+        self.init_all_servers()
+
+        return new_id
 
 
 controller = Controller()
