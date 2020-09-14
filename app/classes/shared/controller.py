@@ -3,6 +3,7 @@ import time
 import logging
 import sys
 import yaml
+from distutils import dir_util
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
@@ -215,11 +216,31 @@ class Controller:
         new_id = self.register_server(name, server_id, server_dir, server_command, server_file, server_log_file, server_stop)
         return new_id
 
-    # todo - Do import server
-    def import_server(self):
-        print("todo")
+    @staticmethod
+    def verify_jar_server( server_path: str, server_jar: str):
+        path_check = helper.check_path_exits(server_path)
+        jar_check = helper.check_file_exists(os.path.join(server_path, server_jar))
+        if not path_check or not jar_check:
+            return False
+        return True
 
-    def register_server(self, name: str, server_id: str, server_dir: str, server_command: str, server_file: str, server_log_file: str, server_stop: str):
+    def import_jar_server(self, server_name: str, server_path: str, server_jar: str, min_mem: int, max_mem: int, port: int):
+        server_id = helper.create_uuid()
+        new_server_dir = os.path.join(helper.servers_dir, server_id)
+
+        helper.ensure_dir_exists(new_server_dir)
+        dir_util.copy_tree(server_path, new_server_dir)
+
+        full_jar_path = os.path.join(new_server_dir, server_jar)
+        server_command = 'java -Xms{}G -Xmx{}G -jar {} nogui'.format(min_mem, max_mem, full_jar_path)
+        server_log_file = "{}/logs/latest.log".format(new_server_dir)
+        server_stop = "stop"
+
+        new_id = self.register_server(server_name, server_id, new_server_dir, server_command, server_jar,
+                                      server_log_file, server_stop, port)
+        return new_id
+
+    def register_server(self, name: str, server_id: str, server_dir: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port=25565):
         # put data in the db
         new_id = Servers.insert({
             Servers.server_name: name,
@@ -231,6 +252,7 @@ class Controller:
             Servers.auto_start_delay: 10,
             Servers.crash_detection: False,
             Servers.log_path: server_log_file,
+            Servers.server_port: server_port,
             Servers.stop_command: server_stop
         }).execute()
 

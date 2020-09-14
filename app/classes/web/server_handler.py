@@ -84,19 +84,35 @@ class ServerHandler(BaseHandler):
             min_mem = bleach.clean(self.get_argument('min_memory', ''))
             max_mem = bleach.clean(self.get_argument('max_memory', ''))
             port = bleach.clean(self.get_argument('port', ''))
-
+            import_type = bleach.clean(self.get_argument('create_type', ''))
+            import_server_path = bleach.clean(self.get_argument('server_path', ''))
+            import_server_jar = bleach.clean(self.get_argument('server_jar', ''))
             server_parts = server.split("|")
 
-            # todo: add server type check here and call the correct server add functions if not a jar
-            new_server_id = controller.create_jar_server(server_parts[0], server_parts[1], server_name, min_mem, max_mem, port)
+            if import_type == 'import_jar':
+                good_path = controller.verify_jar_server(import_server_path, import_server_jar)
+
+                if not good_path:
+                    self.redirect("/panel/error?error=Server path or Server Jar not found!")
+                    return False
+
+                new_server_id = controller.import_jar_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
+
+            else:
+                # todo: add server type check here and call the correct server add functions if not a jar
+                new_server_id = controller.create_jar_server(server_parts[0], server_parts[1], server_name, min_mem, max_mem, port)
 
             if new_server_id:
                 db_helper.add_to_audit_log(user_data['user_id'],
                                            "Created server {} named {}".format(server, server_name),
                                            new_server_id,
                                            self.get_remote_ip())
-                stats.record_stats()
-                self.redirect("/panel/dashboard")
+            else:
+                logger.error("Unable to create server")
+                console.error("Unable to create server")
+
+            stats.record_stats()
+            self.redirect("/panel/dashboard")
 
         self.render(
             template,
