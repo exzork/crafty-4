@@ -21,15 +21,31 @@ class Controller:
     def __init__(self):
         self.servers_list = []
 
-    def init_all_servers(self):
+    def check_server_loaded(self, server_id_to_check: int):
 
-        # if we have servers defined, let's destroy it and start over
-        if len(self.servers_list) > 0:
-            self.servers_list = []
+        logger.info("Checking to see if we already registered {}".format(server_id_to_check))
+
+        for s in self.servers_list:
+            known_server = s.get('server_id')
+            if known_server is None:
+                return False
+
+            if known_server == server_id_to_check:
+                logger.info('skipping initialization of server {} because it is already loaded'.format(server_id_to_check))
+                return True
+
+        return False
+
+    def init_all_servers(self):
 
         servers = db_helper.get_all_defined_servers()
 
         for s in servers:
+            server_id = s.get('server_id')
+
+            # if we have already initialized this server, let's skip it.
+            if self.check_server_loaded(server_id):
+                continue
 
             # if this server path no longer exists - let's warn and bomb out
             if not helper.check_path_exits(s['path']):
@@ -84,6 +100,14 @@ class Controller:
         servers = db_helper.get_all_defined_servers()
         return servers
 
+    def get_server_data(self, server_id):
+        for s in self.servers_list:
+            if int(s['server_id']) == int(server_id):
+                return s['server_data_obj']
+
+        logger.warning("Unable to find server object for server id {}".format(server_id))
+        return False
+
     def list_running_servers(self):
         running_servers = []
 
@@ -104,6 +128,7 @@ class Controller:
 
     def stop_all_servers(self):
         servers = self.list_running_servers()
+        print(servers)
         logger.info("Found {} running server(s)".format(len(servers)))
         console.info("Found {} running server(s)".format(len(servers)))
 
@@ -114,42 +139,46 @@ class Controller:
             logger.info("Stopping Server ID {} - {}".format(s['id'], s['name']))
             console.info("Stopping Server ID {} - {}".format(s['id'], s['name']))
 
-            # get object
-            svr_obj = self.get_server_obj(s['id'])
-            running = svr_obj.check_running(True)
-
-            # issue the stop command
-            svr_obj.stop_threaded_server()
-
-            # while it's running, we wait
-            x = 0
-            while running:
-                logger.info("Server {} is still running - waiting 2s to see if it stops".format(s['name']))
-                console.info("Server {} is still running - waiting 2s to see if it stops".format(s['name']))
-                running = svr_obj.check_running()
-
-                # let's keep track of how long this is going on...
-                x = x + 1
-
-                # if we have been waiting more than 120 seconds. let's just kill the pid
-                if x >= 60:
-                    logger.error("Server {} is taking way too long to stop. Killing this process".format(s['name']))
-                    console.error("Server {} is taking way too long to stop. Killing this process".format(s['name']))
-
-                    svr_obj.killpid(svr_obj.PID)
-                    running = False
-
-                # if we killed the server, let's clean up the object
-                if not running:
-                    svr_obj.cleanup_server_object()
-
-                time.sleep(2)
+            self.stop_server(s['id'])
 
             # let's wait 2 seconds to let everything flush out
             time.sleep(2)
 
         logger.info("All Servers Stopped")
         console.info("All Servers Stopped")
+
+    def stop_server(self, server_id):
+        # get object
+        svr_obj = self.get_server_obj(server_id)
+        svr_data = self.get_server_data(server_id)
+        server_name = svr_data['server_name']
+
+        running = svr_obj.check_running(True)
+
+        # issue the stop command
+        svr_obj.stop_threaded_server()
+
+        # while it's running, we wait
+        x = 0
+        while running:
+            logger.info("Server {} is still running - waiting 2s to see if it stops".format(server_name))
+            console.info("Server {} is still running - waiting 2s to see if it stops".format(server_name))
+            running = svr_obj.check_running()
+
+            # let's keep track of how long this is going on...
+            x = x + 1
+
+            # if we have been waiting more than 120 seconds. let's just kill the pid
+            if x >= 60:
+                logger.error("Server {} is taking way too long to stop. Killing this process".format(server_name))
+                console.error("Server {} is taking way too long to stop. Killing this process".format(server_name))
+
+                svr_obj.killpid(svr_obj.PID)
+                running = False
+
+            # if we killed the server, let's clean up the object
+            if not running:
+                svr_obj.cleanup_server_object()
 
     def create_jar_server(self, server: str, version: str, name: str, min_mem: int, max_mem: int, port: int):
         server_id = helper.create_uuid()
@@ -190,8 +219,7 @@ class Controller:
     def import_server(self):
         print("todo")
 
-    def register_server(self, name: str, server_id: str, server_dir: str, server_command: str, server_file: str,
-                        server_log_file: str, server_stop: str):
+    def register_server(self, name: str, server_id: str, server_dir: str, server_command: str, server_file: str, server_log_file: str, server_stop: str):
         # put data in the db
         new_id = Servers.insert({
             Servers.server_name: name,
@@ -221,6 +249,32 @@ class Controller:
         self.init_all_servers()
 
         return new_id
+
+    def remove_server(self, server_id):
+        counter = 0
+        for s in self.servers_list:
+
+            # if this is the droid... im mean server we are looking for...
+            if int(s['server_id']) == int(server_id):
+                server_data = self.get_server_data(server_id)
+                server_name = server_data['server_name']
+
+                logger.info("Deleting Server: ID {} | Name: {} ".format(server_id, server_name))
+                console.info("Deleting Server: ID {} | Name: {} ".format(server_id, server_name))
+
+                srv_obj = s['server_obj']
+                running = srv_obj.check_running()
+
+                if running:
+                    self.stop_server(server_id)
+
+                # remove the server from the DB
+                Servers.delete().where(Servers.server_id == server_id).execute()
+
+                # remove the server from servers list
+                self.servers_list.pop(counter)
+
+            counter += 1
 
 
 controller = Controller()

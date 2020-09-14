@@ -57,6 +57,20 @@ class PanelHandler(BaseHandler):
         elif page == 'contribute':
             template = "panel/contribute.html"
 
+        elif page == "remove_server":
+            server_id = self.get_argument('id', None)
+            server_data = controller.get_server_data(server_id)
+            server_name = server_data['server_name']
+
+            db_helper.add_to_audit_log(user_data['user_id'],
+                                       "Deleted server {} named {}".format(server_id, server_name),
+                                       server_id,
+                                       self.get_remote_ip())
+
+            controller.remove_server(server_id)
+            self.redirect("/panel/dashboard")
+            return
+
         elif page == 'dashboard':
             page_data['servers'] = db_helper.get_all_servers_stats()
 

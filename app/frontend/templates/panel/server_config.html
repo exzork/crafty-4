@@ -160,7 +160,7 @@
                             <a class="btn btn-sm btn-danger disabled">Delete Server</a><br />
                             <small>Please stop the server before deleting it</small>
                         {% else %}
-                            <a href="/panel/command" class="btn btn-sm btn-danger">Delete Server</a>
+                            <a href="/panel/remove_server?id={{ data['server_stats'][0]['server_id']['server_id'] }}" class="btn btn-sm btn-danger">Delete Server</a>
                         {% end %}
 
                     </div>
