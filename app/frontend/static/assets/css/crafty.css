@@ -60,3 +60,6 @@
 .scrollable-element {
   scrollbar-color: red yellow;
 }
+.nav-item {
+    padding: 1%;
+}
