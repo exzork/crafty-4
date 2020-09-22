@@ -36,7 +36,7 @@ class ServerHandler(BaseHandler):
         defined_servers = controller.list_defined_servers()
 
         page_data = {
-            'version_data': "version_data_here",
+            'version_data': helper.get_version_string(),
             'user_data': user_data,
             'server_stats': {
                 'total': len(controller.list_defined_servers()),
