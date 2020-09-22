@@ -83,6 +83,7 @@ class Servers(BaseModel):
     auto_start_delay = IntegerField(default=10)
     crash_detection = BooleanField(default=0)
     stop_command = CharField(default="stop")
+    server_ip = CharField(default="127.0.0.1")
     server_port = IntegerField(default=25565)
 
     class Meta:
