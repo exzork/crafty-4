@@ -100,8 +100,6 @@ class PublicHandler(BaseHandler):
                 q.last_login = helper.get_time_as_string()
                 q.save()
 
-                print(q)
-
                 # log this login
                 db_helper.add_to_audit_log(user_data.user_id, "Logged in", 0, self.get_remote_ip())
 
