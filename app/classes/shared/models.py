@@ -176,7 +176,7 @@ class db_builder:
         api_token = helper.random_string_generator(32)
         
         Users.insert({
-            Users.username: username,
+            Users.username: username.lower(),
             Users.password: helper.encode_pass(password),
             Users.api_token: api_token,
             Users.enabled: True
