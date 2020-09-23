@@ -1,39 +1,13 @@
 <ul class="navbar-nav ml-auto">
     <li class="nav-item dropdown">
       <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-toggle="dropdown">
-        <i class="mdi mdi-email-outline"></i>
+        <i class="fas fa-broadcast-tower
+        {% if data.get('update_available') %}
+            text-danger
+        {% end %}
+        "></i>
 <!--        <span class="count bg-success">3</span>-->
       </a>
-      <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0" aria-labelledby="notificationDropdown">
-
-        <a class="dropdown-item preview-item py-3">
-          <div class="preview-thumbnail">
-            <i class="mdi mdi-alert m-auto text-primary"></i>
-          </div>
-          <div class="preview-item-content">
-            <h6 class="preview-subject font-weight-normal mb-1">Application Error</h6>
-            <p class="font-weight-light small-text mb-0"> Just now </p>
-          </div>
-        </a>
-        <a class="dropdown-item preview-item py-3">
-          <div class="preview-thumbnail">
-            <i class="mdi mdi-settings m-auto text-primary"></i>
-          </div>
-          <div class="preview-item-content">
-            <h6 class="preview-subject font-weight-normal mb-1">Settings</h6>
-            <p class="font-weight-light small-text mb-0"> Private message </p>
-          </div>
-        </a>
-        <a class="dropdown-item preview-item py-3">
-          <div class="preview-thumbnail">
-            <i class="mdi mdi-airballoon m-auto text-primary"></i>
-          </div>
-          <div class="preview-item-content">
-            <h6 class="preview-subject font-weight-normal mb-1">New user registration</h6>
-            <p class="font-weight-light small-text mb-0"> 2 days ago </p>
-          </div>
-        </a>
-      </div>
     </li>
     <li class="nav-item dropdown user-dropdown">
       <a class="nav-link dropdown-toggle" id="UserDropdown" href="#" data-toggle="dropdown" aria-expanded="false">

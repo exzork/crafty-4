@@ -45,7 +45,6 @@
             <span class="mdi mdi-menu"></span>
           </button>
 
-
         {% include notify.html %}
 
           <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
@@ -88,6 +87,20 @@
     $(function () {
       $('[data-toggle="tooltip"]').tooltip()
     })
+
+    <!-- Notify-->
+    $(document).ready(function(){
+      $("#notificationDropdown").click(function(){
+        $.get("/ajax/announcements", function(data){
+          console.log(data);
+          bootbox.alert({
+              title: "Notifications",
+              message: data,
+
+          });
+        });
+      });
+    });
     </script>
 
     {% block js %}

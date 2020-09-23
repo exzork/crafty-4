@@ -74,6 +74,12 @@ class AjaxHandler(BaseHandler):
                     logger.warning("Skipping Log Line due to error: {}".format(e))
                     pass
 
+        elif page == "announcements":
+            data = helper.get_announcements()
+            page_data['notify_data'] = data
+            self.render_page('ajax/notify.html', page_data)
+
+
     def post(self, page):
         user_data = json.loads(self.get_secure_cookie("user_data"))
         error = bleach.clean(self.get_argument('error', "WTF Error!"))
