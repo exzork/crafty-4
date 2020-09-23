@@ -26,6 +26,7 @@ class PanelHandler(BaseHandler):
         defined_servers = controller.list_defined_servers()
 
         page_data = {
+            # todo: make this actually pull and compare version data
             'update_available': False,
             'version_data': helper.get_version_string(),
             'user_data': user_data,
