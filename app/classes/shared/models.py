@@ -43,6 +43,7 @@ class Users(BaseModel):
     class Meta:
         table_name = "users"
 
+
 class Audit_Log(BaseModel):
     audit_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
@@ -51,7 +52,6 @@ class Audit_Log(BaseModel):
     source_ip = CharField(default='127.0.0.1')
     server_id = IntegerField(default=None)
     log_msg = TextField(default='')
-
 
 
 class Host_Stats(BaseModel):
@@ -83,6 +83,7 @@ class Servers(BaseModel):
     auto_start_delay = IntegerField(default=10)
     crash_detection = BooleanField(default=0)
     stop_command = CharField(default="stop")
+    server_ip = CharField(default="127.0.0.1")
     server_port = IntegerField(default=25565)
 
     class Meta:
@@ -166,7 +167,8 @@ class db_builder:
 
     @staticmethod
     def default_settings():
-
+        logger.info("Fresh Install Detected - Creating Default Settings")
+        console.info("Fresh Install Detected - Creating Default Settings")
         default_data = helper.find_default_password()
 
         username = default_data.get("username", 'admin')
@@ -174,7 +176,7 @@ class db_builder:
         api_token = helper.random_string_generator(32)
         
         Users.insert({
-            Users.username: username,
+            Users.username: username.lower(),
             Users.password: helper.encode_pass(password),
             Users.api_token: api_token,
             Users.enabled: True
@@ -184,9 +186,12 @@ class db_builder:
 
     @staticmethod
     def is_fresh_install():
-        if helper.check_file_exists(helper.db_path):
+        try:
+            user = Users.get_by_id(1)
             return False
-        return True
+        except:
+            return True
+            pass
 
 
 class db_shortcuts:

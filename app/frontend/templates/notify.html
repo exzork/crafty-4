@@ -1,42 +1,13 @@
 <ul class="navbar-nav ml-auto">
     <li class="nav-item dropdown">
       <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-toggle="dropdown">
-        <i class="mdi mdi-email-outline"></i>
-        <span class="count bg-success">3</span>
+        <i class="fas fa-broadcast-tower
+        {% if data.get('update_available') %}
+            text-danger
+        {% end %}
+        "></i>
+<!--        <span class="count bg-success">3</span>-->
       </a>
-      <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0" aria-labelledby="notificationDropdown">
-        <a class="dropdown-item py-3 border-bottom">
-          <p class="mb-0 font-weight-medium float-left">You have 4 new notifications </p>
-          <span class="badge badge-pill badge-primary float-right">View all</span>
-        </a>
-        <a class="dropdown-item preview-item py-3">
-          <div class="preview-thumbnail">
-            <i class="mdi mdi-alert m-auto text-primary"></i>
-          </div>
-          <div class="preview-item-content">
-            <h6 class="preview-subject font-weight-normal mb-1">Application Error</h6>
-            <p class="font-weight-light small-text mb-0"> Just now </p>
-          </div>
-        </a>
-        <a class="dropdown-item preview-item py-3">
-          <div class="preview-thumbnail">
-            <i class="mdi mdi-settings m-auto text-primary"></i>
-          </div>
-          <div class="preview-item-content">
-            <h6 class="preview-subject font-weight-normal mb-1">Settings</h6>
-            <p class="font-weight-light small-text mb-0"> Private message </p>
-          </div>
-        </a>
-        <a class="dropdown-item preview-item py-3">
-          <div class="preview-thumbnail">
-            <i class="mdi mdi-airballoon m-auto text-primary"></i>
-          </div>
-          <div class="preview-item-content">
-            <h6 class="preview-subject font-weight-normal mb-1">New user registration</h6>
-            <p class="font-weight-light small-text mb-0"> 2 days ago </p>
-          </div>
-        </a>
-      </div>
     </li>
     <li class="nav-item dropdown user-dropdown">
       <a class="nav-link dropdown-toggle" id="UserDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
@@ -45,11 +16,9 @@
         <div class="dropdown-header text-center">
           <img class="img-md rounded-circle" src="/static/assets/images/faces-clipart/pic-1.png" alt="Profile image">
           <p class="mb-1 mt-3 font-weight-semibold">{{ data['user_data']['username'] }}</p>
-          <p class="font-weight-light text-muted mb-0">Plan: {{ str(data['user_data']['account_type']).upper() }}</p>
+          <p class="font-weight-light text-muted mb-0">Role: Admin</p>
         </div>
-        <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-account-outline text-primary"></i> My Profile <span class="badge badge-pill badge-danger">1</span></a>
         <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary"></i> Activity</a>
-        <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-help-circle-outline text-primary"></i> FAQ</a>
         <a class="dropdown-item" href="/public/login"><i class="dropdown-item-icon mdi mdi-power text-primary"></i>Sign Out</a>
       </div>
     </li>

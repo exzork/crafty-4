@@ -95,10 +95,10 @@ class PublicHandler(BaseHandler):
                 logger.info("User: {} Logged in from IP: {}".format(user_data, self.get_remote_ip()))
 
                 # record this login
-                Users.update({
-                    Users.last_ip: self.get_remote_ip(),
-                    Users.last_login: helper.get_time_as_string()
-                }).where(Users.username == entered_username).execute()
+                q = Users.select().where(Users.username == entered_username.lower()).get()
+                q.last_ip = self.get_remote_ip()
+                q.last_login = helper.get_time_as_string()
+                q.save()
 
                 # log this login
                 db_helper.add_to_audit_log(user_data.user_id, "Logged in", 0, self.get_remote_ip())

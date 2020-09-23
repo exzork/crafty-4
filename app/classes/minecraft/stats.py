@@ -250,7 +250,7 @@ class Stats:
                 Server_Stats.version: server.get("version", False)
             }).execute()
 
-        # delete 1 week old data
+        # delete old data
         max_age = helper.get_setting("history_max_age")
         now = datetime.datetime.now()
         last_week = now.day - max_age

@@ -103,7 +103,12 @@
                       </div>
 
                       <div class="form-group">
-                        <label for="server_port">Server Port <small class="text-muted ml-1"> - Port crafty should connect to for stats</small> </label>
+                        <label for="server_ip">Server IP <small class="text-muted ml-1"> - IP Crafty should connect to for stats (Try a real ip instead of 127.0.0.1 if you have issues)</small> </label>
+                        <input type="text" class="form-control" name="server_ip" id="server_ip" value="{{ data['server_stats'][0]['server_id']['server_ip']  }}">
+                      </div>
+
+                      <div class="form-group">
+                        <label for="server_port">Server Port <small class="text-muted ml-1"> - Port Crafty should connect to for stats</small> </label>
                         <input type="number" class="form-control" name="server_port" id="server_port" value="{{ data['server_stats'][0]['server_id']['server_port']  }}" step="1" max="65566" min="1" >
                       </div>
 

@@ -74,4 +74,31 @@ class AjaxHandler(BaseHandler):
                     logger.warning("Skipping Log Line due to error: {}".format(e))
                     pass
 
+        elif page == "announcements":
+            data = helper.get_announcements()
+            page_data['notify_data'] = data
+            self.render_page('ajax/notify.html', page_data)
+
+
+    def post(self, page):
+        user_data = json.loads(self.get_secure_cookie("user_data"))
+        error = bleach.clean(self.get_argument('error', "WTF Error!"))
+
+        page_data = {
+            'user_data': user_data,
+            'error': error
+        }
+
+        if page == "send_command":
+            command = bleach.clean(self.get_body_argument('command', default=None, strip=True))
+            server_id = bleach.clean(self.get_argument('id'))
+
+            if server_id is None:
+                logger.warning("Server ID not found in send_command ajax call")
+
+            srv_obj = controller.get_server_obj(server_id)
+
+            if command:
+                if srv_obj.check_running():
+                    srv_obj.send_command(command)
 

@@ -8,7 +8,6 @@
   "show_errors": true,
   "history_max_age": 7,
   "stats_update_frequency": 30,
-  "max_stats_count": 1000,
   "delete_default_json": false,
   "show_contribute_link": true,
   "virtual_terminal_lines": 10,

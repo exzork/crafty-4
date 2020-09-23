@@ -82,7 +82,9 @@ if __name__ == '__main__':
     helper.create_session_file(ignore=args.ignore)
 
     # do our installer stuff
-    if not installer.is_fresh_install():
+    fresh_install = installer.is_fresh_install()
+
+    if fresh_install:
         installer.create_tables()
         installer.default_settings()
 

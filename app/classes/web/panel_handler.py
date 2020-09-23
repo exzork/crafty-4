@@ -26,6 +26,8 @@ class PanelHandler(BaseHandler):
         defined_servers = controller.list_defined_servers()
 
         page_data = {
+            # todo: make this actually pull and compare version data
+            'update_available': False,
             'version_data': helper.get_version_string(),
             'user_data': user_data,
             'server_stats': {
@@ -128,6 +130,7 @@ class PanelHandler(BaseHandler):
             execution_command = self.get_argument('execution_command', None)
             stop_command = self.get_argument('stop_command', None)
             auto_start_delay = self.get_argument('auto_start_delay', '10')
+            server_ip = self.get_argument('server_ip', None)
             server_port = self.get_argument('server_port', None)
             auto_start = int(float(self.get_argument('auto_start', '0')))
             crash_detection = int(float(self.get_argument('crash_detection', '0')))
@@ -152,6 +155,7 @@ class PanelHandler(BaseHandler):
                 Servers.execution_command: execution_command,
                 Servers.stop_command: stop_command,
                 Servers.auto_start_delay: auto_start_delay,
+                Servers.server_ip: server_ip,
                 Servers.server_port: server_port,
                 Servers.auto_start: auto_start,
                 Servers.crash_detection: crash_detection,

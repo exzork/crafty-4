@@ -13,11 +13,13 @@ import logging
 from datetime import datetime
 from socket import gethostname
 
+
 from app.classes.shared.console import console
 
 logger = logging.getLogger(__name__)
 
 try:
+    import requests
     from OpenSSL import crypto
     from argon2 import PasswordHasher
 
@@ -95,6 +97,21 @@ class Helpers:
             console.critical("Unable to get version data!")
 
         return version_data
+
+    @staticmethod
+    def get_announcements():
+        r = requests.get('https://craftycontrol.com/notify.json', timeout=2)
+        data = '[{"id":"1","date":"Unknown","title":"Error getting Announcements","desc":"Error getting ' \
+               'Announcements","link":""}] '
+
+        if r.status_code in [200, 201]:
+            try:
+                data = json.loads(r.content)
+            except:
+                pass
+
+        return data
+
 
     def get_version_string(self):
 
