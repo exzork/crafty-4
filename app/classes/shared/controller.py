@@ -87,6 +87,10 @@ class Controller:
                 s['auto_start_delay']
             ))
 
+    def refresh_server_settings(self, server_id: int):
+        server_obj = self.get_server_obj(server_id)
+        server_obj.reload_server_settings()
+
     def get_server_obj(self, server_id):
 
         for s in self.servers_list:

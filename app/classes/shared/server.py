@@ -13,7 +13,7 @@ import logging.config
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
-
+from app.classes.shared.models import db_helper, Servers
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +44,10 @@ class Server:
         self.name = None
         self.is_crashed = False
         self.restart_count = 0
+
+    def reload_server_settings(self):
+        server_data = db_helper.get_server_data_by_id(self.server_id)
+        self.settings = server_data
 
     def do_server_setup(self, server_data_obj):
         logger.info('Creating Server object: {} | Server Name: {} | Auto Start: {}'.format(

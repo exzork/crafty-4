@@ -161,6 +161,8 @@ class PanelHandler(BaseHandler):
                 Servers.crash_detection: crash_detection,
             }).where(Servers.server_id == server_id).execute()
 
+            controller.refresh_server_settings(server_id)
+
             user_data = json.loads(self.get_secure_cookie("user_data"))
 
             db_helper.add_to_audit_log(user_data['user_id'],
