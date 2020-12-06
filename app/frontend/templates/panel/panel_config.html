@@ -1,0 +1,101 @@
+{% extends ../base.html %}
+
+{% block meta %}
+<!--  <meta http-equiv="refresh" content="60">-->
+{% end %}
+
+{% block title %}Crafty Controller - Panel Config{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        <h4 class="page-title">Panel Config</h4>
+      </div>
+    </div>
+
+  </div>
+  <!-- Page Title Header Ends-->
+
+  <div class="row">
+    <div class="col-md-12 grid-margin">
+      <div class="card">
+        <div class="card-body">
+
+          <div class="row">
+            <div class="col-md-12 col-lg-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                  <h4 class="card-title"><i class="fas fa-server"></i> Users</h4>
+                  <div class="d-md-none">
+                    <small>Can't see everything on mobile?<br /> Try scrolling the table sideways.</small>
+                  </div>
+                  <div><a class="nav-link" href="/panel/add_user"><i class="fas fa-plus-circle"></i> &nbsp; Add New User</a></div>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead>
+                        <tr class="rounded">
+                          <th>User</th>
+                          <th>Enabled</th>
+                          <th>API Token</th>
+                          <th>Allowed Servers</th>
+                          <th>Edit</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for user in data['users'] %}
+                        <tr>
+                          <td>{{ user.username }}</td>
+                          <td>
+                            {% if user.enabled %}
+                              <span class="text-success">
+                                <i class="fas fa-check-square"></i> Yes
+                              </span>
+                            {% else %}
+                              <span class="text-danger">
+                                <i class="far fa-times-square"></i> No
+                              </span>
+
+                            {% end %}
+
+                          </td>
+                          <td>{{ user.api_token }}</td>
+                          <td>{{ user.allowed_servers}}</td>
+                          <td><a href="/panel/edit_user?id={{user.id}}"><i class="fas fa-pencil-alt"></i></a></td>
+                        </tr>
+                      {% end %}
+
+                      </tbody>
+                    </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+<script>
+
+$( document ).ready(function() {
+  console.log('ready for JS!')
+
+});
+</script>
+
+{% end %}

@@ -244,6 +244,10 @@ class db_shortcuts:
         query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()
         return model_to_dict(query)
 
+    def get_all_users(self):
+        query = Users.select()
+        return query
+
     def get_unactioned_commands(self):
         query = Commands.select().where(Commands.executed == 0)
         return self.return_rows(query)

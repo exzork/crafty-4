@@ -112,6 +112,10 @@ class PanelHandler(BaseHandler):
             # template = "panel/server_details.html"
             template = "panel/server_{subpage}.html".format(subpage=subpage)
 
+        elif page == 'panel_config':
+            page_data['users'] = db_helper.get_all_users()
+            # print(page_data['users'])
+            template = "panel/panel_config.html"
 
         self.render(
             template,

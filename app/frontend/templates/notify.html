@@ -1,6 +1,6 @@
 <ul class="navbar-nav ml-auto">
     <li class="nav-item dropdown">
-      <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-toggle="dropdown">
+      <a class="nav-link count-indicator">
         <i class="fas fa-broadcast-tower
         {% if data.get('update_available') %}
             text-danger
@@ -9,6 +9,13 @@
 <!--        <span class="count bg-success">3</span>-->
       </a>
     </li>
+
+    <li class="nav-item dropdown">
+      <a class="nav-link count-indicator" href="/panel/panel_config">
+        <i class="fas fa-cogs"></i>
+      </a>
+    </li>
+
     <li class="nav-item dropdown user-dropdown">
       <a class="nav-link dropdown-toggle" id="UserDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
         <img class="img-xs rounded-circle" src="/static/assets/images/faces-clipart/pic-1.png" alt="Profile image"> </a>
