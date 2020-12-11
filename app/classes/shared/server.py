@@ -44,6 +44,7 @@ class Server:
         self.name = None
         self.is_crashed = False
         self.restart_count = 0
+        self.crash_watcher_schedule = None
 
     def reload_server_settings(self):
         server_data = db_helper.get_server_data_by_id(self.server_id)
@@ -168,8 +169,7 @@ class Server:
             logger.info("Server {} has crash detection enabled - starting watcher task".format(self.name))
             console.info("Server {} has crash detection enabled - starting watcher task".format(self.name))
 
-            # TODO: create crash detection watcher and such
-            # schedule.every(30).seconds.do(self.check_running).tag(self.name)
+            self.crash_watcher_schedule = schedule.every(30).seconds.do(self.detect_crash).tag(self.name)
 
     def stop_threaded_server(self):
         self.stop_server()
@@ -232,56 +232,21 @@ class Server:
         self.updating = False
         self.process = None
 
-    def check_running(self, shutting_down=False):
+    def check_running(self):
+        running = False
+
         # if process is None, we never tried to start
         if self.PID is None:
-            return False
+            return running
 
         try:
             running = psutil.pid_exists(self.PID)
-            logger.info("Checking if PID: {} is running".format(self.PID))
 
         except Exception as e:
             logger.error("Unable to find if server PID exists: {}".format(self.PID))
-            running = False
             pass
 
-        if not running:
-
-            # did the server crash?
-            if not shutting_down:
-
-                # do we have crash detection turned on?
-                if self.settings['crash_detection']:
-
-                    # if we haven't tried to restart more 3 or more times
-                    if self.restart_count <= 3:
-
-                        # start the server if needed
-                        server_restarted = self.crash_detected(self.name)
-
-                        if server_restarted:
-                            # add to the restart count
-                            self.restart_count = self.restart_count + 1
-                            return False
-
-                    # we have tried to restart 4 times...
-                    elif self.restart_count == 4:
-                        logger.warning("Server {} has been restarted {} times. It has crashed, not restarting.".format(
-                                       self.name, self.restart_count))
-
-                        # set to 99 restart attempts so this elif is skipped next time. (no double logging)
-                        self.restart_count = 99
-                        self.is_crashed = True
-                        return False
-                    else:
-                        self.is_crashed = True
-                        return False
-
-                self.cleanup_server_object()
-                return False
-
-        return True
+        return running
 
     def send_command(self, command):
 
@@ -296,15 +261,22 @@ class Server:
 
     def crash_detected(self, name):
 
+        # clear the old scheduled watcher task
+        self.remove_watcher_thread()
+
         # the server crashed, or isn't found - so let's reset things.
         logger.warning("The server {} seems to have vanished unexpectedly, did it crash?".format(name))
 
         if self.settings['crash_detection']:
-            logger.info("The server {} has crashed and will be restarted. Restarting server".format(name))
+            logger.warning("The server {} has crashed and will be restarted. Restarting server".format(name))
+            console.warning("The server {} has crashed and will be restarted. Restarting server".format(name))
             self.run_threaded_server()
             return True
         else:
-            logger.info("The server {} has crashed, crash detection is disabled and it will not be restarted".format(name))
+            logger.critical(
+                "The server {} has crashed, crash detection is disabled and it will not be restarted".format(name))
+            console.critical(
+                "The server {} has crashed, crash detection is disabled and it will not be restarted".format(name))
             return False
 
     def killpid(self, pid):
@@ -326,4 +298,42 @@ class Server:
         else:
             return False
 
+    def detect_crash(self):
 
+        logger.info("Detecting possible crash for server: {} ".format(self.name))
+
+        running = self.check_running()
+
+        # if all is okay, we just exit out
+        if running:
+            return
+
+        # if we haven't tried to restart more 3 or more times
+        if self.restart_count <= 3:
+
+            # start the server if needed
+            server_restarted = self.crash_detected(self.name)
+
+            if server_restarted:
+                # add to the restart count
+                self.restart_count = self.restart_count + 1
+
+        # we have tried to restart 4 times...
+        elif self.restart_count == 4:
+            logger.critical("Server {} has been restarted {} times. It has crashed, not restarting.".format(
+                self.name, self.restart_count))
+
+            console.critical("Server {} has been restarted {} times. It has crashed, not restarting.".format(
+                self.name, self.restart_count))
+
+            # set to 99 restart attempts so this elif is skipped next time. (no double logging)
+            self.restart_count = 99
+            self.is_crashed = True
+
+            # cancel the watcher task
+            self.remove_watcher_thread()
+
+    def remove_watcher_thread(self):
+        logger.info("Removing old crash detection watcher thread")
+        console.info("Removing old crash detection watcher thread")
+        schedule.clear(self.name)
