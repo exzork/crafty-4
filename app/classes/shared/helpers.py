@@ -409,7 +409,7 @@ class Helpers:
         cert.get_subject().O = "Crafty Controller"
         cert.get_subject().OU = "Server Ops"
         cert.get_subject().CN = gethostname()
-        cert.set_serial_number(1000)
+        cert.set_serial_number(random.randint(1,255))
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(365 * 24 * 60 * 60)
         cert.set_issuer(cert.get_subject())
