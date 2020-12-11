@@ -1,0 +1,190 @@
+{% extends ../base.html %}
+
+{% block meta %}
+<!--  <meta http-equiv="refresh" content="60">-->
+{% end %}
+
+{% block title %}Crafty Controller - Editing File -< name >- in server -< server name >- (-< server path id >-){% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        <h4 class="page-title">
+          Editing File -< name >- in server -< server name >- (-< server path id >-)
+            <br />
+            <small>Path: -< file location relative to server directory >-</small>
+        </h4>
+      </div>
+    </div>
+
+  </div>
+  <!-- Page Title Header Ends-->
+
+  <div class="row">
+
+    <div class="col-sm-12 grid-margin">
+      <div class="card">
+        <div class="card-body">
+          <a href="/" class="btn btn-link btn-outline-primary" style="position: relative;top: -1rem">
+            <i class="fas fa-arrow-left"></i> Back
+          </a>
+
+          <h3 id="file_warn"></h3>
+
+          <div id="editor">-< file_contents >-</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+
+<script src="/static/assets/vendors/ace-builds/src-min/ace.js" type="text/javascript" charset="utf-8"></script>
+
+<script>
+
+    let editor = ace.edit('editor');
+    editor.setTheme('ace/theme/dracula');
+
+    let extensionChanges = [
+      {
+        regex: /^js$/,
+        replaceWith: 'ace/mode/javascript'
+      },
+      {
+        regex: /^py$/,
+        replaceWith: 'ace/mode/python'
+      },
+      {
+        regex: /^html$/,
+        replaceWith: 'ace/mode/html'
+      },
+      {
+        regex: /^yml$/,
+        replaceWith: 'ace/mode/yaml'
+      },
+      {
+        regex: /^yaml$/,
+        replaceWith: 'ace/mode/yaml'
+      },
+      {
+        regex: /^txt$/,
+        replaceWith: 'ace/mode/text'
+      },
+      {
+        regex: /^json$/,
+        replaceWith: 'ace/mode/json'
+      },
+      {
+        regex: /^java$/,
+        replaceWith: 'ace/mode/java'
+      },
+      {
+        regex: /^cpp$/,
+        replaceWith: 'ace/mode/c_cpp'
+      },
+      {
+        regex: /^css$/,
+        replaceWith: 'ace/mode/css'
+      },
+      {
+        regex: /^scss$/,
+        replaceWith: 'ace/mode/scss'
+      },
+      {
+        regex: /^sass$/,
+        replaceWith: 'ace/mode/sass'
+      },
+      {
+        regex: /^lua$/,
+        replaceWith: 'ace/mode/lua'
+      },
+      {
+        regex: /^php$/,
+        replaceWith: 'ace/mode/php'
+      },
+      {
+        regex: /^ps1$/,
+        replaceWith: 'ace/mode/powershell'
+      },
+      {
+        regex: /^svg$/,
+        replaceWith: 'ace/mode/svg'
+      },
+      {
+        regex: /^sh$/,
+        replaceWith: 'ace/mode/sh'
+      },
+      {
+        regex: /^xml$/,
+        replaceWith: 'ace/mode/xml'
+      },
+      {
+        regex: /^ts$/,
+        replaceWith: 'ace/mode/typescript'
+      }
+    ];
+
+    let fileName = '-< file_name >-.txt';
+
+    if (fileName.match('.')) {
+
+      // The pop method removes and returns the last element.
+      setMode(fileName
+        .split('.')
+        .pop()
+        .replace('ace/mode/', ''));
+
+    } else {
+      setMode('txt');
+      document
+        .querySelector('#file_warn')
+        .innerText = 'Warning: This is not a supported language';
+    }
+
+    function setMode (extension) {
+      // if the extension matches with the RegEx it will return the replaceWith
+      // property. else it will return the one it has. defaults to the extension.
+      // this runs for each element in extensionChanges.
+      let aceMode = extensionChanges.reduce((output, element) => {
+        return extension.match(element.regex)
+          ? element.replaceWith
+          : output;
+      }, extension);
+
+      if (!aceMode.startsWith('ace/mode/')) {
+        document
+          .querySelector('#file_warn')
+          .innerText = 'Warning: This is not a supported language';
+      } else {
+        document
+          .querySelector('#file_warn')
+          .innerText = '';
+
+        console.log(aceMode || 'ace/mode/text');
+        editor.session.setMode(aceMode || 'ace/mode/text');
+      }
+    }
+
+
+
+    function save() {
+      let text = editor.session.getValue();
+      // Use AJAX or something
+      alert(text);
+    }
+
+</script>
+{% end %}

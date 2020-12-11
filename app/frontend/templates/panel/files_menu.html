@@ -1,0 +1,112 @@
+{% extends ../base.html %}
+
+{% block meta %}
+<!--  <meta http-equiv="refresh" content="60">-->
+{% end %}
+
+{% block title %}Crafty Controller - Looking at files in server -< server name >- (-< server path id >-){% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        <h4 class="page-title">
+          Looking at files in server -< server name >- (-< server path id >-)
+          <br />
+          <small>Path: -< location relative to server directory >-</small>
+        </h4>
+      </div>
+    </div>
+
+  </div>
+  <!-- Page Title Header Ends-->
+
+  <div class="row">
+
+    <div class="col-sm-12 grid-margin">
+      <div class="card">
+        <div class="card-body">
+
+          <ul class="files-list list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center"
+                style="background-color: var(--dark) !important;">
+              <a href="/panel/file_edit?path=-< file location relative to server directory >-" class="text-white">-< name >-</a>
+              <span>
+                <a href="/panel/file_edit?path=-< file location relative to server directory >-" class="mx-1 btn btn-dark">Edit</a>
+                <button onclick="alert('will make a modal')" class="mx-1 btn btn-dark">Rename</button>
+                <button onclick="alert('will make a confirmation modal')" class="mx-1 btn btn-danger">Delete</button>
+                <span style="margin-left: 0.3rem;width: 5rem;display: inline-block;">
+                  <span class="badge badge-primary badge-pill">File</span>
+                </span>
+              </span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center"
+                style="background-color: var(--dark) !important;">
+              <a href="/panel/files_menu?path=-< location relative to server directory >-" class="text-white">-< name >-</a>
+              <span>
+                <a href="/panel/files_menu?path=-< location relative to server directory >-" class="mx-1 btn btn-dark">Open</a>
+                <button onclick="alert('will make a modal')" class="mx-1 btn btn-dark">Rename</button>
+                <button onclick="alert('will make a confirmation modal')" class="mx-1 btn btn-danger">Delete</button>
+                <span style="margin-left: 0.3rem;width: 5rem;display: inline-block;">
+                  <span class="badge badge-primary badge-pill">Folder</span>
+                </span>
+              </span>
+            </li>
+
+            <!--
+
+            File:
+            <li class="list-group-item d-flex justify-content-between align-items-center"
+                style="background-color: var(--dark) !important;">
+              <a href="/panel/file_edit?path=-< file location relative to server directory >-" class="text-white">-< name >-</a>
+              <span>
+                <a href="/panel/file_edit?path=-< file location relative to server directory >-" class="mx-1 btn btn-dark">Edit</a>
+                <button onclick="alert('will make a modal')" class="mx-1 btn btn-dark">Rename</button>
+                <button onclick="alert('will make a confirmation modal')" class="mx-1 btn btn-danger">Delete</button>
+                <span style="margin-left: 0.3rem;width: 5rem;display: inline-block;">
+                  <span class="badge badge-primary badge-pill">File</span>
+                </span>
+              </span>
+            </li>
+
+            Folder:
+            <li class="list-group-item d-flex justify-content-between align-items-center"
+                style="background-color: var(--dark) !important;">
+              <a href="/panel/files_menu?path=-< location relative to server directory >-" class="text-white">-< name >-</a>
+              <span>
+                <a href="/panel/files_menu?path=-< location relative to server directory >-" class="mx-1 btn btn-dark">Open</a>
+                <button onclick="alert('will make a modal')" class="mx-1 btn btn-dark">Rename</button>
+                <button onclick="alert('will make a confirmation modal')" class="mx-1 btn btn-danger">Delete</button>
+                <span style="margin-left: 0.3rem;width: 5rem;display: inline-block;">
+                  <span class="badge badge-primary badge-pill">Folder</span>
+                </span>
+              </span>
+            </li>
+
+            -->
+          </ul>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+
+<script>
+
+    // empty for now
+
+</script>
+
+{% end %}
