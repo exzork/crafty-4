@@ -256,10 +256,12 @@ class Controller:
     def import_zip_server(self, server_name: str, zip_path: str, server_jar: str, min_mem: int, max_mem: int, port: int):
         server_id = helper.create_uuid()
         new_server_dir = os.path.join(helper.servers_dir, server_id)
-
-        helper.ensure_dir_exists(new_server_dir)
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(new_server_dir)
+        if helper.check_file_perms(zip_path):
+            helper.ensure_dir_exists(new_server_dir)
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(new_server_dir)
+        else:
+            return "false"
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
         server_command = 'java -Xms{}G -Xmx{}G -jar {} nogui'.format(min_mem, max_mem, full_jar_path)
