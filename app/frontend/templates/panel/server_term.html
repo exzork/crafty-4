@@ -72,13 +72,21 @@
               </div>
               <br />
 
-              <div class="input-group">
-                <input type="text" class="form-control" id="server_command" name="server_command" placeholder="Enter your server command" autofocus="">
+              <div style="gap: 0.5rem;" class="input-group flex-wrap">
+                <input style="min-width: 10rem;" type="text" class="form-control" id="server_command" name="server_command" placeholder="Enter your server command" autofocus="">
                 <span class="input-group-btn ml-5">
                   <input type="hidden" value="" id="last_command"/>
                   <button id="submit" class="btn btn-sm btn-info" type="button">Send Command</button>
                 </span>
               </div>
+
+              <div class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0">
+                <button onclick="send_command(server_id, 'start_server');" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">Start</button>
+                <button onclick="send_command(server_id, 'restart_server');" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">Restart</button>
+                <button onclick="send_command(server_id, 'stop_server');" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1">Stop</button>
+              </div>
+
+
             </div>
 
         </div>
@@ -96,6 +104,44 @@
 
 {% block js %}
 <script>
+
+    function send_command (server_id, command){
+      <!--  this getCookie function is in base.html-->
+      var token = getCookie("_xsrf");
+
+      $.ajax({
+        type: "POST",
+        headers: {'X-XSRFToken': token},
+        url: '/server/command?command=' + command + '&id=' + server_id,
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+          setTimeout(function(){ location.reload(); }, 10000);
+
+        }
+      });
+    }
+
+    // Convert running to lower case (example: 'True' converts to 'true') and
+    // then to boolean via JSON.parse()
+    let online = JSON.parse('{{ data['server_stats'][0]['running'] }}'.toLowerCase());
+
+    let startBtn = document.querySelector('#start-btn');
+    let restartBtn = document.querySelector('#restart-btn');
+    let stopBtn = document.querySelector('#stop-btn');
+
+    if (online) {
+      startBtn.setAttribute('disabled', 'disabled');
+      restartBtn.removeAttribute('disabled');
+      stopBtn.removeAttribute('disabled');
+    } else {
+      startBtn.removeAttribute('disabled');
+      restartBtn.setAttribute('disabled', 'disabled');
+      stopBtn.setAttribute('disabled', 'disabled');
+    }
+
+    let server_id = '{{ data['server_stats'][0]['server_id']['server_id'] }}';
+
     function get_server_log(){
       if( !$("#stop_scroll").is(':checked')){
         $.ajax({
