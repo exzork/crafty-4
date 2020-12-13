@@ -123,6 +123,11 @@ class PanelHandler(BaseHandler):
             # print(page_data['users'])
             template = "panel/panel_config.html"
 
+        elif page == "activity_logs":
+            page_data['audit_logs'] = db_helper.get_actity_log()
+
+            template = "panel/activity_logs.html"
+
         self.render(
             template,
             data=page_data

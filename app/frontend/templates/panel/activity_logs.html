@@ -1,0 +1,76 @@
+{% extends ../base.html %}
+
+{% block meta %}
+<!--  <meta http-equiv="refresh" content="60">-->
+
+{% end %}
+
+{% block title %}Crafty Controller - Activity Logs{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        <h4 class="page-title">Activity Logs</h4>
+      </div>
+    </div>
+
+  </div>
+  <!-- Page Title Header Ends-->
+
+  <div class="row">
+    <div class="col-md-12 grid-margin">
+      <div class="card">
+        <div class="card-body">
+            <table class="table" id="audit_table">
+                <thead>
+                    <tr>
+                        <td>Username</td>
+                        <td>Time</td>
+                        <td>Action</td>
+                        <td>Server ID</td>
+                        <td>IP</td>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in data['audit_logs'] %}
+                <tr>
+                    <td>{{ row['user_name'] }}</td>
+                    <td>
+                        {{ row['created'].strftime('%m-%d-%Y %H:%M:%S') }}
+                    </td>
+                    <td>{{ row['log_msg'] }}</td>
+                    <td>{{ row['server_id'] }}</td>
+                    <td>{{ row['source_ip'] }}</td>
+                </tr>
+                {% end %}
+                </tbody>
+            </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+</div>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+<script>
+
+$( document ).ready(function() {
+    console.log('ready for JS!')
+    $('#audit_table').DataTable();
+});
+</script>
+
+{% end %}

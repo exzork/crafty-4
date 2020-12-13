@@ -271,6 +271,14 @@ class db_shortcuts:
             Commands.command: command
         }).execute()
 
+    def get_actity_log(self):
+        q = Audit_Log.select()
+        return self.return_db_rows(q)
+
+    def return_db_rows(self, model):
+        data = [model_to_dict(row) for row in model]
+        return data
+
     @staticmethod
     def mark_command_complete(command_id=None):
         if command_id is not None:
@@ -293,6 +301,8 @@ class db_shortcuts:
             Audit_Log.log_msg: audit_msg,
             Audit_Log.source_ip: source_ip
         }).execute()
+
+
 
 
 installer = db_builder()
