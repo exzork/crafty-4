@@ -3,6 +3,8 @@ import time
 import logging
 import sys
 import yaml
+import asyncio
+import zipfile
 from distutils import dir_util
 
 from app.classes.shared.helpers import helper
@@ -228,12 +230,38 @@ class Controller:
             return False
         return True
 
+    @staticmethod
+    def verify_zip_server(zip_path: str):
+        zip_check = helper.check_file_exists(zip_path)
+        if not zip_check:
+            return False
+        return True
+
     def import_jar_server(self, server_name: str, server_path: str, server_jar: str, min_mem: int, max_mem: int, port: int):
         server_id = helper.create_uuid()
         new_server_dir = os.path.join(helper.servers_dir, server_id)
 
         helper.ensure_dir_exists(new_server_dir)
         dir_util.copy_tree(server_path, new_server_dir)
+
+        full_jar_path = os.path.join(new_server_dir, server_jar)
+        server_command = 'java -Xms{}G -Xmx{}G -jar {} nogui'.format(min_mem, max_mem, full_jar_path)
+        server_log_file = "{}/logs/latest.log".format(new_server_dir)
+        server_stop = "stop"
+
+        new_id = self.register_server(server_name, server_id, new_server_dir, server_command, server_jar,
+                                      server_log_file, server_stop, port)
+        return new_id
+
+    def import_zip_server(self, server_name: str, zip_path: str, server_jar: str, min_mem: int, max_mem: int, port: int):
+        server_id = helper.create_uuid()
+        new_server_dir = os.path.join(helper.servers_dir, server_id)
+        if helper.check_file_perms(zip_path):
+            helper.ensure_dir_exists(new_server_dir)
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(new_server_dir)
+        else:
+            return "false"
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
         server_command = 'java -Xms{}G -Xmx{}G -jar {} nogui'.format(min_mem, max_mem, full_jar_path)

@@ -45,6 +45,14 @@ class Helpers:
         self.passhasher = PasswordHasher()
         self.exiting = False
 
+    def check_file_perms(self, path):
+        try:
+            fp = open(path, "r").close()
+            logger.info("{} is readable".format(path))
+            return True
+        except PermissionError:
+            return False
+
     def is_file_older_than_x_days(self, file, days=1):
         if self.check_file_exists(file):
             file_time = os.path.getmtime(file)

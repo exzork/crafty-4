@@ -42,7 +42,7 @@ class PanelHandler(BaseHandler):
         }
 
         # if no servers defined, let's go to the build server area
-        if page_data['server_stats']['total'] == 0:
+        if page_data['server_stats']['total'] == 0 and page != "error":
             self.set_status(301)
             self.redirect("/server/step1")
             return False

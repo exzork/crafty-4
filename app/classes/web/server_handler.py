@@ -97,7 +97,16 @@ class ServerHandler(BaseHandler):
                     return False
 
                 new_server_id = controller.import_jar_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
+            elif import_type == 'import_zip':
+                good_path = controller.verify_zip_server(import_server_path)
+                if not good_path:
+                    self.redirect("/panel/error?error=Zip file not found!")
+                    return False
 
+                new_server_id = controller.import_zip_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
+                if new_server_id == "false":
+                    self.redirect("/panel/error?error=ZIP file not accessible! You can fix this permissions issue with sudo chown -R crafty:crafty {} And sudo chmod 2775 -R {}".format(import_server_path, import_server_path))
+                    return False
             else:
                 # todo: add server type check here and call the correct server add functions if not a jar
                 new_server_id = controller.create_jar_server(server_parts[0], server_parts[1], server_name, min_mem, max_mem, port)
