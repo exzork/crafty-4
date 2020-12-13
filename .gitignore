@@ -23,4 +23,4 @@ session.lock
 default.json
 .vscode/
 
-app/config/web
+app/config/
