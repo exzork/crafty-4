@@ -4,13 +4,14 @@
           <div class="card-body pt-3 pb-3">
             <div class="row">
               <div class="col-sm-3 mr-2">
-                <b>Server Status:</b>
                 {% if data['server_stats'][0]['running'] %}
-                  <span class="text-success">Online</span><br />
-                  <b>Server Started:</b> {{ data['server_stats'][0]['started'] }}
+                  <b>Server Status:</b> <span class="text-success">Online</span><br />
+                  <b>Server Started:</b> <span id="started">{{ data['server_stats'][0]['started'] }}</span><br />
+                  <b>Server Uptime:</b> <span id="uptime">Not calculated yet</span>
                 {% else %}
-                  <span class="text-danger">Offline</span><br />
-                  <b>Server Started:</b> Not Started
+                  <b>Server Status:</b> <span class="text-danger">Offline</span><br />
+                  <b>Server Started:</b> <span class="text-danger">Offline</span><br />
+                  <b>Server Uptime:</b> <span class="text-danger">Offline</span>
                 {% end %}
               </div>
 
@@ -41,3 +42,54 @@
       </div>
 
   </div>
+
+<script src="/static/assets/vendors/moment/moment.min.js" type="text/javascript" charset="utf-8"></script>
+
+<script>
+
+  document.addEventListener('load', () => console.log('loadedghfghfghk'));
+
+  console.log('calculateTime');
+  let uptime = document.querySelector('#uptime');
+  let started = document.querySelector('#started');
+
+  if (uptime != null && started != null) {
+
+    var msdiff = moment(started.textContent,"YYYY-MM-DD HH:mm:ss").diff(moment());
+    var diff = moment(msdiff);
+    var s = diff
+      .format("YYYY-MM-DD HH:mm:ss")
+      .split(' ')
+      .map(x=>x.split('-'))
+      .flat()
+      .map(x=>x.split(':'))
+      .flat()
+      .map(str => str.replace(',', ''))
+      .map(str => +str) // Convert to number(s)
+      .reverse()
+      .map((n, i) =>
+        n === 0
+        ? n
+        : `${n} ` +
+          [
+            'year',
+            'month',
+            'day',
+            'hour',
+            'minute',
+            'second'
+          ].reverse()[i] + (n != 1 && n != -1 ? 's' : '')
+      )
+      .reverse()
+      .filter(num => num !== 0) // filter out 0s
+      .map((v, i, a) => // example input: [1,2,3], output: "1, 2 and 3"
+        v + (i !== a.length - 1
+          ? i !== a.length -  2
+            ? ', '
+            : ' and '
+          : '')).join('');
+
+    uptime.textContent = s;
+
+  }
+</script>
