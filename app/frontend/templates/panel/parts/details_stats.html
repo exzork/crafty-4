@@ -6,7 +6,7 @@
               <div class="col-sm-3 mr-2">
                 {% if data['server_stats'][0]['running'] %}
                   <b>Server Status:</b> <span class="text-success">Online</span><br />
-                  <b>Server Started:</b> <span id="started">{{ data['server_stats'][0]['started'] }}</span><br />
+                  <b>Server Started:</b> <span id="started">{{ data['server_stats'][0]['started'] }} (Server Time)</span><br />
                   <b>Server Uptime:</b> <span id="uptime">Not calculated yet</span>
                 {% else %}
                   <b>Server Status:</b> <span class="text-danger">Offline</span><br />
@@ -47,49 +47,54 @@
 
 <script>
 
-  document.addEventListener('load', () => console.log('loadedghfghfghk'));
+  function durationToHumanizedString (duration) {
+    duration._data.months += duration._data.years * 12;
+    // 30.45833333333 = average month length, calculate with (31+28.5+31+30+31+30+31+31+30+31+30+31) / 12
+    duration._data.days += duration._data.months * 30.45833333333;
+    duration._data.hours += duration._data.days * 24;
 
-  console.log('calculateTime');
-  let uptime = document.querySelector('#uptime');
-  let started = document.querySelector('#started');
+    let obj = {
+      hours: Math.round(duration._data.hours),
+      minutes: duration._data.minutes,
+      seconds: duration._data.seconds
+    }
 
-  if (uptime != null && started != null) {
-
-    var msdiff = moment(started.textContent,"YYYY-MM-DD HH:mm:ss").diff(moment());
-    var diff = moment(msdiff);
-    var s = diff
-      .format("YYYY-MM-DD HH:mm:ss")
-      .split(' ')
-      .map(x=>x.split('-'))
-      .flat()
-      .map(x=>x.split(':'))
-      .flat()
-      .map(str => str.replace(',', ''))
-      .map(str => +str) // Convert to number(s)
-      .reverse()
-      .map((n, i) =>
-        n === 0
-        ? n
-        : `${n} ` +
-          [
-            'year',
-            'month',
-            'day',
-            'hour',
-            'minute',
-            'second'
-          ].reverse()[i] + (n != 1 && n != -1 ? 's' : '')
-      )
-      .reverse()
-      .filter(num => num !== 0) // filter out 0s
+    output = Object.entries(obj)
+      .map(([type, num]) => {
+         // make them strings
+        returnData = num + ' ' + type;
+        console.log(returnData);
+        // remove the s in the end if the data is -1 or 1
+        if (returnData == -1 || returnData == 1)
+          returnData = returnData.slice(0, -1)
+        return returnData;
+      })
       .map((v, i, a) => // example input: [1,2,3], output: "1, 2 and 3"
         v + (i !== a.length - 1
           ? i !== a.length -  2
             ? ', '
             : ' and '
           : '')).join('');
-
-    uptime.textContent = s;
-
+    return output;
   }
+
+  document.addEventListener('load', () => {
+
+    console.log('calculateTime');
+    let uptime = document.querySelector('#uptime');
+    let started = document.querySelector('#started');
+
+    let nowServerTime = '{{ data['time'] }}';
+    let startedServerTime = '{{ data['server_stats'][0]['started'] }}';
+
+    if (uptime != null && started != null) {
+
+      var msdiff = moment(nowServerTime,"YYYY-MM-DD hh:mm:ss")
+          .diff(moment(startedServerTime,"YYYY-MM-DD hh:mm:ss"));
+      var diff = moment.duration(msdiff);
+
+      uptime.textContent = durationToHumanizedString(diff);
+    }
+
+  });
 </script>

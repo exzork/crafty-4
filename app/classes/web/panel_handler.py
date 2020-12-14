@@ -3,6 +3,8 @@ import logging
 import tornado.web
 import tornado.escape
 import bleach
+import time
+import datetime
 
 from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
@@ -23,6 +25,9 @@ class PanelHandler(BaseHandler):
 
         template = "panel/denied.html"
 
+        now = time.time()
+        formatted_time = str(datetime.datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S'))
+
         defined_servers = controller.list_defined_servers()
 
         page_data = {
@@ -38,7 +43,8 @@ class PanelHandler(BaseHandler):
             'menu_servers': defined_servers,
             'hosts_data': db_helper.get_latest_hosts_stats(),
             'show_contribute': helper.get_setting("show_contribute_link", True),
-            'error': error
+            'error': error,
+            'time': formatted_time
         }
 
         # if no servers defined, let's go to the build server area
