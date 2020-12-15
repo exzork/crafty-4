@@ -78,11 +78,26 @@
     return output;
   }
 
-  document.addEventListener('load', () => {
+  document.body.onload = (() => {
 
     console.log('calculateTime');
     let uptime = document.querySelector('#uptime');
     let started = document.querySelector('#started');
+
+    if (started != null) {
+      let startedUTC = '{{ (datetime.datetime.strptime(data['server_stats'][0]['started'], '%Y-%m-%d %H:%M:%S') - datetime.timedelta(seconds=-time.timezone)).strftime('%Y-%m-%d %H:%M:%S') }}';
+      console.log('utc', startedUTC);
+      startedUTC = moment.utc(startedUTC, 'YYYY-MM-DD HH:mm:ss');
+
+      let browserUTCOffset = moment().utcOffset(); // This is in minutes
+
+      let startedLocal = startedUTC.utcOffset(browserUTCOffset);
+      startedLocal = startedLocal.format('YYYY-MM-DD HH:mm:ss');
+
+      console.log('local', startedLocal);
+
+      started.textContent = startedLocal
+    }
 
     let nowServerTime = '{{ data['time'] }}';
     let startedServerTime = '{{ data['server_stats'][0]['started'] }}';

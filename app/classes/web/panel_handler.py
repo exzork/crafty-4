@@ -125,7 +125,9 @@ class PanelHandler(BaseHandler):
 
         self.render(
             template,
-            data=page_data
+            data=page_data,
+            time=time,
+            utc_offset=(time.timezone * -1 / 60 / 60),
         )
 
     @tornado.web.authenticated
