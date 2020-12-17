@@ -65,6 +65,9 @@ class PanelHandler(BaseHandler):
         elif page == 'files_menu':
             template = "panel/files_menu.html"
 
+        elif page == 'websocket':
+            template = "panel/websocket.html"
+
         elif page == "remove_server":
             server_id = self.get_argument('id', None)
             server_data = controller.get_server_data(server_id)

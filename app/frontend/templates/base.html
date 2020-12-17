@@ -58,6 +58,8 @@
 
         <div class="main-panel">
 
+          <div class="warnings"></div>
+
         {% block content %}
         {% end %}
 
@@ -103,6 +105,82 @@
         });
       });
     });
+
+    {% if request.protocol == 'https'%}
+      let usingWebSockets = true;
+
+      let socketTypes = [];
+
+      try {
+
+        var wsInternal = new WebSocket('wss://' + location.host + '/ws');
+        wsInternal.onopen = function() {
+          console.log('opened WebSocket connection:', wsInternal)
+        };
+        wsInternal.onmessage = function (event) {
+          var message = JSON.parse(event.data);
+
+          console.log('got message: ', message)
+
+          socketTypes
+            .filter(event => event.type == message.type)
+            .forEach(event => event.callback(message.data))
+        }
+
+
+        webSocket = {
+          on: function (type, callback) {
+            socketTypes.push({ type: type, callback: callback })
+          },
+          emit: function (type, data) {
+            var message = {
+              type: type,
+              data: data
+            }
+
+            wsInternal.send(JSON.stringify(message));
+          }
+        }
+      } catch (error) {
+        console.error('Error while making websocket helpers', error);
+        usingWebSockets = false;
+      }
+    {% else %}
+      let usingWebSockets = false;
+      warn('WebSockets are not supported in Crafty if not using the https protocol')
+    {% end%}
+
+    function warn(message) {
+      var closeEl = document.createElement('span');
+      var strongEL = document.createElement('strong');
+      var msgEl = document.createElement('div');
+
+      closeEl.innerHTML = '&times;';
+      strongEL.textContent = 'Warning: ';
+      msgEl.append(strongEL, message);
+
+
+      closeEl.style.marginLeft = '15px';
+      closeEl.style.fontWeight = 'bold';
+      closeEl.style.float = 'right';
+      closeEl.style.fontSize = '22px';
+      closeEl.style.lineHeight = '20px';
+      closeEl.style.cursor = 'pointer';
+      closeEl.style.transition = '.3s';
+
+      closeEl.addEventListener('click', function () {this.parentElement.style.display='none';});
+
+      var parentEl = document.createElement('div');
+
+      parentEl.style.padding = '20px';
+      parentEl.style.backgroundColor = '#f7970f';
+
+      parentEl.appendChild(closeEl);
+      parentEl.appendChild(msgEl);
+
+      document.querySelector('.warnings').appendChild(parentEl);
+    }
+
     </script>
 
     {% block js %}

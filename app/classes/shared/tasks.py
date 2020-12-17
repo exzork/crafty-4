@@ -8,6 +8,7 @@ import threading
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.web.tornado import webserver
+from app.classes.web.websocket_handler import WebSocketHandler
 
 from app.classes.minecraft.stats import stats
 from app.classes.shared.controller import controller
@@ -24,6 +25,7 @@ except ModuleNotFoundError as e:
     console.critical("Import Error: Unable to load {} module".format(e, e.name))
     sys.exit(1)
 
+
 class TasksManager:
 
     def __init__(self):
@@ -37,6 +39,9 @@ class TasksManager:
 
         self.command_thread = threading.Thread(target=self.command_watcher, daemon=True, name="command_watcher")
         self.command_thread.start()
+
+        self.realtime_thread = threading.Thread(target=self.realtime_thread, daemon=True, name="realtime")
+        self.realtime_thread.start()
 
     def get_main_thread_run_status(self):
         return self.main_thread_exiting
@@ -72,9 +77,7 @@ class TasksManager:
 
                 db_helper.mark_command_complete(c.get('command_id', None))
 
-
             time.sleep(1)
-
 
     def _main_graceful_exit(self):
         try:
@@ -132,6 +135,34 @@ class TasksManager:
 
         logger.info("Scheduling Serverjars.com cache refresh service every 12 hours")
         schedule.every(12).hours.do(server_jar_obj.refresh_cache)
+
+    @staticmethod
+    def realtime_thread():
+        console.debug('realtime zero')
+        while True:
+            if len(WebSocketHandler.connections) > 0:
+                print(WebSocketHandler)
+                WebSocketHandler.broadcast(WebSocketHandler, 'sample_data', {
+                    'foo': 'bar',
+                    'baz': 'Hello, World!'
+                })
+
+            if WebSocketHandler.host_stats.get('cpu_usage') != \
+                    db_helper.get_latest_hosts_stats().get('cpu_usage') or \
+                    WebSocketHandler.host_stats.get('mem_percent') != \
+                    db_helper.get_latest_hosts_stats().get('mem_percent'):
+
+                console.debug('realtime one')
+                WebSocketHandler.host_stats = db_helper.get_latest_hosts_stats()
+                if len(WebSocketHandler.connections) > 0:
+                    WebSocketHandler.broadcast(WebSocketHandler, 'update_host_stats', {
+                        'cpu': WebSocketHandler.host_stats.get('cpu_usage'),
+                        'mem': WebSocketHandler.host_stats.get('mem_percent')
+                    })
+                time.sleep(4)
+            else:
+                console.debug('realtime two')
+                time.sleep(2)
 
 
 tasks_manager = TasksManager()

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Default</title>
+  </head>
+
+  <body class="dark-theme">
+    <script>
+
+    {% if request.protocol == 'https'%}
+      let usingWebSockets = true;
+
+      try {
+
+        function WebSocketManager (url) {
+
+          this.ws = new WebSocket(url);
+          this.ws.eventListeners = [];
+          this.ws.onopen = function() {
+            console.log('opened WebSocket connection:', this.ws)
+          };
+          this.ws.onmessage = function (event) {
+            var message = JSON.parse(event.data);
+
+            console.log('got message: ', message)
+
+            console.log(this)
+            this.eventListeners
+              .filter(event => event.type == message.type)
+              .forEach(event => event.callback(message.data))
+          }
+
+          this.on = function (type, callback) {
+            this.ws.eventListeners.push({ type: type, callback: callback })
+          }
+          this.emit = function (type, data) {
+            var message = {
+              type: type,
+              data: data
+            }
+
+            this.ws.send(JSON.stringify(message));
+          }
+        }
+
+        webSocket = new WebSocketManager('wss://' + location.host + '/ws');
+
+      } catch (error) {
+        console.error('Error while making websocket helpers', error);
+        usingWebSockets = false;
+      }
+    {% else %}
+      let usingWebSockets = false;
+      console.warn('WebSockets are not supported in Crafty if not using the https protocol')
+    {% end%}
+
+    </script>
+
+  </body>
+</html>
