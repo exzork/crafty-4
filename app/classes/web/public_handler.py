@@ -106,7 +106,7 @@ class PublicHandler(BaseHandler):
                 cookie_data = {
                     "username": user_data.username,
                     "user_id": user_data.user_id,
-                    "account_type": user_data.allowed_servers,
+                    "account_type": user_data.superuser,
                 }
 
                 self.set_secure_cookie('user_data', json.dumps(cookie_data))

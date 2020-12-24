@@ -120,8 +120,56 @@ class PanelHandler(BaseHandler):
 
         elif page == 'panel_config':
             page_data['users'] = db_helper.get_all_users()
-            # print(page_data['users'])
             template = "panel/panel_config.html"
+
+        elif page == "add_user":
+            page_data['new_user'] = True
+            page_data['user'] = {}
+            page_data['user']['username'] = ""
+            page_data['user']['user_id'] = -1
+            page_data['user']['enabled'] = True
+            page_data['user']['superuser'] = False
+            page_data['user']['roles'] = []
+
+            page_data['roles_all'] = db_helper.get_all_roles()
+            template = "panel/panel_edit_user.html"
+
+        elif page == "edit_user":
+            page_data['new_user'] = False
+            uid = self.get_argument('id', None)
+            page_data['user'] = db_helper.get_user(uid)
+            page_data['roles_all'] = db_helper.get_all_roles()
+            template = "panel/panel_edit_user.html"
+
+        elif page == "remove_user":
+            user_id = bleach.clean(self.get_argument('id', None))
+
+            user_data = json.loads(self.get_secure_cookie("user_data"))
+            exec_user = db_helper.get_user(user_data['user_id'])
+            
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return False
+            elif user_id is None:
+                self.redirect("/panel/error?error=Invalid User ID")
+                return False
+            else:
+                # does this user id exist?
+                target_user = db_helper.get_user(user_id)
+                if not target_user:
+                    self.redirect("/panel/error?error=Invalid User ID")
+                    return False
+                elif target_user['superuser']:
+                    self.redirect("/panel/error?error=Cannot remove a superuser")
+                    return False
+
+            db_helper.remove_user(user_id)
+
+            db_helper.add_to_audit_log(exec_user['user_id'],
+                                       "Removed user {} (UID:{})".format(target_user['username'], user_id),
+                                       server_id=0,
+                                       source_ip=self.get_remote_ip())
+            self.redirect("/panel/panel_config")
 
         elif page == "activity_logs":
             page_data['audit_logs'] = db_helper.get_actity_log()
@@ -151,7 +199,13 @@ class PanelHandler(BaseHandler):
             crash_detection = int(float(self.get_argument('crash_detection', '0')))
             subpage = self.get_argument('subpage', None)
 
-            if server_id is None:
+            user_data = json.loads(self.get_secure_cookie("user_data"))
+            exec_user = db_helper.get_user(user_data['user_id'])
+
+            if not exec_user.superuser:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return False
+            elif server_id is None:
                 self.redirect("/panel/error?error=Invalid Server ID")
                 return False
             else:
@@ -178,11 +232,91 @@ class PanelHandler(BaseHandler):
 
             controller.refresh_server_settings(server_id)
 
-            user_data = json.loads(self.get_secure_cookie("user_data"))
-
             db_helper.add_to_audit_log(user_data['user_id'],
                                        "Edited server {} named {}".format(server_id, server_name),
                                        server_id,
                                        self.get_remote_ip())
 
             self.redirect("/panel/server_detail?id={}&subpage=config".format(server_id))
+
+        elif page == "edit_user":
+            user_id = bleach.clean(self.get_argument('id', None))
+            username = bleach.clean(self.get_argument('username', None))
+            password0 = bleach.clean(self.get_argument('password0', None))
+            password1 = bleach.clean(self.get_argument('password1', None))
+            enabled = int(float(bleach.clean(self.get_argument('enabled'), '0')))
+            regen_api = int(float(bleach.clean(self.get_argument('regen_api', '0'))))
+
+            user_data = json.loads(self.get_secure_cookie("user_data"))
+            exec_user = db_helper.get_user(user_data['user_id'])
+            
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return False
+            elif username is None or username == "":
+                self.redirect("/panel/error?error=Invalid username")
+                return False
+            elif user_id is None:
+                self.redirect("/panel/error?error=Invalid User ID")
+                return False
+            else:
+                # does this user id exist?
+                if not db_helper.user_id_exists(user_id):
+                    self.redirect("/panel/error?error=Invalid User ID")
+                    return False
+
+            if password0 != password1:
+                self.redirect("/panel/error?error=Passwords must match")
+                return False
+
+            user_data = {
+                "username": username,
+                "password": password0,
+                "enabled": enabled,
+                "regen_api": regen_api,
+                "roles": []
+            }
+            db_helper.update_user(user_id, user_data=user_data)
+
+            db_helper.add_to_audit_log(exec_user['user_id'],
+                                       "Edited user {} (UID:{})".format(username, user_id),
+                                       server_id=0,
+                                       source_ip=self.get_remote_ip())
+            self.redirect("/panel/panel_config")
+
+
+        elif page == "add_user":
+            username = bleach.clean(self.get_argument('username', None))
+            password0 = bleach.clean(self.get_argument('password0', None))
+            password1 = bleach.clean(self.get_argument('password1', None))
+            enabled = int(float(bleach.clean(self.get_argument('enabled'), '0')))
+
+            user_data = json.loads(self.get_secure_cookie("user_data"))
+            exec_user = db_helper.get_user(user_data['user_id'])
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return False
+            elif username is None or username == "":
+                self.redirect("/panel/error?error=Invalid username")
+                return False
+            else:
+                # does this user id exist?
+                if db_helper.get_userid_by_name(username) is not None:
+                    self.redirect("/panel/error?error=User exists")
+                    return False
+
+            if password0 != password1:
+                self.redirect("/panel/error?error=Passwords must match")
+                return False
+
+            user_id = db_helper.add_user(username, password=password0, enabled=enabled)
+
+            db_helper.add_to_audit_log(exec_user['user_id'],
+                                       "Added user {} (UID:{})".format(username, user_id),
+                                       server_id=0,
+                                       source_ip=self.get_remote_ip())
+            db_helper.add_to_audit_log(exec_user['user_id'],
+                                       "Edited user {} (UID:{})".format(username, user_id),
+                                       server_id=0,
+                                       source_ip=self.get_remote_ip())
+            self.redirect("/panel/panel_config")

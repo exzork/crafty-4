@@ -1,0 +1,219 @@
+{% extends ../base.html %}
+
+{% block meta %}
+<!--  <meta http-equiv="refresh" content="60">-->
+{% end %}
+
+{% block title %}Crafty Controller - Edit User{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        {% if data['new_user'] %}
+          <h4 class="page-title">
+            New User
+              <br />
+              <small>UID: N/A</small>
+          </h4>
+        {% else %}
+          <h4 class="page-title">
+            Edit User - {{ data['user']['user_id'] }}
+              <br />
+              <small>UID: {{ data['user']['user_id'] }}</small>
+          </h4>
+        {% end %}
+      </div>
+    </div>
+
+  </div>
+  <!-- Page Title Header Ends-->
+
+  <div class="row">
+
+    <div class="col-sm-12 grid-margin">
+      <div class="card">
+        <div class="card-body  pt-0">
+            <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" href="/panel/edit_user?id={{ data['user']['username'] }}&subpage=config" role="tab" aria-selected="true">
+                  <i class="fas fa-cogs"></i>Config</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/edit_user?id={{ data['user']['username'] }}&subpage=other" role="tab" aria-selected="false">
+                  <i class="fas fa-folder-tree"></i>Other</a>
+              </li>
+            </ul>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12">
+                  {% if data['new_user'] %}
+                    <form class="forms-sample" method="post" action="/panel/add_user">
+                  {% else %}
+                    <form class="forms-sample" method="post" action="/panel/edit_user">
+                  {% end %}
+                      {% raw xsrf_form_html() %}
+                      <input type="hidden" name="id" value="{{ data['user']['user_id'] }}">
+                      <input type="hidden" name="subpage" value="config">
+
+                      <div class="form-group">
+                        <label for="username">User Name <small class="text-muted ml-1"> - What you wish to call this user</small> </label>
+                        <input type="text" class="form-control" name="username" id="username" value="{{ data['user']['username']  }}" placeholder="User Name" >
+                      </div>
+
+                      <div class="form-group">
+                        <label for="password0">Password <small class="text-muted ml-1"></small> </label>
+                        <input type="password" class="form-control" name="password0" id="password0" value="" placeholder="Password" >
+                      </div>
+
+                      <div class="form-group">
+                        <label for="password1">Repeat Password <small class="text-muted ml-1"></small> </label>
+                        <input type="password" class="form-control" name="password1" id="password1" value="" placeholder="Repeat Password" >
+                      </div>
+
+                      <div class="form-group">
+                        <label for="auto_start_delay">Server Autostart Delay <small class="text-muted ml-1"> - Delay before auto starting (if enabled below)</small> </label>
+                        <input type="number" class="form-control" name="auto_start_delay" id="auto_start_delay" value="{{ 10 }}" step="1" max="999" min="10" >
+                      </div>
+
+                      <div class="form-group">
+                        <label for="role_membership">Roles <small class="text-muted ml-1"> - the roles this user is a member of</small> </label>
+                        <div class="table-responsive">
+                          <table class="table">
+                            <thead>
+                              <tr class="rounded">
+                                <th>Role Name</th>
+                                <th>Member?</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                            {% for role in data['roles_all'] %}
+                              <tr>
+                                <td>{{ role.role_name }}</td>
+                                <td>
+                                  {% if role.role_name in data['user']['roles'] %}
+                                    <span class="text-success">
+                                      <i class="fas fa-check-square"></i> Yes
+                                    </span>
+                                  {% else %}
+                                    <span class="text-danger">
+                                      <i class="far fa-times-square"></i> No
+                                    </span>
+
+                                  {% end %}
+
+                                </td>
+                              </tr>
+                            {% end %}
+
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      <div class="form-check-flat">
+                        <label for="enabled" class="form-check-label ml-4 mb-4">
+                          {% if data['user']['enabled'] %}
+                              <input type="checkbox" class="form-check-input" id="enabled" name="enabled" checked="" value="1">Enabled
+                          {% else %}
+                              <input type="checkbox" class="form-check-input" id="enabled" name="enabled" value="1">Enabled
+                          {% end %}
+                        </label>
+
+                        <label for="regen_api" class="form-check-label ml-4 mb-4">
+                          {% if data['new_user'] %}
+                            <input type="checkbox" class="form-check-input" id="regen_api" name="regen_api" checked="" value="1" disabled >Regenerate API Key
+                          {% else %}
+                            <input type="checkbox" class="form-check-input" id="regen_api" name="regen_api" value="1">Regenerate API Key
+                          {% end %}
+                        </label>
+
+                        <label for="superuser" class="form-check-label ml-4 mb-4">
+                          {% if data['user']['superuser'] %}
+                              <input type="checkbox" class="form-check-input" id="superuser" name="superuser" checked="" value="1" disabled >Super User
+                          {% else %}
+                              <input type="checkbox" class="form-check-input" id="superuser" name="superuser" value="1" disabled >Super User
+                          {% end %}
+                        </label>
+
+                      </div>
+
+                      <button type="submit" class="btn btn-success mr-2">Save</button>
+                      <button type="reset" class="btn btn-light">Cancel</button>
+                    </form>
+                </div>
+
+                <div class="col-md-6 col-sm-12">
+                    <div class="card">
+                      <div class="card-body">
+                        <h4 class="card-title">User Config Area</h4>
+                        <p class="card-description"> Here is where you can change the configuration of your user</p>
+                        <blockquote class="blockquote">
+                          <p class="mb-0">
+                              It is recommended to <code>NOT</code> change the paths of a server managed by Crafty.
+                              Changing paths <code>CAN</code> break things, especially on Linux type operating systems where
+                              file permissions are more locked down.
+                              <br /><br/>
+                              If you feel you have to change a where a server is located
+                              you may do so as long as you give the "Crafty" user permission to read / write to the server path.
+                              <br />
+                              <br />
+                              On Linux this is best done by executing the following:<br />
+                              <code>
+                                  sudo chown crafty:crafty /path/to/your/server -R<br />
+                                  sudo chmod 2775 /path/to/your/server -R<br />
+                              </code>
+                          </p>
+                        </blockquote>
+                      </div>
+                    </div>
+                    <div class="text-center">
+                        {% if data['new_user'] %}
+                            <a class="btn btn-sm btn-danger disabled">Delete User</a><br />
+                            <small>You cannot delete something that does not yet exist</small>
+                        {% elif data['user']['superuser'] %}
+                            <a class="btn btn-sm btn-danger disabled">Delete User</a><br />
+                            <small>You cannot delete a superuser</small>
+                        {% else %}
+                            <a href="/panel/remove_user?id={{ data['user']['user_id'] }}" class="btn btn-sm btn-danger">Delete User</a>
+                        {% end %}
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+</div>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+<script>
+
+
+    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+    function getCookie(name) {
+        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+        return r ? r[1] : undefined;
+    }
+
+    $( document ).ready(function() {
+        console.log( "ready!" );
+
+    });
+
+
+</script>
+
+{% end %}

@@ -34,28 +34,46 @@ class Users(BaseModel):
     created = DateTimeField(default=datetime.datetime.now)
     last_login = DateTimeField(default=datetime.datetime.now)
     last_ip = CharField(default="")
-    username = CharField(default="")
+    username = CharField(default="", unique=True, index=True)
     password = CharField(default="")
     enabled = BooleanField(default=True)
-    api_token = CharField(default="")
-    allowed_servers = CharField(default="[]")
+    superuser = BooleanField(default=False)
+    api_token = CharField(default="", unique=True, index=True) # we may need to revisit this
 
     class Meta:
         table_name = "users"
+
+
+class Roles(BaseModel):
+    role_id = AutoField()
+    created = DateTimeField(default=datetime.datetime.now)
+    role_name = CharField(default="", unique=True, index=True)
+
+    class Meta:
+        table_name = "roles"
+
+
+class User_Roles(BaseModel):
+    user_id = ForeignKeyField(Users, backref='user_role')
+    role_id = ForeignKeyField(Roles, backref='user_role')
+
+    class Meta:
+        table_name = 'user_roles'
+        primary_key = CompositeKey('user_id', 'role_id')
 
 
 class Audit_Log(BaseModel):
     audit_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     user_name = CharField(default="")
-    user_id = IntegerField(default=0)
+    user_id = IntegerField(default=0, index=True)
     source_ip = CharField(default='127.0.0.1')
-    server_id = IntegerField(default=None)
+    server_id = IntegerField(default=None, index=True) # When auditing global events, use server ID 0
     log_msg = TextField(default='')
 
 
 class Host_Stats(BaseModel):
-    time = DateTimeField(default=datetime.datetime.now)
+    time = DateTimeField(default=datetime.datetime.now, index=True)
     boot_time = CharField(default="")
     cpu_usage = FloatField(default=0)
     cpu_cores = IntegerField(default=0)
@@ -73,8 +91,8 @@ class Host_Stats(BaseModel):
 class Servers(BaseModel):
     server_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
-    server_uuid = CharField(default="")
-    server_name = CharField(default="Server")
+    server_uuid = CharField(default="", index=True)
+    server_name = CharField(default="Server", index=True)
     path = CharField(default="")
     executable = CharField(default="")
     log_path = CharField(default="")
@@ -90,10 +108,28 @@ class Servers(BaseModel):
         table_name = "servers"
 
 
+class User_Servers(BaseModel):
+    user_id = ForeignKeyField(Users, backref='user_server')
+    server_id = ForeignKeyField(Servers, backref='user_server')
+
+    class Meta:
+        table_name = 'user_servers'
+        primary_key = CompositeKey('user_id', 'server_id')
+
+
+class Role_Servers(BaseModel):
+    user_id = ForeignKeyField(Roles, backref='role_server')
+    server_id = ForeignKeyField(Servers, backref='role_server')
+
+    class Meta:
+        table_name = 'role_servers'
+        primary_key = CompositeKey('role_id', 'server_id')
+
+
 class Server_Stats(BaseModel):
     stats_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
-    server_id = ForeignKeyField(Servers, backref='server')
+    server_id = ForeignKeyField(Servers, backref='server', index=True)
     started = CharField(default="")
     running = BooleanField(default=False)
     cpu = FloatField(default=0)
@@ -117,8 +153,8 @@ class Server_Stats(BaseModel):
 class Commands(BaseModel):
     command_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
-    server_id = ForeignKeyField(Servers, backref='server')
-    user = ForeignKeyField(Users, backref='user')
+    server_id = ForeignKeyField(Servers, backref='server', index=True)
+    user = ForeignKeyField(Users, backref='user', index=True)
     source_ip = CharField(default='127.0.0.1')
     command = CharField(default='')
     executed = BooleanField(default=False)
@@ -129,7 +165,7 @@ class Commands(BaseModel):
 
 class Webhooks(BaseModel):
     id = AutoField()
-    name = CharField(max_length=64, unique=True)
+    name = CharField(max_length=64, unique=True, index=True)
     method = CharField(default="POST")
     url = CharField(unique=True)
     event = CharField(default="")
@@ -143,7 +179,7 @@ class Backups(BaseModel):
     directories = CharField()
     storage_location = CharField()
     max_backups = IntegerField()
-    server_id = IntegerField()
+    server_id = IntegerField(index=True)
 
     class Meta:
         table_name = 'backups'
@@ -157,6 +193,8 @@ class db_builder:
             database.create_tables([
                 Backups,
                 Users,
+                Roles,
+                User_Roles,
                 Host_Stats,
                 Webhooks,
                 Servers,
@@ -173,16 +211,18 @@ class db_builder:
 
         username = default_data.get("username", 'admin')
         password = default_data.get("password", 'crafty')
-        api_token = helper.random_string_generator(32)
-        
-        Users.insert({
-            Users.username: username.lower(),
-            Users.password: helper.encode_pass(password),
-            Users.api_token: api_token,
-            Users.enabled: True
-        }).execute()
+        #api_token = helper.random_string_generator(32)
+        #
+        #Users.insert({
+        #    Users.username: username.lower(),
+        #    Users.password: helper.encode_pass(password),
+        #    Users.api_token: api_token,
+        #    Users.enabled: True,
+        #    Users.superuser: True
+        #}).execute()
+        db_shortcuts.add_user(username, password=password, superuser=True)
 
-        console.info("API token is {}".format(api_token))
+        #console.info("API token is {}".format(api_token))
 
     @staticmethod
     def is_fresh_install():
@@ -196,7 +236,8 @@ class db_builder:
 
 class db_shortcuts:
 
-    def return_rows(self, query):
+    @staticmethod
+    def return_rows(query):
         rows = []
 
         try:
@@ -209,7 +250,8 @@ class db_shortcuts:
 
         return rows
 
-    def get_server_data_by_id(self, server_id):
+    @staticmethod
+    def get_server_data_by_id(server_id):
         try:
             query = Servers.get_by_id(server_id)
         except DoesNotExist:
@@ -217,25 +259,29 @@ class db_shortcuts:
 
         return model_to_dict(query)
 
-    def get_all_defined_servers(self):
+    @staticmethod
+    def get_all_defined_servers():
         query = Servers.select()
-        return self.return_rows(query)
+        return db_helper.return_rows(query)
 
-    def get_all_servers_stats(self):
-        servers = self.get_all_defined_servers()
+    @staticmethod
+    def get_all_servers_stats():
+        servers = db_helper.get_all_defined_servers()
         server_data = []
 
         for s in servers:
             latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
-            server_data.append({'server_data': s, "stats": self.return_rows(latest)})
+            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)})
         return server_data
 
-    def get_server_stats_by_id(self, server_id):
+    @staticmethod
+    def get_server_stats_by_id(server_id):
         stats = Server_Stats.select().where(Server_Stats.server_id == server_id).order_by(Server_Stats.created.desc()).limit(1)
-        return self.return_rows(stats)
+        return db_helper.return_rows(stats)
 
-    def server_id_exists(self, server_id):
-        if not self.get_server_data_by_id(server_id):
+    @staticmethod
+    def server_id_exists(server_id):
+        if not db_helper.get_server_data_by_id(server_id):
             return False
         return True
 
@@ -244,24 +290,118 @@ class db_shortcuts:
         query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()
         return model_to_dict(query)
 
-    def get_all_users(self):
+    @staticmethod
+    def new_api_token():
+        while True:
+            token = helper.random_string_generator(32)
+            test = list(Users.select(Users.user_id).where(Users.api_token == token))
+            if len(test) == 0:
+                return token
+
+    @staticmethod
+    def get_all_users():
         query = Users.select()
         return query
 
-    def get_unactioned_commands(self):
-        query = Commands.select().where(Commands.executed == 0)
-        return self.return_rows(query)
+    @staticmethod
+    def get_all_roles():
+        query = Roles.select()
+        return query
 
-    def get_server_friendly_name(self, server_id):
-        server_data = self.get_server_data_by_id(server_id)
+    @staticmethod
+    def get_userid_by_name(username):
+        try:
+            return (Users.get(Users.username == username)).user_id
+        except DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_user(uid):
+        query = Users.select(Users, Roles).join(User_Roles, JOIN.LEFT_OUTER).join(Roles, JOIN.LEFT_OUTER).where(Users.user_id == uid)
+        query = [model_to_dict(r) for r in query]
+        if len(query) > 0:
+            user = query[0].copy()
+            return user
+        else:
+            return {}
+
+    @staticmethod
+    def update_user(user_id, user_data={}):
+        base_data = db_helper.get_user(user_id)
+        up_data = {}
+        for key in user_data:
+            if key == "user_id":
+                continue
+            elif key == "roles":
+                continue
+            elif key == "regen_api":
+                up_data['api_token'] = db_shortcuts.new_api_token()
+            elif key == "password":
+                up_data['password'] = helper.encode_pass(user_data['password'])
+            elif base_data[key] != user_data[key]:
+                up_data[key] = user_data[key]
+        Users.update(up_data).where(Users.user_id == user_id).execute()
+
+
+    @staticmethod
+    def add_user(username, password=None, api_token=None, enabled=True, superuser=False):
+        if password is not None:
+            pw_enc = helper.encode_pass(password)
+        else:
+            pw_enc = None
+        if api_token is None:
+            api_token = db_shortcuts.new_api_token()
+        else:
+            if type(api_token) is not str and len(api_token) != 32:
+                raise ValueError("API token must be a 32 character string")
+        user_id = Users.insert({
+            Users.username: username.lower(),
+            Users.password: pw_enc,
+            Users.api_token: api_token,
+            Users.enabled: enabled,
+            Users.superuser: superuser
+        }).execute()
+        return user_id
+
+    @staticmethod
+    def remove_user(user_id):
+        user = Users.get(Users.user_id == user_id)
+        return user.delete_instance()
+
+    @staticmethod
+    def user_id_exists(user_id):
+        if not db_shortcuts.get_user(user_id):
+            return False
+        return True
+
+    @staticmethod
+    def get_roleid_by_name(role_name):
+        return (Roles.get(Roles.role_name == role_name)).role_id
+
+    @staticmethod
+    def get_role(role_id):
+        query = model_to_dict(Roles.get(Roles.role_id == role_id))
+        Roles['roles_flat'] = []
+        Roles['allowed_servers_flat'] = []
+        return query
+
+    @staticmethod
+    def get_unactioned_commands():
+        query = Commands.select().where(Commands.executed == 0)
+        return db_helper.return_rows(query)
+
+    @staticmethod
+    def get_server_friendly_name(server_id):
+        server_data = db_helper.get_server_data_by_id(server_id)
         friendly_name = "{}-{}".format(server_data.get('server_id', 0), server_data.get('server_name', None))
         return friendly_name
 
-    def send_command(self, user_id, server_id, remote_ip, command):
+    @staticmethod
+    def send_command(user_id, server_id, remote_ip, command):
 
-        server_name = self.get_server_friendly_name(server_id)
+        server_name = db_helper.get_server_friendly_name(server_id)
 
-        self.add_to_audit_log(user_id, "Issued Command {} for Server: {}".format(command, server_name),
+        db_helper.add_to_audit_log(user_id, "Issued Command {} for Server: {}".format(command, server_name),
                               server_id, remote_ip)
 
         Commands.insert({
@@ -271,11 +411,13 @@ class db_shortcuts:
             Commands.command: command
         }).execute()
 
-    def get_actity_log(self):
+    @staticmethod
+    def get_actity_log():
         q = Audit_Log.select()
-        return self.return_db_rows(q)
+        return db_helper.return_db_rows(q)
 
-    def return_db_rows(self, model):
+    @staticmethod
+    def return_db_rows(model):
         data = [model_to_dict(row) for row in model]
         return data
 
