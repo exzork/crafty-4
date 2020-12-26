@@ -76,11 +76,6 @@
                       </div>
 
                       <div class="form-group">
-                        <label for="auto_start_delay">Server Autostart Delay <small class="text-muted ml-1"> - Delay before auto starting (if enabled below)</small> </label>
-                        <input type="number" class="form-control" name="auto_start_delay" id="auto_start_delay" value="{{ 10 }}" step="1" max="999" min="10" >
-                      </div>
-
-                      <div class="form-group">
                         <label for="role_membership">Roles <small class="text-muted ml-1"> - the roles this user is a member of</small> </label>
                         <div class="table-responsive">
                           <table class="table">
@@ -95,17 +90,41 @@
                               <tr>
                                 <td>{{ role.role_name }}</td>
                                 <td>
-                                  {% if role.role_name in data['user']['roles'] %}
-                                    <span class="text-success">
-                                      <i class="fas fa-check-square"></i> Yes
-                                    </span>
+                                  {% if role['role_id'] in data['user']['roles'] %}
+                                    <input type="checkbox" class="form-check-input" id="role_{{ role['role_id'] }}_access" name="role_{{ role['role_id'] }}_access" checked="" value="1">
                                   {% else %}
-                                    <span class="text-danger">
-                                      <i class="far fa-times-square"></i> No
-                                    </span>
-
+                                    <input type="checkbox" class="form-check-input" id="role_{{ role['role_id'] }}_access" name="role_{{ role['role_id'] }}_access" value="1">
                                   {% end %}
 
+                                </td>
+                              </tr>
+                            {% end %}
+
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="server_membership">Servers <small class="text-muted ml-1"> - servers this user is allowed to access </small> </label>
+                        <div class="table-responsive">
+                          <table class="table">
+                            <thead>
+                              <tr class="rounded">
+                                <th>Server Name</th>
+                                <th>Access?</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                            {% for server in data['servers_all'] %}
+                              <tr>
+                                <td>{{ server['server_name'] }}</td>
+                                <td>
+                                  {% if server['server_id'] in data['user']['servers'] %}
+                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" value="1">
+                                  {% else %}
+                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" value="1">
+                                  {% end %}
                                 </td>
                               </tr>
                             {% end %}
@@ -154,19 +173,14 @@
                         <p class="card-description"> Here is where you can change the configuration of your user</p>
                         <blockquote class="blockquote">
                           <p class="mb-0">
-                              It is recommended to <code>NOT</code> change the paths of a server managed by Crafty.
-                              Changing paths <code>CAN</code> break things, especially on Linux type operating systems where
-                              file permissions are more locked down.
-                              <br /><br/>
-                              If you feel you have to change a where a server is located
-                              you may do so as long as you give the "Crafty" user permission to read / write to the server path.
+                              Created: {{ str(data['user']['created']) }}
                               <br />
+                              Last login: {{ str(data['user']['last_login']) }}
                               <br />
-                              On Linux this is best done by executing the following:<br />
-                              <code>
-                                  sudo chown crafty:crafty /path/to/your/server -R<br />
-                                  sudo chmod 2775 /path/to/your/server -R<br />
-                              </code>
+                              Last IP: {{ data['user']['last_ip'] }}
+                              <br />
+                              API Key: {{ data['user']['api_token'] }}
+                              <br />
                           </p>
                         </blockquote>
                       </div>

@@ -118,7 +118,7 @@ class User_Servers(BaseModel):
 
 
 class Role_Servers(BaseModel):
-    user_id = ForeignKeyField(Roles, backref='role_server')
+    role_id = ForeignKeyField(Roles, backref='role_server')
     server_id = ForeignKeyField(Servers, backref='role_server')
 
     class Meta:
@@ -198,6 +198,8 @@ class db_builder:
                 Host_Stats,
                 Webhooks,
                 Servers,
+                User_Servers,
+                Role_Servers,
                 Server_Stats,
                 Commands,
                 Audit_Log
@@ -316,31 +318,67 @@ class db_shortcuts:
             return None
 
     @staticmethod
-    def get_user(uid):
-        query = Users.select(Users, Roles).join(User_Roles, JOIN.LEFT_OUTER).join(Roles, JOIN.LEFT_OUTER).where(Users.user_id == uid)
-        query = [model_to_dict(r) for r in query]
-        if len(query) > 0:
-            user = query[0].copy()
+    def get_user(user_id):
+        user = model_to_dict(Users.get(Users.user_id == user_id))
+
+        if user:
+            roles_query = User_Roles.select().join(Roles, JOIN.INNER).where(User_Roles.user_id == user_id)
+            # TODO: this query needs to be narrower
+            roles = set()
+            for r in roles_query:
+                roles.add(r.role_id.role_id)
+            servers_query = User_Servers.select().join(Servers, JOIN.INNER).where(User_Servers.user_id == user_id)
+            # TODO: this query needs to be narrower
+            servers = set()
+            for s in servers_query:
+                servers.add(s.server_id.server_id)
+            user['roles'] = roles
+            user['servers'] = servers
+            logger.debug("user: ({}) {}".format(user_id, user))
             return user
         else:
+            logger.debug("user: ({}) {}".format(user_id, {}))
             return {}
 
     @staticmethod
     def update_user(user_id, user_data={}):
         base_data = db_helper.get_user(user_id)
         up_data = {}
+        added_roles = set()
+        removed_roles = set()
+        added_servers = set()
+        removed_servers = set()
         for key in user_data:
             if key == "user_id":
                 continue
             elif key == "roles":
-                continue
+                added_roles = user_data['roles'].difference(base_data['roles'])
+                removed_roles = base_data['roles'].difference(user_data['roles'])
+            elif key == "servers":
+                added_servers = user_data['servers'].difference(base_data['servers'])
+                removed_servers = base_data['servers'].difference(user_data['servers'])
             elif key == "regen_api":
-                up_data['api_token'] = db_shortcuts.new_api_token()
+                if user_data['regen_api']:
+                    up_data['api_token'] = db_shortcuts.new_api_token()
             elif key == "password":
-                up_data['password'] = helper.encode_pass(user_data['password'])
+                if user_data['password'] is not None and user_data['password'] != "":
+                    up_data['password'] = helper.encode_pass(user_data['password'])
             elif base_data[key] != user_data[key]:
                 up_data[key] = user_data[key]
-        Users.update(up_data).where(Users.user_id == user_id).execute()
+        logger.debug("user: {} +role:{} -role:{} +server:{} -server{}".format(user_data, added_roles, removed_roles, added_servers, removed_servers))
+        with database.atomic():
+            for role in added_roles:
+                User_Roles.get_or_create(user_id=user_id, role_id=role)
+                # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
+            User_Roles.delete().where(User_Roles.user_id == user_id).where(User_Roles.role_id.in_(removed_roles)).execute()
+
+            for server in added_servers:
+                User_Servers.get_or_create(user_id=user_id, server_id=server)
+                # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
+            User_Servers.delete().where(User_Servers.user_id == user_id).where(User_Servers.server_id.in_(removed_servers)).execute()
+            if up_data:
+                Users.update(up_data).where(Users.user_id == user_id).execute()
+
 
 
     @staticmethod

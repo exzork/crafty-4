@@ -120,6 +120,10 @@ class PanelHandler(BaseHandler):
 
         elif page == 'panel_config':
             page_data['users'] = db_helper.get_all_users()
+            exec_user = db_helper.get_user(user_data['user_id'])
+            for user in page_data['users']:
+                if user.user_id != exec_user['user_id']:
+                    user.api_token = "********"
             template = "panel/panel_config.html"
 
         elif page == "add_user":
@@ -129,9 +133,15 @@ class PanelHandler(BaseHandler):
             page_data['user']['user_id'] = -1
             page_data['user']['enabled'] = True
             page_data['user']['superuser'] = False
-            page_data['user']['roles'] = []
+            page_data['user']['api_token'] = "N/A"
+            page_data['user']['created'] = "N/A"
+            page_data['user']['last_login'] = "N/A"
+            page_data['user']['last_ip'] = "N/A"
+            page_data['user']['roles'] = set()
+            page_data['user']['servers'] = set()
 
             page_data['roles_all'] = db_helper.get_all_roles()
+            page_data['servers_all'] = controller.list_defined_servers()
             template = "panel/panel_edit_user.html"
 
         elif page == "edit_user":
@@ -139,6 +149,12 @@ class PanelHandler(BaseHandler):
             uid = self.get_argument('id', None)
             page_data['user'] = db_helper.get_user(uid)
             page_data['roles_all'] = db_helper.get_all_roles()
+            page_data['servers_all'] = controller.list_defined_servers()
+
+            exec_user = db_helper.get_user(user_data['user_id'])
+            
+            if exec_user['user_id'] != page_data['user']['user_id']:
+                page_data['user']['api_token'] = "********"
             template = "panel/panel_edit_user.html"
 
         elif page == "remove_user":
@@ -269,17 +285,38 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Passwords must match")
                 return False
 
+            roles = set()
+            for server in db_helper.get_all_roles():
+                argument = int(float(
+                    bleach.clean(
+                        self.get_argument('role_{}_membership'.format(role['role_id']), '0')
+                    )
+                ))
+                if argument:
+                    servers.add(role['role_id'])
+
+            servers = set()
+            for server in controller.list_defined_servers():
+                argument = int(float(
+                    bleach.clean(
+                        self.get_argument('server_{}_access'.format(server['server_id']), '0')
+                    )
+                ))
+                if argument:
+                    servers.add(server['server_id'])
+
             user_data = {
                 "username": username,
                 "password": password0,
                 "enabled": enabled,
                 "regen_api": regen_api,
-                "roles": []
+                "roles": roles,
+                "servers": servers
             }
             db_helper.update_user(user_id, user_data=user_data)
 
             db_helper.add_to_audit_log(exec_user['user_id'],
-                                       "Edited user {} (UID:{})".format(username, user_id),
+                                       "Edited user {} (UID:{}) with roles {} and servers {}".format(username, user_id, roles, servers),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
@@ -309,14 +346,35 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Passwords must match")
                 return False
 
+            roles = set()
+            for server in db_helper.get_all_roles():
+                argument = int(float(
+                    bleach.clean(
+                        self.get_argument('role_{}_membership'.format(role['role_id']), '0')
+                    )
+                ))
+                if argument:
+                    roles.add(role['role_id'])
+
+            servers = set()
+            for server in controller.list_defined_servers():
+                argument = int(float(
+                    bleach.clean(
+                        self.get_argument('server_{}_access'.format(server['server_id']), '0')
+                    )
+                ))
+                if argument:
+                    servers.add(server['server_id'])
+
             user_id = db_helper.add_user(username, password=password0, enabled=enabled)
+            db_helper.update_user(user_id, {"roles":roles, "servers": servers})
 
             db_helper.add_to_audit_log(exec_user['user_id'],
                                        "Added user {} (UID:{})".format(username, user_id),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             db_helper.add_to_audit_log(exec_user['user_id'],
-                                       "Edited user {} (UID:{})".format(username, user_id),
+                                       "Edited user {} (UID:{}) with roles {} and servers {}".format(username, user_id, roles, servers),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
