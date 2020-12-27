@@ -33,6 +33,7 @@ class Users(BaseModel):
     user_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     last_login = DateTimeField(default=datetime.datetime.now)
+    last_update = DateTimeField(default=datetime.datetime.now)
     last_ip = CharField(default="")
     username = CharField(default="", unique=True, index=True)
     password = CharField(default="")
@@ -47,6 +48,7 @@ class Users(BaseModel):
 class Roles(BaseModel):
     role_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
+    last_update = DateTimeField(default=datetime.datetime.now)
     role_name = CharField(default="", unique=True, index=True)
 
     class Meta:
@@ -365,6 +367,7 @@ class db_shortcuts:
                     up_data['password'] = helper.encode_pass(user_data['password'])
             elif base_data[key] != user_data[key]:
                 up_data[key] = user_data[key]
+        up_data['last_update'] = helper.get_time_as_string()
         logger.debug("user: {} +role:{} -role:{} +server:{} -server{}".format(user_data, added_roles, removed_roles, added_servers, removed_servers))
         with database.atomic():
             for role in added_roles:
@@ -378,8 +381,6 @@ class db_shortcuts:
             User_Servers.delete().where(User_Servers.user_id == user_id).where(User_Servers.server_id.in_(removed_servers)).execute()
             if up_data:
                 Users.update(up_data).where(Users.user_id == user_id).execute()
-
-
 
     @staticmethod
     def add_user(username, password=None, api_token=None, enabled=True, superuser=False):
@@ -397,7 +398,8 @@ class db_shortcuts:
             Users.password: pw_enc,
             Users.api_token: api_token,
             Users.enabled: enabled,
-            Users.superuser: superuser
+            Users.superuser: superuser,
+            Users.created: helper.get_time_as_string()
         }).execute()
         return user_id
 
@@ -414,14 +416,70 @@ class db_shortcuts:
 
     @staticmethod
     def get_roleid_by_name(role_name):
-        return (Roles.get(Roles.role_name == role_name)).role_id
+        try:
+            return (Roles.get(Roles.role_name == role_name)).role_id
+        except DoesNotExist:
+            return None
 
     @staticmethod
     def get_role(role_id):
-        query = model_to_dict(Roles.get(Roles.role_id == role_id))
-        Roles['roles_flat'] = []
-        Roles['allowed_servers_flat'] = []
-        return query
+        role = model_to_dict(Roles.get(Roles.role_id == role_id))
+
+        if role:
+            servers_query = Role_Servers.select().join(Servers, JOIN.INNER).where(Role_Servers.role_id == role_id)
+            # TODO: this query needs to be narrower
+            servers = set()
+            for s in servers_query:
+                servers.add(s.server_id.server_id)
+            role['servers'] = servers
+            logger.debug("role: ({}) {}".format(role_id, role))
+            return role
+        else:
+            logger.debug("role: ({}) {}".format(role_id, {}))
+            return {}
+
+    @staticmethod
+    def update_role(role_id, role_data={}):
+        base_data = db_helper.get_role(role_id)
+        up_data = {}
+        added_servers = set()
+        removed_servers = set()
+        for key in role_data:
+            if key == "role_id":
+                continue
+            elif key == "servers":
+                added_servers = role_data['servers'].difference(base_data['servers'])
+                removed_servers = base_data['servers'].difference(role_data['servers'])
+            elif base_data[key] != role_data[key]:
+                up_data[key] = role_data[key]
+        up_data['last_update'] = helper.get_time_as_string()
+        logger.debug("role: {} +server:{} -server{}".format(role_data, added_servers, removed_servers))
+        with database.atomic():
+            for server in added_servers:
+                Role_Servers.get_or_create(role_id=role_id, server_id=server)
+                # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
+            Role_Servers.delete().where(Role_Servers.role_id == role_id).where(Role_Servers.server_id.in_(removed_servers)).execute()
+            if up_data:
+                Roles.update(up_data).where(Roles.role_id == role_id).execute()
+
+    @staticmethod
+    def add_role(role_name):
+        role_id = Roles.insert({
+            Roles.role_name: role_name.lower(),
+            Roles.created: helper.get_time_as_string()
+        }).execute()
+        return role_id
+
+    @staticmethod
+    def remove_role(role_id):
+        role = Roles.get(Roles.role_id == role_id)
+        return role.delete_instance()
+
+    @staticmethod
+    def role_id_exists(role_id):
+        if not db_shortcuts.get_role(role_id):
+            return False
+        return True
 
     @staticmethod
     def get_unactioned_commands():

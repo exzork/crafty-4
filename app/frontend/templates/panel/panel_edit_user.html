@@ -90,10 +90,10 @@
                               <tr>
                                 <td>{{ role.role_name }}</td>
                                 <td>
-                                  {% if role['role_id'] in data['user']['roles'] %}
-                                    <input type="checkbox" class="form-check-input" id="role_{{ role['role_id'] }}_access" name="role_{{ role['role_id'] }}_access" checked="" value="1">
+                                  {% if role.role_id in data['user']['roles'] %}
+                                    <input type="checkbox" class="form-check-input" id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership" checked="" value="1">
                                   {% else %}
-                                    <input type="checkbox" class="form-check-input" id="role_{{ role['role_id'] }}_access" name="role_{{ role['role_id'] }}_access" value="1">
+                                    <input type="checkbox" class="form-check-input" id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership" value="1">
                                   {% end %}
 
                                 </td>
@@ -176,6 +176,8 @@
                               Created: {{ str(data['user']['created']) }}
                               <br />
                               Last login: {{ str(data['user']['last_login']) }}
+                              <br />
+                              Last update: {{ str(data['user']['last_update']) }}
                               <br />
                               Last IP: {{ data['user']['last_ip'] }}
                               <br />

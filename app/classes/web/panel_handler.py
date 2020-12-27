@@ -120,6 +120,7 @@ class PanelHandler(BaseHandler):
 
         elif page == 'panel_config':
             page_data['users'] = db_helper.get_all_users()
+            page_data['roles'] = db_helper.get_all_roles()
             exec_user = db_helper.get_user(user_data['user_id'])
             for user in page_data['users']:
                 if user.user_id != exec_user['user_id']:
@@ -137,8 +138,15 @@ class PanelHandler(BaseHandler):
             page_data['user']['created'] = "N/A"
             page_data['user']['last_login'] = "N/A"
             page_data['user']['last_ip'] = "N/A"
+            page_data['role']['last_update'] = "N/A"
             page_data['user']['roles'] = set()
             page_data['user']['servers'] = set()
+
+            exec_user = db_helper.get_user(user_data['user_id'])
+
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return False
 
             page_data['roles_all'] = db_helper.get_all_roles()
             page_data['servers_all'] = controller.list_defined_servers()
@@ -146,13 +154,20 @@ class PanelHandler(BaseHandler):
 
         elif page == "edit_user":
             page_data['new_user'] = False
-            uid = self.get_argument('id', None)
-            page_data['user'] = db_helper.get_user(uid)
+            user_id = self.get_argument('id', None)
+            page_data['user'] = db_helper.get_user(user_id)
             page_data['roles_all'] = db_helper.get_all_roles()
             page_data['servers_all'] = controller.list_defined_servers()
 
             exec_user = db_helper.get_user(user_data['user_id'])
-            
+
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return False
+            elif user_id is None:
+                self.redirect("/panel/error?error=Invalid User ID")
+                return False
+
             if exec_user['user_id'] != page_data['user']['user_id']:
                 page_data['user']['api_token'] = "********"
             template = "panel/panel_edit_user.html"
@@ -162,7 +177,7 @@ class PanelHandler(BaseHandler):
 
             user_data = json.loads(self.get_secure_cookie("user_data"))
             exec_user = db_helper.get_user(user_data['user_id'])
-            
+
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return False
@@ -183,6 +198,68 @@ class PanelHandler(BaseHandler):
 
             db_helper.add_to_audit_log(exec_user['user_id'],
                                        "Removed user {} (UID:{})".format(target_user['username'], user_id),
+                                       server_id=0,
+                                       source_ip=self.get_remote_ip())
+            self.redirect("/panel/panel_config")
+
+        elif page == "add_role":
+            page_data['new_role'] = True
+            page_data['role'] = {}
+            page_data['role']['role_name'] = ""
+            page_data['role']['role_id'] = -1
+            page_data['role']['created'] = "N/A"
+            page_data['role']['last_update'] = "N/A"
+            page_data['role']['servers'] = set()
+
+            exec_user = db_helper.get_user(user_data['user_id'])
+
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return False
+
+            page_data['servers_all'] = controller.list_defined_servers()
+            template = "panel/panel_edit_role.html"
+
+        elif page == "edit_role":
+            page_data['new_role'] = False
+            role_id = self.get_argument('id', None)
+            page_data['role'] = db_helper.get_role(role_id)
+            page_data['servers_all'] = controller.list_defined_servers()
+
+            exec_user = db_helper.get_user(user_data['user_id'])
+
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return False
+            elif role_id is None:
+                self.redirect("/panel/error?error=Invalid Role ID")
+                return False
+
+            template = "panel/panel_edit_role.html"
+
+        elif page == "remove_role":
+            role_id = bleach.clean(self.get_argument('id', None))
+
+            user_data = json.loads(self.get_secure_cookie("user_data"))
+            exec_user = db_helper.get_user(user_data['user_id'])
+
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return False
+            elif role_id is None:
+                self.redirect("/panel/error?error=Invalid Role ID")
+                return False
+            else:
+                # does this user id exist?
+                target_role = db_helper.get_user(role_id)
+                if not target_role:
+                    self.redirect("/panel/error?error=Invalid Role ID")
+                    return False
+
+            db_helper.remove_role(role_id)
+
+            db_helper.add_to_audit_log(exec_user['user_id'],
+                                       "Removed role {} (RID:{})".format(target_role['role_name'], role_id),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
@@ -265,7 +342,7 @@ class PanelHandler(BaseHandler):
 
             user_data = json.loads(self.get_secure_cookie("user_data"))
             exec_user = db_helper.get_user(user_data['user_id'])
-            
+
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return False
@@ -286,14 +363,14 @@ class PanelHandler(BaseHandler):
                 return False
 
             roles = set()
-            for server in db_helper.get_all_roles():
+            for role in db_helper.get_all_roles():
                 argument = int(float(
                     bleach.clean(
-                        self.get_argument('role_{}_membership'.format(role['role_id']), '0')
+                        self.get_argument('role_{}_membership'.format(role.role_id), '0')
                     )
                 ))
                 if argument:
-                    servers.add(role['role_id'])
+                    roles.add(role.role_id)
 
             servers = set()
             for server in controller.list_defined_servers():
@@ -347,10 +424,10 @@ class PanelHandler(BaseHandler):
                 return False
 
             roles = set()
-            for server in db_helper.get_all_roles():
+            for role in db_helper.get_all_roles():
                 argument = int(float(
                     bleach.clean(
-                        self.get_argument('role_{}_membership'.format(role['role_id']), '0')
+                        self.get_argument('role_{}_membership'.format(role.role_id), '0')
                     )
                 ))
                 if argument:
@@ -375,6 +452,91 @@ class PanelHandler(BaseHandler):
                                        source_ip=self.get_remote_ip())
             db_helper.add_to_audit_log(exec_user['user_id'],
                                        "Edited user {} (UID:{}) with roles {} and servers {}".format(username, user_id, roles, servers),
+                                       server_id=0,
+                                       source_ip=self.get_remote_ip())
+            self.redirect("/panel/panel_config")
+
+        elif page == "edit_role":
+            role_id = bleach.clean(self.get_argument('id', None))
+            role_name = bleach.clean(self.get_argument('role_name', None))
+
+            user_data = json.loads(self.get_secure_cookie("user_data"))
+            exec_user = db_helper.get_user(user_data['user_id'])
+
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return False
+            elif role_name is None or role_name == "":
+                self.redirect("/panel/error?error=Invalid username")
+                return False
+            elif role_id is None:
+                self.redirect("/panel/error?error=Invalid Role ID")
+                return False
+            else:
+                # does this user id exist?
+                if not db_helper.role_id_exists(role_id):
+                    self.redirect("/panel/error?error=Invalid Role ID")
+                    return False
+
+            servers = set()
+            for server in controller.list_defined_servers():
+                argument = int(float(
+                    bleach.clean(
+                        self.get_argument('server_{}_access'.format(server['server_id']), '0')
+                    )
+                ))
+                if argument:
+                    servers.add(server['server_id'])
+
+            role_data = {
+                "role_name": role_name,
+                "servers": servers
+            }
+            db_helper.update_role(role_id, role_data=role_data)
+
+            db_helper.add_to_audit_log(exec_user['user_id'],
+                                       "Edited role {} (RID:{}) with servers {}".format(role_name, role_id, servers),
+                                       server_id=0,
+                                       source_ip=self.get_remote_ip())
+            self.redirect("/panel/panel_config")
+
+
+        elif page == "add_role":
+            role_name = bleach.clean(self.get_argument('role_name', None))
+
+            user_data = json.loads(self.get_secure_cookie("user_data"))
+            exec_user = db_helper.get_user(user_data['user_id'])
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return False
+            elif role_name is None or role_name == "":
+                self.redirect("/panel/error?error=Invalid role name")
+                return False
+            else:
+                # does this user id exist?
+                if db_helper.get_roleid_by_name(role_name) is not None:
+                    self.redirect("/panel/error?error=Role exists")
+                    return False
+
+            servers = set()
+            for server in controller.list_defined_servers():
+                argument = int(float(
+                    bleach.clean(
+                        self.get_argument('server_{}_access'.format(server['server_id']), '0')
+                    )
+                ))
+                if argument:
+                    servers.add(server['server_id'])
+
+            role_id = db_helper.add_role(role_name)
+            db_helper.update_role(role_id, {"servers": servers})
+
+            db_helper.add_to_audit_log(exec_user['user_id'],
+                                       "Added role {} (RID:{})".format(role_name, role_id),
+                                       server_id=0,
+                                       source_ip=self.get_remote_ip())
+            db_helper.add_to_audit_log(exec_user['user_id'],
+                                       "Edited role {} (RID:{}) with servers {}".format(role_name, role_id, servers),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
