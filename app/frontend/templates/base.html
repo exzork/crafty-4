@@ -58,7 +58,11 @@
 
         <div class="main-panel">
 
-          <div class="warnings"></div>
+          <div class="warnings">
+            <div class="noscript-warning" style="padding: 20px; background-color: rgb(247, 151, 15);">
+              <div><strong>Warning: </strong>Crafty doesn't work properly when JavaScript isn't enabled!</div>
+            </div>
+          </div>
 
         {% block content %}
         {% end %}
@@ -81,6 +85,9 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
 
     <script>
+
+    $('.noscript-warning').toggle();
+
       //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
       function getCookie(name) {
         var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
