@@ -212,7 +212,7 @@ class Controller:
             logger.error("Unable to create required server files due to :{}".format(e))
             return False
 
-        server_command = 'java -Xms{}G -Xmx{}G -jar {} nogui'.format(min_mem, max_mem, full_jar_path)
+        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(float(min_mem) * 1000, float(max_mem) * 1000, full_jar_path)
         server_log_file = "{}/logs/latest.log".format(server_dir)
         server_stop = "stop"
 
@@ -245,7 +245,7 @@ class Controller:
         dir_util.copy_tree(server_path, new_server_dir)
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
-        server_command = 'java -Xms{}G -Xmx{}G -jar {} nogui'.format(min_mem, max_mem, full_jar_path)
+        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(float(min_mem) * 1000, float(max_mem) * 1000, full_jar_path)
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"
 
@@ -264,7 +264,8 @@ class Controller:
             return "false"
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
-        server_command = 'java -Xms{}G -Xmx{}G -jar {} nogui'.format(min_mem, max_mem, full_jar_path)
+        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(float(min_mem) * 1000, float(max_mem) * 1000, full_jar_path)
+        print('command: ' + server_command)
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"
 
