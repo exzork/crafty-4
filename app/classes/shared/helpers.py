@@ -62,7 +62,7 @@ class Helpers:
             else:
                 return False
         logger.error("{} does not exits".format(file))
-        return False
+        return True
 
     def get_setting(self, key, default_return=False):
 
