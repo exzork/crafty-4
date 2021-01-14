@@ -27,7 +27,68 @@
 
   <div class="row">
 
-    <div class="col-sm-12 grid-margin">
+    <div class="col-md-6">
+      <noscript>
+        Some functionality does not work without JavaScript.
+      </noscript>
+      <ul class="tree-view">
+        <li>
+          <span class="tree-caret">Files</span>
+          <ul class="tree-nested">
+            {{ data['tree_html'] }}
+
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <style>
+       /* Remove default bullets */
+      .tree-view {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Style the caret/arrow */
+      .tree-caret {
+        cursor: pointer;
+        user-select: none; /* Prevent text selection */
+      }
+
+      /* Create the caret/arrow with a unicode, and style it */
+      .tree-caret::before {
+        content: "\25B6";
+        color: white;
+        display: inline-block;
+        margin-right: 6px;
+      }
+
+      /* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+      .tree-caret-down::before {
+        transform: rotate(90deg);
+      }
+
+      /* Hide the nested list */
+      .tree-nested {
+        display: none;
+      }
+    </style>
+    <div class="col-6">
+    </div>
+
+    <script>
+      var toggler = document.getElementsByClassName("tree-caret");
+      var i;
+
+      for (i = 0; i < toggler.length; i++) {
+        toggler[i].addEventListener("click", function() {
+          this.parentElement.querySelector(".tree-nested").classList.toggle("d-block");
+          this.classList.toggle("tree-caret-down");
+        });
+      }
+    </script>
+
+    <!-- <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body">
 
@@ -57,7 +118,7 @@
               </span>
             </li>
 
-            <!--
+            <a!--
 
             File:
             <li class="list-group-item d-flex justify-content-between align-items-center"
@@ -87,12 +148,12 @@
               </span>
             </li>
 
-            -->
+            --a>
           </ul>
 
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 
 

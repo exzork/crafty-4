@@ -454,6 +454,18 @@ class Helpers:
 
         return data
 
+    @staticmethod
+    def generate_tree(folder, html=""):
+        for filename in os.listdir(folder):
+            print(filename)
+            rel = os.path.join(folder, filename)
+            if os.path.isdir(rel):
+                html += '<li>\n<span class="tree-caret">{}</span>\n<ul class="tree-nested">'.format(filename)
+                html += helper.generate_tree(rel)
+                html += '</ul>'
+            else:
+                html += '<li>{}</li>'.format(filename)
+        return html
 
 
 helper = Helpers()

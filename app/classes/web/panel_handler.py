@@ -62,8 +62,23 @@ class PanelHandler(BaseHandler):
         elif page == 'file_edit':
             template = "panel/file_edit.html"
 
-        elif page == 'files_menu':
-            template = "panel/files_menu.html"
+        elif page == 'files':
+            server_id = self.get_argument('id', None)
+
+            if server_id is None:
+                self.redirect("/panel/error?error=Invalid Server ID")
+                return False
+            else:
+                server_id = bleach.clean(server_id)
+
+                # does this server id exist?
+                if not db_helper.server_id_exists(server_id):
+                    self.redirect("/panel/error?error=Invalid Server ID")
+                    return False
+
+            page_data['tree_html'] = helper.generate_tree(db_helper.get_server_data_by_id(server_id)['path'])
+
+            template = "panel/files.html"
 
         elif page == "remove_server":
             server_id = self.get_argument('id', None)
