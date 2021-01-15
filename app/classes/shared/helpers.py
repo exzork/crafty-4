@@ -9,6 +9,7 @@ import base64
 import socket
 import random
 import logging
+import html
 
 from datetime import datetime
 from socket import gethostname
@@ -455,17 +456,19 @@ class Helpers:
         return data
 
     @staticmethod
-    def generate_tree(folder, html=""):
+    def generate_tree(folder, output=""):
         for filename in os.listdir(folder):
+            print(filename)
+            filename = html.escape(filename)
             print(filename)
             rel = os.path.join(folder, filename)
             if os.path.isdir(rel):
-                html += '<li>\n<span class="tree-caret">{}</span>\n<ul class="tree-nested">'.format(filename)
-                html += helper.generate_tree(rel)
-                html += '</ul>\n</li>'
+                output += '<li>\n<span class="tree-caret">{}</span>\n<ul class="tree-nested">'.format(filename)
+                output += helper.generate_tree(rel)
+                output += '</ul>\n</li>'
             else:
-                html += '<li>{}</li>'.format(filename)
-        return html
+                output += '<li>{}</li>'.format(filename)
+        return output
 
 
 helper = Helpers()
