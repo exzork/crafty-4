@@ -462,7 +462,7 @@ class Helpers:
             if os.path.isdir(rel):
                 html += '<li>\n<span class="tree-caret">{}</span>\n<ul class="tree-nested">'.format(filename)
                 html += helper.generate_tree(rel)
-                html += '</ul>'
+                html += '</ul>\n</li>'
             else:
                 html += '<li>{}</li>'.format(filename)
         return html

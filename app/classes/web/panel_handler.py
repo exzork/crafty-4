@@ -62,24 +62,6 @@ class PanelHandler(BaseHandler):
         elif page == 'file_edit':
             template = "panel/file_edit.html"
 
-        elif page == 'files':
-            server_id = self.get_argument('id', None)
-
-            if server_id is None:
-                self.redirect("/panel/error?error=Invalid Server ID")
-                return False
-            else:
-                server_id = bleach.clean(server_id)
-
-                # does this server id exist?
-                if not db_helper.server_id_exists(server_id):
-                    self.redirect("/panel/error?error=Invalid Server ID")
-                    return False
-
-            page_data['tree_html'] = helper.generate_tree(db_helper.get_server_data_by_id(server_id)['path'])
-
-            template = "panel/files.html"
-
         elif page == "remove_server":
             server_id = self.get_argument('id', None)
             server_data = controller.get_server_data(server_id)
@@ -121,10 +103,15 @@ class PanelHandler(BaseHandler):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return False
 
-            valid_subpages = ['term', 'logs', 'config']
+            valid_subpages = ['term', 'logs', 'config', 'files']
 
             if subpage not in valid_subpages:
+                console.debug('not a valid subpage')
                 subpage = 'term'
+            console.debug('Subpage: "{}"'.format(subpage))
+            if subpage == 'files':
+                console.debug('Subpage is "files"')
+                page_data['tree_html'] = helper.generate_tree(db_helper.get_server_data_by_id(server_id)['path'])
 
             # server_data isn't needed since the server_stats also pulls server data
             # page_data['server_data'] = db_helper.get_server_data_by_id(server_id)
