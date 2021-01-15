@@ -3,6 +3,7 @@ import logging
 import tornado.web
 import tornado.escape
 import bleach
+import os
 
 from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
@@ -79,6 +80,42 @@ class AjaxHandler(BaseHandler):
             page_data['notify_data'] = data
             self.render_page('ajax/notify.html', page_data)
 
+        elif page == "get_file":
+            file_path = self.get_argument('file_path', None)
+            server_id = self.get_argument('id', None)
+
+            if server_id is None:
+                logger.warning("Server ID not found in get_file ajax call")
+                console.warning("Server ID not found in get_file ajax call")
+                return False
+            else:
+                server_id = bleach.clean(server_id)
+
+                # does this server id exist?
+                if not db_helper.server_id_exists(server_id):
+                    logger.warning("Server ID not found in get_file ajax call")
+                    console.warning("Server ID not found in get_file ajax call")
+                    return False
+
+            if not helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], file_path)\
+                    or not helper.check_file_exists(os.path.abspath(file_path)):
+                logger.warning("Invalid path in get_file ajax call")
+                console.warning("Invalid path in get_file ajax call")
+                if not helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], file_path):
+                    console.warning('1')
+                elif not helper.check_file_exists(os.path.abspath(file_path)):
+                    console.warning('2')
+                else:
+                    console.warning('3')
+                return False
+
+            file = open(file_path)
+            file_contents = file.read()
+            file.close()
+
+            console.debug("Send file contents")
+            self.write(file_contents)
+            self.finish()
 
     def post(self, page):
         user_data = json.loads(self.get_secure_cookie("user_data"))
@@ -95,6 +132,7 @@ class AjaxHandler(BaseHandler):
 
             if server_id is None:
                 logger.warning("Server ID not found in send_command ajax call")
+                console.warning("Server ID not found in send_command ajax call")
 
             srv_obj = controller.get_server_obj(server_id)
 
@@ -102,3 +140,33 @@ class AjaxHandler(BaseHandler):
                 if srv_obj.check_running():
                     srv_obj.send_command(command)
 
+        elif page == "save_file":
+            file_contents = bleach.clean(self.get_body_argument('file_contents', default=None, strip=True))
+            file_path = bleach.clean(self.get_body_argument('file_path', default=None, strip=True))
+            server_id = self.get_argument('id', None)
+            print(file_contents)
+            print(file_path)
+            print(server_id)
+
+            if server_id is None:
+                logger.warning("Server ID not found in save_file ajax call")
+                console.warning("Server ID not found in save_file ajax call")
+                return False
+            else:
+                server_id = bleach.clean(server_id)
+
+                # does this server id exist?
+                if not db_helper.server_id_exists(server_id):
+                    logger.warning("Server ID not found in save_file ajax call")
+                    console.warning("Server ID not found in save_file ajax call")
+                    return False
+
+            if not helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], file_path)\
+                    or not helper.check_file_exists(os.path.abspath(file_path)):
+                logger.warning("Invalid path in save_file ajax call")
+                console.warning("Invalid path in save_file ajax call")
+                return False
+
+            # Open the file in write mode and store the content in file_object
+            with open(file_path, 'w') as file_object:
+                file_object.write(file_contents)

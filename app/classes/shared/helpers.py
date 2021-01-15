@@ -457,18 +457,24 @@ class Helpers:
 
     @staticmethod
     def generate_tree(folder, output=""):
-        for filename in os.listdir(folder):
+        for raw_filename in os.listdir(folder):
+            print(raw_filename)
+            filename = html.escape(raw_filename)
             print(filename)
-            filename = html.escape(filename)
-            print(filename)
-            rel = os.path.join(folder, filename)
+            rel = os.path.join(folder, raw_filename)
             if os.path.isdir(rel):
                 output += '<li>\n<span class="tree-caret">{}</span>\n<ul class="tree-nested">'.format(filename)
                 output += helper.generate_tree(rel)
                 output += '</ul>\n</li>'
             else:
-                output += '<li>{}</li>'.format(filename)
+                console.debug('os.path.isdir(rel): "{}", rel: "{}"'.format(os.path.isdir(rel), rel))
+                output += '<li data-path="{}" onclick="clickOnFile(event)">{}</li>'\
+                    .format(os.path.join(folder, filename), filename)
         return output
+
+    @staticmethod
+    def in_path(x, y):
+        return os.path.abspath(y).__contains__(os.path.abspath(x))
 
 
 helper = Helpers()
