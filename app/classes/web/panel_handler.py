@@ -109,9 +109,6 @@ class PanelHandler(BaseHandler):
                 console.debug('not a valid subpage')
                 subpage = 'term'
             console.debug('Subpage: "{}"'.format(subpage))
-            if subpage == 'files':
-                console.debug('Subpage is "files"')
-                page_data['tree_html'] = helper.generate_tree(db_helper.get_server_data_by_id(server_id)['path'])
 
             # server_data isn't needed since the server_stats also pulls server data
             # page_data['server_data'] = db_helper.get_server_data_by_id(server_id)

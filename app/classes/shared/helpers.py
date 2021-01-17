@@ -272,7 +272,7 @@ class Helpers:
         return "%.1f%s%s" % (num, 'Y', suffix)
 
     @staticmethod
-    def check_path_exits(path: str):
+    def check_path_exists(path: str):
         logger.debug('Looking for path: {}'.format(path))
 
         if os.path.exists(path):
@@ -463,13 +463,21 @@ class Helpers:
             print(filename)
             rel = os.path.join(folder, raw_filename)
             if os.path.isdir(rel):
-                output += '<li>\n<span class="tree-caret">{}</span>\n<ul class="tree-nested">'.format(filename)
+                output += \
+                    """<li class="tree-item" data-path="{}">
+                    \n<div data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">{}</div>
+                    \n<ul class="tree-nested">"""\
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
+
                 output += helper.generate_tree(rel)
                 output += '</ul>\n</li>'
             else:
                 console.debug('os.path.isdir(rel): "{}", rel: "{}"'.format(os.path.isdir(rel), rel))
-                output += '<li data-path="{}" onclick="clickOnFile(event)">{}</li>'\
-                    .format(os.path.join(folder, filename), filename)
+                output += """<li
+                class="tree-item tree-ctx-item tree-file"
+                data-path="{}"
+                data-name="{}"
+                onclick="clickOnFile(event)">{}</li>""".format(os.path.join(folder, filename), filename, filename)
         return output
 
     @staticmethod

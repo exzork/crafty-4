@@ -65,9 +65,82 @@
                 <noscript>
                   The file manager does not work without JavaScript
                 </noscript>
+                <div id="files-tree-nav" class="overlay">
+
+                  <!-- Button to close the overlay navigation -->
+                  <a href="javascript:void(0)" class="closebtn" onclick="document.getElementById('files-tree-nav').style.height = '0%';">&times;</a>
+
+                  <!-- Overlay content -->
+                  <div id="files-tree-nav-content" class="overlay-content">
+                    <a onclick="createFileE(event)" href="javascript:void(0)" id="createFile" href="#">Create file</a>
+                    <a onclick="createDirE(event)" href="javascript:void(0)" id="createDir" href="#">Create directory</a>
+                    <a onclick="renameItemE(event)" href="javascript:void(0)" id="renameItem" href="#">Rename</a>
+                    <a onclick="deleteFileE(event)" href="javascript:void(0)" id="deleteFile" href="#">Delete</a>
+                    <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#">Delete</a>
+                  </div>
+
+                </div>
+                <style>
+                  /* The Overlay (background) */
+                  .overlay {
+                    /* Height & width depends on how you want to reveal the overlay (see JS below) */
+                    height: 0;
+                    width: 100vw;
+                    position: fixed; /* Stay in place */
+                    z-index: 1031; /* Sit on top */
+                    left: 0;
+                    top: 0;
+                    background-color: rgb(0,0,0); /* Black fallback color */
+                    background-color: rgba(0,0,0, 0.9); /* Black w/opacity */
+                    overflow-x: hidden; /* Disable horizontal scroll */
+                    transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+                  }
+
+                  /* Position the content inside the overlay */
+                  .overlay-content {
+                    position: relative;
+                    top: 25%; /* 25% from the top */
+                    width: 100%; /* 100% width */
+                    text-align: center; /* Centered text/links */
+                    margin-top: 30px; /* 30px top margin to avoid conflict with the close button on smaller screens */
+                  }
+
+                  /* The navigation links inside the overlay */
+                  .overlay a {
+                    padding: 8px;
+                    text-decoration: none;
+                    font-size: 36px;
+                    color: #818181;
+                    display: block; /* Display block instead of inline */
+                    transition: 0.3s; /* Transition effects on hover (color) */
+                  }
+
+                  /* When you mouse over the navigation links, change their color */
+                  .overlay a:hover, .overlay a:focus {
+                    color: #f1f1f1;
+                  }
+
+                  /* Position the close button (top right corner) */
+                  .overlay .closebtn {
+                    position: absolute;
+                    top: 20px;
+                    right: 45px;
+                    font-size: 60px;
+                  }
+
+                  /* When the height of the screen is less than 450 pixels, change the font-size of the links and position the close button again, so they don't overlap */
+                  @media screen and (max-height: 450px) {
+                    .overlay a {font-size: 20px}
+                    .overlay .closebtn {
+                      font-size: 40px;
+                      top: 15px;
+                      right: 35px;
+                    }
+                  }
+                </style>
                 <ul class="tree-view">
                   <li>
-                    <span class="tree-caret">Files</span>
+                    <div class="tree-caret tree-ctx-item files-tree-title">Files</div>
                     <ul class="tree-nested" id="files-tree">
                       <li>Error while getting files</li>
 
@@ -113,28 +186,6 @@
                 <h3 id="file_warn"></h3>
                 <button class="btn btn-success" onclick="save()">Save</button>
               </div>
-
-              <script>
-
-
-                var encoded = `{{ data['tree_html'] }}`;
-                var elem = document.createElement('textarea');
-                elem.innerHTML = encoded;
-                var decoded = elem.value;
-
-                document.getElementById('files-tree').innerHTML = decoded;
-
-
-                var toggler = document.getElementsByClassName("tree-caret");
-                var i;
-
-                for (i = 0; i < toggler.length; i++) {
-                  toggler[i].addEventListener("click", function() {
-                    this.parentElement.querySelector(".tree-nested").classList.toggle("d-block");
-                    this.classList.toggle("tree-caret-down");
-                  });
-                }
-              </script>
             </div>
 
         </div>
@@ -316,7 +367,7 @@
 
       var token = getCookie("_xsrf")
       $.ajax({
-        type: "POST",
+        type: "PUT",
         headers: {'X-XSRFToken': token},
         url: '/ajax/save_file?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
         data: {
@@ -329,6 +380,277 @@
         },
       });
     }
+
+    function createFile(parent, name, callback) {
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "POST",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/create_file?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+        data: {
+          file_parent: parent,
+          file_name: name
+        },
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+          callback();
+        },
+      });
+    }
+
+    function createDir(parent, name, callback) {
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "POST",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/create_dir?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+        data: {
+          dir_parent: parent,
+          dir_name: name
+        },
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+          callback();
+        },
+      });
+    }
+
+    function renameItem(path, name, callback) {
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "PUT",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/rename_item?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+        data: {
+          item_path: path,
+          new_item_name: name
+        },
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+          callback();
+        },
+      });
+    }
+
+    function deleteFile(path, callback) {
+      console.log('Deleting: ' + path)
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "DELETE",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/del_file?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+        data: {
+          file_path: path
+        },
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+          callback();
+        },
+      });
+    }
+
+    function deleteDir(path, callback) {
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "DELETE",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/del_dir?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+        data: {
+          dir_path: path
+        },
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+          callback();
+        },
+      });
+    }
+
+    function getTreeView() {
+      $.ajax({
+        type: "GET",
+        url: '/ajax/get_tree?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+        dataType: 'text',
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+
+          dataArr = data.split('\n');
+          serverDir = dataArr.shift(); // Remove & return first element (server directory)
+          text = dataArr.join('\n');
+
+          document.getElementById('files-tree').innerHTML = text;
+
+          document.getElementsByClassName('files-tree-title')[0].setAttribute('data-path', serverDir);
+          document.getElementsByClassName('files-tree-title')[0].setAttribute('data-name', 'Files');
+
+          setTimeout(function () {setTreeViewContext()}, 1000);
+
+          var toggler = document.getElementsByClassName("tree-caret");
+          var i;
+
+          for (i = 0; i < toggler.length; i++) {
+            if (toggler[i].classList.contains('files-tree-title')) continue;
+            toggler[i].addEventListener("click", function caretListener() {
+              this.parentElement.querySelector(".tree-nested").classList.toggle("d-block");
+              this.classList.toggle("tree-caret-down");
+            });
+          }
+        },
+      });
+    }
+
+    function setTreeViewContext() {
+      var treeItems = document.getElementsByClassName('tree-ctx-item');
+
+      for (var i = 0; i < treeItems.length; i++) {
+        var treeItem = treeItems[i];
+        treeItem.addEventListener('contextmenu', function contextListener(event) {
+          event.preventDefault();
+          var ctxmenuPath = event.target.getAttribute('data-path');
+          var ctxmenuName = event.target.getAttribute('data-name');
+          if (!ctxmenuPath) {
+            console.log({ 'event.target': event.target, ctxmenuPath });
+            return;
+          }
+          $('#renameItem').show();
+
+          var isDir = event.target.classList.contains('tree-folder');
+          $('#createFile').toggle(isDir);
+          $('#createDir').toggle(isDir);
+          $('#deleteDir').toggle(isDir);
+
+          var isFile = event.target.classList.contains('tree-file');
+          $('#deleteFile').toggle(isFile);
+          console.log({ 'event.target': event.target, isDir, isFile });
+
+          if(event.target.classList.contains('files-tree-title')) {
+            $('#createFile').show();
+            $('#createDir').show();
+            $('#renameItem').hide();
+            $('#deleteDir').hide();
+            $('#deleteFile').hide();
+          }
+
+
+          document.getElementById('files-tree-nav-content')
+            .setAttribute('data-path', ctxmenuPath);
+
+          document.getElementById('files-tree-nav-content')
+            .setAttribute('data-name', ctxmenuName);
+
+          document.getElementById("files-tree-nav").style.height = "100%";
+        })
+      }
+    }
+
+
+    function createFileE(event) {
+      bootbox.prompt('What name do you want for the new file?', function(result) {
+        path = event.target.parentElement.getAttribute('data-path');
+        name = event.target.parentElement.getAttribute('data-name');
+        if (!result) return;
+
+        createFile(path, result, function () {
+          getTreeView()
+          document.getElementById('files-tree-nav').style.height = '0%';
+        });
+      })
+    }
+
+    function createDirE(event) {
+      bootbox.prompt('What name do you want for the new directory?', function(result) {
+        path = event.target.parentElement.getAttribute('data-path');
+        name = event.target.parentElement.getAttribute('data-name');
+        if (!result) return;
+
+        createDir(path, result, function () {
+          getTreeView()
+          document.getElementById('files-tree-nav').style.height = '0%';
+        });
+      })
+    }
+
+    function renameItemE(event) {
+      bootbox.prompt('What should the new name be?', function(result) {
+        path = event.target.parentElement.getAttribute('data-path');
+        name = event.target.parentElement.getAttribute('data-name');
+        if (!result) return;
+
+        renameItem(path, result, function () {
+          getTreeView()
+          document.getElementById('files-tree-nav').style.height = '0%';
+        });
+      })
+    }
+
+    function deleteFileE(event) {
+      path = event.target.parentElement.getAttribute('data-path');
+      name = event.target.parentElement.getAttribute('data-name');
+      bootbox.confirm({
+          size: "",
+          title: "Are you sure you want to delete " + name + "?",
+          closeButton: false,
+          message: "You are deleting \"" + path + "\"!<br/><br/>This action will be irreversible and it'll be lost forever!",
+          buttons: {
+            confirm: {
+              label: 'Yes, I understand the consequences',
+              className: 'btn-danger'
+            },
+            cancel: {
+              label: 'No',
+              className: 'btn-link'
+            }
+          },
+          callback: function(result) {
+            if (!result) return;
+            deleteFile(path, function () {
+              getTreeView()
+              document.getElementById('files-tree-nav').style.height = '0%';
+            });
+          }
+      });
+    }
+
+    function deleteDirE(event) {
+      path = event.target.parentElement.getAttribute('data-path');
+      name = event.target.parentElement.getAttribute('data-name');
+      bootbox.confirm({
+          size: "",
+          title: "Are you sure you want to delete " + name + "?",
+          closeButton: false,
+          message: "You are deleting \"" + path + "\"!<br/><br/>This action will be irreversible and it'll be lost forever!",
+          buttons: {
+            confirm: {
+              label: 'Yes, I understand the consequences',
+              className: 'btn-danger'
+            },
+            cancel: {
+              label: 'No',
+              className: 'btn-link'
+            }
+          },
+          callback: function(result) {
+            if (!result) return;
+            deleteDir(path, function () {
+              getTreeView()
+              document.getElementById('files-tree-nav').style.height = '0%';
+            });
+          }
+      });
+    }
+
+    document.getElementsByClassName('files-tree-title')[0].addEventListener("click", function caretListener() {
+      this.parentElement.querySelector(".tree-nested").classList.toggle("d-block");
+      this.classList.toggle("tree-caret-down");
+    });
+
+    getTreeView();
+    setTreeViewContext();
 
 </script>
 
