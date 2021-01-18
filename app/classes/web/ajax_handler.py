@@ -132,6 +132,7 @@ class AjaxHandler(BaseHandler):
                        helper.generate_tree(db_helper.get_server_data_by_id(server_id)['path']))
             self.finish()
 
+    @tornado.web.authenticated
     def post(self, page):
         user_data = json.loads(self.get_secure_cookie("user_data"))
         error = bleach.clean(self.get_argument('error', "WTF Error!"))
@@ -214,6 +215,7 @@ class AjaxHandler(BaseHandler):
             # Create the directory
             os.mkdir(dir_path)
 
+    @tornado.web.authenticated
     def delete(self, page):
         if page == "del_file":
             file_path = self.get_body_argument('file_path', default=None, strip=True)
@@ -270,6 +272,7 @@ class AjaxHandler(BaseHandler):
             # os.rmdir(dir_path)
             shutil.rmtree(dir_path)  # Removes also when there are contents
 
+    @tornado.web.authenticated
     def put(self, page):
         if page == "save_file":
             file_contents = self.get_body_argument('file_contents', default=None, strip=True)
