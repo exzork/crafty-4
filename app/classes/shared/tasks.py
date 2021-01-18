@@ -139,30 +139,6 @@ class TasksManager:
     @staticmethod
     def realtime_thread():
         console.debug('realtime zero')
-        while True:
-            if len(WebSocketHandler.connections) > 0:
-                print(WebSocketHandler)
-                WebSocketHandler.broadcast(WebSocketHandler, 'sample_data', {
-                    'foo': 'bar',
-                    'baz': 'Hello, World!'
-                })
-
-            if WebSocketHandler.host_stats.get('cpu_usage') != \
-                    db_helper.get_latest_hosts_stats().get('cpu_usage') or \
-                    WebSocketHandler.host_stats.get('mem_percent') != \
-                    db_helper.get_latest_hosts_stats().get('mem_percent'):
-
-                console.debug('realtime one')
-                WebSocketHandler.host_stats = db_helper.get_latest_hosts_stats()
-                if len(WebSocketHandler.connections) > 0:
-                    WebSocketHandler.broadcast(WebSocketHandler, 'update_host_stats', {
-                        'cpu': WebSocketHandler.host_stats.get('cpu_usage'),
-                        'mem': WebSocketHandler.host_stats.get('mem_percent')
-                    })
-                time.sleep(4)
-            else:
-                console.debug('realtime two')
-                time.sleep(2)
 
 
 tasks_manager = TasksManager()

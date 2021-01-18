@@ -7,7 +7,6 @@ from app.classes.shared.models import db_helper
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     connections = set()
-    host_stats = db_helper.get_latest_hosts_stats()
 
     def open(self):
         self.connections.add(self)
@@ -16,7 +15,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             'foo': 'bar',
         })
 
-    def on_message(self, message):
+    def on_message(self, rawMessage):
         # broadcast
         #         for client in self.connections:
         #             client.write_message(message)
@@ -24,14 +23,16 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         # send message to client this message was sent by
         # self.write_message
 
-        console.debug('Got message from WebSocket connection {}'.format(message))
+        console.debug('Got message from WebSocket connection {}'.format(rawMessage))
+        message = json.loads(rawMessage)
+        console.debug('Type: {}, Data: {}'.format(message['type'], message['data']))
 
     def on_close(self):
         self.connections.remove(self)
         console.debug('Closed WebSocket connection')
 
     def broadcast(self, message_type: str, data):
-        print(str(json.dumps({'type': message_type, 'data': data})))
+        console.debug('Sending: ' + str(json.dumps({'type': message_type, 'data': data})))
         message = str(json.dumps({'type': message_type, 'data': data}))
         for client in self.connections:
             client.write_message(message)
