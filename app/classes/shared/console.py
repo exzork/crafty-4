@@ -1,6 +1,6 @@
 import datetime
 import logging
-from sys import modules
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -11,18 +11,20 @@ try:
 except ModuleNotFoundError as e:
     logging.critical("Import Error: Unable to load {} module".format(e, e.name))
     print("Import Error: Unable to load {} module".format(e, e.name))
-    pass
+    from app.classes.shared.installer import installer
+    installer.do_install()
+    sys.exit(1)
 
 
 class Console:
 
     def __init__(self):
-        if 'colorama' in modules:
+        if 'colorama' in sys.modules:
             init()
 
     @staticmethod
     def do_print(message, color):
-        if 'termcolor' in modules or 'colorama' in modules:
+        if 'termcolor' in sys.modules or 'colorama' in sys.modules:
             print(colored(message, color))
         else:
             print(message)

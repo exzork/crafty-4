@@ -44,7 +44,9 @@ def setup_logging(debug=False):
             logging_config = json.load(f)
             if debug:
                 logging_config['loggers']['']['level'] = 'DEBUG'
+
             logging.config.dictConfig(logging_config)
+
     else:
         logging.basicConfig(level=logging.DEBUG)
         logging.warning("Unable to read logging config from {}".format(logging_config_file))
@@ -74,6 +76,7 @@ if __name__ == '__main__':
 
     # setting up the logger object
     logger = logging.getLogger(__name__)
+    print("Logging set to: {} ".format(logger.level))
 
     # print our pretty start message
     do_intro()

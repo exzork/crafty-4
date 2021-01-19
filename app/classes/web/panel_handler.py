@@ -112,9 +112,9 @@ class PanelHandler(BaseHandler):
             valid_subpages = ['term', 'logs', 'config', 'files']
 
             if subpage not in valid_subpages:
-                console.debug('not a valid subpage')
+                logger.debug('not a valid subpage')
                 subpage = 'term'
-            console.debug('Subpage: "{}"'.format(subpage))
+            logger.debug('Subpage: "{}"'.format(subpage))
 
             # server_data isn't needed since the server_stats also pulls server data
             # page_data['server_data'] = db_helper.get_server_data_by_id(server_id)
