@@ -46,6 +46,10 @@ class Helpers:
         self.passhasher = PasswordHasher()
         self.exiting = False
 
+    def float_to_string(self, gbs: int):
+        s = str(float(gbs) * 1000).rstrip("0").rstrip(".")
+        return s
+
     def check_file_perms(self, path):
         try:
             fp = open(path, "r").close()
