@@ -51,7 +51,7 @@ class Controller:
                 continue
 
             # if this server path no longer exists - let's warn and bomb out
-            if not helper.check_path_exits(s['path']):
+            if not helper.check_path_exists(s['path']):
                 logger.warning("Unable to find server {} at path {}. Skipping this server".format(s['server_name'],
                                                                                                   s['path']))
 

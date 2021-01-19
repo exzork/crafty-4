@@ -9,6 +9,7 @@ import base64
 import socket
 import random
 import logging
+import html
 
 from datetime import datetime
 from socket import gethostname
@@ -280,7 +281,7 @@ class Helpers:
         return "%.1f%s%s" % (num, 'Y', suffix)
 
     @staticmethod
-    def check_path_exits(path: str):
+    def check_path_exists(path: str):
         logger.debug('Looking for path: {}'.format(path))
 
         if os.path.exists(path):
@@ -463,6 +464,34 @@ class Helpers:
 
         return data
 
+    @staticmethod
+    def generate_tree(folder, output=""):
+        for raw_filename in os.listdir(folder):
+            print(raw_filename)
+            filename = html.escape(raw_filename)
+            print(filename)
+            rel = os.path.join(folder, raw_filename)
+            if os.path.isdir(rel):
+                output += \
+                    """<li class="tree-item" data-path="{}">
+                    \n<div data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">{}</div>
+                    \n<ul class="tree-nested">"""\
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
+
+                output += helper.generate_tree(rel)
+                output += '</ul>\n</li>'
+            else:
+                console.debug('os.path.isdir(rel): "{}", rel: "{}"'.format(os.path.isdir(rel), rel))
+                output += """<li
+                class="tree-item tree-ctx-item tree-file"
+                data-path="{}"
+                data-name="{}"
+                onclick="clickOnFile(event)">{}</li>""".format(os.path.join(folder, filename), filename, filename)
+        return output
+
+    @staticmethod
+    def in_path(x, y):
+        return os.path.abspath(y).__contains__(os.path.abspath(x))
 
 
 helper = Helpers()
