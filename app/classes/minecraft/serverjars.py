@@ -25,13 +25,19 @@ except ModuleNotFoundError as e:
 
 class ServerJars:
 
+    def __init__(self):
+        self.base_url = "https://serverjars.com"
+
     def _get_api_result(self, call_url: str):
-        base_url = "https://serverjars.com"
-        full_url = "{base}{call_url}".format(base=base_url, call_url=call_url)
+        full_url = "{base}{call_url}".format(base=self.base_url, call_url=call_url)
 
-        r = requests.get(full_url, timeout=2)
+        try:
+            r = requests.get(full_url, timeout=2)
 
-        if r.status_code not in [200, 201]:
+            if r.status_code not in [200, 201]:
+                return {}
+        except Exception as e:
+            logger.error("Unable to connect to serverjar.com api due to error: {}".format(e))
             return {}
 
         try:
@@ -66,18 +72,21 @@ class ServerJars:
         data = self._read_cache()
         return data.get('servers')
 
-    @staticmethod
-    def _check_api_alive():
+    def _check_api_alive(self):
         logger.info("Checking serverjars.com API status")
 
-        check_url = "https://serverjars.com/api/fetchTypes"
-        r = requests.get(check_url, timeout=2)
+        check_url = "{base}/api/fetchTypes".format(base=self.base_url)
+        try:
+            r = requests.get(check_url, timeout=2)
 
-        if r.status_code in [200, 201]:
-            logger.info("Serverjars.com API is alive")
-            return True
+            if r.status_code in [200, 201]:
+                logger.info("Serverjars.com API is alive")
+                return True
+        except Exception as e:
+            logger.error("Unable to connect to serverjar.com api due to error: {}".format(e))
+            return {}
 
-        logger.error("unable to contact Serverjars.com api")
+        logger.error("unable to contact serverjars.com api")
         return False
 
     def refresh_cache(self):
@@ -141,12 +150,11 @@ class ServerJars:
         response = self._get_api_result(url)
         return response
 
-    @staticmethod
-    def download_jar(server, version, path):
-        base_url = "https://serverjars.com/api/fetchJar/{server}/{version}".format(server=server, version=version)
+    def download_jar(self, server, version, path):
+        fetch_url = "{base}/api/fetchJar/{server}/{version}".format(base=self.base_url, server=server, version=version)
 
         # open a file stream
-        with requests.get(base_url, timeout=2, stream=True) as r:
+        with requests.get(fetch_url, timeout=2, stream=True) as r:
             try:
                 with open(path, 'wb') as output:
                     shutil.copyfileobj(r.raw, output)
