@@ -35,6 +35,9 @@ class TasksManager:
 
         self.schedule_thread = threading.Thread(target=self.scheduler_thread, daemon=True, name="scheduler")
 
+        self.log_watcher_thread = threading.Thread(target=self.log_watcher, daemon=True, name="log_watcher")
+        self.log_watcher_thread.start()
+
         self.command_thread = threading.Thread(target=self.command_watcher, daemon=True, name="command_watcher")
         self.command_thread.start()
 
@@ -132,6 +135,11 @@ class TasksManager:
 
         logger.info("Scheduling Serverjars.com cache refresh service every 12 hours")
         schedule.every(12).hours.do(server_jar_obj.refresh_cache)
+
+    def log_watcher(self):
+        console.debug('in log_watcher')
+        helper.check_for_old_logs(db_helper)
+        schedule.every(6).hours.do(lambda: helper.check_for_old_logs(db_helper))
 
 
 tasks_manager = TasksManager()
