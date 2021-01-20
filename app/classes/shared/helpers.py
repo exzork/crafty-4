@@ -471,9 +471,7 @@ class Helpers:
     @staticmethod
     def generate_tree(folder, output=""):
         for raw_filename in os.listdir(folder):
-            print(raw_filename)
             filename = html.escape(raw_filename)
-            print(filename)
             rel = os.path.join(folder, raw_filename)
             if os.path.isdir(rel):
                 output += \
@@ -485,7 +483,6 @@ class Helpers:
                 output += helper.generate_tree(rel)
                 output += '</ul>\n</li>'
             else:
-                console.debug('os.path.isdir(rel): "{}", rel: "{}"'.format(os.path.isdir(rel), rel))
                 output += """<li
                 class="tree-item tree-ctx-item tree-file"
                 data-path="{}"

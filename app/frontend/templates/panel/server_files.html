@@ -182,7 +182,7 @@
               </style>
               <div class="col-md-6 col-sm-12">
                 Editing file <span id="editingFile"></span>
-                <div id="editor">file_contents</div>
+                <div id="editor" style="resize: both;">file_contents</div>
                 <h3 id="file_warn"></h3>
                 <button class="btn btn-success" onclick="save()">Save</button>
               </div>
@@ -216,6 +216,11 @@
     let editor = ace.edit('editor');
     editor.setTheme('ace/theme/dracula');
     editor.session.setUseSoftTabs(true);
+
+    // mouseup = css resize end
+	document.addEventListener("mouseup", function(e){
+		editor.resize();
+	});
 
     let extensionChanges = [
       {
