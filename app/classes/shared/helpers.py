@@ -476,7 +476,11 @@ class Helpers:
             if os.path.isdir(rel):
                 output += \
                     """<li class="tree-item" data-path="{}">
-                    \n<div data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">{}</div>
+                    \n<div data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {}
+                    </div>
                     \n<ul class="tree-nested">"""\
                         .format(os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
 
@@ -487,7 +491,7 @@ class Helpers:
                 class="tree-item tree-ctx-item tree-file"
                 data-path="{}"
                 data-name="{}"
-                onclick="clickOnFile(event)">{}</li>""".format(os.path.join(folder, filename), filename, filename)
+                onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename, filename)
         return output
 
     @staticmethod

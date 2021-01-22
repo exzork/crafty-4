@@ -140,7 +140,11 @@
                 </style>
                 <ul class="tree-view">
                   <li>
-                    <div class="tree-caret tree-ctx-item files-tree-title">Files</div>
+                    <div class="tree-caret tree-ctx-item files-tree-title">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      Files
+                    </div>
                     <ul class="tree-nested" id="files-tree">
                       <li>Error while getting files</li>
 
@@ -150,10 +154,12 @@
               </div>
               <style>
                  /* Remove default bullets */
-                .tree-view {
+                .tree-view,
+                .tree-nested {
                   list-style-type: none;
                   margin: 0;
                   padding: 0;
+                  margin-left: 10px;
                 }
 
                 /* Style the caret/arrow */
@@ -163,16 +169,19 @@
                 }
 
                 /* Create the caret/arrow with a unicode, and style it */
-                .tree-caret::before {
-                  content: "\25B6";
-                  color: white;
+                .tree-caret .fa-folder {
                   display: inline-block;
-                  margin-right: 6px;
+                }
+                .tree-caret .fa-folder-open {
+                  display: none;
                 }
 
                 /* Rotate the caret/arrow icon when clicked on (using JavaScript) */
-                .tree-caret-down::before {
-                  transform: rotate(90deg);
+                .tree-caret-down .fa-folder {
+                  display: none;
+                }
+                .tree-caret-down .fa-folder-open {
+                  display: inline-block;
                 }
 
                 /* Hide the nested list */
