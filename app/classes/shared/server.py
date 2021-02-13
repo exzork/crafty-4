@@ -133,7 +133,7 @@ class Server:
         self.start_time = str(datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'))
 
         if psutil.pid_exists(self.process.pid):
-            self.PID = self.process.pod
+            self.PID = self.process.pid
             logger.info("Server {} running with PID {}".format(self.name, self.PID))
             console.info("Server {} running with PID {}".format(self.name, self.PID))
             self.is_crashed = False
