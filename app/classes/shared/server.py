@@ -126,6 +126,7 @@ class Server:
             logger.info("Linux Detected")
 
         logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
+        self.process = pexpect.popen_spawn.PopenSpawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
         self.is_crashed = False
 
         ts = time.time()
