@@ -490,26 +490,27 @@ class Helpers:
     @staticmethod
     def generate_tree(folder, output=""):
         for raw_filename in os.listdir(folder):
-            print(raw_filename)
             filename = html.escape(raw_filename)
-            print(filename)
             rel = os.path.join(folder, raw_filename)
             if os.path.isdir(rel):
                 output += \
                     """<li class="tree-item" data-path="{}">
-                    \n<div data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">{}</div>
+                    \n<div data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {}
+                    </div>
                     \n<ul class="tree-nested">"""\
                         .format(os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
 
                 output += helper.generate_tree(rel)
                 output += '</ul>\n</li>'
             else:
-                console.debug('os.path.isdir(rel): "{}", rel: "{}"'.format(os.path.isdir(rel), rel))
                 output += """<li
                 class="tree-item tree-ctx-item tree-file"
                 data-path="{}"
                 data-name="{}"
-                onclick="clickOnFile(event)">{}</li>""".format(os.path.join(folder, filename), filename, filename)
+                onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename, filename)
         return output
 
     @staticmethod
