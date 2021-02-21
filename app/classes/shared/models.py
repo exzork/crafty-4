@@ -105,6 +105,7 @@ class Servers(BaseModel):
     stop_command = CharField(default="stop")
     server_ip = CharField(default="127.0.0.1")
     server_port = IntegerField(default=25565)
+    logs_delete_after = IntegerField(default=0)
 
     class Meta:
         table_name = "servers"
