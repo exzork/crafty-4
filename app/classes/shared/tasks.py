@@ -4,11 +4,12 @@ import json
 import time
 import logging
 import threading
+import asyncio
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.web.tornado import webserver
-from app.classes.web.websocket_handler import WebSocketHandler
+from app.classes.web.websocket_helper import websocket_helper
 
 from app.classes.minecraft.stats import stats
 from app.classes.shared.controller import controller
@@ -40,7 +41,7 @@ class TasksManager:
         self.command_thread = threading.Thread(target=self.command_watcher, daemon=True, name="command_watcher")
         self.command_thread.start()
 
-        self.realtime_thread = threading.Thread(target=self.realtime_thread, daemon=True, name="realtime")
+        self.realtime_thread = threading.Thread(target=self.realtime, daemon=True, name="realtime")
         self.realtime_thread.start()
 
     def get_main_thread_run_status(self):
@@ -137,8 +138,40 @@ class TasksManager:
         schedule.every(12).hours.do(server_jar_obj.refresh_cache)
 
     @staticmethod
-    def realtime_thread():
-        console.debug('realtime zero')
+    def realtime():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        console.debug('realtime start')
+        host_stats = db_helper.get_latest_hosts_stats()
+
+        while True:
+
+            if host_stats.get('cpu_usage') != \
+                    db_helper.get_latest_hosts_stats().get('cpu_usage') or \
+                    host_stats.get('mem_percent') != \
+                    db_helper.get_latest_hosts_stats().get('mem_percent'):
+                # Stats are different
+
+                console.debug('realtime 1')
+                host_stats = db_helper.get_latest_hosts_stats()
+                if len(websocket_helper.clients) > 0:
+                    # There are clients
+                    console.debug('realtime 11')
+                    websocket_helper.broadcast('update_host_stats', {
+                        'cpu_usage': host_stats.get('cpu_usage'),
+                        'cpu_cores': host_stats.get('cpu_cores'),
+                        'cpu_cur_freq': host_stats.get('cpu_cur_freq'),
+                        'cpu_max_freq': host_stats.get('cpu_max_freq'),
+                        'mem_percent': host_stats.get('mem_percent'),
+                        'mem_usage': host_stats.get('mem_usage')
+                    })
+                time.sleep(4)
+            else:
+                # Stats are same
+                console.debug('realtime 0')
+                time.sleep(8)
+
 
 
 tasks_manager = TasksManager()

@@ -34,12 +34,11 @@
 
                 </div>
                 <div class="wrapper my-auto ml-auto ml-lg-4">
-                  <p class="mb-0 text-success" data-toggle="tooltip" data-placement="top" data-html="true" title="CPU Cores: {{ data.get('hosts_data').get('cpu_cores') }} <br /> CPU Cur Freq: {{ data.get('hosts_data').get('cpu_cur_freq') }} <br /> CPU Max Freq: {{ data.get('hosts_data').get('cpu_max_freq') }}" >
-                    {{ data.get('hosts_data').get('cpu_usage') }} {{ _('CPU Usage') }}
-
+                  <p id="cpu_data" class="mb-0 text-success" data-toggle="tooltip" data-placement="top" data-html="true" title="CPU Cores: {{ data.get('hosts_data').get('cpu_cores') }} <br /> CPU Cur Freq: {{ data.get('hosts_data').get('cpu_cur_freq') }} <br /> CPU Max Freq: {{ data.get('hosts_data').get('cpu_max_freq') }}" >
+                    <span id="cpu_usage">{{ data.get('hosts_data').get('cpu_usage') }}</span> {{ _('CPU Usage') }}
                   </p>
-                  <p class="mb-0 text-danger" data-toggle="tooltip" data-placement="top" title="Memory Usage: {{ data.get('hosts_data').get('mem_usage') }}" >
-                    {{ data.get('hosts_data').get('mem_percent') }}% {{ _('Memory Usage') }}
+                  <p id="mem_usage" class="mb-0 text-danger" data-toggle="tooltip" data-placement="top" title="Memory Usage: {{ data.get('hosts_data').get('mem_usage') }}" >
+                  <span id="mem_percent">{{ data.get('hosts_data').get('mem_percent') }}%</span> {{ _('Memory Usage') }}
                   </p>
                 </div>
               </div>
@@ -266,6 +265,20 @@ $( document ).ready(function() {
       title: "Sending your command",
       message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; Please be patient while we restart the server<br /> This screen will refresh in a moment </div>'
     });
+  });
+
+  cpu_data = document.getElementById('cpu_data');
+  cpu_usage = document.getElementById('cpu_usage');
+  mem_usage = document.getElementById('mem_usage');
+  mem_percent = document.getElementById('mem_percent');
+
+  webSocket.on('update_host_stats', function (hostStats) {
+    var cpuDataTitle = `CPU Cores: ${hostStats.cpu_cores} <br /> CPU Cur Freq: ${hostStats.cpu_cur_freq} <br /> CPU Max Freq: ${hostStats.cpu_max_freq}`;
+    cpu_data.setAttribute('data-original-title', cpuDataTitle);
+    cpu_usage.textContent = hostStats.cpu_usage;
+    mem_usage.setAttribute('data-original-title', `Memory Usage: ${hostStats.mem_usage}`);
+    mem_percent.textContent = hostStats.mem_percent + '%';
+
   });
 
 });
