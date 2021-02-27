@@ -13,7 +13,7 @@ class WebSocketHelper:
 
     def broadcast(self, message_type: str, data):
         console.debug('Sending: ' + str(json.dumps({'type': message_type, 'data': data})))
-        message = str(json.dumps({'type': message_type, 'data': data}))
+        message = str(json.dumps({'event': message_type, 'data': data}))
         for client in self.clients:
             try:
                 client.write_message(message)

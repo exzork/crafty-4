@@ -266,20 +266,20 @@ $( document ).ready(function() {
       message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; Please be patient while we restart the server<br /> This screen will refresh in a moment </div>'
     });
   });
+  if (webSocket) {
+    cpu_data = document.getElementById('cpu_data');
+    cpu_usage = document.getElementById('cpu_usage');
+    mem_usage = document.getElementById('mem_usage');
+    mem_percent = document.getElementById('mem_percent');
 
-  cpu_data = document.getElementById('cpu_data');
-  cpu_usage = document.getElementById('cpu_usage');
-  mem_usage = document.getElementById('mem_usage');
-  mem_percent = document.getElementById('mem_percent');
-
-  webSocket.on('update_host_stats', function (hostStats) {
-    var cpuDataTitle = `CPU Cores: ${hostStats.cpu_cores} <br /> CPU Cur Freq: ${hostStats.cpu_cur_freq} <br /> CPU Max Freq: ${hostStats.cpu_max_freq}`;
-    cpu_data.setAttribute('data-original-title', cpuDataTitle);
-    cpu_usage.textContent = hostStats.cpu_usage;
-    mem_usage.setAttribute('data-original-title', `Memory Usage: ${hostStats.mem_usage}`);
-    mem_percent.textContent = hostStats.mem_percent + '%';
-
-  });
+    webSocket.on('update_host_stats', function (hostStats) {
+      var cpuDataTitle = `CPU Cores: ${hostStats.cpu_cores} <br /> CPU Cur Freq: ${hostStats.cpu_cur_freq} <br /> CPU Max Freq: ${hostStats.cpu_max_freq}`;
+      cpu_data.setAttribute('data-original-title', cpuDataTitle);
+      cpu_usage.textContent = hostStats.cpu_usage;
+      mem_usage.setAttribute('data-original-title', `Memory Usage: ${hostStats.mem_usage}`);
+      mem_percent.textContent = hostStats.mem_percent + '%';
+    });
+  }
 
 });
 </script>

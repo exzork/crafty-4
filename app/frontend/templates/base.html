@@ -77,6 +77,58 @@
     </div>
 
 
+    <style>
+      .notifications {
+        position: fixed;
+        width: 200px;
+        top: 70px;
+        right: 0px;
+      }
+      .notification {
+        position: relative;
+        box-sizing: border-box;
+        padding: 0.5rem;
+        padding-left: 0.7rem;
+        width: 180px;
+        margin-left: 10px;
+        margin-right: 10px;
+        background: #282a40;
+        transition: right 0.75s, opacity 0.75s, top 0.75s;
+        right: -6rem;
+        opacity: 0.1;
+        margin-bottom: 1rem;
+        z-index: 999;
+        top: 0px;
+      }
+      .notification.active {
+        right: 0rem;
+        opacity: 1;
+      }
+      .notification.remove {
+        right: 0rem;
+        opacity: 0.1;
+        top: -2rem;
+      }
+      .notification p {
+        margin: 0px;
+        width: calc(160.8px - 16px);
+        z-index: inherit;
+      }
+      .notification span {
+        position: absolute;
+        right: 0.5rem;
+        top: 0.46rem;
+        cursor: pointer;
+        font-weight: bold;
+        line-height: 20px;
+        font-size: 22px;
+        user-select: none;
+        z-index: inherit;
+      }
+    </style>
+    <div class="notifications"></div>
+
+
     <script src="/static/assets/vendors/js/vendor.bundle.base.js"></script>
     <script src="/static/assets/js/shared/off-canvas.js"></script>
     <script src="/static/assets/js/shared/hoverable-collapse.js"></script>
@@ -113,10 +165,10 @@
       });
     });
 
-    {% if request.protocol == 'https'%}
+    {% if request.protocol == 'https' %}
       let usingWebSockets = true;
 
-      let socketTypes = [];
+      let listenEvents = [];
 
       try {
 
@@ -124,24 +176,25 @@
         wsInternal.onopen = function() {
           console.log('opened WebSocket connection:', wsInternal)
         };
-        wsInternal.onmessage = function (event) {
-          var message = JSON.parse(event.data);
+        wsInternal.onmessage = function (rawMessage) {
+          var message = JSON.parse(rawMessage.data);
 
           console.log('got message: ', message)
 
-          socketTypes
-            .filter(event => event.type == message.type)
-            .forEach(event => event.callback(message.data))
+          listenEvents
+            .filter(listenedEvent => listenedEvent.event == message.event)
+            .forEach(listenedEvent => listenedEvent.callback(message.data))
         }
 
 
         webSocket = {
-          on: function (type, callback) {
-            socketTypes.push({ type: type, callback: callback })
+          on: function (event, callback) {
+            console.log('registered ' + event + ' event');
+            listenEvents.push({ event: event, callback: callback })
           },
-          emit: function (type, data) {
+          emit: function (event, data) {
             var message = {
-              type: type,
+              event: event,
               data: data
             }
 
@@ -155,6 +208,7 @@
     {% else %}
       let usingWebSockets = false;
       warn('WebSockets are not supported in Crafty if not using the https protocol')
+      var webSocket;
     {% end%}
 
     function warn(message) {
@@ -167,13 +221,12 @@
       msgEl.append(strongEL, message);
 
 
+      closeEl.style.float = 'right';
       closeEl.style.marginLeft = '15px';
       closeEl.style.fontWeight = 'bold';
-      closeEl.style.float = 'right';
-      closeEl.style.fontSize = '22px';
       closeEl.style.lineHeight = '20px';
+      closeEl.style.fontSize = '22px';
       closeEl.style.cursor = 'pointer';
-      closeEl.style.transition = '.3s';
 
       closeEl.addEventListener('click', function () {this.parentElement.style.display='none';});
 
@@ -187,6 +240,49 @@
 
       document.querySelector('.warnings').appendChild(parentEl);
     }
+
+    function closeNotification(element) {
+      element.parentElement.classList.add('remove');
+      setTimeout(function () {
+        element.parentElement.remove();
+      }, 500);
+    }
+
+    function notify(message) {
+      console.log(`notify(${message}})`);
+      var paragraphEl = document.createElement('p');
+      var closeEl = document.createElement('span');
+
+      paragraphEl.textContent = message;
+
+      closeEl.innerHTML = '&times;';
+      closeEl.addEventListener('click', function () {closeNotification(this)});
+
+      var parentEl = document.createElement('div');
+      parentEl.appendChild(paragraphEl);
+      parentEl.appendChild(closeEl);
+
+      parentEl.classList.add('notification');
+
+      document.querySelector('.notifications').appendChild(parentEl);
+
+
+      setTimeout(function () {
+        parentEl.classList.add('active');
+      }, 200);
+
+      setTimeout(function (element) {
+        closeNotification(element);
+      }, 7500, closeEl);
+
+      `
+      <div class="notification">
+        <p>Hello, World! This text should overflow</p>
+        <span>&times;</span>
+      </div>
+      `
+    }
+    webSocket.on('notification', notify);
 
     </script>
 
