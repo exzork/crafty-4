@@ -113,7 +113,7 @@ class ServerHandler(BaseHandler):
 
             if new_server_id:
                 db_helper.add_to_audit_log(user_data['user_id'],
-                                           "Created server {} named {}".format(server, server_name),
+                                           "created a {} {} server named \"{}\"".format(server_parts[1], str(server_parts[0]).capitalize(), server_name), # Example: Admin created a 1.16.5 Bukkit server named "survival"
                                            new_server_id,
                                            self.get_remote_ip())
             else:

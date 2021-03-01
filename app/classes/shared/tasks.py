@@ -141,8 +141,7 @@ class TasksManager:
     def realtime():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        
-        console.debug('realtime start')
+
         host_stats = db_helper.get_latest_hosts_stats()
 
         while True:
@@ -153,11 +152,9 @@ class TasksManager:
                     db_helper.get_latest_hosts_stats().get('mem_percent'):
                 # Stats are different
 
-                console.debug('realtime 1')
                 host_stats = db_helper.get_latest_hosts_stats()
                 if len(websocket_helper.clients) > 0:
                     # There are clients
-                    console.debug('realtime 11')
                     websocket_helper.broadcast('update_host_stats', {
                         'cpu_usage': host_stats.get('cpu_usage'),
                         'cpu_cores': host_stats.get('cpu_cores'),
@@ -169,7 +166,6 @@ class TasksManager:
                 time.sleep(4)
             else:
                 # Stats are same
-                console.debug('realtime 0')
                 time.sleep(8)
 
 

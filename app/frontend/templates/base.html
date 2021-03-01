@@ -184,7 +184,13 @@
           listenEvents
             .filter(listenedEvent => listenedEvent.event == message.event)
             .forEach(listenedEvent => listenedEvent.callback(message.data))
-        }
+        };
+        wsInternal.onerror = function (errorEvent) {
+          console.error('WebSocket Error', errorEvent);
+        };
+        wsInternal.onclose = function (closeEvent) {
+          console.log('Closed WebSocket', closeEvent);
+        };
 
 
         webSocket = {

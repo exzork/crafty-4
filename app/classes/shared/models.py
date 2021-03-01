@@ -6,6 +6,7 @@ import datetime
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.minecraft.server_props import ServerProps
+from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
 
@@ -254,14 +255,14 @@ class db_shortcuts:
 
     def get_server_friendly_name(self, server_id):
         server_data = self.get_server_data_by_id(server_id)
-        friendly_name = "{}-{}".format(server_data.get('server_id', 0), server_data.get('server_name', None))
+        friendly_name = "{} with ID: {}".format(server_data.get('server_name', None), server_data.get('server_id', 0))
         return friendly_name
 
     def send_command(self, user_id, server_id, remote_ip, command):
 
         server_name = self.get_server_friendly_name(server_id)
 
-        self.add_to_audit_log(user_id, "Issued Command {} for Server: {}".format(command, server_name),
+        self.add_to_audit_log(user_id, "issued command {} for server {}".format(command, server_name),
                               server_id, remote_ip)
 
         Commands.insert({
@@ -294,11 +295,23 @@ class db_shortcuts:
 
         audit_msg = "{} {}".format(str(user_data.username).capitalize(), log_msg)
 
+        websocket_helper.broadcast('notification', audit_msg)
+
         Audit_Log.insert({
             Audit_Log.user_name: user_data.username,
             Audit_Log.user_id: user_id,
             Audit_Log.server_id: server_id,
             Audit_Log.log_msg: audit_msg,
+            Audit_Log.source_ip: source_ip
+        }).execute()
+    
+    @staticmethod
+    def add_to_audit_log_raw(user_name, user_id, server_id, log_msg, source_ip):
+        Audit_Log.insert({
+            Audit_Log.user_name: user_name,
+            Audit_Log.user_id: user_id,
+            Audit_Log.server_id: server_id,
+            Audit_Log.log_msg: log_msg,
             Audit_Log.source_ip: source_ip
         }).execute()
 

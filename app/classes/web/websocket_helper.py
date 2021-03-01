@@ -10,13 +10,16 @@ class WebSocketHelper:
     
     def removeClient(self, client):
         self.clients.add(client)
+    
+    def send_message(self, client, event_type, data):
+        message = str(json.dumps({'event': event_type, 'data': data}))
+        client.write_message(message)
 
-    def broadcast(self, message_type: str, data):
-        console.debug('Sending: ' + str(json.dumps({'type': message_type, 'data': data})))
-        message = str(json.dumps({'event': message_type, 'data': data}))
+    def broadcast(self, event_type, data):
+        console.debug('Sending: ' + str(json.dumps({'event': event_type, 'data': data})))
         for client in self.clients:
             try:
-                client.write_message(message)
+                self.send_message(client, event_type, data)
             except:
                 pass
     
