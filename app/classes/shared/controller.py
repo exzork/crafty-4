@@ -226,7 +226,7 @@ class Controller:
 
     @staticmethod
     def verify_jar_server( server_path: str, server_jar: str):
-        path_check = helper.check_path_exits(server_path)
+        path_check = helper.check_path_exists(server_path)
         jar_check = helper.check_file_exists(os.path.join(server_path, server_jar))
         if not path_check or not jar_check:
             return False
