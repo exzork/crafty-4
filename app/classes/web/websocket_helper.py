@@ -12,8 +12,9 @@ class WebSocketHelper:
         self.clients.add(client)
     
     def send_message(self, client, event_type, data):
-        message = str(json.dumps({'event': event_type, 'data': data}))
-        client.write_message(message)
+        if client.check_auth():
+            message = str(json.dumps({'event': event_type, 'data': data}))
+            client.write_message(message)
 
     def broadcast(self, event_type, data):
         console.debug('Sending: ' + str(json.dumps({'event': event_type, 'data': data})))
