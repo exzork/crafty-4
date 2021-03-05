@@ -140,7 +140,7 @@
                   </div>
 
                 </div>
-                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg()">Import My Server!</button>
+                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg(true)">Import My Server!</button>
                 <button type="reset" class="btn btn-danger mr-2">Reset Form</button>
 
               </form>
@@ -216,7 +216,7 @@
                   </div>
 
                 </div>
-                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg()">Import My Server!</button>
+                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg(true)">Import My Server!</button>
                 <button type="reset" class="btn btn-danger mr-2">Reset Form</button>
                 </div>
                     </div>
@@ -239,10 +239,10 @@
     });
   });
 
-  function wait_msg(){
+  function wait_msg(importing){
     bootbox.alert({
-        title: 'Downloading Server...',
-        message: '<i class="fas fa-cloud-download"></i> Please be patient as we download the server'
+        title: importing ? 'Importing Server...' : 'Downloading Server...',
+        message: '<i class="fas fa-cloud-download"></i> Please be patient as we ' + (importing ? 'import' :  'download') + ' the server'
       });
   }
 
