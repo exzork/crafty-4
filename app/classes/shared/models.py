@@ -253,16 +253,19 @@ class db_shortcuts:
         query = Commands.select().where(Commands.executed == 0)
         return self.return_rows(query)
 
-    def get_server_friendly_name(self, server_id):
-        server_data = self.get_server_data_by_id(server_id)
+    @staticmethod
+    def get_server_friendly_name(server_id):
+        server_data = db_helper.get_server_data_by_id(server_id)
         friendly_name = "{} with ID: {}".format(server_data.get('server_name', None), server_data.get('server_id', 0))
         return friendly_name
 
-    def send_command(self, user_id, server_id, remote_ip, command):
+    @staticmethod
+    def send_command(user_id, server_id, remote_ip, command):
 
-        server_name = self.get_server_friendly_name(server_id)
+        server_name = db_helper.get_server_friendly_name(server_id)
 
-        self.add_to_audit_log(user_id, "issued command {} for server {}".format(command, server_name),
+        # Example: Admin issued command start_server for server Survival
+        db_helper.add_to_audit_log(user_id, "issued command {} for server {}".format(command, server_name),
                               server_id, remote_ip)
 
         Commands.insert({
