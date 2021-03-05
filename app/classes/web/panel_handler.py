@@ -65,9 +65,6 @@ class PanelHandler(BaseHandler):
         elif page == 'contribute':
             template = "panel/contribute.html"
 
-        elif page == 'file_edit':
-            template = "panel/file_edit.html"
-
         elif page == "remove_server":
             server_id = self.get_argument('id', None)
             server_data = controller.get_server_data(server_id)
