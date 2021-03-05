@@ -12,6 +12,7 @@ from app.classes.web.base_handler import BaseHandler
 from app.classes.shared.controller import controller
 from app.classes.shared.models import db_helper, Servers
 from app.classes.shared.helpers import helper
+from app.classes.minecraft.stats import stats
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +110,7 @@ class PanelHandler(BaseHandler):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return False
 
-            valid_subpages = ['term', 'logs', 'config', 'files']
+            valid_subpages = ['term', 'logs', 'config', 'files', 'admin_controls']
 
             if subpage not in valid_subpages:
                 logger.debug('not a valid subpage')
@@ -119,6 +120,29 @@ class PanelHandler(BaseHandler):
             # server_data isn't needed since the server_stats also pulls server data
             # page_data['server_data'] = db_helper.get_server_data_by_id(server_id)
             page_data['server_stats'] = db_helper.get_server_stats_by_id(server_id)
+            page_data['get_players'] = lambda: stats.get_server_players(server_id)
+
+            def get_banned_players_html():
+                banned_players = helper.get_banned_players(server_id, db_helper)
+                if banned_players is None:
+                    return """
+                    <li class="playerItem banned">
+                        <h3>Error while reading banned-players.json</h3>
+                    </li>
+                    """
+                html = ""
+                for player in banned_players:
+                    html += """
+                    <li class="playerItem banned">
+                        <h3>{}</h3>
+                        <span>Banned by {} for reason: {}</span>
+                        <button onclick="send_command_to_server('pardon {}')" type="button" class="btn btn-danger">Unban</button>
+                    </li>
+                    """.format(player['name'], player['source'], player['reason'], player['name'])
+                
+                return html
+            if subpage == "admin_controls":
+                page_data['banned_players'] = get_banned_players_html()
 
             # template = "panel/server_details.html"
             template = "panel/server_{subpage}.html".format(subpage=subpage)

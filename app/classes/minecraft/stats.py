@@ -9,6 +9,7 @@ import datetime
 from app.classes.shared.helpers import helper
 from app.classes.minecraft.mc_ping import ping
 from app.classes.shared.controller import controller
+from app.classes.shared.models import db_helper
 from app.classes.shared.models import Host_Stats, Server_Stats
 
 logger = logging.getLogger(__name__)
@@ -151,6 +152,32 @@ class Stats:
         }
 
         return ping_data
+    
+    def get_server_players(self, server_id):
+
+        server = db_helper.get_server_data_by_id(server_id)
+
+        logger.info("Getting players for server {}".format(server))
+
+        # get our settings and data dictionaries
+        server_settings = server.get('server_settings', {})
+        server_data = server.get('server_data_obj', {})
+
+
+        # TODO: search server properties file for possible override of 127.0.0.1
+        internal_ip = server_data.get('server_ip', "127.0.0.1")
+        server_port = server_settings.get('server_port', "25565")
+
+        logger.debug("Pinging {} on port {}".format(internal_ip, server_port))
+        int_mc_ping = ping(internal_ip, int(server_port))
+
+        ping_data = {}
+
+        # if we got a good ping return, let's parse it
+        if int_mc_ping:
+            ping_data = self.parse_server_ping(int_mc_ping)
+            return ping_data['players']
+        return []
 
     def get_servers_stats(self):
 
