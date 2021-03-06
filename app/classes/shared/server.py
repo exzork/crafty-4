@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 try:
-    from pexpect.popen_spawn import PopenSpawn
+    import pexpect
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e, e.name))
@@ -126,7 +126,7 @@ class Server:
             logger.info("Linux Detected")
 
         logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
-        self.process = pexpect.popen_spawn.PopenSpawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
+        self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
         self.is_crashed = False
 
         ts = time.time()
@@ -178,13 +178,13 @@ class Server:
                 if x >= 30:
                     logger.info("Server {} is still running - Forcing the process down".format(server_name))
                     console.info("Server {} is still running - Forcing the process down".format(server_name))
-                    self.killpid(server_pid)
+                    self.process.terminate(force=True)
 
             logger.info("Stopped Server {} with PID {}".format(server_name, server_pid))
             console.info("Stopped Server {} with PID {}".format(server_name, server_pid))
 
         else:
-            self.killpid(self.PID)
+            self.process.terminate(force=True)
 
         # massive resetting of variables
         self.cleanup_server_object()
@@ -217,10 +217,15 @@ class Server:
             return running
 
         try:
-            running = psutil.pid_exists(self.PID)
+            alive = self.process.isalive()
+            if type(alive) is not bool:
+                self.last_rc = alive
+                running = False
+            else:
+                running = alive
 
         except Exception as e:
-            logger.error("Unable to find if server PID exists: {}".format(self.PID))
+            logger.error("Unable to find if server PID exists: {}".format(self.PID), exc_info=True)
             pass
 
         return running

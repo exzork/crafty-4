@@ -135,7 +135,6 @@ class Controller:
 
     def stop_all_servers(self):
         servers = self.list_running_servers()
-        print(servers)
         logger.info("Found {} running server(s)".format(len(servers)))
         console.info("Found {} running server(s)".format(len(servers)))
 

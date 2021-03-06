@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
-from app.classes.shared.tasks import tasks_manager
 
 try:
     import requests
@@ -24,6 +23,10 @@ class MainPrompt(cmd.Cmd):
 
     # overrides the default Prompt
     prompt = "Crafty Controller v{} > ".format(helper.get_version_string())
+
+    def __init__(self, tasks_manager):
+        super().__init__()
+        self.tasks_manager = tasks_manager
 
     @staticmethod
     def emptyline():
@@ -45,7 +48,7 @@ class MainPrompt(cmd.Cmd):
         console.info("Stopping all server daemons / threads - This may take a few seconds")
         self._clean_shutdown()
         while True:
-            if tasks_manager.get_main_thread_run_status():
+            if self.tasks_manager.get_main_thread_run_status():
                 sys.exit(0)
             time.sleep(1)
 

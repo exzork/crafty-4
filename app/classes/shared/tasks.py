@@ -132,6 +132,3 @@ class TasksManager:
 
         logger.info("Scheduling Serverjars.com cache refresh service every 12 hours")
         schedule.every(12).hours.do(server_jar_obj.refresh_cache)
-
-
-tasks_manager = TasksManager()
