@@ -4,10 +4,12 @@ import json
 import time
 import logging
 import threading
+import asyncio
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.web.tornado import webserver
+from app.classes.web.websocket_helper import websocket_helper
 
 from app.classes.minecraft.stats import stats
 from app.classes.shared.controller import controller
@@ -23,6 +25,7 @@ except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e, e.name))
     console.critical("Import Error: Unable to load {} module".format(e, e.name))
     sys.exit(1)
+
 
 class TasksManager:
 
@@ -40,6 +43,9 @@ class TasksManager:
 
         self.command_thread = threading.Thread(target=self.command_watcher, daemon=True, name="command_watcher")
         self.command_thread.start()
+
+        self.realtime_thread = threading.Thread(target=self.realtime, daemon=True, name="realtime")
+        self.realtime_thread.start()
 
     def get_main_thread_run_status(self):
         return self.main_thread_exiting
@@ -75,9 +81,7 @@ class TasksManager:
 
                 db_helper.mark_command_complete(c.get('command_id', None))
 
-
             time.sleep(1)
-
 
     def _main_graceful_exit(self):
         try:
@@ -136,10 +140,43 @@ class TasksManager:
         logger.info("Scheduling Serverjars.com cache refresh service every 12 hours")
         schedule.every(12).hours.do(server_jar_obj.refresh_cache)
 
+    @staticmethod
+    def realtime():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        host_stats = db_helper.get_latest_hosts_stats()
+
+        while True:
+
+            if host_stats.get('cpu_usage') != \
+                    db_helper.get_latest_hosts_stats().get('cpu_usage') or \
+                    host_stats.get('mem_percent') != \
+                    db_helper.get_latest_hosts_stats().get('mem_percent'):
+                # Stats are different
+
+                host_stats = db_helper.get_latest_hosts_stats()
+                if len(websocket_helper.clients) > 0:
+                    # There are clients
+                    websocket_helper.broadcast('update_host_stats', {
+                        'cpu_usage': host_stats.get('cpu_usage'),
+                        'cpu_cores': host_stats.get('cpu_cores'),
+                        'cpu_cur_freq': host_stats.get('cpu_cur_freq'),
+                        'cpu_max_freq': host_stats.get('cpu_max_freq'),
+                        'mem_percent': host_stats.get('mem_percent'),
+                        'mem_usage': host_stats.get('mem_usage')
+                    })
+                time.sleep(4)
+            else:
+                # Stats are same
+                time.sleep(8)
+
     def log_watcher(self):
         console.debug('in log_watcher')
         helper.check_for_old_logs(db_helper)
         schedule.every(6).hours.do(lambda: helper.check_for_old_logs(db_helper))
+
+
 
 
 tasks_manager = TasksManager()

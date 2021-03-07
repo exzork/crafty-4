@@ -24,6 +24,7 @@ try:
     from app.classes.web.server_handler import ServerHandler
     from app.classes.web.ajax_handler import AjaxHandler
     from app.classes.web.api_handler import ServersStats, NodeStats
+    from app.classes.web.websocket_handler import SocketHandler
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e, e.name))
@@ -125,6 +126,7 @@ class webserver:
             (r'/ajax/(.*)', AjaxHandler),
             (r'/api/stats/servers', ServersStats),
             (r'/api/stats/node', NodeStats),
+            (r'/ws', SocketHandler),
             ]
 
         app = tornado.web.Application(

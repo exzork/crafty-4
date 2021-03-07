@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
 from app.classes.shared.tasks import tasks_manager
+from app.classes.web.websocket_helper import websocket_helper
 
 try:
     import requests
@@ -43,7 +44,9 @@ class MainPrompt(cmd.Cmd):
     def do_exit(self, line):
         logger.info("Stopping all server daemons / threads")
         console.info("Stopping all server daemons / threads - This may take a few seconds")
+        websocket_helper.disconnect_all()
         self._clean_shutdown()
+        console.info('Waiting for main thread to stop')
         while True:
             if tasks_manager.get_main_thread_run_status():
                 sys.exit(0)

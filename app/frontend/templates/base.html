@@ -58,6 +58,12 @@
 
         <div class="main-panel">
 
+          <div class="warnings">
+            <div class="noscript-warning" style="padding: 20px; background-color: rgb(247, 151, 15);">
+              <div><strong>Warning: </strong>Crafty doesn't work properly when JavaScript isn't enabled!</div>
+            </div>
+          </div>
+
         {% block content %}
         {% end %}
 
@@ -71,6 +77,58 @@
     </div>
 
 
+    <style>
+      .notifications {
+        position: fixed;
+        width: 200px;
+        top: 70px;
+        right: 0px;
+      }
+      .notification {
+        position: relative;
+        box-sizing: border-box;
+        padding: 0.5rem;
+        padding-left: 0.7rem;
+        width: 180px;
+        margin-left: 10px;
+        margin-right: 10px;
+        background: #282a40;
+        transition: right 0.75s, opacity 0.75s, top 0.75s;
+        right: -6rem;
+        opacity: 0.1;
+        margin-bottom: 1rem;
+        z-index: 999;
+        top: 0px;
+      }
+      .notification.active {
+        right: 0rem;
+        opacity: 1;
+      }
+      .notification.remove {
+        right: 0rem;
+        opacity: 0.1;
+        top: -2rem;
+      }
+      .notification p {
+        margin: 0px;
+        width: calc(160.8px - 16px);
+        z-index: inherit;
+      }
+      .notification span {
+        position: absolute;
+        right: 0.5rem;
+        top: 0.46rem;
+        cursor: pointer;
+        font-weight: bold;
+        line-height: 20px;
+        font-size: 22px;
+        user-select: none;
+        z-index: inherit;
+      }
+    </style>
+    <div class="notifications"></div>
+
+
     <script src="/static/assets/vendors/js/vendor.bundle.base.js"></script>
     <script src="/static/assets/js/shared/off-canvas.js"></script>
     <script src="/static/assets/js/shared/hoverable-collapse.js"></script>
@@ -79,6 +137,9 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
 
     <script>
+
+    $('.noscript-warning').toggle();
+
       //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
       function getCookie(name) {
         var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
@@ -103,6 +164,132 @@
         });
       });
     });
+
+    {% if request.protocol == 'https' %}
+      let usingWebSockets = true;
+
+      let listenEvents = [];
+
+      try {
+
+        var wsInternal = new WebSocket('wss://' + location.host + '/ws');
+        wsInternal.onopen = function() {
+          console.log('opened WebSocket connection:', wsInternal)
+        };
+        wsInternal.onmessage = function (rawMessage) {
+          var message = JSON.parse(rawMessage.data);
+
+          console.log('got message: ', message)
+
+          listenEvents
+            .filter(listenedEvent => listenedEvent.event == message.event)
+            .forEach(listenedEvent => listenedEvent.callback(message.data))
+        };
+        wsInternal.onerror = function (errorEvent) {
+          console.error('WebSocket Error', errorEvent);
+        };
+        wsInternal.onclose = function (closeEvent) {
+          console.log('Closed WebSocket', closeEvent);
+        };
+
+
+        webSocket = {
+          on: function (event, callback) {
+            console.log('registered ' + event + ' event');
+            listenEvents.push({ event: event, callback: callback })
+          },
+          emit: function (event, data) {
+            var message = {
+              event: event,
+              data: data
+            }
+
+            wsInternal.send(JSON.stringify(message));
+          }
+        }
+      } catch (error) {
+        console.error('Error while making websocket helpers', error);
+        usingWebSockets = false;
+      }
+    {% else %}
+      let usingWebSockets = false;
+      warn('WebSockets are not supported in Crafty if not using the https protocol')
+      var webSocket;
+    {% end%}
+
+    function warn(message) {
+      var closeEl = document.createElement('span');
+      var strongEL = document.createElement('strong');
+      var msgEl = document.createElement('div');
+
+      closeEl.innerHTML = '&times;';
+      strongEL.textContent = 'Warning: ';
+      msgEl.append(strongEL, message);
+
+
+      closeEl.style.marginLeft = '15px';
+      closeEl.style.fontWeight = 'bold';
+      closeEl.style.float = 'right';
+      closeEl.style.fontSize = '22px';
+      closeEl.style.lineHeight = '20px';
+      closeEl.style.cursor = 'pointer';
+
+      closeEl.addEventListener('click', function () {this.parentElement.style.display='none';});
+
+      var parentEl = document.createElement('div');
+
+      parentEl.style.padding = '20px';
+      parentEl.style.backgroundColor = '#f7970f';
+
+      parentEl.appendChild(closeEl);
+      parentEl.appendChild(msgEl);
+
+      document.querySelector('.warnings').appendChild(parentEl);
+    }
+
+    function closeNotification(element) {
+      element.parentElement.classList.add('remove');
+      setTimeout(function () {
+        element.parentElement.remove();
+      }, 500);
+    }
+
+    function notify(message) {
+      console.log(`notify(${message}})`);
+      var paragraphEl = document.createElement('p');
+      var closeEl = document.createElement('span');
+
+      paragraphEl.textContent = message;
+
+      closeEl.innerHTML = '&times;';
+      closeEl.addEventListener('click', function () {closeNotification(this)});
+
+      var parentEl = document.createElement('div');
+      parentEl.appendChild(paragraphEl);
+      parentEl.appendChild(closeEl);
+
+      parentEl.classList.add('notification');
+
+      document.querySelector('.notifications').appendChild(parentEl);
+
+
+      setTimeout(function () {
+        parentEl.classList.add('active');
+      }, 200);
+
+      setTimeout(function (element) {
+        closeNotification(element);
+      }, 7500, closeEl);
+
+      `
+      <div class="notification">
+        <p>Hello, World! This text should overflow</p>
+        <span>&times;</span>
+      </div>
+      `
+    }
+    webSocket.on('notification', notify);
+
     </script>
 
     {% block js %}
