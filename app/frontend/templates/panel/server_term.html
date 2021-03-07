@@ -59,6 +59,10 @@
                   <i class="fas fa-cogs"></i>Config</a>
               </li>
               <li class="nav-item term-nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=admin_controls" role="tab" aria-selected="true">
+                  <i class="fas fa-users"></i>Player Controls</a>
+              </li>
+              <li class="nav-item term-nav-item">
                 <label class="p-0 m-0">
                     <input type="checkbox" name="stop_scroll" id="stop_scroll" />
                     {{ _('Stop Refresh') }}

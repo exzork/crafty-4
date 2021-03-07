@@ -516,6 +516,22 @@ class Helpers:
     @staticmethod
     def in_path(x, y):
         return os.path.abspath(y).__contains__(os.path.abspath(x))
+    
+    @staticmethod
+    def get_banned_players(server_id, db_helper):
+        stats = db_helper.get_server_stats_by_id(server_id)
+        server_path = stats[0]['server_id']['path']
+        path = os.path.join(server_path, 'banned-players.json')
+
+        try:
+            with open(path) as file:
+                content = file.read()
+                file.close()
+        except Exception as ex:
+            print (ex)
+            return None
+        
+        return json.loads(content)
 
 
 helper = Helpers()
