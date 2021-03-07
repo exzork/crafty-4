@@ -51,7 +51,7 @@ class Controller:
                 continue
 
             # if this server path no longer exists - let's warn and bomb out
-            if not helper.check_path_exits(s['path']):
+            if not helper.check_path_exists(s['path']):
                 logger.warning("Unable to find server {} at path {}. Skipping this server".format(s['server_name'],
                                                                                                   s['path']))
 
@@ -212,7 +212,9 @@ class Controller:
             logger.error("Unable to create required server files due to :{}".format(e))
             return False
 
-        server_command = 'java -Xms{}G -Xmx{}G -jar {} nogui'.format(min_mem, max_mem, full_jar_path)
+        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     full_jar_path)
         server_log_file = "{}/logs/latest.log".format(server_dir)
         server_stop = "stop"
 
@@ -224,7 +226,7 @@ class Controller:
 
     @staticmethod
     def verify_jar_server( server_path: str, server_jar: str):
-        path_check = helper.check_path_exits(server_path)
+        path_check = helper.check_path_exists(server_path)
         jar_check = helper.check_file_exists(os.path.join(server_path, server_jar))
         if not path_check or not jar_check:
             return False
@@ -245,7 +247,9 @@ class Controller:
         dir_util.copy_tree(server_path, new_server_dir)
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
-        server_command = 'java -Xms{}G -Xmx{}G -jar {} nogui'.format(min_mem, max_mem, full_jar_path)
+        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     full_jar_path)
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"
 
@@ -264,7 +268,10 @@ class Controller:
             return "false"
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
-        server_command = 'java -Xms{}G -Xmx{}G -jar {} nogui'.format(min_mem, max_mem, full_jar_path)
+        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     full_jar_path)
+        print('command: ' + server_command)
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"
 

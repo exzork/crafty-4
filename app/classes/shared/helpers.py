@@ -9,6 +9,7 @@ import base64
 import socket
 import random
 import logging
+import html
 
 from datetime import datetime
 from socket import gethostname
@@ -45,6 +46,10 @@ class Helpers:
         self.passhasher = PasswordHasher()
         self.exiting = False
 
+    def float_to_string(self, gbs: int):
+        s = str(float(gbs) * 1000).rstrip("0").rstrip(".")
+        return s
+
     def check_file_perms(self, path):
         try:
             fp = open(path, "r").close()
@@ -61,8 +66,27 @@ class Helpers:
                 return True
             else:
                 return False
-        logger.error("{} does not exits".format(file))
-        return False
+        logger.error("{} does not exist".format(file))
+        return True
+
+    def check_for_old_logs(self, db_helper):
+        servers = db_helper.get_all_defined_servers()
+        for server in servers:
+            logs_path = os.path.split(server['log_path'])[0]
+            latest_log_file = os.path.split(server['log_path'])[1]
+            logs_delete_after = int(server['logs_delete_after'])
+            if logs_delete_after == 0:
+                continue
+
+            log_files = list(filter(
+                lambda val: val != latest_log_file,
+                os.listdir(logs_path)
+            ))
+            for log_file in log_files:
+                log_file_path = os.path.join(logs_path, log_file)
+                if self.check_file_exists(log_file_path) and \
+                        self.is_file_older_than_x_days(log_file_path, logs_delete_after):
+                    os.remove(log_file_path)
 
     def get_setting(self, key, default_return=False):
 
@@ -280,7 +304,7 @@ class Helpers:
         return "%.1f%s%s" % (num, 'Y', suffix)
 
     @staticmethod
-    def check_path_exits(path: str):
+    def check_path_exists(path: str):
         logger.debug('Looking for path: {}'.format(path))
 
         if os.path.exists(path):
@@ -463,6 +487,35 @@ class Helpers:
 
         return data
 
+    @staticmethod
+    def generate_tree(folder, output=""):
+        for raw_filename in os.listdir(folder):
+            filename = html.escape(raw_filename)
+            rel = os.path.join(folder, raw_filename)
+            if os.path.isdir(rel):
+                output += \
+                    """<li class="tree-item" data-path="{}">
+                    \n<div data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {}
+                    </div>
+                    \n<ul class="tree-nested">"""\
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
+
+                output += helper.generate_tree(rel)
+                output += '</ul>\n</li>'
+            else:
+                output += """<li
+                class="tree-item tree-ctx-item tree-file"
+                data-path="{}"
+                data-name="{}"
+                onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename, filename)
+        return output
+
+    @staticmethod
+    def in_path(x, y):
+        return os.path.abspath(y).__contains__(os.path.abspath(x))
 
 
 helper = Helpers()

@@ -19,12 +19,16 @@ class Stats:
     def get_node_stats(self):
         boot_time = datetime.datetime.fromtimestamp(psutil.boot_time())
         data = {}
+        try:
+            cpu_freq = psutil.cpu_freq()
+        except NotImplementedError:
+            cpu_freq = psutil._common.scpufreq(current=0, min=0, max=0)
         node_stats = {
             'boot_time': str(boot_time),
             'cpu_usage': psutil.cpu_percent(interval=0.5) / psutil.cpu_count(),
             'cpu_count': psutil.cpu_count(),
-            'cpu_cur_freq': round(psutil.cpu_freq()[0], 2),
-            'cpu_max_freq': psutil.cpu_freq()[2],
+            'cpu_cur_freq': round(cpu_freq[0], 2),
+            'cpu_max_freq': cpu_freq[2],
             'mem_percent': psutil.virtual_memory()[2],
             'mem_usage': helper.human_readable_file_size(psutil.virtual_memory()[3]),
             'mem_total': helper.human_readable_file_size(psutil.virtual_memory()[0]),

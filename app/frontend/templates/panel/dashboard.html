@@ -130,6 +130,7 @@
                       <a class="restart_button" data-id="{{server['server_data']['server_id']}}"> <i class="fas fa-sync"></i></a> &nbsp;
                     {% else %}
                       <a data-id="{{server['server_data']['server_id']}}" class="play_button"><i class="fas fa-play"></i></a> &nbsp;
+                      <a data-id="{{server['server_data']['server_id']}}" class="clone_button"> <i class="fas fa-clone"></i></a> &nbsp;
                     {% end %}
 
                   </td>
@@ -217,7 +218,7 @@
 <script>
 
 function send_command (server_id, command){
-  <!--  this getCookie function is in base.html-->
+  /* this getCookie function is in base.html */
   var token = getCookie("_xsrf");
 
   $.ajax({
@@ -280,6 +281,16 @@ $( document ).ready(function() {
       mem_percent.textContent = hostStats.mem_percent + '%';
     });
   }
+
+  $( ".clone_button" ).click(function() {
+    server_id = $(this).attr("data-id");
+    send_command(server_id, 'clone_server');
+    bootbox.alert({
+      backdrop: true,
+      title: "Sending your command",
+      message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; Please be patient while we clone the server<br /> This screen will refresh in a moment </div>'
+    });
+  });
 
 });
 </script>

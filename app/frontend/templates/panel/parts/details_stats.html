@@ -4,13 +4,14 @@
           <div class="card-body pt-3 pb-3">
             <div class="row">
               <div class="col-sm-3 mr-2">
-                <b>Server Status:</b>
                 {% if data['server_stats'][0]['running'] %}
-                  <span class="text-success">Online</span><br />
-                  <b>Server Started:</b> {{ data['server_stats'][0]['started'] }}
+                  <b>Server Status:</b> <span class="text-success">Online</span><br />
+                  <b>Server Started:</b> <span id="started">{{ data['server_stats'][0]['started'] }} (Server Time)</span><br />
+                  <b>Server Uptime:</b> <span id="uptime">Error Calculating</span>
                 {% else %}
-                  <span class="text-danger">Offline</span><br />
-                  <b>Server Started:</b> Not Started
+                  <b>Server Status:</b> <span class="text-danger">Offline</span><br />
+                  <b>Server Started:</b> <span class="text-danger">Offline</span><br />
+                  <b>Server Uptime:</b> <span class="text-danger">Offline</span>
                 {% end %}
               </div>
 
@@ -41,3 +42,90 @@
       </div>
 
   </div>
+
+<script src="/static/assets/vendors/moment/moment.min.js" type="text/javascript" charset="utf-8"></script>
+
+<script>
+
+  function durationToHumanizedString (duration) {
+    duration._data.months += duration._data.years * 12;
+    // 30.45833333333 = average month length, calculate with (31+28.5+31+30+31+30+31+31+30+31+30+31) / 12
+    duration._data.days += duration._data.months * 30.45833333333;
+    duration._data.hours += duration._data.days * 24;
+
+    let obj = {
+      hours: Math.round(duration._data.hours),
+      minutes: duration._data.minutes,
+      seconds: duration._data.seconds
+    }
+
+    output = Object.entries(obj)
+      .map(([type, num]) => {
+         // make them strings
+        returnData = num + ' ' + type;
+        // remove the s in the end if the data is -1 or 1
+        if (num == -1 || num == 1)
+          returnData = returnData.slice(0, -1)
+        return returnData;
+      })
+      .map((v, i, a) => // example input: [1,2,3], output: "1, 2 and 3"
+        v + (i !== a.length - 1
+          ? i !== a.length -  2
+            ? ', '
+            : ' and '
+          : '')).join('');
+    return output;
+  }
+
+  document.body.onload = (() => {
+
+    console.log('calculateTime');
+    let uptime = document.querySelector('#uptime');
+    let started = document.querySelector('#started');
+    let startedUTC;
+    let startedLocal;
+
+    if (started != null) {
+      console.log('88', '{{ data['server_stats'][0]['started'] }}');
+      {% if data['server_stats'][0]['started'] != 'False' %}
+        startedUTC = '{{ (datetime.datetime.strptime(data['server_stats'][0]['started'], '%Y-%m-%d %H:%M:%S') - datetime.timedelta(seconds=-time.timezone)).strftime('%Y-%m-%d %H:%M:%S') }}';
+      {% end %}
+      console.log('utc', startedUTC);
+      startedUTC = moment.utc(startedUTC, 'YYYY-MM-DD HH:mm:ss');
+
+      let browserUTCOffset = moment().utcOffset(); // This is in minutes
+
+      startedLocal = startedUTC.utcOffset(browserUTCOffset);
+      startedLocalFormatted = startedLocal.format('YYYY-MM-DD HH:mm:ss');
+
+      console.log('startedLocal', startedLocal);
+      console.log('startedLocalFormatted', startedLocalFormatted);
+
+      started.textContent = startedLocalFormatted
+    }
+
+    let nowServerTime = '{{ data['time'] }}';
+    let startedServerTime = '{{ data['server_stats'][0]['started'] }}';
+
+    if (uptime != null && started != null) {
+
+      var msdiff = moment(nowServerTime,"YYYY-MM-DD hh:mm:ss")
+          .diff(moment(startedServerTime,"YYYY-MM-DD hh:mm:ss"));
+      var diff = moment.duration(msdiff);
+
+      uptime.textContent = durationToHumanizedString(diff);
+
+      console.log('startedLocal', startedLocal)
+      if (startedLocal) {
+        var uptimeLoop = setInterval(() => {
+          var msdiff = moment()
+            .diff(startedLocal);
+          var diff = moment.duration(msdiff);
+
+          uptime.textContent = durationToHumanizedString(diff);
+        }, 1000)
+      }
+    }
+
+  });
+</script>

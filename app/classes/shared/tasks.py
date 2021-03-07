@@ -38,6 +38,9 @@ class TasksManager:
 
         self.schedule_thread = threading.Thread(target=self.scheduler_thread, daemon=True, name="scheduler")
 
+        self.log_watcher_thread = threading.Thread(target=self.log_watcher, daemon=True, name="log_watcher")
+        self.log_watcher_thread.start()
+
         self.command_thread = threading.Thread(target=self.command_watcher, daemon=True, name="command_watcher")
         self.command_thread.start()
 

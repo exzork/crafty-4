@@ -1,6 +1,8 @@
 import sys
 import json
 import logging
+import os
+import shutil
 
 from app.classes.shared.console import console
 from app.classes.web.base_handler import BaseHandler
@@ -75,6 +77,64 @@ class ServerHandler(BaseHandler):
             command = bleach.clean(self.get_argument("command", None))
 
             if server_id is not None:
+                if command == "clone_server":
+                    def is_name_used(name):
+                        for server in db_helper.get_all_defined_servers():
+                            if server['server_name'] == name:
+                                return True
+                        return False
+                    
+                    server_data = db_helper.get_server_data_by_id(server_id)
+                    server_uuid = server_data.get('server_uuid')
+                    new_server_name = server_data.get('server_name') + " (Copy)"
+
+                    name_counter = 1
+                    while is_name_used(new_server_name):
+                        name_counter += 1
+                        new_server_name = server_data.get('server_name') + " (Copy {})".format(name_counter)
+
+                    console.debug('new_server_name: "{}"'.format(new_server_name))
+
+                    new_server_uuid = helper.create_uuid()
+                    while os.path.exists(os.path.join(helper.servers_dir, new_server_uuid)):
+                        new_server_uuid = helper.create_uuid()
+                    new_server_path = os.path.join(helper.servers_dir, new_server_uuid)
+
+                    # copy the old server
+                    shutil.copytree(server_data.get('path'), new_server_path)
+
+                    # TODO get old server DB data to individual variables
+                    stop_command = server_data.get('stop_command')
+                    new_server_command = str(server_data.get('execution_command')).replace(server_uuid, new_server_uuid)
+                    new_executable = server_data.get('executable')
+                    new_server_log_file = str(server_data.get('log_path')).replace(server_uuid, new_server_uuid)
+                    auto_start = server_data.get('auto_start')
+                    auto_start_delay = server_data.get('auto_start_delay')
+                    crash_detection = server_data.get('crash_detection')
+                    server_port = server_data.get('server_port')
+
+
+                    # TODO create the server on the DB side
+
+                    Servers.insert({
+                        Servers.server_name: new_server_name,
+                        Servers.server_uuid: new_server_uuid,
+                        Servers.path: new_server_path,
+                        Servers.executable: new_executable,
+                        Servers.execution_command: new_server_command,
+                        Servers.auto_start: auto_start,
+                        Servers.auto_start_delay: auto_start_delay,
+                        Servers.crash_detection: crash_detection,
+                        Servers.log_path: new_server_log_file,
+                        Servers.server_port: server_port,
+                        Servers.stop_command: stop_command
+                    }).execute()
+
+                    controller.init_all_servers()
+                    console.debug('initted all servers')
+
+                    return
+                
                 db_helper.send_command(user_data['user_id'], server_id, self.get_remote_ip(), command)
 
         if page == "step1":

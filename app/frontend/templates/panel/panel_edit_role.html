@@ -1,0 +1,159 @@
+{% extends ../base.html %}
+
+{% block meta %}
+<!--  <meta http-equiv="refresh" content="60">-->
+{% end %}
+
+{% block title %}Crafty Controller - Edit Role{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        {% if data['new_role'] %}
+          <h4 class="page-title">
+            New Role
+              <br />
+              <small>RID: N/A</small>
+          </h4>
+        {% else %}
+          <h4 class="page-title">
+            Edit Role - {{ data['role']['role_name'] }}
+              <br />
+              <small>RID: {{ data['role']['role_id'] }}</small>
+          </h4>
+        {% end %}
+      </div>
+    </div>
+
+  </div>
+  <!-- Page Title Header Ends-->
+
+  <div class="row">
+
+    <div class="col-sm-12 grid-margin">
+      <div class="card">
+        <div class="card-body  pt-0">
+            <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" href="/panel/edit_role?id={{ data['role']['role_name'] }}&subpage=config" role="tab" aria-selected="true">
+                  <i class="fas fa-cogs"></i>Config</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/edit_role?id={{ data['role']['role_name'] }}&subpage=other" role="tab" aria-selected="false">
+                  <i class="fas fa-folder-tree"></i>Other</a>
+              </li>
+            </ul>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12">
+                  {% if data['new_role'] %}
+                    <form class="forms-sample" method="post" action="/panel/add_role">
+                  {% else %}
+                    <form class="forms-sample" method="post" action="/panel/edit_role">
+                  {% end %}
+                      {% raw xsrf_form_html() %}
+                      <input type="hidden" name="id" value="{{ data['role']['role_id'] }}">
+                      <input type="hidden" name="subpage" value="config">
+
+                      <div class="form-group">
+                        <label for="role_name">Role Name <small class="text-muted ml-1"> - What you wish to call this role</small> </label>
+                        <input type="text" class="form-control" name="role_name" id="role_name" value="{{ data['role']['role_name']  }}" placeholder="Role Name" >
+                      </div>
+
+                      <div class="form-group">
+                        <label for="server_membership">Servers <small class="text-muted ml-1"> - servers this role is allowed to access </small> </label>
+                        <div class="table-responsive">
+                          <table class="table">
+                            <thead>
+                              <tr class="rounded">
+                                <th>Server Name</th>
+                                <th>Access?</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                            {% for server in data['servers_all'] %}
+                              <tr>
+                                <td>{{ server['server_name'] }}</td>
+                                <td>
+                                  {% if server['server_id'] in data['role']['servers'] %}
+                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" value="1">
+                                  {% else %}
+                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" value="1">
+                                  {% end %}
+                                </td>
+                              </tr>
+                            {% end %}
+
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      <button type="submit" class="btn btn-success mr-2">Save</button>
+                      <button type="reset" class="btn btn-light">Cancel</button>
+                    </form>
+                </div>
+
+                <div class="col-md-6 col-sm-12">
+                    <div class="card">
+                      <div class="card-body">
+                        <h4 class="card-title">Role Config Area</h4>
+                        <p class="card-description"> Here is where you can change the configuration of your role</p>
+                        <blockquote class="blockquote">
+                          <p class="mb-0">
+                              Created: {{ str(data['role']['created']) }}
+                              <br />
+                              Last updated: {{ str(data['role']['last_update']) }}
+                              <br />
+                          </p>
+                        </blockquote>
+                      </div>
+                    </div>
+                    <div class="text-center">
+                        {% if data['new_role'] %}
+                            <a class="btn btn-sm btn-danger disabled">Delete Role</a><br />
+                            <small>You cannot delete something that does not yet exist</small>
+                        {% else %}
+                            <a href="/panel/remove_role?id={{ data['role']['role_id'] }}" class="btn btn-sm btn-danger">Delete Role</a>
+                        {% end %}
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+</div>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+<script>
+
+
+    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+    function getCookie(name) {
+        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+        return r ? r[1] : undefined;
+    }
+
+    $( document ).ready(function() {
+        console.log( "ready!" );
+
+    });
+
+
+</script>
+
+{% end %}

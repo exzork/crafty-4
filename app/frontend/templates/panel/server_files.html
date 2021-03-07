@@ -1,0 +1,692 @@
+{% extends ../base.html %}
+
+{% block meta %}
+<!--  <meta http-equiv="refresh" content="60">-->
+{% end %}
+
+{% block title %}Crafty Controller - Server Details{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        <h4 class="page-title">
+          Server Details - {{ data['server_stats'][0]['server_id']['server_name'] }}
+            <br />
+            <small>UUID: {{ data['server_stats'][0]['server_id']['server_uuid']  }}</small>
+        </h4>
+      </div>
+    </div>
+
+  </div>
+  <!-- Page Title Header Ends-->
+
+ {% include "parts/details_stats.html %}
+
+  <div class="row">
+
+    <div class="col-sm-12 grid-margin">
+      <div class="card">
+        <div class="card-body  pt-0">
+            <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=term" role="tab" aria-selected="false">
+                  <i class="fas fa-file-signature"></i>Terminal</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=logs" role="tab" aria-selected="false">
+                  <i class="fas fa-file-signature"></i>Logs</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=tasks" role="tab" aria-selected="false">
+                  <i class="fas fa-clock"></i>Schedule</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="false">
+                  <i class="fas fa-save"></i>Backup</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=files" role="tab" aria-selected="false">
+                  <i class="fas fa-folder-tree"></i>Files</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats'][0]['server_id']['server_id'] }}&subpage=config" role="tab" aria-selected="true">
+                  <i class="fas fa-cogs"></i>Config</a>
+              </li>
+
+            </ul>
+
+            <div class="row">
+              <div class="col-md-6 col-sm-12">
+                <noscript>
+                  The file manager does not work without JavaScript
+                </noscript>
+                <div id="files-tree-nav" class="overlay">
+
+                  <!-- Button to close the overlay navigation -->
+                  <a href="javascript:void(0)" class="closebtn" onclick="document.getElementById('files-tree-nav').style.height = '0%';">&times;</a>
+
+                  <!-- Overlay content -->
+                  <div id="files-tree-nav-content" class="overlay-content">
+                    <a onclick="createFileE(event)" href="javascript:void(0)" id="createFile" href="#">Create file</a>
+                    <a onclick="createDirE(event)" href="javascript:void(0)" id="createDir" href="#">Create directory</a>
+                    <a onclick="renameItemE(event)" href="javascript:void(0)" id="renameItem" href="#">Rename</a>
+                    <a onclick="deleteFileE(event)" href="javascript:void(0)" id="deleteFile" href="#">Delete</a>
+                    <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#">Delete</a>
+                  </div>
+
+                </div>
+                <style>
+                  /* The Overlay (background) */
+                  .overlay {
+                    /* Height & width depends on how you want to reveal the overlay (see JS below) */
+                    height: 0;
+                    width: 100vw;
+                    position: fixed; /* Stay in place */
+                    z-index: 1031; /* Sit on top */
+                    left: 0;
+                    top: 0;
+                    background-color: rgb(0,0,0); /* Black fallback color */
+                    background-color: rgba(0,0,0, 0.9); /* Black w/opacity */
+                    overflow-x: hidden; /* Disable horizontal scroll */
+                    transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+                  }
+
+                  /* Position the content inside the overlay */
+                  .overlay-content {
+                    position: relative;
+                    top: 25%; /* 25% from the top */
+                    width: 100%; /* 100% width */
+                    text-align: center; /* Centered text/links */
+                    margin-top: 30px; /* 30px top margin to avoid conflict with the close button on smaller screens */
+                  }
+
+                  /* The navigation links inside the overlay */
+                  .overlay a {
+                    padding: 8px;
+                    text-decoration: none;
+                    font-size: 36px;
+                    color: #818181;
+                    display: block; /* Display block instead of inline */
+                    transition: 0.3s; /* Transition effects on hover (color) */
+                  }
+
+                  /* When you mouse over the navigation links, change their color */
+                  .overlay a:hover, .overlay a:focus {
+                    color: #f1f1f1;
+                  }
+
+                  /* Position the close button (top right corner) */
+                  .overlay .closebtn {
+                    position: absolute;
+                    top: 20px;
+                    right: 45px;
+                    font-size: 60px;
+                  }
+
+                  /* When the height of the screen is less than 450 pixels, change the font-size of the links and position the close button again, so they don't overlap */
+                  @media screen and (max-height: 450px) {
+                    .overlay a {font-size: 20px}
+                    .overlay .closebtn {
+                      font-size: 40px;
+                      top: 15px;
+                      right: 35px;
+                    }
+                  }
+                </style>
+                <ul class="tree-view">
+                  <li>
+                    <div class="tree-caret tree-ctx-item files-tree-title">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      Files
+                    </div>
+                    <ul class="tree-nested" id="files-tree">
+                      <li>Error while getting files</li>
+
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+              <style>
+                 /* Remove default bullets */
+                .tree-view,
+                .tree-nested {
+                  list-style-type: none;
+                  margin: 0;
+                  padding: 0;
+                  margin-left: 10px;
+                }
+
+                /* Style the caret/arrow */
+                .tree-caret {
+                  cursor: pointer;
+                  user-select: none; /* Prevent text selection */
+                }
+
+                /* Create the caret/arrow with a unicode, and style it */
+                .tree-caret .fa-folder {
+                  display: inline-block;
+                }
+                .tree-caret .fa-folder-open {
+                  display: none;
+                }
+
+                /* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+                .tree-caret-down .fa-folder {
+                  display: none;
+                }
+                .tree-caret-down .fa-folder-open {
+                  display: inline-block;
+                }
+
+                /* Hide the nested list */
+                .tree-nested {
+                  display: none;
+                }
+              </style>
+              <div class="col-md-6 col-sm-12">
+                Editing file <span id="editingFile"></span>
+                <div id="editor" style="resize: both;">file_contents</div>
+                <div class="btn-group" role="group">
+                  <button onclick="setKeyboard(event.target)" class="btn btn-primary" data-handler-name="null">Default</button>
+                  <button onclick="setKeyboard(event.target)" class="btn btn-secondary" data-handler-name="ace/keyboard/vim">Vim</button>
+                  <button onclick="setKeyboard(event.target)" class="btn btn-secondary" data-handler-name="ace/keyboard/emacs">Emacs</button>
+                  <button onclick="setKeyboard(event.target)" class="btn btn-secondary" data-handler-name="ace/keyboard/sublime">Sublime</button>
+                </div>
+                <h3 id="file_warn"></h3>
+                <button class="btn btn-success" onclick="save()">Save</button>
+              </div>
+            </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+</div>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+<script src="/static/assets/vendors/ace-builds/src-min/ace.js" type="text/javascript" charset="utf-8"></script>
+
+<script>
+
+
+    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+    function getCookie(name) {
+      var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+      return r ? r[1] : undefined;
+    }
+
+
+    let editor = ace.edit('editor');
+    editor.setTheme('ace/theme/dracula');
+    editor.session.setUseSoftTabs(true);
+
+    // mouseup = css resize end
+	document.addEventListener("mouseup", function(e){
+		editor.resize();
+	});
+
+    let extensionChanges = [
+      {
+        regex: /^js$/,
+        replaceWith: 'ace/mode/javascript'
+      },
+      {
+        regex: /^py$/,
+        replaceWith: 'ace/mode/python'
+      },
+      {
+        regex: /^html$/,
+        replaceWith: 'ace/mode/html'
+      },
+      {
+        regex: /^yml$/,
+        replaceWith: 'ace/mode/yaml'
+      },
+      {
+        regex: /^yaml$/,
+        replaceWith: 'ace/mode/yaml'
+      },
+      {
+        regex: /^txt$/,
+        replaceWith: 'ace/mode/text'
+      },
+      {
+        regex: /^json$/,
+        replaceWith: 'ace/mode/json'
+      },
+      {
+        regex: /^java$/,
+        replaceWith: 'ace/mode/java'
+      },
+      {
+        regex: /^cpp$/,
+        replaceWith: 'ace/mode/c_cpp'
+      },
+      {
+        regex: /^css$/,
+        replaceWith: 'ace/mode/css'
+      },
+      {
+        regex: /^scss$/,
+        replaceWith: 'ace/mode/scss'
+      },
+      {
+        regex: /^sass$/,
+        replaceWith: 'ace/mode/sass'
+      },
+      {
+        regex: /^lua$/,
+        replaceWith: 'ace/mode/lua'
+      },
+      {
+        regex: /^php$/,
+        replaceWith: 'ace/mode/php'
+      },
+      {
+        regex: /^ps1$/,
+        replaceWith: 'ace/mode/powershell'
+      },
+      {
+        regex: /^svg$/,
+        replaceWith: 'ace/mode/svg'
+      },
+      {
+        regex: /^sh$/,
+        replaceWith: 'ace/mode/sh'
+      },
+      {
+        regex: /^xml$/,
+        replaceWith: 'ace/mode/xml'
+      },
+      {
+        regex: /^ts$/,
+        replaceWith: 'ace/mode/typescript'
+      }
+    ];
+
+    var editorEnabled = false;
+    var filePath = '';
+
+    function clickOnFile(event) {
+      editorEnabled = true;
+      filePath = event.target.getAttribute('data-path');
+      setFileName(event.target.innerText);
+      $.ajax({
+        type: 'GET',
+        url: '/ajax/get_file?id={{ data['server_stats'][0]['server_id']['server_id'] }}&file_path=' + encodeURIComponent(filePath),
+        dataType: 'text',
+        success: function (data) {
+          console.log('Got File Contents From Server');
+          editor.session.setValue(data);
+        },
+      });
+    }
+
+    function setFileName(name) {
+      let fileName = name || 'default.txt';
+      document.getElementById('editingFile').innerText = fileName;
+
+      if (fileName.match('.')) {
+
+        // The pop method removes and returns the last element.
+        setMode(fileName
+          .split('.')
+          .pop()
+          .replace('ace/mode/', ''));
+
+      } else {
+        setMode('txt');
+        document
+          .querySelector('#file_warn')
+          .innerText = 'Warning: This is not a supported language';
+      }
+    }
+
+    setFileName();
+
+    function setMode (extension) {
+      // if the extension matches with the RegEx it will return the replaceWith
+      // property. else it will return the one it has. defaults to the extension.
+      // this runs for each element in extensionChanges.
+      let aceMode = extensionChanges.reduce((output, element) => {
+        return extension.match(element.regex)
+          ? element.replaceWith
+          : output;
+      }, extension);
+
+      if (!aceMode.startsWith('ace/mode/')) {
+        document
+          .querySelector('#file_warn')
+          .innerText = 'Warning: This is not a supported language';
+      } else {
+        document
+          .querySelector('#file_warn')
+          .innerText = '';
+
+        console.log(aceMode || 'ace/mode/text');
+        editor.session.setMode(aceMode || 'ace/mode/text');
+      }
+    }
+
+
+
+    function save() {
+      let text = editor.session.getValue();
+
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "PUT",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/save_file?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+        data: {
+          file_contents: text,
+          file_path: filePath
+        },
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+        },
+      });
+    }
+
+    function createFile(parent, name, callback) {
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "POST",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/create_file?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+        data: {
+          file_parent: parent,
+          file_name: name
+        },
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+          callback();
+        },
+      });
+    }
+
+    function createDir(parent, name, callback) {
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "POST",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/create_dir?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+        data: {
+          dir_parent: parent,
+          dir_name: name
+        },
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+          callback();
+        },
+      });
+    }
+
+    function renameItem(path, name, callback) {
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "PUT",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/rename_item?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+        data: {
+          item_path: path,
+          new_item_name: name
+        },
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+          callback();
+        },
+      });
+    }
+
+    function deleteFile(path, callback) {
+      console.log('Deleting: ' + path)
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "DELETE",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/del_file?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+        data: {
+          file_path: path
+        },
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+          callback();
+        },
+      });
+    }
+
+    function deleteDir(path, callback) {
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "DELETE",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/del_dir?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+        data: {
+          dir_path: path
+        },
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+          callback();
+        },
+      });
+    }
+
+    function getTreeView() {
+      $.ajax({
+        type: "GET",
+        url: '/ajax/get_tree?id={{ data['server_stats'][0]['server_id']['server_id'] }}',
+        dataType: 'text',
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+
+          dataArr = data.split('\n');
+          serverDir = dataArr.shift(); // Remove & return first element (server directory)
+          text = dataArr.join('\n');
+
+          document.getElementById('files-tree').innerHTML = text;
+
+          document.getElementsByClassName('files-tree-title')[0].setAttribute('data-path', serverDir);
+          document.getElementsByClassName('files-tree-title')[0].setAttribute('data-name', 'Files');
+
+          setTimeout(function () {setTreeViewContext()}, 1000);
+
+          var toggler = document.getElementsByClassName("tree-caret");
+          var i;
+
+          for (i = 0; i < toggler.length; i++) {
+            if (toggler[i].classList.contains('files-tree-title')) continue;
+            toggler[i].addEventListener("click", function caretListener() {
+              this.parentElement.querySelector(".tree-nested").classList.toggle("d-block");
+              this.classList.toggle("tree-caret-down");
+            });
+          }
+        },
+      });
+    }
+
+    function setTreeViewContext() {
+      var treeItems = document.getElementsByClassName('tree-ctx-item');
+
+      for (var i = 0; i < treeItems.length; i++) {
+        var treeItem = treeItems[i];
+        treeItem.addEventListener('contextmenu', function contextListener(event) {
+          event.preventDefault();
+          var ctxmenuPath = event.target.getAttribute('data-path');
+          var ctxmenuName = event.target.getAttribute('data-name');
+          if (!ctxmenuPath) {
+            console.log({ 'event.target': event.target, ctxmenuPath });
+            return;
+          }
+          $('#renameItem').show();
+
+          var isDir = event.target.classList.contains('tree-folder');
+          $('#createFile').toggle(isDir);
+          $('#createDir').toggle(isDir);
+          $('#deleteDir').toggle(isDir);
+
+          var isFile = event.target.classList.contains('tree-file');
+          $('#deleteFile').toggle(isFile);
+          console.log({ 'event.target': event.target, isDir, isFile });
+
+          if(event.target.classList.contains('files-tree-title')) {
+            $('#createFile').show();
+            $('#createDir').show();
+            $('#renameItem').hide();
+            $('#deleteDir').hide();
+            $('#deleteFile').hide();
+          }
+
+
+          document.getElementById('files-tree-nav-content')
+            .setAttribute('data-path', ctxmenuPath);
+
+          document.getElementById('files-tree-nav-content')
+            .setAttribute('data-name', ctxmenuName);
+
+          document.getElementById("files-tree-nav").style.height = "100%";
+        })
+      }
+    }
+
+
+    function createFileE(event) {
+      bootbox.prompt('What name do you want for the new file?', function(result) {
+        path = event.target.parentElement.getAttribute('data-path');
+        name = event.target.parentElement.getAttribute('data-name');
+        if (!result) return;
+
+        createFile(path, result, function () {
+          getTreeView()
+          document.getElementById('files-tree-nav').style.height = '0%';
+        });
+      })
+    }
+
+    function createDirE(event) {
+      bootbox.prompt('What name do you want for the new directory?', function(result) {
+        path = event.target.parentElement.getAttribute('data-path');
+        name = event.target.parentElement.getAttribute('data-name');
+        if (!result) return;
+
+        createDir(path, result, function () {
+          getTreeView()
+          document.getElementById('files-tree-nav').style.height = '0%';
+        });
+      })
+    }
+
+    function renameItemE(event) {
+      bootbox.prompt('What should the new name be?', function(result) {
+        path = event.target.parentElement.getAttribute('data-path');
+        name = event.target.parentElement.getAttribute('data-name');
+        if (!result) return;
+
+        renameItem(path, result, function () {
+          getTreeView()
+          document.getElementById('files-tree-nav').style.height = '0%';
+        });
+      })
+    }
+
+    function deleteFileE(event) {
+      path = event.target.parentElement.getAttribute('data-path');
+      name = event.target.parentElement.getAttribute('data-name');
+      bootbox.confirm({
+          size: "",
+          title: "Are you sure you want to delete " + name + "?",
+          closeButton: false,
+          message: "You are deleting \"" + path + "\"!<br/><br/>This action will be irreversible and it'll be lost forever!",
+          buttons: {
+            confirm: {
+              label: 'Yes, I understand the consequences',
+              className: 'btn-danger'
+            },
+            cancel: {
+              label: 'No',
+              className: 'btn-link'
+            }
+          },
+          callback: function(result) {
+            if (!result) return;
+            deleteFile(path, function () {
+              getTreeView()
+              document.getElementById('files-tree-nav').style.height = '0%';
+            });
+          }
+      });
+    }
+
+    function deleteDirE(event) {
+      path = event.target.parentElement.getAttribute('data-path');
+      name = event.target.parentElement.getAttribute('data-name');
+      bootbox.confirm({
+          size: "",
+          title: "Are you sure you want to delete " + name + "?",
+          closeButton: false,
+          message: "You are deleting \"" + path + "\"!<br/><br/>This action will be irreversible and it'll be lost forever!",
+          buttons: {
+            confirm: {
+              label: 'Yes, I understand the consequences',
+              className: 'btn-danger'
+            },
+            cancel: {
+              label: 'No',
+              className: 'btn-link'
+            }
+          },
+          callback: function(result) {
+            if (!result) return;
+            deleteDir(path, function () {
+              getTreeView()
+              document.getElementById('files-tree-nav').style.height = '0%';
+            });
+          }
+      });
+    }
+
+    document.getElementsByClassName('files-tree-title')[0].addEventListener("click", function caretListener() {
+      this.parentElement.querySelector(".tree-nested").classList.toggle("d-block");
+      this.classList.toggle("tree-caret-down");
+    });
+
+    getTreeView();
+    setTreeViewContext();
+
+    function setKeyboard(target) {
+      var handlerName = target.getAttribute('data-handler-name');
+      if (handlerName == 'null') handlerName = null;
+      editor.setKeyboardHandler(handlerName);
+
+      var nodes = target.parentNode.querySelectorAll("[data-handler-name]");
+      for (var i = 0; i < nodes.length; i++) {
+        nodes[i].classList.remove('btn-primary');
+        nodes[i].classList.add('btn-secondary');
+      }
+
+      target.classList.remove('btn-secondary');
+      target.classList.add('btn-primary');
+    }
+
+</script>
+
+{% end %}
