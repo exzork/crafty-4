@@ -165,8 +165,10 @@ class Stats:
 
 
         # TODO: search server properties file for possible override of 127.0.0.1
-        internal_ip = server_data.get('server_ip', "127.0.0.1")
-        server_port = server_settings.get('server_port', "25565")
+        internal_ip = server_data.get('server-ip', "127.0.0.1")
+        server_port = server_settings.get('server-port', "25565")
+
+        print("PORT!!!!!: " + str(server_port))
 
         logger.debug("Pinging {} on port {}".format(internal_ip, server_port))
         int_mc_ping = ping(internal_ip, int(server_port))
@@ -207,11 +209,17 @@ class Stats:
             p_stats = self._get_process_stats(server_obj.PID)
 
             # TODO: search server properties file for possible override of 127.0.0.1
-            internal_ip = server_data.get('server_ip', "127.0.0.1")
-            server_port = server_settings.get('server_port', "25565")
+            internal_ip = server_data.get('server-ip', "127.0.0.1")
+            server_port = server_settings.get('server-port', "25565")
+
+            print(str(server_port))
+
+            print("Pinging {} on port {}".format(internal_ip, server_port))
 
             logger.debug("Pinging {} on port {}".format(internal_ip, server_port))
             int_mc_ping = ping(internal_ip, int(server_port))
+
+            print("PING: " + str(int_mc_ping))
 
             int_data = False
             ping_data = {}
@@ -238,6 +246,7 @@ class Stats:
                 'desc': ping_data.get("server_description", False),
                 'version': ping_data.get("server_version", False)
             }
+            print("SERVER STATS LIST LEN(" + str(len(server_stats_list)) + "): ")
 
             # add this servers data to the stack
             server_stats_list.append(server_stats)
