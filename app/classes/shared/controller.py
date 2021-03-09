@@ -106,6 +106,11 @@ class Controller:
     def list_defined_servers():
         servers = db_helper.get_all_defined_servers()
         return servers
+        
+    @staticmethod
+    def list_authorized_servers(userId):
+        servers = db_helper.get_authorized_servers(userId)
+        return servers
 
     def get_server_data(self, server_id):
         for s in self.servers_list:

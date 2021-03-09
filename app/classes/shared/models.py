@@ -269,6 +269,16 @@ class db_shortcuts:
     def get_all_defined_servers():
         query = Servers.select()
         return db_helper.return_rows(query)
+        
+    @staticmethod
+    def get_authorized_servers(userId):
+        userServers = User_Servers.select().where(User_Servers.user_id == userId)
+        server_data = []
+
+        for u in userServers:
+            server_data.append(db_helper.get_server_data_by_id(u.server_id))
+
+        return server_data
 
     @staticmethod
     def get_all_servers_stats():
@@ -281,6 +291,20 @@ class db_shortcuts:
         return server_data
 
     @staticmethod
+    def get_authorized_servers_stats(userId):
+        userServers = User_Servers.select().where(User_Servers.user_id == userId)
+        authorizedServers = []
+        server_data = []
+
+        for u in userServers:
+            authorizedServers.append(db_helper.get_server_data_by_id(u.server_id))
+
+        for s in authorizedServers:
+            latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
+            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)})
+        return server_data
+
+    @staticmethod
     def get_server_stats_by_id(server_id):
         stats = Server_Stats.select().where(Server_Stats.server_id == server_id).order_by(Server_Stats.created.desc()).limit(1)
         return db_helper.return_rows(stats)
@@ -288,6 +312,16 @@ class db_shortcuts:
     @staticmethod
     def server_id_exists(server_id):
         if not db_helper.get_server_data_by_id(server_id):
+            return False
+        return True
+        
+    @staticmethod
+    def server_id_authorized(serverId, userId):
+        userServer = User_Servers.select().where(User_Servers.server_id == serverId)
+        authorized = userServer.select().where(User_Servers.user_id == userId)      
+        #authorized = db_helper.return_rows(authorized)
+
+        if authorized.count() == 0:
             return False
         return True
 

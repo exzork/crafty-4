@@ -29,7 +29,14 @@ class PanelHandler(BaseHandler):
         now = time.time()
         formatted_time = str(datetime.datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S'))
 
-        defined_servers = controller.list_defined_servers()
+        userId = user_data['user_id']
+        user = db_helper.get_user(userId)
+        
+        if user['superuser'] == 1:
+            defined_servers = controller.list_defined_servers()
+        else:
+            defined_servers = controller.list_authorized_servers(userId)
+
 
         page_data = {
             # todo: make this actually pull and compare version data
@@ -81,7 +88,10 @@ class PanelHandler(BaseHandler):
             return
 
         elif page == 'dashboard':
-            page_data['servers'] = db_helper.get_all_servers_stats()
+            if user['superuser'] == 1:
+                page_data['servers'] = db_helper.get_all_servers_stats()
+            else:
+                page_data['servers'] = db_helper.get_authorized_servers_stats(userId)
 
             for s in page_data['servers']:
                 try:
@@ -104,6 +114,10 @@ class PanelHandler(BaseHandler):
 
                 # does this server id exist?
                 if not db_helper.server_id_exists(server_id):
+                    self.redirect("/panel/error?error=Invalid Server ID")
+                    return False
+
+                if not db_helper.server_id_authorized(server_id, userId):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return False
 
@@ -164,7 +178,7 @@ class PanelHandler(BaseHandler):
             page_data['user']['created'] = "N/A"
             page_data['user']['last_login'] = "N/A"
             page_data['user']['last_ip'] = "N/A"
-            page_data['role']['last_update'] = "N/A"
+            page_data['user']['last_update'] = "N/A"
             page_data['user']['roles'] = set()
             page_data['user']['servers'] = set()
 
