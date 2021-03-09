@@ -48,6 +48,8 @@ class Server:
 
     def reload_server_settings(self):
         server_data = db_helper.get_server_data_by_id(self.server_id)
+        for item in server_data:
+            print("ITEM: " + str(item))
         self.settings = server_data
 
     def do_server_setup(self, server_data_obj):
@@ -234,7 +236,6 @@ class Server:
 
     def check_running(self):
         running = False
-
         # if process is None, we never tried to start
         if self.PID is None:
             return running

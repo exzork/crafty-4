@@ -198,6 +198,7 @@ class Stats:
 
             # get our server object, settings and data dictionaries
             server_obj = s.get('server_obj', None)
+            server_obj.reload_server_settings()
             server_settings = s.get('server_settings', {})
             server_data = s.get('server_data_obj', {})
 
@@ -212,14 +213,13 @@ class Stats:
             internal_ip = server_data.get('server-ip', "127.0.0.1")
             server_port = server_settings.get('server-port', "25565")
 
-            print(str(server_port))
-
-            print("Pinging {} on port {}".format(internal_ip, server_port))
+            for item in server_data:
+                if item is not list:
+                    print(str(item))
+            print("Server IP: " + internal_ip)
 
             logger.debug("Pinging {} on port {}".format(internal_ip, server_port))
             int_mc_ping = ping(internal_ip, int(server_port))
-
-            print("PING: " + str(int_mc_ping))
 
             int_data = False
             ping_data = {}
@@ -246,7 +246,6 @@ class Stats:
                 'desc': ping_data.get("server_description", False),
                 'version': ping_data.get("server_version", False)
             }
-            print("SERVER STATS LIST LEN(" + str(len(server_stats_list)) + "): ")
 
             # add this servers data to the stack
             server_stats_list.append(server_stats)

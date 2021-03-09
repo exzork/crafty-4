@@ -324,7 +324,7 @@ class PanelHandler(BaseHandler):
             user_data = json.loads(self.get_secure_cookie("user_data"))
             exec_user = db_helper.get_user(user_data['user_id'])
 
-            if not exec_user.superuser:
+            if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return False
             elif server_id is None:

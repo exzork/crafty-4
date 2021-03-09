@@ -73,7 +73,6 @@ class Player:
 
 # For the rest of requests see wiki.vg/Protocol
 def ping(ip, port):
-    print("IN PING PORT: " + str(port))
     def read_var_int():
         i = 0
         j = 0
@@ -91,12 +90,10 @@ def ping(ip, port):
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        print("SOCKET PORT: " + str(port))
-        sock.connect((ip, int(port)))
+        sock.connect((ip, port))
 
-    except:
+    except socket.error as err:
         pass
-        print('FALSE 1')
         return False
 
     try:
@@ -112,10 +109,8 @@ def ping(ip, port):
         length = read_var_int()  # full packet length
         if length < 10:
             if length < 0:
-                print("LEN < 0 FALSE")
                 return False
             else:
-                print("FALSE 2")
                 return False
 
         sock.recv(1)  # packet type, 0 for pings
@@ -124,12 +119,10 @@ def ping(ip, port):
         while len(data) != length:
             chunk = sock.recv(length - len(data))
             if not chunk:
-                print("NOT CHUNK FALSE")
                 return False
 
             data += chunk
         logger.debug("Server reports this data on ping: {}".format(data))
-        print("Server reports this data on ping: {}".format(data))
         return Server(json.loads(data))
     finally:
         sock.close()
