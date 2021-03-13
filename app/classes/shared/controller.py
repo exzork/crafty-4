@@ -10,7 +10,7 @@ from distutils import dir_util
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 
-from app.classes.shared.models import db_helper, Servers
+from app.classes.shared.models import db_helper, Servers, User_Servers
 
 from app.classes.shared.server import Server
 from app.classes.minecraft.server_props import ServerProps
@@ -109,7 +109,9 @@ class Controller:
         
     @staticmethod
     def list_authorized_servers(userId):
-        servers = db_helper.get_authorized_servers(userId)
+        #servers = db_helper.get_authorized_servers(userId)
+        servers = db_helper.get_authorized_servers_from_roles(userId)
+        logger.debug("servers list = {}".format(servers))
         return servers
 
     def get_server_data(self, server_id):
@@ -335,12 +337,12 @@ class Controller:
                     self.stop_server(server_id)
 
                 # remove the server from the DB
+                User_Servers.delete().where(User_Servers.server_id == server_id).execute()
                 Servers.delete().where(Servers.server_id == server_id).execute()
 
                 # remove the server from servers list
                 self.servers_list.pop(counter)
 
             counter += 1
-
 
 controller = Controller()

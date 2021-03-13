@@ -279,6 +279,26 @@ class db_shortcuts:
             server_data.append(db_helper.get_server_data_by_id(u.server_id))
 
         return server_data
+        
+    @staticmethod
+    def get_authorized_servers_from_roles(userId):
+        userRoles = User_Roles.select().where(User_Roles.user_id == userId)
+        roles_list = []
+        roleServer = []
+        server_data = []
+
+        for u in userRoles:
+            roles_list.append(db_helper.get_role(u.role_id))
+            
+        for r in roles_list:
+            role_test = Role_Servers.select().where(Role_Servers.role_id == r.get('role_id'))
+            for t in role_test:
+                roleServer.append(t)
+
+        for s in roleServer:
+            server_data.append(db_helper.get_server_data_by_id(s.server_id))
+
+        return server_data
 
     @staticmethod
     def get_all_servers_stats():
@@ -304,6 +324,31 @@ class db_shortcuts:
             server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)})
         return server_data
 
+        
+    @staticmethod
+    def get_authorized_servers_stats_from_roles(userId):
+        userRoles = User_Roles.select().where(User_Roles.user_id == userId)
+        roles_list = []
+        roleServer = []
+        authorizedServers = []
+        server_data = []
+
+        for u in userRoles:
+            roles_list.append(db_helper.get_role(u.role_id))
+            
+        for r in roles_list:
+            role_test = Role_Servers.select().where(Role_Servers.role_id == r.get('role_id'))
+            for t in role_test:
+                roleServer.append(t)
+
+        for s in roleServer:
+            authorizedServers.append(db_helper.get_server_data_by_id(s.server_id))
+
+        for s in authorizedServers:
+            latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
+            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)})
+        return server_data
+
     @staticmethod
     def get_server_stats_by_id(server_id):
         stats = Server_Stats.select().where(Server_Stats.server_id == server_id).order_by(Server_Stats.created.desc()).limit(1)
@@ -322,6 +367,28 @@ class db_shortcuts:
         #authorized = db_helper.return_rows(authorized)
 
         if authorized.count() == 0:
+            return False
+        return True
+
+    @staticmethod
+    def server_id_authorized_from_roles(serverId, userId):
+        cpt_authorized = 0
+        roles_list = []
+        roleServer = []
+        authorized = []
+        userRoles = User_Roles.select().where(User_Roles.user_id == userId)
+        
+        for u in userRoles:
+            roles_list.append(db_helper.get_role(u.role_id))
+            
+        for r in roles_list:
+            role_test = Role_Servers.select().where(Role_Servers.role_id == r.get('role_id'))
+
+        for s in role_test:
+            if s.server_id.server_id == serverId:
+                cpt_authorized += 1
+
+        if cpt_authorized == 0:
             return False
         return True
 
@@ -441,6 +508,7 @@ class db_shortcuts:
 
     @staticmethod
     def remove_user(user_id):
+        User_Servers.delete().where(User_Servers.user_id == user_id).execute()
         user = Users.get(Users.user_id == user_id)
         return user.delete_instance()
 
@@ -508,6 +576,7 @@ class db_shortcuts:
 
     @staticmethod
     def remove_role(role_id):
+        Role_Servers.delete().where(Role_Servers.role_id == role_id).execute()
         role = Roles.get(Roles.role_id == role_id)
         return role.delete_instance()
 

@@ -32,6 +32,19 @@ class ServerHandler(BaseHandler):
     def get(self, page):
         # name = tornado.escape.json_decode(self.current_user)
         user_data = json.loads(self.get_secure_cookie("user_data"))
+        
+        userId = user_data['user_id']
+        user = db_helper.get_user(userId)
+        
+        user_role = []
+        if user['superuser'] == 1:
+            defined_servers = controller.list_defined_servers()
+            user_role = "Super User"
+        else:
+            defined_servers = controller.list_authorized_servers(userId)
+            for r in user['roles']:
+                role = db_helper.get_role(r)
+                user_role.append(role['role_name'])
 
         template = "public/404.html"
 
@@ -40,6 +53,7 @@ class ServerHandler(BaseHandler):
         page_data = {
             'version_data': helper.get_version_string(),
             'user_data': user_data,
+            'user_role' : user_role,
             'server_stats': {
                 'total': len(controller.list_defined_servers()),
                 'running': len(controller.list_running_servers()),
