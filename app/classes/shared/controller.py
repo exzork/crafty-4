@@ -160,7 +160,7 @@ class Controller:
         svr_data = self.get_server_data(server_id)
         server_name = svr_data['server_name']
 
-        running = svr_obj.check_running(True)
+        running = svr_obj.check_running()
 
         # issue the stop command
         svr_obj.stop_threaded_server()

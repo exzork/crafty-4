@@ -90,7 +90,7 @@ class TasksManager:
             os.remove(os.path.join(helper.root_dir, '.header'))
             controller.stop_all_servers()
         except:
-            pass
+            logger.info("Caught error during shutdown", exc_info=True)
 
         logger.info("***** Crafty Shutting Down *****\n\n")
         console.info("***** Crafty Shutting Down *****\n\n")
