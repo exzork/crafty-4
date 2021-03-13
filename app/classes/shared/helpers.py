@@ -43,6 +43,7 @@ class Helpers:
         self.ensure_dir_exists(os.path.join(self.root_dir, 'app', 'config', 'db'))
         self.db_path = os.path.join(self.root_dir, 'app', 'config', 'db', 'crafty.sqlite')
         self.serverjar_cache = os.path.join(self.config_dir, 'serverjars.json')
+        self.credits_cache = os.path.join(self.config_dir, 'credits.json')
         self.passhasher = PasswordHasher()
         self.exiting = False
 

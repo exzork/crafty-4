@@ -61,6 +61,11 @@ class PanelHandler(BaseHandler):
             template = "public/error.html"
 
         elif page == 'credits':
+            with open(helper.credits_cache) as republic_credits_will_do:
+                credits = json.load(republic_credits_will_do)
+                page_data["patreons"] = credits["patreons"]
+                page_data["staff"] = credits["staff"]
+                page_data["translations"] = credits["translations"]
             template = "panel/credits.html"
 
         elif page == 'contribute':
@@ -324,7 +329,7 @@ class PanelHandler(BaseHandler):
             user_data = json.loads(self.get_secure_cookie("user_data"))
             exec_user = db_helper.get_user(user_data['user_id'])
 
-            if not exec_user.superuser:
+            if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return False
             elif server_id is None:
