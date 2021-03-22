@@ -1,0 +1,137 @@
+{
+  "patreons": [
+    {
+      "name": "Richard B",
+      "level": "substainer"
+    },
+    {
+      "name": "John C",
+      "level": "advocate"
+    },
+    {
+      "name": "Nicolas T",
+      "level": "substainer"
+    },
+    {
+      "name": "Lightkeeper",
+      "level": "substainer"
+    },
+    {
+      "name": "test user 1",
+      "level": "supporter"
+    },
+    {
+      "name": "test user 2",
+      "level": "other"
+    }
+  ],
+  "staff": {
+    "development": [
+      {
+        "name":  "Phil Tarrant",
+        "title": "Benevolent Dictator for Life",
+        "loc":   "Atlanta, GA",
+        "tags":  [ "Staff", "Developer", [ "BDFL", "https://en.wikipedia.org/wiki/Benevolent_dictator_for_life" ] ],
+        "blurb": "For best results, apply a thin layer of Phillip to code, cyber security, parenthood for maximum effectiveness. Phillip often spends too much time with his chickens.",
+        "pic":   "/static/assets/images/credits/ptarrant_cropped.png"
+      },
+      {
+        "name":  "Pita Bread",
+        "title": null,
+        "loc":   "Midwest, USA",
+        "tags":  [ "Staff", null, "Community Leader" ],
+        "blurb": "His interests include bread, Linux, and networking. He enjoys pumpkins, organizing, and long-winded emails, but hates wifi.",
+        "pic":   "/static/assets/images/credits/pita_cropped.png"
+      },
+      {
+        "name":  "macgeek",
+        "title": null,
+        "loc":   "Midwest, USA",
+        "tags":  [ "Staff", "Developer", "Project Manager" ],
+        "blurb": "Sysadmin for work and sysadmin for fun (avid homelabber). He enjoys a good tech tangent and gaming.",
+        "pic":   "/static/assets/images/credits/macgeek_cropped.png"
+      },
+      {
+        "name":  "parzivaldewey",
+        "title": null,
+        "loc":   "East Coast, USA",
+        "tags":  [ "Staff", "Developer", "Support Manager" ],
+        "blurb": "His interests include Linux, gaming, and helping others. When he's able to unplug he enjoys biking, hiking, and playing soccer.",
+        "pic":   "/static/assets/images/credits/andrew_cropped.png"
+      },
+      {
+        "name":  "MC Gaming",
+        "title": null,
+        "loc":   "Central, UK",
+        "tags":  [ "Staff", "Developer", null ],
+        "blurb": "His interests include learning, Linux, programming. He loves pentesting apps and gaming.",
+        "pic":   "/static/assets/images/credits/mcgaming.png"
+      },
+      {
+        "name":  "Silversthorn",
+        "title": null,
+        "loc":   null,
+        "tags":  [ "Staff", "Developer", null ],
+        "blurb": "Often in it's cave, he sometimes goes out to help or do silly jokes. He's an IT clown (not the film), but seriously do the job when it's needed.",
+        "pic":   "/static/assets/images/credits/silversthorn.png"
+      },
+      {
+        "name":  "ThatOneLukas",
+        "title": null,
+        "loc":   "Helsinki, FI",
+        "tags":  [ "Staff", "Developer", null ],
+        "blurb": "Lukas enjoys bashing his head at the table while his code does not work",
+        "pic":   "/static/assets/images/credits/lukas_cropped.png"
+      }
+    ],
+    "support": [
+      {
+        "name":  "iSilverfyre",
+        "title": null,
+        "loc":   null,
+        "tags":  [ "Staff", "Wiki", null ],
+        "blurb": "Silver enjoys helping others with their computer needs, writing documentation and loving her cat.",
+        "pic":   "/static/assets/images/credits/isilverfyre.png"
+      },
+      {
+        "name":  "Quentin",
+        "title": null,
+        "loc":   null,
+        "tags":  [ "Staff", "Developer", null ],
+        "blurb": "Hosts Minecraft servers for his weird friends, works for an IoT company as his dayjob. The 's' in IoT stands for 'secure'.",
+        "pic":   "/static/assets/images/credits/qub3d.png"
+      }
+    ],
+    "retired": [
+      {
+        "name":  "Kev Dagoat",
+        "title": "Head of Development",
+        "loc":   "East Coast, AU",
+        "tags":  [ "Staff", "Developer", "HOD" ],
+        "blurb": "His interests include Linux, programming, and goats of course. He enjoys building APIs, K8s, and Geeking over video cards.",
+        "pic":   "/static/assets/images/credits/kevdagoat.jpeg"
+      },
+      {
+        "name":  "Manu",
+        "title": null,
+        "loc":   "Eastern, CA",
+        "tags":  [ "Staff", "Developer", "Project Manager" ],
+        "blurb": "His interests include learning, Linux, and programming. He enjoys speaking French, doing 6 things at once, and testing software.",
+        "pic":   "/static/assets/images/credits/manu_cropped.png"
+      },
+      {
+        "name":  "UltraBlack",
+        "title": null,
+        "loc":   "Bavaria, DE",
+        "tags":  [ "Staff", null, "Idea Manager" ],
+        "blurb": "Hi, my name is Tim, and I'm a huge fan of linux. I'm often gaming and occasionally coding.",
+        "pic":   "/static/assets/images/credits/ultrablack_cropped.png"
+      }
+    ]
+  },
+  "translations": {
+    "UltraBlack": [ "German" ],
+    "Manu": [ "French" ],
+    "ptarrant": [ "Sarcasm", "Wit" ]
+  }
+}
