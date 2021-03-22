@@ -138,7 +138,7 @@ class Server:
             logger.info("Server {} running with PID {}".format(self.name, self.PID))
             console.info("Server {} running with PID {}".format(self.name, self.PID))
             self.is_crashed = False
-            stats.record_stats()
+            self.stats.record_stats()
         else:
             logger.warning("Server PID {} died right after starting - is this a server config issue?".format(self.PID))
             console.warning("Server PID {} died right after starting - is this a server config issue?".format(self.PID))
