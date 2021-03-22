@@ -211,7 +211,6 @@ class Server:
 
     def check_running(self):
         running = False
-
         # if process is None, we never tried to start
         if self.PID is None:
             return running

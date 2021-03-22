@@ -32,7 +32,7 @@ def do_intro():
     console.magenta(intro)
 
 
-def setup_logging(debug=False):
+def setup_logging(debug=True):
     logging_config_file = os.path.join(os.path.curdir,
                                        'app',
                                        'config',

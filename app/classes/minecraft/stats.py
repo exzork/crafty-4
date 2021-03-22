@@ -165,8 +165,8 @@ class Stats:
 
 
         # TODO: search server properties file for possible override of 127.0.0.1
-        internal_ip = server_data.get('server_ip', "127.0.0.1")
-        server_port = server_settings.get('server_port', "25565")
+        internal_ip = server_data.get('server-ip', "127.0.0.1")
+        server_port = server_settings.get('server-port', "25565")
 
         logger.debug("Pinging {} on port {}".format(internal_ip, server_port))
         int_mc_ping = ping(internal_ip, int(server_port))
@@ -196,6 +196,7 @@ class Stats:
 
             # get our server object, settings and data dictionaries
             server_obj = s.get('server_obj', None)
+            server_obj.reload_server_settings()
             server_settings = s.get('server_settings', {})
             server_data = s.get('server_data_obj', {})
 
@@ -207,8 +208,8 @@ class Stats:
             p_stats = self._get_process_stats(server_obj.PID)
 
             # TODO: search server properties file for possible override of 127.0.0.1
-            internal_ip = server_data.get('server_ip', "127.0.0.1")
-            server_port = server_settings.get('server_port', "25565")
+            internal_ip = server_data.get('server-ip', "127.0.0.1")
+            server_port = server_settings.get('server-port', "25565")
 
             logger.debug("Pinging {} on port {}".format(internal_ip, server_port))
             int_mc_ping = ping(internal_ip, int(server_port))

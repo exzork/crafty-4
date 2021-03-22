@@ -72,7 +72,7 @@ class Player:
 
 
 # For the rest of requests see wiki.vg/Protocol
-def ping(ip, port=25565):
+def ping(ip, port):
     def read_var_int():
         i = 0
         j = 0
@@ -88,10 +88,11 @@ def ping(ip, port=25565):
             if not (k & 0x80):
                 return i
 
-    sock = socket.socket()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         sock.connect((ip, port))
-    except:
+
+    except socket.error as err:
         pass
         return False
 
