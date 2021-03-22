@@ -39,7 +39,7 @@ class BaseHandler(tornado.web.RequestHandler):
             ) -> Optional[str]:
         arg = self._get_argument(name, default, self.request.arguments, strip)
         logger.debug("Bleaching {}: {}".format(name, arg))
-        return bleach.clean(arg)
+        return self.autobleach(arg)
 
     def get_arguments(self, name: str, strip: bool = True) -> List[str]:
         assert isinstance(strip, bool)
@@ -47,5 +47,5 @@ class BaseHandler(tornado.web.RequestHandler):
         args_ret = []
         for arg in args:
             logger.debug("Bleaching {}: {}".format(name, arg))
-            args_ret += bleach.clean(arg)
+            args_ret += self.autobleach(arg)
         return args_ret
