@@ -36,10 +36,10 @@ class ServerHandler(BaseHandler):
         
         user_role = []
         if user['superuser'] == 1:
-            defined_servers = controller.list_defined_servers()
+            defined_servers = self.controller.list_defined_servers()
             user_role = "Super User"
         else:
-            defined_servers = controller.list_authorized_servers(userId)
+            defined_servers = self.controller.list_authorized_servers(userId)
             for r in user['roles']:
                 role = db_helper.get_role(r)
                 user_role.append(role['role_name'])
