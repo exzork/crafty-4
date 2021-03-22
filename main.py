@@ -9,8 +9,8 @@ import logging.config
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
 from app.classes.shared.models import installer
-
-from app.classes.shared.controller import controller
+from app.classes.shared.tasks import TasksManager
+from app.classes.shared.controller import Controller
 from app.classes.shared.cmd import MainPrompt
 
 
@@ -55,7 +55,6 @@ def setup_logging(debug=False):
 
 """ Our Main Starter """
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser("Crafty Controller - A Server Management System")
 
     parser.add_argument('-i', '--ignore',
@@ -88,14 +87,17 @@ if __name__ == '__main__':
     fresh_install = installer.is_fresh_install()
 
     if fresh_install:
+        console.debug("Fresh install detected")
         installer.create_tables()
         installer.default_settings()
+    else:
+        console.debug("Existing install detected")
+        installer.check_schema_version()
 
-    # now the tables are created, we can load the tasks_manger
-    from app.classes.shared.tasks import tasks_manager
-
+    # now the tables are created, we can load the tasks_manger and server controller
+    controller = Controller()
+    tasks_manager = TasksManager(controller)
     tasks_manager.start_webserver()
-    tasks_manager.start_scheduler()
 
     # slowing down reporting just for a 1/2 second so messages look cleaner
     time.sleep(.5)
@@ -103,12 +105,14 @@ if __name__ == '__main__':
     # init servers
     logger.info("Initializing all servers defined")
     console.info("Initializing all servers defined")
-
     controller.init_all_servers()
     servers = controller.list_defined_servers()
 
     # start stats logging
     tasks_manager.start_stats_recording()
+
+    # once the controller is up and stats are logging, we can kick off the scheduler officially
+    tasks_manager.start_scheduler()
 
     # refresh our cache and schedule for every 12 hoursour cache refresh for serverjars.com
     tasks_manager.serverjar_cache_refresher()
@@ -116,7 +120,7 @@ if __name__ == '__main__':
     # this should always be last
     tasks_manager.start_main_kill_switch_watcher()
 
-    Crafty = MainPrompt()
+    Crafty = MainPrompt(tasks_manager)
     Crafty.cmdloop()
 
     # our main loop - eventually a shell

@@ -8,6 +8,10 @@ from app.classes.web.websocket_helper import websocket_helper
 
 class SocketHandler(tornado.websocket.WebSocketHandler):
 
+    def initialize(self, controller=None, tasks_manager=None):
+        self.controller = controller
+        self.tasks_manager = tasks_manager
+
     def get_remote_ip(self):
         remote_ip = self.request.headers.get("X-Real-IP") or \
                     self.request.headers.get("X-Forwarded-For") or \

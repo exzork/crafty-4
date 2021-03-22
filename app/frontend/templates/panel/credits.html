@@ -50,8 +50,10 @@
                         </div>
 
                         <div class="wrapper d-flex align-items-center font-weight-medium text-muted">
+                          {% if person['loc'] %}
                           <i class="mdi mdi-map-marker-outline mr-2"></i>
                           <p class="mb-0 text-muted">{{ person['loc'] }}</p>
+                          {% end %}
                         </div>
                       </div>
                     </div>
@@ -113,8 +115,10 @@
                         </div>
 
                         <div class="wrapper d-flex align-items-center font-weight-medium text-muted">
+                          {% if person['loc'] %}
                           <i class="mdi mdi-map-marker-outline mr-2"></i>
                           <p class="mb-0 text-muted">{{ person['loc'] }}</p>
+                          {% end %}
                         </div>
                       </div>
                     </div>
@@ -177,8 +181,10 @@
                         </div>
 
                         <div class="wrapper d-flex align-items-center font-weight-medium text-muted">
+                          {% if person['loc'] %}
                           <i class="mdi mdi-map-marker-outline mr-2"></i>
                           <p class="mb-0 text-muted">{{ person['loc'] }}</p>
+                          {% end %}
                         </div>
                       </div>
                     </div>

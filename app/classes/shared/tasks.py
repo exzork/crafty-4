@@ -8,11 +8,9 @@ import asyncio
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
-from app.classes.web.tornado import webserver
+from app.classes.web.tornado import Webserver
 from app.classes.web.websocket_helper import websocket_helper
 
-from app.classes.minecraft.stats import stats
-from app.classes.shared.controller import controller
 from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.shared.models import db_helper
 
@@ -26,11 +24,26 @@ except ModuleNotFoundError as e:
     console.critical("Import Error: Unable to load {} module".format(e, e.name))
     sys.exit(1)
 
+scheduler_intervals = { 'seconds',
+                        'minutes',
+                        'hours',
+                        'days',
+                        'weeks',
+                        'monday',
+                        'tuesday',
+                        'wednesday',
+                        'thursday',
+                        'friday',
+                        'saturday',
+                        'sunday'
+                        }
 
 class TasksManager:
 
-    def __init__(self):
-        self.tornado = webserver()
+    def __init__(self, controller):
+        self.controller = controller
+        self.tornado = Webserver(controller, self)
+
         self.webserver_thread = threading.Thread(target=self.tornado.run_tornado, daemon=True, name='tornado_thread')
 
         self.main_kill_switch_thread = threading.Thread(target=self.main_kill_switch, daemon=True, name="main_loop")
@@ -39,13 +52,13 @@ class TasksManager:
         self.schedule_thread = threading.Thread(target=self.scheduler_thread, daemon=True, name="scheduler")
 
         self.log_watcher_thread = threading.Thread(target=self.log_watcher, daemon=True, name="log_watcher")
-        self.log_watcher_thread.start()
 
         self.command_thread = threading.Thread(target=self.command_watcher, daemon=True, name="command_watcher")
-        self.command_thread.start()
 
         self.realtime_thread = threading.Thread(target=self.realtime, daemon=True, name="realtime")
-        self.realtime_thread.start()
+
+        self.reload_schedule_from_db()
+
 
     def get_main_thread_run_status(self):
         return self.main_thread_exiting
@@ -60,14 +73,29 @@ class TasksManager:
                 self._main_graceful_exit()
             time.sleep(5)
 
-    @staticmethod
-    def command_watcher():
+    def reload_schedule_from_db(self):
+        jobs = db_helper.get_schedules_enabled()
+        schedule.clear(tag='backup')
+        schedule.clear(tag='db')
+        for j in jobs:
+            if j.interval_type in scheduler_intervals:
+                logger.info("Loading schedule ID#{i}: '{a}' every {n} {t} at {s}".format(
+                    i=j.schedule_id, a=j.action, n=j.interval, t=j.interval_type, s=j.start_time))
+                try:
+                    getattr(schedule.every(j.interval), j.interval_type).at(j.start_time).do(
+                        db_helper.send_command, 0, j.server_id, "127.27.23.89", j.action)
+                except schedule.ScheduleValueError as e:
+                    logger.critical("Scheduler value error occurred: {} on ID#{}".format(e, j.schedule_id))
+            else:
+                logger.critical("Unknown schedule job type '{}' at id {}, skipping".format(j.interval_type, j.schedule_id))
+    
+    def command_watcher(self):
         while True:
             # select any commands waiting to be processed
             commands = db_helper.get_unactioned_commands()
             for c in commands:
 
-                svr = controller.get_server_obj(c['server_id']['server_id'])
+                svr = self.controller.get_server_obj(c['server_id']['server_id'])
                 command = c.get('command', None)
 
                 if command == 'start_server':
@@ -79,6 +107,9 @@ class TasksManager:
                 elif command == "restart_server":
                     svr.restart_threaded_server()
 
+                elif command == "backup_server":
+                    svr.backup_server()
+
                 db_helper.mark_command_complete(c.get('command_id', None))
 
             time.sleep(1)
@@ -88,7 +119,7 @@ class TasksManager:
             os.remove(helper.session_file)
             os.remove(os.path.join(helper.root_dir, 'exit.txt'))
             os.remove(os.path.join(helper.root_dir, '.header'))
-            controller.stop_all_servers()
+            self.controller.stop_all_servers()
         except:
             logger.info("Caught error during shutdown", exc_info=True)
 
@@ -113,6 +144,15 @@ class TasksManager:
         logger.info("Launching Scheduler Thread...")
         console.info("Launching Scheduler Thread...")
         self.schedule_thread.start()
+        logger.info("Launching command thread...")
+        console.info("Launching command thread...")
+        self.command_thread.start()
+        logger.info("Launching log watcher...")
+        console.info("Launching log watcher...")
+        self.log_watcher_thread.start()
+        logger.info("Launching realtime thread...")
+        console.info("Launching realtime thread...")
+        self.realtime_thread.start()
 
     @staticmethod
     def scheduler_thread():
@@ -120,17 +160,16 @@ class TasksManager:
             schedule.run_pending()
             time.sleep(1)
 
-    @staticmethod
-    def start_stats_recording():
+    def start_stats_recording(self):
         stats_update_frequency = helper.get_setting('stats_update_frequency')
         logger.info("Stats collection frequency set to {stats} seconds".format(stats=stats_update_frequency))
         console.info("Stats collection frequency set to {stats} seconds".format(stats=stats_update_frequency))
 
         # one for now,
-        stats.record_stats()
+        self.controller.stats.record_stats()
 
         # one for later
-        schedule.every(stats_update_frequency).seconds.do(stats.record_stats)
+        schedule.every(stats_update_frequency).seconds.do(self.controller.stats.record_stats).tag('stats-recording')
 
     @staticmethod
     def serverjar_cache_refresher():
@@ -138,7 +177,7 @@ class TasksManager:
         server_jar_obj.refresh_cache()
 
         logger.info("Scheduling Serverjars.com cache refresh service every 12 hours")
-        schedule.every(12).hours.do(server_jar_obj.refresh_cache)
+        schedule.every(12).hours.do(server_jar_obj.refresh_cache).tag('serverjars')
 
     @staticmethod
     def realtime():
@@ -174,9 +213,4 @@ class TasksManager:
     def log_watcher(self):
         console.debug('in log_watcher')
         helper.check_for_old_logs(db_helper)
-        schedule.every(6).hours.do(lambda: helper.check_for_old_logs(db_helper))
-
-
-
-
-tasks_manager = TasksManager()
+        schedule.every(6).hours.do(lambda: helper.check_for_old_logs(db_helper)).tag('log-mgmt')

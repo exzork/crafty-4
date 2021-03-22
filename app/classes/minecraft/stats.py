@@ -8,7 +8,6 @@ import datetime
 
 from app.classes.shared.helpers import helper
 from app.classes.minecraft.mc_ping import ping
-from app.classes.shared.controller import controller
 from app.classes.shared.models import db_helper
 from app.classes.shared.models import Host_Stats, Server_Stats
 
@@ -16,6 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 class Stats:
+
+    def __init__(self, controller):
+        self.controller = controller
 
     def get_node_stats(self):
         boot_time = datetime.datetime.fromtimestamp(psutil.boot_time())
@@ -184,7 +186,7 @@ class Stats:
         server_stats_list = []
         server_stats = {}
 
-        servers = controller.servers_list
+        servers = self.controller.servers_list
 
         logger.info("Getting Stats for all servers...")
 
@@ -210,7 +212,7 @@ class Stats:
             internal_ip = server_data.get('server_ip', "127.0.0.1")
             server_port = server_settings.get('server_port', "25565")
 
-            logger.debug("Pinging {} on port {}".format(internal_ip, server_port))
+            logger.debug("Pinging server '{}' on {}:{}".format(s.get('server_name', "ID#{}".format(server_id)), internal_ip, server_port))
             int_mc_ping = ping(internal_ip, int(server_port))
 
             int_data = False
@@ -288,5 +290,3 @@ class Stats:
 
         Host_Stats.delete().where(Host_Stats.time < last_week).execute()
         Server_Stats.delete().where(Server_Stats.created < last_week).execute()
-
-stats = Stats()

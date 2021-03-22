@@ -125,7 +125,7 @@
 
                   <td class="actions_serverlist">
 
-                    {% if server['stats'][0]['running'] %}
+                    {% if server['stats']['running'] %}
                       <a class="stop_button" data-id="{{server['server_data']['server_id']}}"> <i class="fas fa-stop"></i></a> &nbsp;
                       <a class="restart_button" data-id="{{server['server_data']['server_id']}}"> <i class="fas fa-sync"></i></a> &nbsp;
                     {% else %}
@@ -136,59 +136,59 @@
                   </td>
 
                   <td>
-                    <div class="progress mb-1" data-toggle="tooltip" data-placement="top" title="{{server['stats'][0]['cpu']}}">
+                    <div class="progress mb-1" data-toggle="tooltip" data-placement="top" title="{{server['stats']['cpu']}}">
                       <div class="progress-bar
-                      {% if server['stats'][0]['cpu'] <= 33 %}
+                      {% if server['stats']['cpu'] <= 33 %}
                       bg-success
-                      {% elif 34 <= server['stats'][0]['cpu'] <= 66 %}
+                      {% elif 34 <= server['stats']['cpu'] <= 66 %}
                       bg-warning
                       {% else %}
                       bg-danger
                       {% end %}
-                      " role="progressbar" style="width: {{server['stats'][0]['cpu']}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                      " role="progressbar" style="width: {{server['stats']['cpu']}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
-                    {{server['stats'][0]['cpu']}}%
+                    {{server['stats']['cpu']}}%
                   </td>
 
                   <td>
-                    <div class="progress mb-1" data-toggle="tooltip" data-placement="top" title="{{server['stats'][0]['mem']}}">
+                    <div class="progress mb-1" data-toggle="tooltip" data-placement="top" title="{{server['stats']['mem']}}">
                       <div class="progress-bar
-                      {% if server['stats'][0]['mem_percent'] <= 33 %}
+                      {% if server['stats']['mem_percent'] <= 33 %}
                       bg-success
-                      {% elif 34 <= server['stats'][0]['mem_percent'] <= 66 %}
+                      {% elif 34 <= server['stats']['mem_percent'] <= 66 %}
                       bg-warning
                       {% else %}
                       bg-danger
                       {% end %}
-                      " role="progressbar" style="width: {{server['stats'][0]['mem_percent']}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                      " role="progressbar" style="width: {{server['stats']['mem_percent']}}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
-                    {{server['stats'][0]['mem_percent']}}% -
+                    {{server['stats']['mem_percent']}}% -
 
-                    {% if server['stats'][0]['mem'] == 0 %}
+                    {% if server['stats']['mem'] == 0 %}
                       0 MB
                     {% else %}
-                      {{server['stats'][0]['mem']}}
+                      {{server['stats']['mem']}}
                     {% end %}
                   </td>
                   <td>
-                    {{ server['stats'][0]['world_name'] }} : {{ server['stats'][0]['world_size'] }}
+                    {{ server['stats']['world_name'] }} : {{ server['stats']['world_size'] }}
                   </td>
                   <td>
-                    {% if server['stats'][0]['int_ping_results'] %}
-                      {{ server['stats'][0]['online'] }} / {{ server['stats'][0]['max'] }} Max<br />
+                    {% if server['stats']['int_ping_results'] %}
+                      {{ server['stats']['online'] }} / {{ server['stats']['max'] }} Max<br />
 
-                      {% if server['stats'][0]['desc'] != 'False' %}
-                        {{ server['stats'][0]['desc'] }} <br />
+                      {% if server['stats']['desc'] != 'False' %}
+                        {{ server['stats']['desc'] }} <br />
                       {% end %}
 
-                      {% if server['stats'][0]['version'] != 'False' %}
-                        {{ server['stats'][0]['version'] }}
+                      {% if server['stats']['version'] != 'False' %}
+                        {{ server['stats']['version'] }}
                       {% end %}
                     {% end %}
 
                   </td>
                   <td>
-                    {% if server['stats'][0]['running'] %}
+                    {% if server['stats']['running'] %}
                     <i class="fas fa-thumbs-up"></i> <span class="text-success">Online</span>
                     {% else %}
                     <i class="fas fa-thumbs-down"></i> <span class="text-danger">Offline</span>

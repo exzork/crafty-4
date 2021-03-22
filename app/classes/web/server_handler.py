@@ -6,10 +6,8 @@ import shutil
 
 from app.classes.shared.console import console
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.controller import controller
 from app.classes.shared.models import db_helper, Servers
 from app.classes.minecraft.serverjars import server_jar_obj
-from app.classes.minecraft.stats import stats
 from app.classes.shared.helpers import helper
 
 
@@ -35,15 +33,15 @@ class ServerHandler(BaseHandler):
 
         template = "public/404.html"
 
-        defined_servers = controller.list_defined_servers()
+        defined_servers = self.controller.list_defined_servers()
 
         page_data = {
             'version_data': helper.get_version_string(),
             'user_data': user_data,
             'server_stats': {
-                'total': len(controller.list_defined_servers()),
-                'running': len(controller.list_running_servers()),
-                'stopped': (len(controller.list_defined_servers()) - len(controller.list_running_servers()))
+                'total': len(self.controller.list_defined_servers()),
+                'running': len(self.controller.list_running_servers()),
+                'stopped': (len(self.controller.list_defined_servers()) - len(self.controller.list_running_servers()))
             },
             'hosts_data': db_helper.get_latest_hosts_stats(),
             'menu_servers': defined_servers,
@@ -130,7 +128,7 @@ class ServerHandler(BaseHandler):
                         Servers.stop_command: stop_command
                     }).execute()
 
-                    controller.init_all_servers()
+                    self.controller.init_all_servers()
                     console.debug('initted all servers')
 
                     return
@@ -150,26 +148,26 @@ class ServerHandler(BaseHandler):
             server_parts = server.split("|")
 
             if import_type == 'import_jar':
-                good_path = controller.verify_jar_server(import_server_path, import_server_jar)
+                good_path = self.controller.verify_jar_server(import_server_path, import_server_jar)
 
                 if not good_path:
                     self.redirect("/panel/error?error=Server path or Server Jar not found!")
                     return False
 
-                new_server_id = controller.import_jar_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
+                new_server_id = self.controller.import_jar_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
             elif import_type == 'import_zip':
-                good_path = controller.verify_zip_server(import_server_path)
+                good_path = self.controller.verify_zip_server(import_server_path)
                 if not good_path:
                     self.redirect("/panel/error?error=Zip file not found!")
                     return False
 
-                new_server_id = controller.import_zip_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
+                new_server_id = self.controller.import_zip_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
                 if new_server_id == "false":
                     self.redirect("/panel/error?error=ZIP file not accessible! You can fix this permissions issue with sudo chown -R crafty:crafty {} And sudo chmod 2775 -R {}".format(import_server_path, import_server_path))
                     return False
             else:
                 # todo: add server type check here and call the correct server add functions if not a jar
-                new_server_id = controller.create_jar_server(server_parts[0], server_parts[1], server_name, min_mem, max_mem, port)
+                new_server_id = self.controller.create_jar_server(server_parts[0], server_parts[1], server_name, min_mem, max_mem, port)
 
             if new_server_id:
                 db_helper.add_to_audit_log(user_data['user_id'],
@@ -180,7 +178,7 @@ class ServerHandler(BaseHandler):
                 logger.error("Unable to create server")
                 console.error("Unable to create server")
 
-            stats.record_stats()
+            self.controller.stats.record_stats()
             self.redirect("/panel/dashboard")
 
         self.render(

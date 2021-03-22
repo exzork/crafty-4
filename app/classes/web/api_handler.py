@@ -5,13 +5,13 @@ import tornado.web
 import tornado.escape 
 import logging
 
+from app.classes.web.base_handler import BaseHandler
 from app.classes.shared.models import Users
-from app.classes.minecraft.stats import stats
 
 log = logging.getLogger(__name__)
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class ApiHandler(BaseHandler):
     
     def return_response(self, data: dict):
         # Define a standardized response 
@@ -25,6 +25,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def authenticate_user(self):
         try:
             log.debug("Searching for specified token")
+            # TODO: YEET THIS
             user_data = Users.get(api_token=self.get_argument('token'))
             log.debug("Checking results")
             if user_data:
@@ -40,19 +41,19 @@ class BaseHandler(tornado.web.RequestHandler):
             pass
 
 
-class ServersStats(BaseHandler):
+class ServersStats(ApiHandler):
     def get(self):
         """Get details about all servers"""
         self.authenticate_user()
         # Get server stats
-        self.finish(self.write({"servers": stats.get_servers_stats()}))
+        self.finish(self.write({"servers": self.controller.stats.get_servers_stats()}))
 
 
-class NodeStats(BaseHandler):
+class NodeStats(ApiHandler):
     def get(self):
         """Get stats for particular node"""
         self.authenticate_user()
         # Get node stats
-        node_stats = stats.get_node_stats()
+        node_stats = self.controller.stats.get_node_stats()
         node_stats.pop("servers")
         self.finish(self.write(node_stats))
