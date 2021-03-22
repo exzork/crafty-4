@@ -23,7 +23,10 @@
         <div class="dropdown-header text-center">
           <img class="img-md rounded-circle" src="/static/assets/images/faces-clipart/pic-1.png" alt="Profile image">
           <p class="mb-1 mt-3 font-weight-semibold">{{ data['user_data']['username'] }}</p>
-          <p class="font-weight-light text-muted mb-0">Role: Admin</p>
+          <p class="font-weight-light text-muted mb-0">Roles: </p>
+          {% for r in data['user_role'] %}            
+            <p class="font-weight-light text-muted mb-0">{{ r }}</p>
+          {% end %}
         </div>
         <a class="dropdown-item" href="/panel/activity_logs"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary"></i> Activity</a>
         <a class="dropdown-item" href="/public/login"><i class="dropdown-item-icon mdi mdi-power text-primary"></i>Sign Out</a>

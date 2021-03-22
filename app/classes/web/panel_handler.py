@@ -29,13 +29,25 @@ class PanelHandler(BaseHandler):
         now = time.time()
         formatted_time = str(datetime.datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S'))
 
-        defined_servers = controller.list_defined_servers()
+        userId = user_data['user_id']
+        user = db_helper.get_user(userId)
+        
+        user_role = []
+        if user['superuser'] == 1:
+            defined_servers = controller.list_defined_servers()
+            user_role = {"Super User"}
+        else:
+            defined_servers = controller.list_authorized_servers(userId)
+            for r in user['roles']:
+                role = db_helper.get_role(r)
+                user_role.append(role['role_name'])
 
         page_data = {
             # todo: make this actually pull and compare version data
             'update_available': False,
             'version_data': helper.get_version_string(),
             'user_data': user_data,
+            'user_role' : user_role,
             'server_stats': {
                 'total': len(defined_servers),
                 'running': len(controller.list_running_servers()),
@@ -81,7 +93,11 @@ class PanelHandler(BaseHandler):
             return
 
         elif page == 'dashboard':
-            page_data['servers'] = db_helper.get_all_servers_stats()
+            if user['superuser'] == 1:
+                page_data['servers'] = db_helper.get_all_servers_stats()
+            else:
+                #page_data['servers'] = db_helper.get_authorized_servers_stats(userId)
+                page_data['servers'] = db_helper.get_authorized_servers_stats_from_roles(userId)
 
             for s in page_data['servers']:
                 try:
@@ -106,6 +122,12 @@ class PanelHandler(BaseHandler):
                 if not db_helper.server_id_exists(server_id):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return False
+
+                if user['superuser'] != 1:
+                    #if not db_helper.server_id_authorized(server_id, userId):
+                    if not db_helper.server_id_authorized_from_roles(int(server_id), userId):
+                        self.redirect("/panel/error?error=Invalid Server ID")
+                        return False
 
             valid_subpages = ['term', 'logs', 'config', 'files', 'admin_controls']
 
@@ -164,7 +186,7 @@ class PanelHandler(BaseHandler):
             page_data['user']['created'] = "N/A"
             page_data['user']['last_login'] = "N/A"
             page_data['user']['last_ip'] = "N/A"
-            page_data['role']['last_update'] = "N/A"
+            page_data['user']['last_update'] = "N/A"
             page_data['user']['roles'] = set()
             page_data['user']['servers'] = set()
 
