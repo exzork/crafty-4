@@ -154,9 +154,10 @@ class Helpers:
 
         version_data = self.get_version()
         # set some defaults if we don't get version_data from our helper
-        version = "{}.{}.{}".format(version_data.get('major', '?'),
+        version = "{}.{}.{}-{}".format(version_data.get('major', '?'),
                                     version_data.get('minor', '?'),
-                                    version_data.get('sub', '?'))
+                                    version_data.get('sub', '?'),
+                                    version_data.get('patch', '?'))
         return str(version)
 
     def do_exit(self):
