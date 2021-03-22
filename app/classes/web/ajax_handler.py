@@ -9,7 +9,6 @@ import shutil
 from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.controller import controller
 from app.classes.shared.models import db_helper
 from app.classes.shared.helpers import helper
 
@@ -56,8 +55,8 @@ class AjaxHandler(BaseHandler):
                 logger.warning("Server Data not found in server_log ajax call")
                 self.redirect("/panel/error?error=Server ID Not Found")
 
-            if server_data['log_path']:
-                logger.warning("Server ID not found in server_log ajax call ({})".format(server_id))
+            if not server_data['log_path']:
+                logger.warning("Log path not found in server_log ajax call ({})".format(server_id))
 
             if full_log:
                 log_lines = helper.get_setting('max_log_lines')
@@ -149,7 +148,7 @@ class AjaxHandler(BaseHandler):
                 logger.warning("Server ID not found in send_command ajax call")
                 console.warning("Server ID not found in send_command ajax call")
 
-            srv_obj = controller.get_server_obj(server_id)
+            srv_obj = self.controller.get_server_obj(server_id)
 
             if command:
                 if srv_obj.check_running():
@@ -219,7 +218,6 @@ class AjaxHandler(BaseHandler):
         if page == "del_file":
             file_path = self.get_body_argument('file_path', default=None, strip=True)
             server_id = self.get_argument('id', None)
-            print(server_id)
 
             if server_id is None:
                 logger.warning("Server ID not found in del_file ajax call")
@@ -234,7 +232,9 @@ class AjaxHandler(BaseHandler):
                     console.warning("Server ID not found in del_file ajax call ({})".format(server_id))
                     return False
 
-            if not helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], file_path) \
+            server_info = db_helper.get_server_data_by_id(server_id)
+            if not helper.in_path(server_info['path'], file_path) \
+                    or not helper.in_path(server_info['backup_path'], file_path) \
                     or not helper.check_file_exists(os.path.abspath(file_path)):
                 logger.warning("Invalid path in del_file ajax call ({})".format(file_path))
                 console.warning("Invalid path in del_file ajax call ({})".format(file_path))
@@ -261,7 +261,9 @@ class AjaxHandler(BaseHandler):
                     console.warning("Server ID not found in del_file ajax call ({})".format(server_id))
                     return False
 
-            if not helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], dir_path) \
+            server_info = db_helper.get_server_data_by_id(server_id)
+            if not helper.in_path(server_info['path'], dir_path) \
+                    or not helper.in_path(server_info['backup_path'], dir_path) \
                     or not helper.check_path_exists(os.path.abspath(dir_path)):
                 logger.warning("Invalid path in del_file ajax call ({})".format(dir_path))
                 console.warning("Invalid path in del_file ajax call ({})".format(dir_path))

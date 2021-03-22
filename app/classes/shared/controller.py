@@ -15,6 +15,7 @@ from app.classes.shared.models import db_helper, Servers, User_Servers
 from app.classes.shared.server import Server
 from app.classes.minecraft.server_props import ServerProps
 from app.classes.minecraft.serverjars import server_jar_obj
+from app.classes.minecraft.stats import Stats
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ class Controller:
 
     def __init__(self):
         self.servers_list = []
+        self.stats = Stats(self)
 
     def check_server_loaded(self, server_id_to_check: int):
 
@@ -72,7 +74,7 @@ class Controller:
             temp_server_dict = {
                 'server_id': s.get('server_id'),
                 'server_data_obj': s,
-                'server_obj': Server(),
+                'server_obj': Server(self.stats),
                 'server_settings': settings.props
             }
 
@@ -94,7 +96,6 @@ class Controller:
         server_obj.reload_server_settings()
 
     def get_server_obj(self, server_id):
-
         for s in self.servers_list:
             if int(s['server_id']) == int(server_id):
                 return s['server_obj']
@@ -196,12 +197,14 @@ class Controller:
     def create_jar_server(self, server: str, version: str, name: str, min_mem: int, max_mem: int, port: int):
         server_id = helper.create_uuid()
         server_dir = os.path.join(helper.servers_dir, server_id)
+        backup_path = os.path.join(helper.backup_path, server_id)
 
         server_file = "{server}-{version}.jar".format(server=server, version=version)
         full_jar_path = os.path.join(server_dir, server_file)
 
         # make the dir - perhaps a UUID?
         helper.ensure_dir_exists(server_dir)
+        helper.ensure_dir_exists(backup_path)
 
         try:
             # do a eula.txt
@@ -227,7 +230,7 @@ class Controller:
         # download the jar
         server_jar_obj.download_jar(server, version, full_jar_path)
 
-        new_id = self.register_server(name, server_id, server_dir, server_command, server_file, server_log_file, server_stop)
+        new_id = self.register_server(name, server_id, server_dir, backup_path, server_command, server_file, server_log_file, server_stop)
         return new_id
 
     @staticmethod
@@ -248,8 +251,10 @@ class Controller:
     def import_jar_server(self, server_name: str, server_path: str, server_jar: str, min_mem: int, max_mem: int, port: int):
         server_id = helper.create_uuid()
         new_server_dir = os.path.join(helper.servers_dir, server_id)
+        backup_path = os.path.join(helper.backup_path, server_id)
 
         helper.ensure_dir_exists(new_server_dir)
+        helper.ensure_dir_exists(backup_path)
         dir_util.copy_tree(server_path, new_server_dir)
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
@@ -259,15 +264,18 @@ class Controller:
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"
 
-        new_id = self.register_server(server_name, server_id, new_server_dir, server_command, server_jar,
+        new_id = self.register_server(server_name, server_id, new_server_dir, backup_path, server_command, server_jar,
                                       server_log_file, server_stop, port)
         return new_id
 
     def import_zip_server(self, server_name: str, zip_path: str, server_jar: str, min_mem: int, max_mem: int, port: int):
         server_id = helper.create_uuid()
         new_server_dir = os.path.join(helper.servers_dir, server_id)
+        backup_path = os.path.join(helper.backup_path, server_id)
+
         if helper.check_file_perms(zip_path):
             helper.ensure_dir_exists(new_server_dir)
+            helper.ensure_dir_exists(backup_path)
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall(new_server_dir)
         else:
@@ -281,11 +289,11 @@ class Controller:
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"
 
-        new_id = self.register_server(server_name, server_id, new_server_dir, server_command, server_jar,
+        new_id = self.register_server(server_name, server_id, new_server_dir, backup_path, server_command, server_jar,
                                       server_log_file, server_stop, port)
         return new_id
 
-    def register_server(self, name: str, server_id: str, server_dir: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port=25565):
+    def register_server(self, name: str, server_id: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port=25565):
         # put data in the db
         new_id = Servers.insert({
             Servers.server_name: name,
@@ -298,7 +306,8 @@ class Controller:
             Servers.crash_detection: False,
             Servers.log_path: server_log_file,
             Servers.server_port: server_port,
-            Servers.stop_command: server_stop
+            Servers.stop_command: server_stop,
+            Servers.backup_path: backup_path
         }).execute()
 
         try:
@@ -343,5 +352,3 @@ class Controller:
                 self.servers_list.pop(counter)
 
             counter += 1
-
-controller = Controller()

@@ -9,6 +9,8 @@ from app.classes.minecraft.server_props import ServerProps
 from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
+peewee_logger = logging.getLogger('peewee')
+peewee_logger.setLevel(logging.INFO)
 
 try:
     from peewee import *
@@ -20,14 +22,29 @@ except ModuleNotFoundError as e:
     console.critical("Import Error: Unable to load {} module".format(e, e.name))
     sys.exit(1)
 
+schema_version = (0, 1, 0) # major, minor, patch semver
+
 database = SqliteDatabase(helper.db_path, pragmas={
     'journal_mode': 'wal',
     'cache_size': -1024 * 10})
 
-
 class BaseModel(Model):
     class Meta:
         database = database
+
+class SchemaVersion(BaseModel):
+    # DO NOT EVER CHANGE THE SCHEMA OF THIS TABLE
+    # (unless we have a REALLY good reason to)
+    # There will only ever be one row, and it allows the database loader to detect
+    # what it needs to do on major version upgrades so you don't have to wipe the DB
+    # every time you upgrade
+    schema_major = IntegerField()
+    schema_minor = IntegerField()
+    schema_patch = IntegerField()
+
+    class Meta:
+        table_name = 'schema_version'
+        primary_key = CompositeKey('schema_major', 'schema_minor', 'schema_patch')
 
 
 class Users(BaseModel):
@@ -97,6 +114,7 @@ class Servers(BaseModel):
     server_uuid = CharField(default="", index=True)
     server_name = CharField(default="Server", index=True)
     path = CharField(default="")
+    backup_path = CharField(default="")
     executable = CharField(default="")
     log_path = CharField(default="")
     execution_command = CharField(default="")
@@ -110,16 +128,6 @@ class Servers(BaseModel):
 
     class Meta:
         table_name = "servers"
-
-
-class User_Servers(BaseModel):
-    user_id = ForeignKeyField(Users, backref='user_server')
-    server_id = ForeignKeyField(Servers, backref='user_server')
-
-    class Meta:
-        table_name = 'user_servers'
-        primary_key = CompositeKey('user_id', 'server_id')
-
 
 class Role_Servers(BaseModel):
     role_id = ForeignKeyField(Roles, backref='role_server')
@@ -178,12 +186,25 @@ class Webhooks(BaseModel):
     class Meta:
         table_name = "webhooks"
 
+class Schedules(BaseModel):
+    schedule_id = IntegerField(unique=True, primary_key=True)
+    server_id = ForeignKeyField(Servers, backref='schedule_server')
+    enabled = BooleanField()
+    action = CharField()
+    interval = IntegerField()
+    interval_type = CharField()
+    start_time = CharField(null=True)
+    command = CharField(null=True)
+    comment = CharField()
+
+    class Meta:
+        table_name = 'schedules'
 
 class Backups(BaseModel):
-    directories = CharField()
-    storage_location = CharField()
+    directories = CharField(null=True)
     max_backups = IntegerField()
-    server_id = IntegerField(index=True)
+    server_id = ForeignKeyField(Servers, backref='backups_server')
+    schedule_id = ForeignKeyField(Schedules, backref='backups_schedule')
 
     class Meta:
         table_name = 'backups'
@@ -202,17 +223,23 @@ class db_builder:
                 Host_Stats,
                 Webhooks,
                 Servers,
-                User_Servers,
                 Role_Servers,
                 Server_Stats,
                 Commands,
-                Audit_Log
+                Audit_Log,
+                SchemaVersion,
+                Schedules
             ])
 
     @staticmethod
     def default_settings():
         logger.info("Fresh Install Detected - Creating Default Settings")
         console.info("Fresh Install Detected - Creating Default Settings")
+        SchemaVersion.insert({
+            SchemaVersion.schema_major: schema_version[0],
+            SchemaVersion.schema_minor: schema_version[1],
+            SchemaVersion.schema_patch: schema_version[2]
+            }).execute()
         default_data = helper.find_default_password()
 
         username = default_data.get("username", 'admin')
@@ -239,8 +266,38 @@ class db_builder:
             return True
             pass
 
+    @staticmethod
+    def check_schema_version():
+        svs = SchemaVersion.select().execute()
+        if len(svs) != 1:
+            raise exceptions.SchemaError("Multiple or no schema versions detected - potentially a failed upgrade?")
+        sv = svs[0]
+        svt = (sv.schema_major, sv.schema_minor, sv.schema_patch)
+        logger.debug("Schema: found {}, expected {}".format(svt, schema_version))
+        console.debug("Schema: found {}, expected {}".format(svt, schema_version))
+        if sv.schema_major > schema_version[0]:
+            raise exceptions.SchemaError("Major version mismatch - possible code reversion")
+        elif sv.schema_major < schema_version[0]:
+            db_shortcuts.upgrade_schema()
+
+        if sv.schema_minor > schema_version[1]:
+            logger.warning("Schema minor mismatch detected: found {}, expected {}. Proceed with caution".format(svt, schema_version))
+            console.warning("Schema minor mismatch detected: found {}, expected {}. Proceed with caution".format(svt, schema_version))
+        elif sv.schema_minor < schema_version[1]:
+            db_shortcuts.upgrade_schema()
+
+        if sv.schema_patch > schema_version[2]:
+            logger.info("Schema patch mismatch detected: found {}, expected {}. Proceed with caution".format(svt, schema_version))
+            console.info("Schema patch mismatch detected: found {}, expected {}. Proceed with caution".format(svt, schema_version)) 
+        elif sv.schema_patch < schema_version[2]:
+            db_shortcuts.upgrade_schema()
+    logger.info("Schema validation successful! {}".format(schema_version))
 
 class db_shortcuts:
+
+    @staticmethod
+    def upgrade_schema():
+        raise NotImplemented("I don't know who you are or how you reached this code, but this should NOT have happened.  Please report it to the developer with due haste.")
 
     @staticmethod
     def return_rows(query):
@@ -258,12 +315,11 @@ class db_shortcuts:
 
     @staticmethod
     def get_server_data_by_id(server_id):
+        query = Servers.select().where(Servers.server_id == server_id).limit(1)
         try:
-            query = Servers.get_by_id(server_id)
-        except DoesNotExist:
+            return db_helper.return_rows(query)[0]
+        except IndexError:
             return {}
-
-        return model_to_dict(query)
 
     @staticmethod
     def get_all_defined_servers():
@@ -307,7 +363,7 @@ class db_shortcuts:
 
         for s in servers:
             latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
-            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)})
+            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0]})
         return server_data
 
     @staticmethod
@@ -352,7 +408,7 @@ class db_shortcuts:
     @staticmethod
     def get_server_stats_by_id(server_id):
         stats = Server_Stats.select().where(Server_Stats.server_id == server_id).order_by(Server_Stats.created.desc()).limit(1)
-        return db_helper.return_rows(stats)
+        return db_helper.return_rows(stats)[0]
 
     @staticmethod
     def server_id_exists(server_id):
@@ -417,6 +473,8 @@ class db_shortcuts:
 
     @staticmethod
     def get_userid_by_name(username):
+        if username == "SYSTEM":
+            return 0
         try:
             return (Users.get(Users.username == username)).user_id
         except DoesNotExist:
@@ -424,6 +482,21 @@ class db_shortcuts:
 
     @staticmethod
     def get_user(user_id):
+        if user_id == 0:
+            return {
+                user_id: 0,
+                created: None,
+                last_login: None,
+                last_update: None,
+                last_ip: "127.27.23.89",
+                username: "SYSTEM",
+                password: None,
+                enabled: True,
+                superuser: False,
+                api_token: None,
+                roles: [],
+                servers: []
+            }
         user = model_to_dict(Users.get(Users.user_id == user_id))
 
         if user:
@@ -432,13 +505,13 @@ class db_shortcuts:
             roles = set()
             for r in roles_query:
                 roles.add(r.role_id.role_id)
-            servers_query = User_Servers.select().join(Servers, JOIN.INNER).where(User_Servers.user_id == user_id)
-            # TODO: this query needs to be narrower
+            #servers_query = User_Servers.select().join(Servers, JOIN.INNER).where(User_Servers.user_id == user_id)
+            ## TODO: this query needs to be narrower
             servers = set()
-            for s in servers_query:
-                servers.add(s.server_id.server_id)
+            #for s in servers_query:
+            #    servers.add(s.server_id.server_id)
             user['roles'] = roles
-            user['servers'] = servers
+            #user['servers'] = servers
             logger.debug("user: ({}) {}".format(user_id, user))
             return user
         else:
@@ -478,10 +551,10 @@ class db_shortcuts:
                 # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
             User_Roles.delete().where(User_Roles.user_id == user_id).where(User_Roles.role_id.in_(removed_roles)).execute()
 
-            for server in added_servers:
-                User_Servers.get_or_create(user_id=user_id, server_id=server)
-                # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
-            User_Servers.delete().where(User_Servers.user_id == user_id).where(User_Servers.server_id.in_(removed_servers)).execute()
+            #for server in added_servers:
+            #    User_Servers.get_or_create(user_id=user_id, server_id=server)
+            #    # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
+            #User_Servers.delete().where(User_Servers.user_id == user_id).where(User_Servers.server_id.in_(removed_servers)).execute()
             if up_data:
                 Users.update(up_data).where(Users.user_id == user_id).execute()
 
@@ -658,8 +731,111 @@ class db_shortcuts:
             Audit_Log.source_ip: source_ip
         }).execute()
 
+    @staticmethod
+    def create_scheduled_task(server_id, action, interval, interval_type, start_time, command, comment=None, enabled=True):
+        sch_id = Schedules.insert({
+            Schedules.server_id: server_id,
+            Schedules.action: action,
+            Schedules.enabled: enabled,
+            Schedules.interval: interval,
+            Schedules.interval_type: interval_type,
+            Schedules.start_time: start_time,
+            Schedules.command: command,
+            Schedules.comment: comment
+        }).execute()
+        return sch_id
 
+    @staticmethod
+    def delete_scheduled_task(schedule_id):
+        sch = Schedules.get(Schedules.schedule_id == schedule_id)
+        return Schedules.delete_instance(sch)
 
+    @staticmethod
+    def update_scheduled_task(schedule_id, updates):
+        Schedules.update(updates).where(Schedules.schedule_id == schedule_id).execute()
+
+    @staticmethod
+    def get_scheduled_task(schedule_id):
+        return model_to_dict(Schedules.get(Schedules.schedule_id == schedule_id)).execute()
+
+    @staticmethod
+    def get_schedules_by_server(server_id):
+        return Schedules.select().where(Schedules.server_id == server_id).execute()
+
+    @staticmethod
+    def get_schedules_all():
+        return Schedules.select().execute()
+
+    @staticmethod
+    def get_schedules_enabled():
+        return Schedules.select().where(Schedules.enabled == True).execute()
+
+    @staticmethod
+    def get_backup_config(server_id):
+        try:
+            row = Backups.select().where(Backups.server_id == server_id).join(Schedules).join(Servers)[0]
+            conf = {
+                "backup_path": row.server_id.backup_path,
+                "directories": row.directories,
+                "max_backups": row.max_backups,
+                "auto_enabled": row.schedule_id.enabled,
+                "server_id": row.server_id.server_id
+            }
+        except IndexError:
+            conf = {
+                "backup_path": None,
+                "directories": None,
+                "max_backups": 0,
+                "auto_enabled": True,
+                "server_id": server_id
+            }
+        return conf
+
+    @staticmethod
+    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, auto_enabled: bool = True):
+        logger.debug("Updating server {} backup config with {}".format(server_id, locals()))
+        try:
+            row = Backups.select().where(Backups.server_id == server_id).join(Schedules).join(Servers)[0]
+            new_row = False
+            conf = {}
+            schd = {}
+        except IndexError:
+            conf = {
+                "directories": None,
+                "max_backups": 0,
+                "server_id":   server_id
+            }
+            schd = {
+                "enabled":    True,
+                "action":     "backup_server",
+                "interval_type": "days",
+                "interval":   1,
+                "start_time": "00:00",
+                "server_id":  server_id,
+                "comment":    "Default backup job"
+            }
+            new_row = True
+        if max_backups is not None:
+            conf['max_backups'] = max_backups
+        schd['enabled'] = bool(auto_enabled)
+        if not new_row:
+            with database.atomic():
+                if backup_path is not None:
+                    u1 = Servers.update(backup_path=backup_path).where(Servers.server_id == server_id).execute()
+                else:
+                    u1 = 0
+                u2 = Backups.update(conf).where(Backups.server_id == server_id).execute()
+                u3 = Schedules.update(schd).where(Schedules.schedule_id == row.schedule_id).execute()
+            logger.debug("Updating existing backup record.  {}+{}+{} rows affected".format(u1, u2, u3))
+        else:
+            with database.atomic():
+                conf["server_id"] = server_id
+                if backup_path is not None:
+                    u = Servers.update(backup_path=backup_path).where(Servers.server_id == server_id)
+                s = Schedules.create(**schd)
+                conf['schedule_id'] = s.schedule_id
+                b = Backups.create(**conf)
+            logger.debug("Creating new backup record.")
 
 installer = db_builder()
 db_helper = db_shortcuts()

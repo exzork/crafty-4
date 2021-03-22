@@ -33,12 +33,14 @@ except ModuleNotFoundError as e:
 
 
 
-class webserver:
+class Webserver:
 
-    def __init__(self):
+    def __init__(self, controller, tasks_manager):
         self.ioloop = None
         self.HTTP_Server = None
         self.HTTPS_Server = None
+        self.controller = controller
+        self.tasks_manager = tasks_manager
         self._asyncio_patch()
 
 
@@ -118,15 +120,16 @@ class webserver:
 
         tornado.locale.set_default_locale(lang)
 
+        handler_args = {"controller": self.controller, "tasks_manager": self.tasks_manager}
         handlers = [
-            (r'/', DefaultHandler),
-            (r'/public/(.*)', PublicHandler),
-            (r'/panel/(.*)', PanelHandler),
-            (r'/server/(.*)', ServerHandler),
-            (r'/ajax/(.*)', AjaxHandler),
-            (r'/api/stats/servers', ServersStats),
-            (r'/api/stats/node', NodeStats),
-            (r'/ws', SocketHandler),
+            (r'/', DefaultHandler, handler_args),
+            (r'/public/(.*)', PublicHandler, handler_args),
+            (r'/panel/(.*)', PanelHandler, handler_args),
+            (r'/server/(.*)', ServerHandler, handler_args),
+            (r'/ajax/(.*)', AjaxHandler, handler_args),
+            (r'/api/stats/servers', ServersStats, handler_args),
+            (r'/api/stats/node', NodeStats, handler_args),
+            (r'/ws', SocketHandler, handler_args),
             ]
 
         app = tornado.web.Application(

@@ -10,6 +10,8 @@ import socket
 import random
 import logging
 import html
+import zipfile
+import pathlib
 
 from datetime import datetime
 from socket import gethostname
@@ -36,6 +38,7 @@ class Helpers:
         self.config_dir = os.path.join(self.root_dir, 'app', 'config')
         self.webroot = os.path.join(self.root_dir, 'app', 'frontend')
         self.servers_dir = os.path.join(self.root_dir, 'servers')
+        self.backup_path = os.path.join(self.root_dir, 'backups')
 
         self.session_file = os.path.join(self.root_dir, 'app', 'config', 'session.lock')
         self.settings_file = os.path.join(self.root_dir, 'app', 'config', 'config.json')
@@ -43,6 +46,7 @@ class Helpers:
         self.ensure_dir_exists(os.path.join(self.root_dir, 'app', 'config', 'db'))
         self.db_path = os.path.join(self.root_dir, 'app', 'config', 'db', 'crafty.sqlite')
         self.serverjar_cache = os.path.join(self.config_dir, 'serverjars.json')
+        self.credits_cache = os.path.join(self.config_dir, 'credits.json')
         self.passhasher = PasswordHasher()
         self.exiting = False
 
@@ -305,6 +309,8 @@ class Helpers:
 
     @staticmethod
     def check_path_exists(path: str):
+        if not path:
+            return False
         logger.debug('Looking for path: {}'.format(path))
 
         if os.path.exists(path):
@@ -370,6 +376,19 @@ class Helpers:
             else:
                 total += entry.stat(follow_symlinks=False).st_size
         return total
+
+    @staticmethod
+    def list_dir_by_date(path: str, reverse=False):
+        return [str(p) for p in sorted(pathlib.Path(path).iterdir(), key=os.path.getmtime, reverse=reverse)]
+
+    def get_human_readable_files_sizes(self, paths: list):
+        sizes = []
+        for p in paths:
+            sizes.append({
+                "path": p, 
+                "size": self.human_readable_file_size(os.stat(p).st_size)
+            })
+        return sizes
 
     @staticmethod
     def base64_encode_string(string: str):
@@ -520,7 +539,7 @@ class Helpers:
     @staticmethod
     def get_banned_players(server_id, db_helper):
         stats = db_helper.get_server_stats_by_id(server_id)
-        server_path = stats[0]['server_id']['path']
+        server_path = stats['server_id']['path']
         path = os.path.join(server_path, 'banned-players.json')
 
         try:
@@ -533,5 +552,13 @@ class Helpers:
         
         return json.loads(content)
 
+    @staticmethod
+    def zip_directory(file, path, compression=zipfile.ZIP_LZMA):
+        with zipfile.ZipFile(file, 'w', compression) as zf:
+            for root, dirs, files in os.walk(path):
+                for file in files:
+                    zf.write(os.path.join(root, file),
+                               os.path.relpath(os.path.join(root, file), 
+                                               os.path.join(path, '..')))
 
 helper = Helpers()

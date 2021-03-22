@@ -4,9 +4,9 @@
           <div class="card-body pt-3 pb-3">
             <div class="row">
               <div class="col-sm-3 mr-2">
-                {% if data['server_stats'][0]['running'] %}
+                {% if data['server_stats']['running'] %}
                   <b>Server Status:</b> <span class="text-success">Online</span><br />
-                  <b>Server Started:</b> <span id="started">{{ data['server_stats'][0]['started'] }} (Server Time)</span><br />
+                  <b>Server Started:</b> <span id="started">{{ data['server_stats']['started'] }} (Server Time)</span><br />
                   <b>Server Uptime:</b> <span id="uptime">Error Calculating</span>
                 {% else %}
                   <b>Server Status:</b> <span class="text-danger">Offline</span><br />
@@ -16,19 +16,19 @@
               </div>
 
               <div class="col-sm-3 mr-2">
-                <b>CPU:</b> {{ data['server_stats'][0]['cpu'] }}% <br />
-                <b>Mem:</b> {{ data['server_stats'][0]['mem'] }} <br />
-                {% if data['server_stats'][0]['int_ping_results'] %}
-                <b>Players:</b> {{ data['server_stats'][0]['online'] }} / {{ data['server_stats'][0]['max'] }}<br />
+                <b>CPU:</b> {{ data['server_stats']['cpu'] }}% <br />
+                <b>Mem:</b> {{ data['server_stats']['mem'] }} <br />
+                {% if data['server_stats']['int_ping_results'] %}
+                <b>Players:</b> {{ data['server_stats']['online'] }} / {{ data['server_stats']['max'] }}<br />
                 {% else %}
                 <b>Players:</b> 0/0<br />
                 {% end %}
               </div>
 
               <div class="col-sm-3 mr-2">
-                {% if data['server_stats'][0]['version'] != 'False' %}
-                  <b>Server:</b> {{ data['server_stats'][0]['version'] }} <br />
-                  <b>Desc:</b> {{ data['server_stats'][0]['desc'] }} <br />
+                {% if data['server_stats']['version'] != 'False' %}
+                  <b>Server:</b> {{ data['server_stats']['version'] }} <br />
+                  <b>Desc:</b> {{ data['server_stats']['desc'] }} <br />
                 {% else %}
                   <b>Server:</b> Unable To Connect <br />
                   <b>Desc:</b> Unable To Connect <br />
@@ -86,9 +86,9 @@
     let startedLocal;
 
     if (started != null) {
-      console.log('88', '{{ data['server_stats'][0]['started'] }}');
-      {% if data['server_stats'][0]['started'] != 'False' %}
-        startedUTC = '{{ (datetime.datetime.strptime(data['server_stats'][0]['started'], '%Y-%m-%d %H:%M:%S') - datetime.timedelta(seconds=-time.timezone)).strftime('%Y-%m-%d %H:%M:%S') }}';
+      console.log('88', '{{ data['server_stats']['started'] }}');
+      {% if data['server_stats']['started'] != 'False' %}
+        startedUTC = '{{ (datetime.datetime.strptime(data['server_stats']['started'], '%Y-%m-%d %H:%M:%S') - datetime.timedelta(seconds=-time.timezone)).strftime('%Y-%m-%d %H:%M:%S') }}';
       {% end %}
       console.log('utc', startedUTC);
       startedUTC = moment.utc(startedUTC, 'YYYY-MM-DD HH:mm:ss');
@@ -105,7 +105,7 @@
     }
 
     let nowServerTime = '{{ data['time'] }}';
-    let startedServerTime = '{{ data['server_stats'][0]['started'] }}';
+    let startedServerTime = '{{ data['server_stats']['started'] }}';
 
     if (uptime != null && started != null) {
 

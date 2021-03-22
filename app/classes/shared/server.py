@@ -9,6 +9,7 @@ import datetime
 import threading
 import schedule
 import logging.config
+import zipfile
 
 
 from app.classes.shared.helpers import helper
@@ -29,7 +30,7 @@ except ModuleNotFoundError as e:
 
 class Server:
 
-    def __init__(self):
+    def __init__(self, stats):
         # holders for our process
         self.process = None
         self.line = False
@@ -45,6 +46,7 @@ class Server:
         self.is_crashed = False
         self.restart_count = 0
         self.crash_watcher_schedule = None
+        self.stats = stats
 
     def reload_server_settings(self):
         server_data = db_helper.get_server_data_by_id(self.server_id)
@@ -108,7 +110,6 @@ class Server:
             helper.do_exit()
 
     def start_server(self):
-        from app.classes.minecraft.stats import stats
 
         # fail safe in case we try to start something already running
         if self.check_running():
@@ -155,7 +156,6 @@ class Server:
             self.server_thread.join()
 
     def stop_server(self):
-        from app.classes.minecraft.stats import stats
         if self.settings['stop_command']:
             self.send_command(self.settings['stop_command'])
 
@@ -189,7 +189,7 @@ class Server:
         # massive resetting of variables
         self.cleanup_server_object()
 
-        stats.record_stats()
+        self.stats.record_stats()
 
     def restart_threaded_server(self):
 
@@ -318,3 +318,26 @@ class Server:
         logger.info("Removing old crash detection watcher thread")
         console.info("Removing old crash detection watcher thread")
         schedule.clear(self.name)
+
+    def backup_server(self):
+        logger.info("Starting server {} (ID {}) backup".format(self.name, self.server_id))
+        conf = db_helper.get_backup_config(self.server_id)
+        try:
+            backup_filename = "{}/{}.zip".format(conf['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+            logger.info("Creating backup of server '{}' (ID#{}) at '{}'".format(self.settings['server_name'], self.server_id, backup_filename))
+            helper.zip_directory(backup_filename, self.server_path)
+            backup_list = self.list_backups()
+            if len(self.list_backups()) > conf["max_backups"]:
+                oldfile = backup_list[0]
+                logger.info("Removing old backup '{}'".format(oldfile))
+                os.remove(oldfile)
+        except:
+            logger.exception("Failed to create backup of server {} (ID {})".format(self.name, self.server_id))
+
+    def list_backups(self):
+        conf = db_helper.get_backup_config(self.server_id)
+        if helper.check_path_exists(self.settings['backup_path']):
+            files = helper.get_human_readable_files_sizes(helper.list_dir_by_date(self.settings['backup_path']))
+            return [{"path": os.path.relpath(f['path'], start=conf['backup_path']), "size": f["size"]} for f in files]
+        else:
+            return []

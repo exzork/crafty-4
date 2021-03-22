@@ -20,7 +20,11 @@ except ModuleNotFoundError as e:
     sys.exit(1)
 
 
-class MainPrompt(cmd.Cmd):
+class MainPrompt(cmd.Cmd, object):
+
+    def __init__(self, tasks_manager):
+        super().__init__()
+        self.tasks_manager = tasks_manager
 
     # overrides the default Prompt
     prompt = "Crafty Controller v{} > ".format(helper.get_version_string())

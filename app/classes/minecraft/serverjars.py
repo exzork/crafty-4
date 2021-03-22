@@ -9,7 +9,6 @@ from datetime import datetime
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.shared.models import Servers
-# from app.classes.shared.controller import controller
 from app.classes.minecraft.server_props import ServerProps
 
 logger = logging.getLogger(__name__)

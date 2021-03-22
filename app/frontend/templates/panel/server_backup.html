@@ -1,0 +1,247 @@
+{% extends ../base.html %}
+
+{% block meta %}
+<!--  <meta http-equiv="refresh" content="60">-->
+{% end %}
+
+{% block title %}Crafty Controller - Server Details{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        <h4 class="page-title">
+          Server Details - {{ data['server_stats']['server_id']['server_name'] }}
+            <br />
+            <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
+        </h4>
+      </div>
+    </div>
+
+  </div>
+  <!-- Page Title Header Ends-->
+
+ {% include "parts/details_stats.html %}
+
+  <div class="row">
+
+    <div class="col-sm-12 grid-margin">
+      <div class="card">
+        <div class="card-body  pt-0">
+            <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=term" role="tab" aria-selected="false">
+                  <i class="fas fa-file-signature"></i>Terminal</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=logs" role="tab" aria-selected="false">
+                  <i class="fas fa-file-signature"></i>Logs</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=tasks" role="tab" aria-selected="false">
+                  <i class="fas fa-clock"></i>Schedule</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="true">
+                  <i class="fas fa-save"></i>Backup</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files" role="tab" aria-selected="false">
+                  <i class="fas fa-folder-tree"></i>Files</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=config" role="tab" aria-selected="false">
+                  <i class="fas fa-cogs"></i>Config</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=admin_controls" role="tab" aria-selected="false">
+                  <i class="fas fa-users"></i>Player Controls</a>
+              </li>
+
+            </ul>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12">
+                    <form class="forms-sample" method="post" action="/panel/server_backup">
+                      {% raw xsrf_form_html() %}
+                      <input type="hidden" name="id" value="{{ data['server_stats']['server_id']['server_id'] }}">
+                      <input type="hidden" name="subpage" value="backup">
+
+                      <div class="form-group">
+                        <a href="/panel/backup_now?id={{ data['server_stats']['server_id']['server_id'] }}" class="btn btn-primary" onclick="backup_started()">Backup Now!</a>
+                      </div>
+                      <div class="form-group">
+                        <label for="server_name">Storage Location <small class="text-muted ml-1"> - Where do you want to store backups?</small> </label>
+                        <input type="text" class="form-control" name="backup_path" id="backup_path" value="{{ data['server_stats']['server_id']['backup_path']  }}" placeholder="Backup Path" >
+                      </div>
+
+                      <div class="form-group">
+                        <label for="server_path">Max Backups <small class="text-muted ml-1"> - Crafty will not store more than n backups, deleting the oldest (enter 0 to keep all)</small> </label>
+                        <input type="text" class="form-control" name="max_backups" id="max_backups" value="{{ data['backup_config']['max_backups']  }}" placeholder="Max Backups" >
+                      </div>
+
+                      <div class="form-group">
+                        <label for="superuser" class="form-check-label ml-4 mb-4">
+                          {% if data['backup_config']['auto_enabled'] %}
+                              <input type="checkbox" class="form-check-input" id="auto_enabled" name="auto_enabled" checked="" value="1" >Auto-backup at 12:00 AM?
+                          {% else %}
+                              <input type="checkbox" class="form-check-input" id="auto_enabled" name="auto_enabled" value="1" >Auto-backup at 12:00 AM?
+                          {% end %}
+                        </label>
+                      </div>
+
+                      <button type="submit" class="btn btn-success mr-2">Save</button>
+                      <button type="reset" class="btn btn-light">Cancel</button>
+                    </form>
+                </div>
+
+                <div class="col-md-6 col-sm-12">
+                    <div class="card">
+                      <div class="card-body">
+                        <h4 class="card-title">Current Backups</h4>
+                        
+                      </div>
+                    </div>
+                    <div class="text-center">
+
+                      <table class="table table-responsive dataTable" id="backup_table">
+                        <thead>
+                        <tr>
+                            <th width="10%">Download</th>
+                            <th>Path</th>
+                            <th width="20%">Size</th>
+                            <th width="10%">Delete</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for backup in data['backup_list'] %}
+                            <tr>
+                            <td>
+                                <a href="/panel/download_backup?file={{ backup['path'] }}&id={{ data['server_stats']['server_id']['server_id'] }}" class="btn btn-primary">
+                                    <i class="fas fa-download" aria-hidden="true"></i>
+                                    Download
+                                </a>
+                            </td>
+                            <td>{{ backup['path'] }}</td>
+                            <td>{{ backup['size'] }}</td>
+                            <td>
+                                <button data-file="{{ backup['path'] }}" class="btn btn-danger del_button">
+                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                    Delete
+                                </button>
+
+                            </td>
+                            </tr>
+                        {% end %}
+
+                        </tbody>
+                    </table>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+</div>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+<script>
+
+
+    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+    function getCookie(name) {
+        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+        return r ? r[1] : undefined;
+    }
+
+    function backup_started(time='5-10') {
+            bootbox.alert({
+            message: "A backup task has been started.",
+            backdrop: true
+        });
+    }
+
+    function del_backup(filename, id){
+        var token = getCookie("_xsrf")
+
+        data_to_send = { file_name :filename}
+
+        console.log('Sending Command to delete file: ' + filename)
+        $.ajax({
+          type: "POST",
+          headers: {'X-XSRFToken': token},
+          url: '/ajax/del_file?server_id='+id,
+          data: data_to_send,
+          success: function(data){
+            location.reload();
+          },
+        });
+    }
+
+    $( document ).ready(function() {
+        console.log( "ready!" );
+        $("#backup_config_box").hide();
+        $("#backup_save_note").hide();
+
+        $("#show_config").click(function () {
+            $("#backup_config_box").toggle();
+            $('#backup_button').hide();
+            $('#backup_save_note').show();
+            $('#backup_data').hide();
+        });
+
+        $('#backup_table').DataTable({
+            "order": [[ 1, "desc" ]],
+            "paging":true,
+            "lengthChange": false,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+        });
+
+        $( ".del_button" ).click(function() {
+            var file_to_del = $(this).data("file");
+
+            console.log("file to delete is" + file_to_del);
+
+            bootbox.confirm({
+                title: "Destroy backup " + file_to_del + "?",
+                message: "Do you want to delete this file? This cannot be undone.",
+                buttons: {
+                    cancel: {
+                        label: '<i class="fas fa-times"></i> Cancel'
+                    },
+                    confirm: {
+                        label: '<i class="fas fa-check"></i> Confirm'
+                    }
+                },
+                callback: function (result) {
+                    console.log(result);
+                    if (result == true) {
+                        del_backup(file_to_del, {{ data['server_stats']['server_id']['server_id'] }} );
+                    }
+                }
+            });
+        });
+
+    });
+
+
+</script>
+
+{% end %}

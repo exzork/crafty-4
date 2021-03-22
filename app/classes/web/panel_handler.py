@@ -5,14 +5,13 @@ import tornado.escape
 import bleach
 import time
 import datetime
+import os
 
 from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.controller import controller
 from app.classes.shared.models import db_helper, Servers
 from app.classes.shared.helpers import helper
-from app.classes.minecraft.stats import stats
 
 logger = logging.getLogger(__name__)
 
@@ -50,8 +49,8 @@ class PanelHandler(BaseHandler):
             'user_role' : user_role,
             'server_stats': {
                 'total': len(defined_servers),
-                'running': len(controller.list_running_servers()),
-                'stopped': (len(controller.list_defined_servers()) - len(controller.list_running_servers()))
+                'running': len(self.controller.list_running_servers()),
+                'stopped': (len(self.controller.list_defined_servers()) - len(self.controller.list_running_servers()))
             },
             'menu_servers': defined_servers,
             'hosts_data': db_helper.get_latest_hosts_stats(),
@@ -64,7 +63,7 @@ class PanelHandler(BaseHandler):
         if page_data['server_stats']['total'] == 0 and page != "error":
             self.set_status(301)
             self.redirect("/server/step1")
-            return False
+            return
 
         if page == 'unauthorized':
             template = "panel/denied.html"
@@ -73,6 +72,11 @@ class PanelHandler(BaseHandler):
             template = "public/error.html"
 
         elif page == 'credits':
+            with open(helper.credits_cache) as republic_credits_will_do:
+                credits = json.load(republic_credits_will_do)
+                page_data["patreons"] = credits["patreons"]
+                page_data["staff"] = credits["staff"]
+                page_data["translations"] = credits["translations"]
             template = "panel/credits.html"
 
         elif page == 'contribute':
@@ -88,7 +92,7 @@ class PanelHandler(BaseHandler):
                                        server_id,
                                        self.get_remote_ip())
 
-            controller.remove_server(server_id)
+            self.controller.remove_server(server_id)
             self.redirect("/panel/dashboard")
             return
 
@@ -114,14 +118,14 @@ class PanelHandler(BaseHandler):
 
             if server_id is None:
                 self.redirect("/panel/error?error=Invalid Server ID")
-                return False
+                return
             else:
                 server_id = bleach.clean(server_id)
 
                 # does this server id exist?
                 if not db_helper.server_id_exists(server_id):
                     self.redirect("/panel/error?error=Invalid Server ID")
-                    return False
+                    return
 
                 if user['superuser'] != 1:
                     #if not db_helper.server_id_authorized(server_id, userId):
@@ -129,17 +133,21 @@ class PanelHandler(BaseHandler):
                         self.redirect("/panel/error?error=Invalid Server ID")
                         return False
 
-            valid_subpages = ['term', 'logs', 'config', 'files', 'admin_controls']
+            valid_subpages = ['term', 'logs', 'backup', 'config', 'files', 'admin_controls']
 
             if subpage not in valid_subpages:
                 logger.debug('not a valid subpage')
                 subpage = 'term'
             logger.debug('Subpage: "{}"'.format(subpage))
 
+            server = self.controller.get_server_obj(server_id)
             # server_data isn't needed since the server_stats also pulls server data
-            # page_data['server_data'] = db_helper.get_server_data_by_id(server_id)
+            page_data['server_data'] = db_helper.get_server_data_by_id(server_id)
             page_data['server_stats'] = db_helper.get_server_stats_by_id(server_id)
-            page_data['get_players'] = lambda: stats.get_server_players(server_id)
+            page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
+            if subpage == "backup":
+                page_data['backup_config'] = db_helper.get_backup_config(server_id)
+                page_data['backup_list'] = server.list_backups()
 
             def get_banned_players_html():
                 banned_players = helper.get_banned_players(server_id, db_helper)
@@ -165,6 +173,79 @@ class PanelHandler(BaseHandler):
 
             # template = "panel/server_details.html"
             template = "panel/server_{subpage}.html".format(subpage=subpage)
+
+        elif page == 'download_backup':
+            server_id = self.get_argument('id', None)
+            file = self.get_argument('file', "")
+
+            if server_id is None:
+                self.redirect("/panel/error?error=Invalid Server ID")
+                return
+            else:
+                server_id = bleach.clean(server_id)
+
+                # does this server id exist?
+                if not db_helper.server_id_exists(server_id):
+                    self.redirect("/panel/error?error=Invalid Server ID")
+                    return
+
+            exec_user = db_helper.get_user(user_data['user_id'])
+
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return
+
+            server_info = db_helper.get_server_data_by_id(server_id)
+            backup_file = os.path.abspath(os.path.join(server_info["backup_path"], file))
+            if not helper.in_path(server_info["backup_path"], backup_file) \
+                    or not os.path.isfile(backup_file):
+                self.redirect("/panel/error?error=Invalid path detected")
+                return
+
+            self.set_header('Content-Type', 'application/octet-stream')
+            self.set_header('Content-Disposition', 'attachment; filename=' + file)
+            chunk_size = 1024 * 1024 * 4 # 4 MiB
+
+            with open(backup_file, 'rb') as f:
+                while True:
+                    chunk = f.read(chunk_size)
+                    if not chunk:
+                        break
+                    try:
+                        self.write(chunk) # write the chunk to response
+                        self.flush() # send the chunk to client
+                    except iostream.StreamClosedError:
+                        # this means the client has closed the connection
+                        # so break the loop
+                        break
+                    finally:
+                        # deleting the chunk is very important because 
+                        # if many clients are downloading files at the 
+                        # same time, the chunks in memory will keep 
+                        # increasing and will eat up the RAM
+                        del chunk
+            self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
+
+        elif page == 'backup_now':
+            server_id = self.get_argument('id', None)
+
+            if server_id is None:
+                self.redirect("/panel/error?error=Invalid Server ID")
+                return
+            else:
+                # does this server id exist?
+                if not db_helper.server_id_exists(server_id):
+                    self.redirect("/panel/error?error=Invalid Server ID")
+                    return
+
+            exec_user = db_helper.get_user(user_data['user_id'])
+
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return
+
+            server = self.controller.get_server_obj(server_id).backup_server()
+            self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
 
         elif page == 'panel_config':
             page_data['users'] = db_helper.get_all_users()
@@ -194,10 +275,10 @@ class PanelHandler(BaseHandler):
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return False
+                return
 
             page_data['roles_all'] = db_helper.get_all_roles()
-            page_data['servers_all'] = controller.list_defined_servers()
+            page_data['servers_all'] = self.controller.list_defined_servers()
             template = "panel/panel_edit_user.html"
 
         elif page == "edit_user":
@@ -205,16 +286,16 @@ class PanelHandler(BaseHandler):
             user_id = self.get_argument('id', None)
             page_data['user'] = db_helper.get_user(user_id)
             page_data['roles_all'] = db_helper.get_all_roles()
-            page_data['servers_all'] = controller.list_defined_servers()
+            page_data['servers_all'] = self.controller.list_defined_servers()
 
             exec_user = db_helper.get_user(user_data['user_id'])
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return False
+                return
             elif user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
-                return False
+                return
 
             if exec_user['user_id'] != page_data['user']['user_id']:
                 page_data['user']['api_token'] = "********"
@@ -228,19 +309,19 @@ class PanelHandler(BaseHandler):
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return False
+                return
             elif user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
-                return False
+                return
             else:
                 # does this user id exist?
                 target_user = db_helper.get_user(user_id)
                 if not target_user:
                     self.redirect("/panel/error?error=Invalid User ID")
-                    return False
+                    return
                 elif target_user['superuser']:
                     self.redirect("/panel/error?error=Cannot remove a superuser")
-                    return False
+                    return
 
             db_helper.remove_user(user_id)
 
@@ -263,25 +344,25 @@ class PanelHandler(BaseHandler):
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return False
+                return
 
-            page_data['servers_all'] = controller.list_defined_servers()
+            page_data['servers_all'] = self.controller.list_defined_servers()
             template = "panel/panel_edit_role.html"
 
         elif page == "edit_role":
             page_data['new_role'] = False
             role_id = self.get_argument('id', None)
             page_data['role'] = db_helper.get_role(role_id)
-            page_data['servers_all'] = controller.list_defined_servers()
+            page_data['servers_all'] = self.controller.list_defined_servers()
 
             exec_user = db_helper.get_user(user_data['user_id'])
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return False
+                return
             elif role_id is None:
                 self.redirect("/panel/error?error=Invalid Role ID")
-                return False
+                return
 
             template = "panel/panel_edit_role.html"
 
@@ -293,16 +374,16 @@ class PanelHandler(BaseHandler):
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return False
+                return
             elif role_id is None:
                 self.redirect("/panel/error?error=Invalid Role ID")
-                return False
+                return
             else:
                 # does this user id exist?
                 target_role = db_helper.get_user(role_id)
                 if not target_role:
                     self.redirect("/panel/error?error=Invalid Role ID")
-                    return False
+                    return
 
             db_helper.remove_role(role_id)
 
@@ -348,17 +429,15 @@ class PanelHandler(BaseHandler):
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return False
+                return
             elif server_id is None:
                 self.redirect("/panel/error?error=Invalid Server ID")
-                return False
+                return
             else:
-                server_id = bleach.clean(server_id)
-
                 # does this server id exist?
                 if not db_helper.server_id_exists(server_id):
                     self.redirect("/panel/error?error=Invalid Server ID")
-                    return False
+                    return
 
             Servers.update({
                 Servers.server_name: server_name,
@@ -375,7 +454,7 @@ class PanelHandler(BaseHandler):
                 Servers.logs_delete_after: logs_delete_after,
             }).where(Servers.server_id == server_id).execute()
 
-            controller.refresh_server_settings(server_id)
+            self.controller.refresh_server_settings(server_id)
 
             db_helper.add_to_audit_log(user_data['user_id'],
                                        "Edited server {} named {}".format(server_id, server_name),
@@ -383,6 +462,41 @@ class PanelHandler(BaseHandler):
                                        self.get_remote_ip())
 
             self.redirect("/panel/server_detail?id={}&subpage=config".format(server_id))
+
+        if page == "server_backup":
+            logger.debug(self.request.arguments)
+            server_id = self.get_argument('id', None)
+            backup_path = bleach.clean(self.get_argument('backup_path', None))
+            max_backups = bleach.clean(self.get_argument('max_backups', None))
+            enabled = int(float(bleach.clean(self.get_argument('auto_enabled'), '0')))
+
+            user_data = json.loads(self.get_secure_cookie("user_data"))
+            exec_user = db_helper.get_user(user_data['user_id'])
+
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return
+            elif server_id is None:
+                self.redirect("/panel/error?error=Invalid Server ID")
+                return
+            else:
+                # does this server id exist?
+                if not db_helper.server_id_exists(server_id):
+                    self.redirect("/panel/error?error=Invalid Server ID")
+                    return
+
+            if backup_path is not None:
+                Servers.update({
+                    Servers.backup_path: backup_path
+                }).where(Servers.server_id == server_id).execute()
+                db_helper.set_backup_config(server_id, max_backups=max_backups)
+
+            db_helper.add_to_audit_log(user_data['user_id'],
+                                       "Edited server {}: updated backups".format(server_id),
+                                       server_id,
+                                       self.get_remote_ip())
+            self.tasks_manager.reload_schedule_from_db()
+            self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
 
         elif page == "edit_user":
             user_id = bleach.clean(self.get_argument('id', None))
@@ -397,22 +511,22 @@ class PanelHandler(BaseHandler):
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return False
+                return
             elif username is None or username == "":
                 self.redirect("/panel/error?error=Invalid username")
-                return False
+                return
             elif user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
-                return False
+                return
             else:
                 # does this user id exist?
                 if not db_helper.user_id_exists(user_id):
                     self.redirect("/panel/error?error=Invalid User ID")
-                    return False
+                    return
 
             if password0 != password1:
                 self.redirect("/panel/error?error=Passwords must match")
-                return False
+                return
 
             roles = set()
             for role in db_helper.get_all_roles():
@@ -425,7 +539,7 @@ class PanelHandler(BaseHandler):
                     roles.add(role.role_id)
 
             servers = set()
-            for server in controller.list_defined_servers():
+            for server in self.controller.list_defined_servers():
                 argument = int(float(
                     bleach.clean(
                         self.get_argument('server_{}_access'.format(server['server_id']), '0')
@@ -461,19 +575,19 @@ class PanelHandler(BaseHandler):
             exec_user = db_helper.get_user(user_data['user_id'])
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return False
+                return
             elif username is None or username == "":
                 self.redirect("/panel/error?error=Invalid username")
-                return False
+                return
             else:
                 # does this user id exist?
                 if db_helper.get_userid_by_name(username) is not None:
                     self.redirect("/panel/error?error=User exists")
-                    return False
+                    return
 
             if password0 != password1:
                 self.redirect("/panel/error?error=Passwords must match")
-                return False
+                return
 
             roles = set()
             for role in db_helper.get_all_roles():
@@ -486,7 +600,7 @@ class PanelHandler(BaseHandler):
                     roles.add(role['role_id'])
 
             servers = set()
-            for server in controller.list_defined_servers():
+            for server in self.controller.list_defined_servers():
                 argument = int(float(
                     bleach.clean(
                         self.get_argument('server_{}_access'.format(server['server_id']), '0')
@@ -517,21 +631,21 @@ class PanelHandler(BaseHandler):
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return False
+                return
             elif role_name is None or role_name == "":
                 self.redirect("/panel/error?error=Invalid username")
-                return False
+                return
             elif role_id is None:
                 self.redirect("/panel/error?error=Invalid Role ID")
-                return False
+                return
             else:
                 # does this user id exist?
                 if not db_helper.role_id_exists(role_id):
                     self.redirect("/panel/error?error=Invalid Role ID")
-                    return False
+                    return
 
             servers = set()
-            for server in controller.list_defined_servers():
+            for server in self.controller.list_defined_servers():
                 argument = int(float(
                     bleach.clean(
                         self.get_argument('server_{}_access'.format(server['server_id']), '0')
@@ -560,18 +674,18 @@ class PanelHandler(BaseHandler):
             exec_user = db_helper.get_user(user_data['user_id'])
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return False
+                return
             elif role_name is None or role_name == "":
                 self.redirect("/panel/error?error=Invalid role name")
-                return False
+                return
             else:
                 # does this user id exist?
                 if db_helper.get_roleid_by_name(role_name) is not None:
                     self.redirect("/panel/error?error=Role exists")
-                    return False
+                    return
 
             servers = set()
-            for server in controller.list_defined_servers():
+            for server in self.controller.list_defined_servers():
                 argument = int(float(
                     bleach.clean(
                         self.get_argument('server_{}_access'.format(server['server_id']), '0')
@@ -592,3 +706,7 @@ class PanelHandler(BaseHandler):
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
+
+        else:
+            self.set_status(404)
+            self.render("public/404.html")
