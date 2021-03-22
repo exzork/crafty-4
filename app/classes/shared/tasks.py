@@ -175,8 +175,3 @@ class TasksManager:
         console.debug('in log_watcher')
         helper.check_for_old_logs(db_helper)
         schedule.every(6).hours.do(lambda: helper.check_for_old_logs(db_helper))
-
-
-
-
-tasks_manager = TasksManager()

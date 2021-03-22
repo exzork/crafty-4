@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 try:
-    from pexpect.popen_spawn import PopenSpawn
+    import pexpect
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e, e.name))
@@ -120,47 +120,24 @@ class Server:
         console.info("Launching Server {} with command {}".format(self.name, self.server_command))
 
         if os.name == "nt":
-            logger.info("Windows Detected - launching cmd")
+            logger.info("Windows Detected")
             self.server_command = self.server_command.replace('\\', '/')
-            logging.info("Opening CMD prompt")
-            self.process = pexpect.popen_spawn.PopenSpawn('cmd \r\n', timeout=None, encoding=None)
-
-            drive_letter = self.server_path[:1]
-
-            if drive_letter.lower() != "c":
-                logger.info("Server is not on the C drive, changing drive letter to {}:".format(drive_letter))
-                self.process.send("{}:\r\n".format(drive_letter))
-
-            logging.info("changing directories to {}".format(self.server_path.replace('\\', '/')))
-            self.process.send('cd {} \r\n'.format(self.server_path.replace('\\', '/')))
-            logging.info("Sending command {} to CMD".format(self.server_command))
-            self.process.send(self.server_command + "\r\n")
-
-            self.is_crashed = False
         else:
-            logger.info("Linux Detected - launching Bash")
-            self.process = pexpect.popen_spawn.PopenSpawn('/bin/bash \n', timeout=None, encoding=None)
+            logger.info("Linux Detected")
 
-            logger.info("Changing directory to {}".format(self.server_path))
-            self.process.send('cd {} \n'.format(self.server_path))
-
-            logger.info("Sending server start command: {} to shell".format(self.server_command))
-            self.process.send(self.server_command + '\n')
-            self.is_crashed = False
+        logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
+        self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
+        self.is_crashed = False
 
         ts = time.time()
         self.start_time = str(datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'))
 
         if psutil.pid_exists(self.process.pid):
-            parent = psutil.Process(self.process.pid)
-            time.sleep(.5)
-            children = parent.children(recursive=True)
-            for c in children:
-                self.PID = c.pid
-                logger.info("Server {} running with PID {}".format(self.name, self.PID))
-                console.info("Server {} running with PID {}".format(self.name, self.PID))
-                self.is_crashed = False
-                stats.record_stats()
+            self.PID = self.process.pid
+            logger.info("Server {} running with PID {}".format(self.name, self.PID))
+            console.info("Server {} running with PID {}".format(self.name, self.PID))
+            self.is_crashed = False
+            stats.record_stats()
         else:
             logger.warning("Server PID {} died right after starting - is this a server config issue?".format(self.PID))
             console.warning("Server PID {} died right after starting - is this a server config issue?".format(self.PID))
@@ -201,13 +178,13 @@ class Server:
                 if x >= 30:
                     logger.info("Server {} is still running - Forcing the process down".format(server_name))
                     console.info("Server {} is still running - Forcing the process down".format(server_name))
-                    self.killpid(server_pid)
+                    self.process.terminate(force=True)
 
             logger.info("Stopped Server {} with PID {}".format(server_name, server_pid))
             console.info("Stopped Server {} with PID {}".format(server_name, server_pid))
 
         else:
-            self.killpid(self.PID)
+            self.process.terminate(force=True)
 
         # massive resetting of variables
         self.cleanup_server_object()
@@ -240,10 +217,15 @@ class Server:
             return running
 
         try:
-            running = psutil.pid_exists(self.PID)
+            alive = self.process.isalive()
+            if type(alive) is not bool:
+                self.last_rc = alive
+                running = False
+            else:
+                running = alive
 
         except Exception as e:
-            logger.error("Unable to find if server PID exists: {}".format(self.PID))
+            logger.error("Unable to find if server PID exists: {}".format(self.PID), exc_info=True)
             pass
 
         return running

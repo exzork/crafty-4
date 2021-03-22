@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
-from app.classes.shared.tasks import tasks_manager
 from app.classes.web.websocket_helper import websocket_helper
 
 try:
@@ -25,6 +24,10 @@ class MainPrompt(cmd.Cmd):
 
     # overrides the default Prompt
     prompt = "Crafty Controller v{} > ".format(helper.get_version_string())
+
+    def __init__(self, tasks_manager):
+        super().__init__()
+        self.tasks_manager = tasks_manager
 
     @staticmethod
     def emptyline():
@@ -48,7 +51,7 @@ class MainPrompt(cmd.Cmd):
         self._clean_shutdown()
         console.info('Waiting for main thread to stop')
         while True:
-            if tasks_manager.get_main_thread_run_status():
+            if self.tasks_manager.get_main_thread_run_status():
                 sys.exit(0)
             time.sleep(1)
 
