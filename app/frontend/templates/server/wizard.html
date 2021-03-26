@@ -1,6 +1,6 @@
 {% extends ../base.html %}
 
-{% block title %}Crafty Controller - New Server{% end %}
+{% block title %}Crafty Controller - {{ translate('serverWizard', 'newServer') }}{% end %}
 
 {% block content %}
 
@@ -10,7 +10,7 @@
         <div class="card">
           <div class="card-body">
 
-            <h4>Create a New Server</h4>
+            <h4>{{ translate('serverWizard', 'newServer') }}</h4>
             <br />
             <p class="card-description">
 
@@ -19,7 +19,7 @@
                 <div class="row">
                   <div class="col-sm-12">
                     <div class="form-group">
-                      <h4 class="card-title" style="margin-bottom:20px;">Server Type</h4>
+                      <h4 class="card-title" style="margin-bottom:20px;">{{ translate('serverWizard', 'serverType') }}</h4>
 
                       <select class="form-control form-control-lg select-css" id="server" name="server">
                         {% for s in data['server_types'] %}
@@ -34,41 +34,41 @@
 
                   <div class="col-sm-12">
                     <div class="form-group">
-                      <label for="server_name">Server Name</label>
-                      <input type="text" class="form-control" id="server_name" name="server_name" value="My New Server">
+                      <label for="server_name">{{ translate('serverWizard', 'serverName') }}</label>
+                      <input type="text" class="form-control" id="server_name" name="server_name" placeholder="{{ translate('serverWizard', 'myNewServer') }}">
                     </div>
                   </div>
 
                 </div>
                 <br />
-                <h4 class="card-title">Quick Settings <small> - Don't worry, you can change these later</small></h4>
+                <h4 class="card-title">{{ translate('serverWizard', 'quickSettings') }} <small style="text-transform: none;"> - {{ translate('serverWizard', 'quickSettingsDescription') }}</small></h4>
                 <hr>
                 <div class="row">
 
                   <div class="col-sm-3">
                     <div class="form-group">
-                      <label for="min_memory">Min Memory <small> - Size in GB</small></label>
+                      <label for="min_memory">{{ translate('serverWizard', 'minMem') }} <small> - {{ translate('serverWizard', 'sizeInGB') }}</small></label>
                       <input type="number" class="form-control" id="min_memory" name="min_memory" value="1" step="0.5" min="0.5">
                     </div>
                   </div>
 
                   <div class="col-sm-3 offset-1">
                     <div class="form-group">
-                      <label for="max_memory">Max Memory <small> - Size in GB</small></label>
+                      <label for="max_memory">{{ translate('serverWizard', 'maxMem') }} <small> - {{ translate('serverWizard', 'sizeInGB') }}</small></label>
                       <input type="number" class="form-control" id="max_memory" name="max_memory" value="2" step="0.5" min="0.5">
                     </div>
                   </div>
 
                   <div class="col-sm-3 offset-1">
                     <div class="form-group">
-                      <label for="port">Server Port <small> - 25565  default</small></label>
+                      <label for="port">{{ translate('serverWizard', 'serverPort') }} <small> - {{ translate('serverWizard', 'defaultPort') }}</small></label>
                       <input type="number" class="form-control" id="port" name="port" value="25565" step="1" min="1">
                     </div>
                   </div>
 
                 </div>
-                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg()">Build My Server!</button>
-                <button type="reset" class="btn btn-danger mr-2">Reset Form</button>
+                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg()">{{ translate('serverWizard', 'buildServer') }}</button>
+                <button type="reset" class="btn btn-danger mr-2">{{ translate('serverWizard', 'resetForm') }}</button>
 
               </form>
             </p>
@@ -80,7 +80,7 @@
         <div class="card">
           <div class="card-body">
 
-            <h4>Import an Existing Server</h4>
+            <h4>{{ translate('serverWizard', 'importServer') }}</h4>
             <br />
             <p class="card-description">
 
@@ -91,21 +91,21 @@
 
                   <div class="col-sm-12">
                     <div class="form-group">
-                      <label for="server_name">Server Name</label>
-                      <input type="text" class="form-control" id="server_name" name="server_name" value="" placeholder="My Imported Server">
+                      <label for="server_name">{{ translate('serverWizard', 'serverName') }}</label>
+                      <input type="text" class="form-control" id="server_name" name="server_name" value="" placeholder="{{ translate('serverWizard', 'myNewServer') }}">
                     </div>
                   </div>
 
                   <div class="col-sm-12">
                     <div class="form-group">
-                      <label for="server">Server Path <small>Absolute path to your server</small></label>
+                      <label for="server">{{ translate('serverWizard', 'serverPath') }} <small>{{ translate('serverWizard', 'absoluteServerPath') }}</small></label>
                       <input type="text" class="form-control" id="server_path" name="server_path" placeholder="/var/opt/server">
                     </div>
                   </div>
 
                   <div class="col-sm-12">
                     <div class="form-group">
-                      <label for="server_jar">Server Jar Name</label>
+                      <label for="server_jar">{{ translate('serverWizard', 'serverJar') }}</label>
                       <input type="text" class="form-control" id="server_jar" name="server_jar" value="" placeholder="paper.jar">
                     </div>
                   </div>
@@ -114,34 +114,34 @@
 
                 </div>
                 <br />
-                <h4 class="card-title">Quick Settings <small> - Don't worry, you can change these later</small></h4>
+                <h4 class="card-title">{{ translate('serverWizard', 'quickSettings') }} <small style="text-transform: none;"> - {{ translate('serverWizard', 'quickSettingsDescription') }}</small></h4>
                 <hr>
                 <div class="row">
 
                   <div class="col-sm-3">
                     <div class="form-group">
-                      <label for="min_memory">Min Memory <small> - Size in GB</small></label>
+                      <label for="min_memory">{{ translate('serverWizard', 'minMem') }} <small> - {{ translate('serverWizard', 'sizeInGB') }}</small></label>
                       <input type="number" class="form-control" id="min_memory" name="min_memory" value="1" step="0.5" min="0.5">
                     </div>
                   </div>
 
                   <div class="col-sm-3 offset-1">
                     <div class="form-group">
-                      <label for="max_memory">Max Memory <small> - Size in GB</small></label>
+                      <label for="max_memory">{{ translate('serverWizard', 'maxMem') }} <small> - {{ translate('serverWizard', 'sizeInGB') }}</small></label>
                       <input type="number" class="form-control" id="max_memory" name="max_memory" value="2" step="0.5" min="0.5">
                     </div>
                   </div>
 
                   <div class="col-sm-3 offset-1">
                     <div class="form-group">
-                      <label for="port">Server Port <small> - 25565  default</small></label>
+                      <label for="port">{{ translate('serverWizard', 'serverPort') }} <small> - {{ translate('serverWizard', 'defaultPort') }}</small></label>
                       <input type="number" class="form-control" id="port" name="port" value="25565" step="1" min="1">
                     </div>
                   </div>
 
                 </div>
-                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg(true)">Import My Server!</button>
-                <button type="reset" class="btn btn-danger mr-2">Reset Form</button>
+                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg(true)">{{ translate('serverWizard', 'importServerButton') }}</button>
+                <button type="reset" class="btn btn-danger mr-2">{{ translate('serverWizard', 'resetForm') }}</button>
 
               </form>
             </p>
@@ -153,7 +153,7 @@
         <div class="card">
           <div class="card-body">
 
-            <h4>Import From Zip File</h4>
+            <h4>{{ translate('serverWizard', 'importZip') }}</h4>
             <br />
             <p class="card-description">
 
@@ -162,64 +162,62 @@
                 <input type="hidden" value="import_zip" name="create_type">
 
                 <div class="row">
-                <div class="col-sm-9">
-                    <h4 class="card-title">Server Details</h4>
+                  <div class="col-sm-9">
+                    <div class="col-sm-12">
+                      <div class="form-group">
+                        <label for="server_name">{{ translate('serverWizard', 'serverName') }}</label>
+                        <input type="text" class="form-control" id="server_name" name="server_name" value="" placeholder="{{ translate('serverWizard', 'myNewServer') }}">
+                      </div>
+                    </div>
+
+                    <div class="col-sm-12">
+                      <div class="form-group">
+                        <label for="server">{{ translate('serverWizard', 'zipPath') }} <small>{{ translate('serverWizard', 'absoluteZipPath') }}</small></label>
+                        <input type="text" class="form-control" id="server_path" name="server_path" placeholder="/var/opt/server.zip">
+                      </div>
+                    </div>
+
+                    <div class="col-sm-12">
+                      <div class="form-group">
+                        <label for="server_jar">{{ translate('serverWizard', 'serverJar') }}</label>
+                        <input type="text" class="form-control" id="server_jar" name="server_jar" value="" placeholder="paper.jar">
+                      </div>
+                    </div>
+                  </div>
+
+
+
+                  <div class="col-sm-3">
+                    <h4 class="card-title">{{ translate('serverWizard', 'quickSettings') }} <small style="text-transform: none;"> - {{ translate('serverWizard', 'quickSettingsDescription') }}</small></h4>
                     <hr>
-                  <div class="col-sm-12">
-                    <div class="form-group">
-                      <label for="server_name">Server Name</label>
-                      <input type="text" class="form-control" id="server_name" name="server_name" value="" placeholder="My Imported Server">
-                    </div>
-                  </div>
+                    <div class="row">
 
-                  <div class="col-sm-12">
-                    <div class="form-group">
-                      <label for="server">Zip Path <small>Absolute path to your zip file</small></label>
-                      <input type="text" class="form-control" id="server_path" name="server_path" placeholder="/var/opt/server.zip">
-                    </div>
-                  </div>
+                      <div class="col-sm-12">
+                        <div class="form-group">
+                          <label for="min_memory">{{ translate('serverWizard', 'minMem') }} <small> - {{ translate('serverWizard', 'sizeInGB') }}</small></label>
+                          <input type="number" class="form-control" id="min_memory" name="min_memory" value="1" step="0.5" min="0.5">
+                        </div>
+                      </div>
 
-                  <div class="col-sm-12">
-                    <div class="form-group">
-                      <label for="server_jar">Server Jar Name</label>
-                      <input type="text" class="form-control" id="server_jar" name="server_jar" value="" placeholder="paper.jar">
+                      <div class="col-sm-12">
+                        <div class="form-group">
+                          <label for="max_memory">{{ translate('serverWizard', 'maxMem') }} <small> - {{ translate('serverWizard', 'sizeInGB') }}</small></label>
+                          <input type="number" class="form-control" id="max_memory" name="max_memory" value="2" step="0.5" min="0.5">
+                        </div>
+                      </div>
+
+                      <div class="col-sm-12">
+                        <div class="form-group">
+                          <label for="port">{{ translate('serverWizard', 'serverPort') }} <small> - {{ translate('serverWizard', 'defaultPort') }}</small></label>
+                          <input type="number" class="form-control" id="port" name="port" value="25565" step="1" min="1">
+                        </div>
+                      </div>
+
                     </div>
+                    <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg(true)">{{ translate('serverWizard', 'importServerButton') }}</button>
+                    <button type="reset" class="btn btn-danger mr-2">{{ translate('serverWizard', 'resetForm') }}</button>
                   </div>
                 </div>
-
-
-
-                <div class="col-sm-3">
-                <h4 class="card-title">Quick Settings <small> - Don't worry, you can change these later</small></h4>
-                <hr>
-                <div class="row">
-
-                  <div class="col-sm-12">
-                    <div class="form-group">
-                      <label for="min_memory">Min Memory <small> - Size in GB</small></label>
-                      <input type="number" class="form-control" id="min_memory" name="min_memory" value="1" step="0.5" min="0.5">
-                    </div>
-                  </div>
-
-                  <div class="col-sm-12">
-                    <div class="form-group">
-                      <label for="max_memory">Max Memory <small> - Size in GB</small></label>
-                      <input type="number" class="form-control" id="max_memory" name="max_memory" value="2" step="0.5" min="0.5">
-                    </div>
-                  </div>
-
-                  <div class="col-sm-12">
-                    <div class="form-group">
-                      <label for="port">Server Port <small> - 25565  default</small></label>
-                      <input type="number" class="form-control" id="port" name="port" value="25565" step="1" min="1">
-                    </div>
-                  </div>
-
-                </div>
-                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg(true)">Import My Server!</button>
-                <button type="reset" class="btn btn-danger mr-2">Reset Form</button>
-                </div>
-                    </div>
               </form>
             </p>
           </div>
@@ -235,25 +233,28 @@
   $( document ).ready(function() {
   console.log('ready');
     $("#min_memory").change(function(){
-    check_sizes();
+      check_sizes('min');
+    });
+    $("#max_memory").change(function(){
+      check_sizes('max');
     });
   });
 
   function wait_msg(importing){
     bootbox.alert({
-        title: importing ? 'Importing Server...' : 'Downloading Server...',
-        message: '<i class="fas fa-cloud-download"></i> Please be patient as we ' + (importing ? 'import' :  'download') + ' the server'
+        title: importing ? '{% raw translate("serverWizard", "importing") %}' : '{% raw translate("serverWizard", "downloading") %}',
+        message: '<i class="fas fa-cloud-download"></i> {% raw translate("serverWizard", "bePatient") %}'
       });
   }
 
-  function check_sizes(){
+  function check_sizes(changed){
     max_mem = parseFloat($('#max_memory').val());
     min_mem = parseFloat($('#min_memory').val());
-    if (max_mem < min_mem){
-      bootbox.alert({
-        title: 'Memory Warning',
-        message: 'Min Memory is Higher than Max Memory'
-      });
+    if (max_mem < min_mem && changed === 'min'){
+      $('#max_memory').val(min_mem)
+    }
+    if (max_mem < min_mem && changed === 'max'){
+      $('#min_memory').val(max_mem)
     }
   }
 

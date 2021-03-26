@@ -1,0 +1,311 @@
+{
+    "login": {
+        "forgotPassword": "Unohdin salasanan",
+        "login": "Kirjaudu Sisään",
+        "password": "Salasana",
+        "username": "Käyttäjänimi"
+    },
+    "error": {
+        "hereIsTheError": "Tässä on virhe",
+        "contact": "Ota yhteyttä Crafty Control -tukeen Discordin kautta",
+        "terribleFailure": "Mikä kauhea epäonnistuminen!",
+        "embarassing": "No, tämähän on noloa.",
+        "error": "Virhe!"
+    },
+    "404": {
+        "contact": "Ota yhteyttä Crafty Control -tukeen Discordin kautta",
+        "unableToFind": "Emme löytäneet etsimääsi sivua. Yritä uudelleen tai palaa takaisin ja päivitä.",
+        "notFound": "Sivua ei löytynyt"
+    },
+    "footer": {
+        "version": "Versio",
+        "copyright": "Tekijänoikeus",
+        "allRightsReserved": "Kaikki oikeudet pidätetään"
+    },
+    "sidebar": {
+        "dashboard": "Kojelauta",
+        "servers": "Palvelimet",
+        "documentation": "Dokumentaatio",
+        "credits": "Hyvitykset",
+        "contribute": "Osallistu",
+        "newServer": "Luo uusi palvelin",
+        "navigation": "Navigaatio"
+    },
+    "serverWizard": {
+        "newServer": "Luo uusi palvelin",
+        "importServer": "Tuo olemassa oleva palvelin",
+        "importZip": "Tuo zip-tiedostosta",
+        "serverName": "Palvelimen nimi",
+        "serverPath": "Palvelimen polku",
+        "serverType": "Palvelimen tyypi",
+        "absoluteServerPath": "Absoluuttinen polku palvelimeesi",
+        "serverJar": "Palvelimen Jar -tiedosto",
+        "minMem": "Minimi Muisti",
+        "maxMem": "Maximi Muisti",
+        "serverPort": "Palvelimen portti",
+        "defaultPort": "Oletusarvo 25565",
+        "sizeInGB": "Koko gigatavuissa",
+        "zipPath": "Zip -tiedoston polku",
+        "absoluteZipPath": "Absoluuttinen polku zip -tiedostoosi",
+        "resetForm": "Nollaa lomake",
+        "importServerButton": "Tuo palvelin!",
+        "buildServer": "Rakenna palvelin!",
+        "quickSettings": "Pika-asetukset",
+        "quickSettingsDescription": "Älä huoli, voit muuttaa näitä myöhemmin",
+        "myNewServer": "Minun uusi palvelin",
+        "bePatient": "Ole kärsivällinen, kun ' + (importing ? 'tuomme' :  'lataamme') + ' palvelinta",
+        "importing": "Tuomme palvelinta...",
+        "downloading": "Lataamme palvelinta..."
+    },
+    "dashboard": {
+        "dashboard": "Kojelauta",
+        "memUsage": "Muistin käyttö",
+        "cpuUsage": "Prosessorin käyttö",
+        "host": "Kone",
+        "players": "Pelaajat",
+        "backups": "Varmuuskopiot",
+        "newServer": "Luo uusi palvelin",
+        "allServers": "Kaikki palvelimet",
+        "server": "Palvelin",
+        "actions": "Toiminnot",
+        "world": "Maailma",
+        "status": "Tila",
+        "online": "Päällä",
+        "offline": "Pois päältä",
+        "lastBackup": "Viimeinen:",
+        "nextBackup": "Seuraava:",
+        "servers": "Palvelimet",
+        "cannotSeeOnMobile": "Etkö näe kaikkea mobiililaitteella?",
+        "cannotSeeOnMobile2": "Yritä vierittää taulukkoa sivuttain.",
+        "max": "maks.",
+        "avg": "ka.",
+        "bePatientStart": "Ole kärsivällinen, kun käynnistämme palvelimen.<br /> Tämä näyttö päivittyy hetken kuluttua",
+        "bePatientStop": "Ole kärsivällinen, kun sammutamme palvelimen.<br /> Tämä näyttö päivittyy hetken kuluttua",
+        "bePatientRestart": "Ole kärsivällinen, kun käynnistämme palvelimen uudelleen.<br /> Tämä näyttö päivittyy hetken kuluttua",
+        "bePatientClone": "Ole kärsivällinen, kun kloonaamme palvelimen.<br /> Tämä näyttö päivittyy hetken kuluttua",
+        "sendingCommand": "Lähetämme komentoasi",
+        "cpuCurFreq": "Nykyinen kellotaajuus",
+        "cpuMaxFreq": "Maksimi kellotaajuus",
+        "cpuCores": "Suorittimen ytimet"
+    },
+    "accessDenied": {
+        "accessDenied": "Käyttö estetty",
+        "noAccess": "Sinulla ei ole pääsyä tähän resurssiin",
+        "contactAdmin": "Ota yhteyttä palvelimen järjestelmänvalvojaan saadaksesi tämän resurssin käyttöoikeuden, tai jos luulet, että sinulla pitäisi olla pääsy tähän resurssiin, ota yhteyttä tukeen.",
+        "contact": "Ota yhteyttä Crafty Control -tukeen Discordin kautta"
+    },
+    "serverStats": {
+        "online": "Päällä",
+        "offline": "Pois päältä",
+        "serverStatus": "Palvelimen tila",
+        "serverStarted": "Palvelin käynnistyi",
+        "serverUptime": "Palvelimen käyttöaika",
+        "players": "Pelaajat",
+        "memUsage": "Muistin käyttö",
+        "cpuUsage": "Prosessorin käyttö",
+        "version": "Versio",
+        "description": "Kuvaus",
+        "errorCalculatingUptime": "Virhe laskettaessa käyttöaikaa",
+        "serverTime": "Palvelimen aikaa",
+        "unableToConnect": "Yhteyden muodostaminen epäonnistui"
+    },
+    "serverDetails": {
+        "serverDetails": "Palvelimen tiedot",
+        "terminal": "Pääte",
+        "logs": "Lokit",
+        "schedule": "Ajoitus",
+        "backup": "Varmuuskopiot",
+        "files": "Tiedostojenhallinta",
+        "config": "Asetukset",
+        "playerControls": "Pelaajahallinta"
+    },
+    "serverTerm": {
+        "stopRefresh": "Lopeta päivitys",
+        "commandInput": "Kirjoita komento",
+        "sendCommand": "Lähetä komento",
+        "start": "Käynnistä",
+        "restart": "Uudelleen&shy;käynnistä",
+        "stop": "Sammuta"
+    },
+    "serverPlayerManagement": {
+        "players": "Pelaajat",
+        "bannedPlayers": "Kielletyt pelaajat",
+        "loadingBannedPlayers": "Ladataan kiellettyjen pelaajien listaa"
+    },
+    "serverBackups": {
+        "backupNow": "Varmuuskopioi nyt!",
+        "backupAtMidnight": "Automaattisesti varmuuskopioi keskiyöllä?",
+        "storageLocation": "Varmuuskopiointisijainti",
+        "storageLocationDesc": "Mihin haluat tallentaa varmuuskopiot?",
+        "maxBackups": "Varmuuskopioiden enimmäismäärä",
+        "maxBackupsDesc": "Crafty ei tallenna enempää kuin N varmuuskopiota, poistamalla vanhimmat (syötä 0, jos haluat säilyttää kaikki)",
+        "save": "Tallenna",
+        "cancel": "Peruuta",
+        "currentBackups": "Nykyiset varmuuskopiot",
+        "download": "Lataa",
+        "path": "Polku",
+        "size": "Koko",
+        "delete": "Poista",
+        "backupTask": "Varmuuskopiointitehtävä on aloitettu.",
+        "destroyBackup": "Tuhotaanko varmuuskopio \" + file_to_del + \"?",
+        "confirmDelete": "Haluatko poistaa tämän varmuuskopion? Tätä ei voi peruuttaa.",
+        "confirm": "Vahvista"
+    },
+    "serverFiles": {
+        "noscript": "Tiedostojenhallinta ei toimi ilman JavaScriptiä",
+        "error": "Virhe tiedostoja haettaessa",
+        "files": "Tiedostot",
+        "default": "Oletus",
+        "save": "Tallenna",
+        "editingFile": "Muokataan tiedostoa",
+        "delete": "Poista",
+        "createFile": "Luo tiedosto",
+        "createDir": "Luo hakemisto",
+        "rename": "Nimeä uudelleen",
+        "createFileQuestion": "Minkä nimen haluat uudelle tiedostolle?",
+        "createDirQuestion": "Minkä nimen haluat uudelle hakemistolle?",
+        "renameItemQuestion": "Mikä uuden nimen pitäisi olla?",
+        "deleteItemQuestion": "Haluatko varmasti poistaa \" + name + \"?",
+        "deleteItemQuestionMessage": "Olet poistamassa \\\"\" + path + \"\\\"!<br/><br/>Tämä toiminta on peruuttamaton ja se menetetään ikuisesti!",
+        "yesDelete": "Kyllä, ymmärrän seuraukset",
+        "noDelete": "En",
+        "unsupportedLanguage": "Varoitus: Tätä tiedostotyyppiä ei tueta",
+        "keybindings": "Pikanäppäimet"
+    },
+    "serverConfig": {
+        "serverName": "Palvelimen nimi",
+        "serverNameDesc": "Miksi haluat kutsua tätä palvelinta",
+        "serverPath": "Palvelimen työkansio",
+        "serverPathDesc": "Absoluuttinen polku palvelimeen (ilman suoritettavaa tiedostoa)",
+        "serverLogLocation": "Palvelimen lokin sijainti",
+        "serverLogLocationDesc": "Absoluuttinen polku lokitiedostoon",
+        "serverExecutable": "Suoritettava tiedosto",
+        "serverExecutableDesc": "Palvelimen suoritettava tiedosto",
+        "serverExecutionCommand": "Palvelimen suorituskomento",
+        "serverExecutionCommandDesc": "Mikä käynnistetään piilotetussa terminaalissa",
+        "serverStopCommand": "Palvelimen pysäytyskomento",
+        "serverStopCommandDesc": "Komento lähettää palvelimen pysäyttämiseen",
+        "serverAutostartDelay": "Palvelimen automaattisen käynnistyksen viive",
+        "serverAutostartDelayDesc": "Viive ennen automaattista käynnistystä (Jos tämä on käytössä alla)",
+        "serverIP": "Palvelimen IP-osoite",
+        "serverIPDesc": "IP-osoite, johon Craftyn tulisi muodostaa yhteys tilastojen saamiseen (Kokeile todellista ip:tä \"127.0.0.1\" sijaan, jos sinulla on ongelmia)",
+        "serverPort": "Palvelimen portti",
+        "serverPortDesc": "Portti, johon Craftyn tulisi muodostaa yhteys tilastojen saamiseen",
+        "removeOldLogsAfter": "Poista vanhat lokit N päivän jälkeen",
+        "removeOldLogsAfterDesc": "Kuinka monta päivää lokitiedoston on oltava vanha poistettavaksi (0 ei ole käytössä)",
+        "serverAutoStart": "Palvelimen automaattinen käynnistys",
+        "serverCrashDetection": "Palvelimen kaatumisen havaitseminen",
+        "save": "Tallenna",
+        "cancel": "Peruuta",
+        "deleteServer": "Poista palvelin",
+        "stopBeforeDeleting": "Pysäytä palvelin ennen sen poistamista"
+    },
+    "serverConfigHelp": {
+        "title": "Palvelimen asetukset",
+        "desc": "Tässä voit muuttaa palvelimesi asetuksia",
+        "perms": [
+            "On suositeltavaa, että <code>EI</code> muuta Craftyn hallinnoiman palvelimen polkuja.",
+            "Polkujen muuttaminen <code>VOI</code> rikkoa asioita,  varsinkin Linux-tyyppisissä käyttöjärjestelmissä, joissa tiedostojen käyttöoikeudet on lukittu paremmin.",
+            "<br /><br/>",
+            "Jos sinusta tuntuu, että sinun on vaihdettava palvelimen sijaintia, voit tehdä niin, kunhan annat \"crafty\" käyttäjälle luvan lukea / kirjoittaa palvelimen polulle.",
+            "<br />",
+            "<br />",
+            "Linuxissa tämä onnistuu parhaiten suorittamalla seuraavat:<br />",
+            "<code>",
+            "    sudo chown crafty:crafty /polku/palvelimellesi -R<br />",
+            "    sudo chmod 2775 /polku/palvelimellesi -R<br />",
+            "</code>"
+        ]
+    },
+    "datatables": {
+        "i18n": {
+            "decimal":        "",
+            "emptyTable":     "Ei tietoja saatavilla taulukossa",
+            "info":           "Näytetään _START_-_END_ / _TOTAL_ merkinnästä",
+            "infoEmpty":      "Showing 0 to 0 of 0 entries",
+            "infoFiltered":   "(filtered from _MAX_ total entries)",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "Show _MENU_ entries",
+            "loadingRecords": "Ladataan...",
+            "processing":     "Käsitellään...",
+            "search":         "Hae:",
+            "zeroRecords": "Tietoja ei löytynyt",
+            "paginate": {
+                "first":      "Ensimmäinen",
+                "last":       "Viimeinen",
+                "next":       "Seuraava",
+                "previous":   "Edellinen"
+            },
+            "aria": {
+                "sortAscending": ": lajittele sarake nousevasti",
+                "sortDescending": ": lajittele sarake laskevasti"
+            },
+            "buttons": {
+                "collection": "Kokoelma <span class='ui-button-icon-primary ui-icon ui-icon-triangle-1-s'\/>",
+                "colvis": "Sarakkeen näkyvyys",
+                "colvisRestore": "Palauta sarakkeen näkyvyys",
+                "copy": "Kopioi",
+                "copyKeys": "Paina <i>ctrl<\/i> tai <i>⌘<\/i> + <i>C<\/i> kopioidaksesi taulukon arvot<br> leikepöydälle. <br><br>Peruuttaaksesi klikkaa tähän tai Esc.",
+                "copySuccess": {
+                    "1": "Yksi rivi kopioitu leikepöydälle",
+                    "_": "%d riviä kopioitu leikepöydälle"
+                },
+                "copyTitle": "Kopioi leikepöydälle",
+                "csv": "CSV",
+                "excel": "Excel",
+                "pageLength": {
+                    "-1": "Näytä kaikki rivit",
+                    "1": "Näytä yksi rivi",
+                    "_": "Näytä %d riviä"
+                },
+                "pdf": "PDF",
+                "print": "Tulosta"
+            },
+            "select": {
+                "rows": {
+                    "0": "Klikkaa riviä valitaksesi sen",
+                    "1": "Yksi rivi valittuna",
+                    "2": "Kaksi riviä valittuna",
+                    "3": "Kolme riviä valittuna",
+                    "4": "Neljä riviä valittuna",
+                    "5": "Viisi riviä valittuna",
+                    "6": "Kuusi riviä valittuna",
+                    "7": "Seitsemän riviä valittuna",
+                    "8": "Kahdeksan riviä valittuna",
+                    "9": "Yhdeksän riviä valittuna",
+                    "_": "%d riviä valittuna"
+                },
+                "cells": {
+                    "0": "Klikkaa solua valitaksesi sen",
+                    "1": "Yksi solu valittuna",
+                    "2": "Kaksi solua valittuna",
+                    "3": "Kolme solua valittuna",
+                    "4": "Neljä solua valittuna",
+                    "5": "Viisi solua valittuna",
+                    "6": "Kuusi solua valittuna",
+                    "7": "Seitsemän solua valittuna",
+                    "8": "Kahdeksan solua valittuna",
+                    "9": "Yhdeksän solua valittuna",
+                    "_": "%d solua valittuna"
+                },
+                "columns": {
+                    "0": "Klikkaa saraketta valitaksesi sen",
+                    "1": "Yksi sarake valittuna",
+                    "2": "Kaksi saraketta valittuna",
+                    "3": "Kolme saraketta valittuna",
+                    "4": "Neljä saraketta valittuna",
+                    "5": "Viisi saraketta valittuna",
+                    "6": "Kuusi saraketta valittuna",
+                    "7": "Seitsemän saraketta valittuna",
+                    "8": "Kahdeksan saraketta valittuna",
+                    "9": "Yhdeksän saraketta valittuna",
+                    "_": "%d saraketta valittuna"
+                }
+            }
+        }
+    },
+    "base": {
+        "doesNotWorkWithoutJavascript": "<strong>Varoitus: </strong>Crafty ei toimi kunnolla ilman JavaScriptiä!"
+    }
+}

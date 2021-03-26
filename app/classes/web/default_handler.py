@@ -11,7 +11,13 @@ class DefaultHandler(BaseHandler):
     def prepare(self, page=None):
         if page is not None:
             self.set_status(404)
-            self.render("public/404.html")
+            self.render(
+                "public/404.html",
+                translate=self.translator.translate,
+            )
         else:
-            self.redirect("/public/login")
+            self.redirect(
+                "/public/login",
+                translate=self.translator.translate,
+            )
 

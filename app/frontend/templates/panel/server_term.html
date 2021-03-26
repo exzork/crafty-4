@@ -4,7 +4,7 @@
 <!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
-{% block title %}Crafty Controller - Server Details{% end %}
+{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails') }}{% end %}
 
 {% block content %}
 
@@ -15,7 +15,7 @@
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
-          Server Details - {{ data['server_stats']['server_id']['server_name'] }}
+          {{ translate('serverDetails', 'serverDetails') }} - {{ data['server_stats']['server_id']['server_name'] }}
             <br />
             <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
         </h4>
@@ -36,36 +36,36 @@
             <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
               <li class="nav-item term-nav-item">
                 <a class="nav-link active" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=term" role="tab" aria-selected="true">
-                  <i class="fas fa-file-signature"></i>Terminal</a>
+                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'terminal') }}</a>
               </li>
               <li class="nav-item term-nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=logs" role="tab" aria-selected="false">
-                  <i class="fas fa-file-signature"></i>Logs</a>
+                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'logs') }}</a>
               </li>
               <li class="nav-item term-nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=tasks" role="tab" aria-selected="false">
-                  <i class="fas fa-clock"></i>Schedule</a>
+                  <i class="fas fa-clock"></i>{{ translate('serverDetails', 'schedule') }}</a>
               </li>
               <li class="nav-item term-nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="false">
-                  <i class="fas fa-save"></i>Backup</a>
+                  <i class="fas fa-save"></i>{{ translate('serverDetails', 'backup') }}</a>
               </li>
               <li class="nav-item term-nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files" role="tab" aria-selected="false">
-                  <i class="fas fa-folder-tree"></i>Files</a>
+                  <i class="fas fa-folder-tree"></i>{{ translate('serverDetails', 'files') }}</a>
               </li>
               <li class="nav-item term-nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=config" role="tab" aria-selected="false">
-                  <i class="fas fa-cogs"></i>Config</a>
+                  <i class="fas fa-cogs"></i>{{ translate('serverDetails', 'config') }}</a>
               </li>
               <li class="nav-item term-nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=admin_controls" role="tab" aria-selected="true">
-                  <i class="fas fa-users"></i>Player Controls</a>
+                  <i class="fas fa-users"></i>{{ translate('serverDetails', 'playerControls') }}</a>
               </li>
               <li class="nav-item term-nav-item">
                 <label class="p-0 m-0">
                     <input type="checkbox" name="stop_scroll" id="stop_scroll" />
-                    {{ _('Stop Refresh') }}
+                    {{ translate('serverTerm', 'stopRefresh') }}
                 </label>
               </li>
             </ul>
@@ -77,17 +77,17 @@
               <br />
 
               <div style="gap: 0.5rem;" class="input-group flex-wrap">
-                <input style="min-width: 10rem;" type="text" class="form-control" id="server_command" name="server_command" placeholder="Enter your server command" autofocus="">
+                <input style="min-width: 10rem;" type="text" class="form-control" id="server_command" name="server_command" placeholder="{{ translate('serverTerm', 'commandInput') }}" autofocus="">
                 <span class="input-group-btn ml-5">
                   <input type="hidden" value="" id="last_command"/>
-                  <button id="submit" class="btn btn-sm btn-info" type="button">Send Command</button>
+                  <button id="submit" class="btn btn-sm btn-info" type="button">{{ translate('serverTerm', 'sendCommand') }}</button>
                 </span>
               </div>
 
               <div class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0">
-                <button onclick="send_command(server_id, 'start_server');" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">Start</button>
-                <button onclick="send_command(server_id, 'restart_server');" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">Restart</button>
-                <button onclick="send_command(server_id, 'stop_server');" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1">Stop</button>
+                <button onclick="send_command(server_id, 'start_server');" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate('serverTerm', 'start') }}</button>
+                <button onclick="send_command(server_id, 'restart_server');" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate('serverTerm', 'restart') %}</button>
+                <button onclick="send_command(server_id, 'stop_server');" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1">{{ translate('serverTerm', 'stop') }}</button>
               </div>
 
 

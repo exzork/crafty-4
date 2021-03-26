@@ -63,7 +63,11 @@ class PublicHandler(BaseHandler):
         else:
             self.redirect('/public/login')
 
-        self.render(template, data=page_data)
+        self.render(
+            template,
+            data=page_data,
+            translate=self.translator.translate,
+        )
 
     def post(self, page=None):
 

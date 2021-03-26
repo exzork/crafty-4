@@ -59,9 +59,9 @@
         <div class="main-panel">
 
           <div class="warnings">
-            <div class="noscript-warning" style="padding: 20px; background-color: rgb(247, 151, 15);">
-              <div><strong>Warning: </strong>Crafty doesn't work properly when JavaScript isn't enabled!</div>
-            </div>
+            <noscript class="noscript-warning" style="padding: 20px; background-color: rgb(247, 151, 15);">
+              <div>{% raw translate('base', 'doesNotWorkWithoutJavascript') %}</div>
+            </noscript>
           </div>
 
         {% block content %}
@@ -138,7 +138,9 @@
 
     <script>
 
-    $('.noscript-warning').toggle();
+      $.extend($.fn.dataTable.defaults, {
+        language: {% raw translate('datatables', 'i18n') %}
+      })
 
       //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
       function getCookie(name) {
@@ -146,12 +148,12 @@
         return r ? r[1] : undefined;
     }
 
-    <!-- tool tips -->
+    // tool tips
     $(function () {
       $('[data-toggle="tooltip"]').tooltip()
     })
 
-    <!-- Notify-->
+    // Notify
     $(document).ready(function(){
       $("#notificationDropdown").click(function(){
         $.get("/ajax/announcements", function(data){
@@ -165,7 +167,7 @@
       });
     });
 
-    {% if request.protocol == 'https' %}
+    // {% if request.protocol == 'https' %}
       let usingWebSockets = true;
 
       let listenEvents = [];
@@ -211,11 +213,11 @@
         console.error('Error while making websocket helpers', error);
         usingWebSockets = false;
       }
-    {% else %}
+    // {% else %}
       let usingWebSockets = false;
       warn('WebSockets are not supported in Crafty if not using the https protocol')
       var webSocket;
-    {% end%}
+    // {% end%}
 
     function warn(message) {
       var closeEl = document.createElement('span');

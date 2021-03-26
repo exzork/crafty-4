@@ -25,6 +25,7 @@ try:
     from app.classes.web.ajax_handler import AjaxHandler
     from app.classes.web.api_handler import ServersStats, NodeStats
     from app.classes.web.websocket_handler import SocketHandler
+    from app.classes.shared.translation import translation
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e, e.name))
@@ -120,7 +121,7 @@ class Webserver:
 
         tornado.locale.set_default_locale(lang)
 
-        handler_args = {"controller": self.controller, "tasks_manager": self.tasks_manager}
+        handler_args = {"controller": self.controller, "tasks_manager": self.tasks_manager, "translator": translation}
         handlers = [
             (r'/', DefaultHandler, handler_args),
             (r'/public/(.*)', PublicHandler, handler_args),
