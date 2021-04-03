@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 class BaseHandler(tornado.web.RequestHandler):
 
+    nobleach = {bool, type(None)}
+
     def initialize(self, controller=None, tasks_manager=None, translator=None):
         self.controller = controller
         self.tasks_manager = tasks_manager
@@ -27,10 +29,10 @@ class BaseHandler(tornado.web.RequestHandler):
         return self.get_secure_cookie("user", max_age_days=1)
 
     def autobleach(self, text):
-        if type(text) is bool:
+        if type(text) in self.nobleach:
             return text
         else:
-            return text
+            return bleach.clean(text)
 
     def get_argument(
             self,

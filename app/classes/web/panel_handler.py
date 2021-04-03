@@ -373,7 +373,7 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this user id exist?
-                target_role = db_helper.get_user(role_id)
+                target_role = db_helper.get_role(role_id)
                 if not target_role:
                     self.redirect("/panel/error?error=Invalid Role ID")
                     return
@@ -582,7 +582,7 @@ class PanelHandler(BaseHandler):
                     )
                 ))
                 if argument:
-                    roles.add(role['role_id'])
+                    roles.add(role.role_id)
 
             servers = set()
             for server in self.controller.list_defined_servers():

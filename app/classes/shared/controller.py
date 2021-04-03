@@ -345,8 +345,9 @@ class Controller:
                     self.stop_server(server_id)
 
                 # remove the server from the DB
-                #User_Servers.delete().where(User_Servers.server_id == server_id).execute()
-                Servers.delete().where(Servers.server_id == server_id).execute()
+                with database.atomic():
+                    Role_Servers.delete().where(Role_Servers.server_id == server_id).execute()
+                    Servers.delete().where(Servers.server_id == server_id).execute()
 
                 # remove the server from servers list
                 self.servers_list.pop(counter)

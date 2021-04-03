@@ -50,7 +50,7 @@ class ServerHandler(BaseHandler):
         page_data = {
             'version_data': helper.get_version_string(),
             'user_data': exec_user_data,
-            'user_role' : user_role,
+            'user_role' : exec_user_role,
             'server_stats': {
                 'total': len(self.controller.list_defined_servers()),
                 'running': len(self.controller.list_running_servers()),
