@@ -32,16 +32,15 @@
                   <div class="col-sm-12 grid-margin stretch-card">
                 <div class="card card-statistics social-card google-card card-colored">
                   <div class="card-body">
-                    <h4 class="platform-name mb-3 mt-4 font-weight-semibold user-name">WTF Error!</h4>
-                    <h5 class="headline font-weight-medium">What a Terrible Failure!</h5>
+                    <h4 class="platform-name mb-3 mt-4 font-weight-semibold user-name">{{ translate('error', 'error') }}</h4>
+                    <h5 class="headline font-weight-medium">{{ translate('error', 'terribleFailure') }}</h5>
                     <p class="mb-2 comment font-weight-light">
-                      Oh my, well, this is embarrassing.<br />
-                      Something has broken so bad, we didn't make a special page for it.<br />
+                      {{ translate('error', 'embarassing') }}<br />
                       <br />
-                      <b>Here is the error: {{data['error']}}</b><br /><br />
+                      <b>{{ translate('error', 'hereIsTheError') }}: {{data['error']}}</b><br /><br />
                       That's all the help I can give you - Godspeed
                       <br /><br />
-                      <a class="d-inline font-weight-medium" href="https://discord.gg/9VJPhCE"> Contact Crafty Control Support via Discord</a>
+                      <a class="d-inline font-weight-medium" href="https://discord.gg/9VJPhCE"> {{ translate('error', 'contact') }}</a>
                     </p>
                   </div>
                 </div>

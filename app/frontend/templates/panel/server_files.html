@@ -4,7 +4,7 @@
 <!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
-{% block title %}Crafty Controller - Server Details{% end %}
+{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails') }}{% end %}
 
 {% block content %}
 
@@ -15,7 +15,7 @@
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
-          Server Details - {{ data['server_stats']['server_id']['server_name'] }}
+          {{ translate('serverDetails', 'serverDetails') }} - {{ data['server_stats']['server_id']['server_name'] }}
             <br />
             <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
         </h4>
@@ -35,31 +35,31 @@
             <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=term" role="tab" aria-selected="false">
-                  <i class="fas fa-file-signature"></i>Terminal</a>
+                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'terminal') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=logs" role="tab" aria-selected="false">
-                  <i class="fas fa-file-signature"></i>Logs</a>
+                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'logs') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=tasks" role="tab" aria-selected="false">
-                  <i class="fas fa-clock"></i>Schedule</a>
+                  <i class="fas fa-clock"></i>{{ translate('serverDetails', 'schedule') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="false">
-                  <i class="fas fa-save"></i>Backup</a>
+                  <i class="fas fa-save"></i>{{ translate('serverDetails', 'backup') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files" role="tab" aria-selected="false">
-                  <i class="fas fa-folder-tree"></i>Files</a>
+                  <i class="fas fa-folder-tree"></i>{{ translate('serverDetails', 'files') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=config" role="tab" aria-selected="true">
-                  <i class="fas fa-cogs"></i>Config</a>
+                  <i class="fas fa-cogs"></i>{{ translate('serverDetails', 'config') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=admin_controls" role="tab" aria-selected="true">
-                  <i class="fas fa-users"></i>Player Controls</a>
+                  <i class="fas fa-users"></i>{{ translate('serverDetails', 'playerControls') }}</a>
               </li>
 
             </ul>
@@ -67,7 +67,7 @@
             <div class="row">
               <div class="col-md-6 col-sm-12">
                 <noscript>
-                  The file manager does not work without JavaScript
+                  {{ translate('serverFiles', 'noscript') }}
                 </noscript>
                 <div id="files-tree-nav" class="overlay">
 
@@ -76,11 +76,11 @@
 
                   <!-- Overlay content -->
                   <div id="files-tree-nav-content" class="overlay-content">
-                    <a onclick="createFileE(event)" href="javascript:void(0)" id="createFile" href="#">Create file</a>
-                    <a onclick="createDirE(event)" href="javascript:void(0)" id="createDir" href="#">Create directory</a>
-                    <a onclick="renameItemE(event)" href="javascript:void(0)" id="renameItem" href="#">Rename</a>
-                    <a onclick="deleteFileE(event)" href="javascript:void(0)" id="deleteFile" href="#">Delete</a>
-                    <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#">Delete</a>
+                    <a onclick="createFileE(event)" href="javascript:void(0)" id="createFile" href="#">{{ translate('serverFiles', 'createFile') }}</a>
+                    <a onclick="createDirE(event)" href="javascript:void(0)" id="createDir" href="#">{{ translate('serverFiles', 'createDir') }}</a>
+                    <a onclick="renameItemE(event)" href="javascript:void(0)" id="renameItem" href="#">{{ translate('serverFiles', 'rename') }}</a>
+                    <a onclick="deleteFileE(event)" href="javascript:void(0)" id="deleteFile" href="#">{{ translate('serverFiles', 'delete') }}</a>
+                    <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#">{{ translate('serverFiles', 'delete') }}</a>
                   </div>
 
                 </div>
@@ -147,10 +147,10 @@
                     <div class="tree-caret tree-ctx-item files-tree-title">
                       <i class="far fa-folder"></i>
                       <i class="far fa-folder-open"></i>
-                      Files
+                      {{ translate('serverFiles', 'files') }}
                     </div>
                     <ul class="tree-nested" id="files-tree">
-                      <li>Error while getting files</li>
+                      <li>{{ translate('serverFiles', 'error') }}</li>
 
                     </ul>
                   </li>
@@ -194,16 +194,20 @@
                 }
               </style>
               <div class="col-md-6 col-sm-12">
-                Editing file <span id="editingFile"></span>
-                <div id="editor" style="resize: both;">file_contents</div>
+                <div id="editorParent">
+                  {{ translate('serverFiles', 'editingFile') }} <span id="editingFile"></span>
+                  <div id="editor" onresize="editor.resize()" style="resize: both;width: 100%;">file_contents</div>
+                  <br/>
+                </div>
+                {{ translate('serverFiles', 'keybindings') }}:
                 <div class="btn-group" role="group">
-                  <button onclick="setKeyboard(event.target)" class="btn btn-primary" data-handler-name="null">Default</button>
+                  <button onclick="setKeyboard(event.target)" class="btn btn-primary" data-handler-name="null">{{ translate('serverFiles', 'default') }}</button>
                   <button onclick="setKeyboard(event.target)" class="btn btn-secondary" data-handler-name="ace/keyboard/vim">Vim</button>
                   <button onclick="setKeyboard(event.target)" class="btn btn-secondary" data-handler-name="ace/keyboard/emacs">Emacs</button>
                   <button onclick="setKeyboard(event.target)" class="btn btn-secondary" data-handler-name="ace/keyboard/sublime">Sublime</button>
                 </div>
                 <h3 id="file_warn"></h3>
-                <button class="btn btn-success" onclick="save()">Save</button>
+                <button class="btn btn-success" onclick="save()">{{ translate('serverFiles', 'save') }}</button>
               </div>
             </div>
 
@@ -279,6 +283,10 @@
         replaceWith: 'ace/mode/c_cpp'
       },
       {
+        regex: /^c$/,
+        replaceWith: 'ace/mode/c_cpp'
+      },
+      {
         regex: /^css$/,
         replaceWith: 'ace/mode/css'
       },
@@ -317,23 +325,32 @@
       {
         regex: /^ts$/,
         replaceWith: 'ace/mode/typescript'
-      }
+      },
+      {
+        regex: /^properties$/,
+        replaceWith: 'ace/mode/properties'
+      },
     ];
 
-    var editorEnabled = false;
     var filePath = '';
 
     function clickOnFile(event) {
-      editorEnabled = true;
       filePath = event.target.getAttribute('data-path');
-      setFileName(event.target.innerText);
       $.ajax({
         type: 'GET',
         url: '/ajax/get_file?id={{ data['server_stats']['server_id']['server_id'] }}&file_path=' + encodeURIComponent(filePath),
         dataType: 'text',
         success: function (data) {
           console.log('Got File Contents From Server');
-          editor.session.setValue(data);
+          json = JSON.parse(data)
+          if (json.error) {
+            $('#editorParent').toggle(false)
+            editor.blur()
+          } else {
+            $('#editorParent').toggle(true)
+            setFileName(event.target.innerText);
+            editor.session.setValue(json.content);
+          }
         },
       });
     }
@@ -354,11 +371,13 @@
         setMode('txt');
         document
           .querySelector('#file_warn')
-          .innerText = 'Warning: This is not a supported language';
+          .innerText = "{% raw translate('serverFiles', 'unsupportedLanguage') %}";
       }
     }
 
     setFileName();
+    $('#editorParent').toggle(false)
+    editor.blur()
 
     function setMode (extension) {
       // if the extension matches with the RegEx it will return the replaceWith
@@ -373,7 +392,7 @@
       if (!aceMode.startsWith('ace/mode/')) {
         document
           .querySelector('#file_warn')
-          .innerText = 'Warning: This is not a supported language';
+          .innerText = "{% raw translate('serverFiles', 'unsupportedLanguage') %}";
       } else {
         document
           .querySelector('#file_warn')
@@ -574,7 +593,7 @@
 
 
     function createFileE(event) {
-      bootbox.prompt('What name do you want for the new file?', function(result) {
+      bootbox.prompt("{% raw translate('serverFiles', 'createFileQuestion') %}", function(result) {
         path = event.target.parentElement.getAttribute('data-path');
         name = event.target.parentElement.getAttribute('data-name');
         if (!result) return;
@@ -587,7 +606,7 @@
     }
 
     function createDirE(event) {
-      bootbox.prompt('What name do you want for the new directory?', function(result) {
+      bootbox.prompt("{% raw translate('serverFiles', 'createDirQuestion') %}", function(result) {
         path = event.target.parentElement.getAttribute('data-path');
         name = event.target.parentElement.getAttribute('data-name');
         if (!result) return;
@@ -600,7 +619,7 @@
     }
 
     function renameItemE(event) {
-      bootbox.prompt('What should the new name be?', function(result) {
+      bootbox.prompt("{% raw translate('serverFiles', 'renameItemQuestion') %}", function(result) {
         path = event.target.parentElement.getAttribute('data-path');
         name = event.target.parentElement.getAttribute('data-name');
         if (!result) return;
@@ -617,16 +636,16 @@
       name = event.target.parentElement.getAttribute('data-name');
       bootbox.confirm({
           size: "",
-          title: "Are you sure you want to delete " + name + "?",
+          title: "{% raw translate('serverFiles', 'deleteItemQuestion') %}",
           closeButton: false,
-          message: "You are deleting \"" + path + "\"!<br/><br/>This action will be irreversible and it'll be lost forever!",
+          message: "{% raw translate('serverFiles', 'deleteItemQuestionMessage') %}",
           buttons: {
             confirm: {
-              label: 'Yes, I understand the consequences',
+              label: "{{ translate('serverFiles', 'yesDelete') }}",
               className: 'btn-danger'
             },
             cancel: {
-              label: 'No',
+              label: "{{ translate('serverFiles', 'noDelete') }}",
               className: 'btn-link'
             }
           },
@@ -645,16 +664,16 @@
       name = event.target.parentElement.getAttribute('data-name');
       bootbox.confirm({
           size: "",
-          title: "Are you sure you want to delete " + name + "?",
+          title: "{% raw translate('serverFiles', 'deleteItemQuestion') %}",
           closeButton: false,
-          message: "You are deleting \"" + path + "\"!<br/><br/>This action will be irreversible and it'll be lost forever!",
+          message: "{% raw translate('serverFiles', 'deleteItemQuestionMessage') %}",
           buttons: {
             confirm: {
-              label: 'Yes, I understand the consequences',
+              label: "{{ translate('serverFiles', 'yesDelete') }}",
               className: 'btn-danger'
             },
             cancel: {
-              label: 'No',
+              label: "{{ translate('serverFiles', 'noDelete') }}",
               className: 'btn-link'
             }
           },

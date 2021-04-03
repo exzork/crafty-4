@@ -33,15 +33,15 @@ class ServerHandler(BaseHandler):
         exec_user_id = exec_user_data['user_id']
         exec_user = db_helper.get_user(exec_user_id)
         
-        user_role = []
+        exec_user_role = set()
         if exec_user['superuser'] == 1:
             defined_servers = self.controller.list_defined_servers()
-            user_role = "Super User"
+            exec_user_role.add("Super User")
         else:
             defined_servers = self.controller.list_authorized_servers(exec_user_id)
             for r in exec_user['roles']:
                 role = db_helper.get_role(r)
-                user_role.append(role['role_name'])
+                exec_user_role.add(role['role_name'])
 
         template = "public/404.html"
 
@@ -68,7 +68,8 @@ class ServerHandler(BaseHandler):
 
         self.render(
             template,
-            data=page_data
+            data=page_data,
+            translate=self.translator.translate,
         )
 
     @tornado.web.authenticated
@@ -198,5 +199,6 @@ class ServerHandler(BaseHandler):
 
         self.render(
             template,
-            data=page_data
+            data=page_data,
+            translate=self.translator.translate,
         )

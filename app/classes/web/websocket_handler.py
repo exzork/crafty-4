@@ -11,9 +11,10 @@ logger = logging.getLogger(__name__)
 
 class SocketHandler(tornado.websocket.WebSocketHandler):
 
-    def initialize(self, controller=None, tasks_manager=None):
+    def initialize(self, controller=None, tasks_manager=None, translator=None):
         self.controller = controller
         self.tasks_manager = tasks_manager
+        self.translator = translator
 
     def get_remote_ip(self):
         remote_ip = self.request.headers.get("X-Real-IP") or \

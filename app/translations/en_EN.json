@@ -1,0 +1,287 @@
+{
+    "login": {
+        "forgotPassword": "Forgot Password",
+        "login": "Log In",
+        "password": "Password",
+        "username": "Username"
+    },
+    "error": {
+        "hereIsTheError": "Here is the error",
+        "contact": "Contact Crafty Control Support via Discord",
+        "terribleFailure": "What a Terrble Failure!",
+        "embarassing": "Oh my, well, this is embarrassing.",
+        "error": "Error!"
+    },
+    "404": {
+        "contact": "Contact Crafty Control Support via Discord",
+        "unableToFind": "We were unable to find the page you are looking for. Please try again, or go back and refresh.",
+        "notFound": "Page Not Found"
+    },
+    "footer": {
+        "version": "Version",
+        "copyright": "Copyright",
+        "allRightsReserved": "All rights reserved"
+    },
+    "sidebar": {
+        "dashboard": "Dashboard",
+        "servers": "Servers",
+        "documentation": "Documentation",
+        "credits": "Credits",
+        "contribute": "Contribute",
+        "newServer": "Create New Server",
+        "navigation": "Navigation"
+    },
+    "serverWizard": {
+        "newServer": "Create New Server",
+        "importServer": "Import an Existing Server",
+        "importZip": "Import from a Zip File",
+        "serverName": "Server Name",
+        "serverPath": "Server Path",
+        "serverType": "Server Type",
+        "absoluteServerPath": "Absolute path to your server",
+        "serverJar": "Server Jarfile",
+        "minMem": "Minimum Memory",
+        "maxMem": "Maximum Memory",
+        "serverPort": "Server Port",
+        "defaultPort": "25565 default",
+        "sizeInGB": "Size in GB",
+        "zipPath": "Server Path",
+        "absoluteZipPath": "Absolute path to your server",
+        "resetForm": "Reset Form",
+        "importServerButton": "Import Server!",
+        "buildServer": "Build Server!",
+        "quickSettings": "Quick Settings",
+        "quickSettingsDescription": "Don't worry, you can change these later",
+        "myNewServer": "My New Server",
+        "bePatient": "Please be patient as we ' + (importing ? 'import' :  'download') + ' the server",
+        "importing": "Importing Server...",
+        "downloading": "Downloading Server..."
+    },
+    "dashboard": {
+        "dashboard": "Dashboard",
+        "memUsage": "Memory Usage",
+        "cpuUsage": "CPU Usage",
+        "host": "Host",
+        "players": "Players",
+        "backups": "Backups",
+        "newServer": "Create New Server",
+        "allServers": "All Servers",
+        "server": "Server",
+        "actions": "Actions",
+        "world": "World",
+        "status": "Status",
+        "online": "Online",
+        "offline": "Offline",
+        "lastBackup": "Last:",
+        "nextBackup": "Next:",
+        "servers": "Servers",
+        "cannotSeeOnMobile": "Can't see everything on mobile?",
+        "cannotSeeOnMobile2": "Try scrolling the table sideways.",
+        "max": "Max",
+        "avg": "Avg",
+        "bePatientStart": "Please be patient while we start the server.<br /> This screen will refresh in a moment",
+        "bePatientStop": "Please be patient while we stop the server.<br /> This screen will refresh in a moment",
+        "bePatientRestart": "Please be patient while we restart the server.<br /> This screen will refresh in a moment",
+        "bePatientClone": "Please be patient while we clone the server.<br /> This screen will refresh in a moment",
+        "sendingCommand": "Sending your command",
+        "cpuCurFreq": "CPU Current Clock",
+        "cpuMaxFreq": "CPU Maximum Clock",
+        "cpuCores": "CPU Cores"
+    },
+    "accessDenied": {
+        "accessDenied": "Access Denied",
+        "noAccess": "You do not have access to this resource",
+        "contactAdmin": "Contact your server administrator for access to this resource, or if you think you should have access to this resource, contact support.",
+        "contact": "Contact Crafty Control Support via Discord"
+    },
+    "serverStats": {
+        "online": "Online",
+        "offline": "Offline",
+        "serverStatus": "Server Status",
+        "serverStarted": "Server Started",
+        "serverUptime": "Server Uptime",
+        "players": "Players",
+        "memUsage": "Memory Usage",
+        "cpuUsage": "CPU Usage",
+        "version": "Version",
+        "description": "Description",
+        "errorCalculatingUptime": "Error Calculating Uptime",
+        "serverTime": "Server Time",
+        "unableToConnect": "Unable To Connect"
+    },
+    "serverDetails": {
+        "serverDetails": "Server Details",
+        "terminal": "Terminal",
+        "logs": "Logs",
+        "schedule": "Schedule",
+        "backup": "Backup",
+        "files": "Files",
+        "config": "Config",
+        "playerControls": "Player Management"
+    },
+    "serverTerm": {
+        "stopRefresh": "Stop Refresh",
+        "commandInput": "Enter your command",
+        "sendCommand": "Send command",
+        "start": "Start",
+        "restart": "Restart",
+        "stop": "Stop"
+    },
+    "serverPlayerManagement": {
+        "players": "Players",
+        "bannedPlayers": "Banned Players",
+        "loadingBannedPlayers": "Loading Banned Players"
+    },
+    "serverBackups": {
+        "backupNow": "Backup Now!",
+        "backupAtMidnight": "Auto-backup at midnight?",
+        "storageLocation": "Storage Location",
+        "storageLocationDesc": "Where do you want to store backups?",
+        "maxBackups": "Max Backups",
+        "maxBackupsDesc": "Crafty will not store more than N backups, deleting the oldest (enter 0 to keep all)",
+        "save": "Save",
+        "cancel": "Cancel",
+        "currentBackups": "Current Backups",
+        "download": "Download",
+        "path": "Path",
+        "size": "Size",
+        "delete": "Delete",
+        "backupTask": "A backup task has been started.",
+        "destroyBackup": "Destroy backup \" + file_to_del + \"?",
+        "confirmDelete": "Do you want to delete this backup? This cannot be undone.",
+        "confirm": "Confirm"
+    },
+    "serverFiles": {
+        "noscript": "The file manager does not work without JavaScript",
+        "error": "Error while getting files",
+        "files": "Files",
+        "default": "Default",
+        "save": "Save",
+        "editingFile": "Editing file",
+        "delete": "Delete",
+        "createFile": "Create file",
+        "createDir": "Create directory",
+        "rename": "Rename",
+        "createFileQuestion": "What name do you want for the new file?",
+        "createDirQuestion": "What name do you want for the new directory?",
+        "renameItemQuestion": "What should the new name be?",
+        "deleteItemQuestion": "Are you sure you want to delete \" + name + \"?",
+        "deleteItemQuestionMessage": "You are deleting \\\"\" + path + \"\\\"!<br/><br/>This action will be irreversible and it'll be lost forever!",
+        "yesDelete": "Yes, I understand the consequences",
+        "noDelete": "No",
+        "unsupportedLanguage": "Warning: This is not a supported file type",
+        "keybindings": "Keybindings"
+    },
+    "serverConfig": {
+        "serverName": "Server Name",
+        "serverNameDesc": "What you wish to call this server",
+        "serverPath": "Server Working Directory",
+        "serverPathDesc": "Absolute full path (not including executable)",
+        "serverLogLocation": "Server Log Location",
+        "serverLogLocationDesc": "Absolute full path to the log file",
+        "serverExecutable": "Server Executable",
+        "serverExecutableDesc": "The server's executable file",
+        "serverExecutionCommand": "Server Execution Command",
+        "serverExecutionCommandDesc": "What will be launched in a hidden terminal",
+        "serverStopCommand": "Server Stop Command",
+        "serverStopCommandDesc": "Command to send the program to stop it",
+        "serverAutostartDelay": "Server Autostart Delay",
+        "serverAutostartDelayDesc": "Delay before auto starting (If enabled below)",
+        "serverIP": "Server IP",
+        "serverIPDesc": "IP Crafty should connect to for stats (Try a real ip instead of 127.0.0.1 if you have issues)",
+        "serverPort": "Server Port",
+        "serverPortDesc": "Port Crafty should connect to for stats",
+        "removeOldLogsAfter": "Remove Old Logs After",
+        "removeOldLogsAfterDesc": "How many days will a log file has to be old to get deleted (0 is off)",
+        "serverAutoStart": "Server Auto Start",
+        "serverCrashDetection": "Server Crash Detection",
+        "save": "Save",
+        "cancel": "Cancel",
+        "deleteServer": "Delete Server",
+        "stopBeforeDeleting": "Please stop the server before deleting it"
+    },
+    "serverConfigHelp": {
+        "title": "Server Config Area",
+        "desc": "Here is where you can change the configuration of your server",
+        "perms": [
+            "It is recommended to <code>NOT</code> change the paths of a server managed by Crafty.",
+            "Changing paths <code>CAN</code> break things, especially on Linux type operating systems where file permissions are more locked down.",
+            "<br /><br/>",
+            "If you feel you have to change a where a server is located you may do so as long as you give the \"crafty\" user permission to read / write to the server path.",
+            "<br />",
+            "<br />",
+            "On Linux this is best done by executing the following:<br />",
+            "<code>",
+            "    sudo chown crafty:crafty /path/to/your/server -R<br />",
+            "    sudo chmod 2775 /path/to/your/server -R<br />",
+            "</code>"
+        ]
+    },
+    "datatables": {
+        "i18n": {
+            "decimal":        "",
+            "emptyTable":     "No data available in table",
+            "info":           "Showing _START_ to _END_ of _TOTAL_ entries",
+            "infoEmpty":      "Showing 0 to 0 of 0 entries",
+            "infoFiltered":   "(filtered from _MAX_ total entries)",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "Show _MENU_ entries",
+            "loadingRecords": "Loading...",
+            "processing":     "Processing...",
+            "search":         "Search:",
+            "zeroRecords":    "No matching records found",
+            "paginate": {
+                "first":      "First",
+                "last":       "Last",
+                "next":       "Next",
+                "previous":   "Previous"
+            },
+            "aria": {
+                "sortAscending":  ": activate to sort column ascending",
+                "sortDescending": ": activate to sort column descending"
+            },
+            "buttons": {
+                "collection": "Collection <span class='ui-button-icon-primary ui-icon ui-icon-triangle-1-s'\/>",
+                "colvis": "Column Visibility",
+                "colvisRestore": "Restore visibility",
+                "copy": "Copy",
+                "copyKeys": "Press ctrl or u2318 + C to copy the table data to your system clipboard.<br><br>To cancel, click this message or press escape.",
+                "copySuccess": {
+                    "1": "Copied 1 row to clipboard",
+                    "_": "Copied %d rows to clipboard"
+                },
+                "copyTitle": "Copy to Clipboard",
+                "csv": "CSV",
+                "excel": "Excel",
+                "pageLength": {
+                    "-1": "Show all rows",
+                    "1": "Show 1 row",
+                    "_": "Show %d rows"
+                },
+                "pdf": "PDF",
+                "print": "Print"
+            },
+            "select": {
+                "rows": {
+                    "0": "Click on a row to select it",
+                    "1": "%d row selected",
+                    "_": "%d rows selected"
+                },
+                "cells": {
+                    "0": "Click on a cel to select it",
+                    "1": "%d cell selected",
+                    "_": "%d cells selected"
+                },
+                "columns": {
+                    "0": "Click on a column to select it",
+                    "1": "%d column selected",
+                    "_": "%d columns selected"
+                }
+            }
+        }
+    },
+    "base": {
+        "doesNotWorkWithoutJavascript": "<strong>Warning: </strong>Crafty doesn't work properly when JavaScript isn't enabled!"
+    }
+}

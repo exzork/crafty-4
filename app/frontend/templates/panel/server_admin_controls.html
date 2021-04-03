@@ -4,7 +4,7 @@
 <!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
-{% block title %}Crafty Controller - Server Details{% end %}
+{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails') }}{% end %}
 
 {% block content %}
 
@@ -15,7 +15,7 @@
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
-          Server Details - {{ data['server_stats']['server_id']['server_name'] }}
+          {{ translate('serverDetails', 'serverDetails') }} - {{ data['server_stats']['server_id']['server_name'] }}
             <br />
             <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
         </h4>
@@ -35,31 +35,31 @@
             <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=term" role="tab" aria-selected="false">
-                  <i class="fas fa-file-signature"></i>Terminal</a>
+                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'terminal') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=logs" role="tab" aria-selected="false">
-                  <i class="fas fa-file-signature"></i>Logs</a>
+                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'logs') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=tasks" role="tab" aria-selected="false">
-                  <i class="fas fa-clock"></i>Schedule</a>
+                  <i class="fas fa-clock"></i>{{ translate('serverDetails', 'schedule') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="false">
-                  <i class="fas fa-save"></i>Backup</a>
+                  <i class="fas fa-save"></i>{{ translate('serverDetails', 'backup') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files" role="tab" aria-selected="false">
-                  <i class="fas fa-folder-tree"></i>Files</a>
+                  <i class="fas fa-folder-tree"></i>{{ translate('serverDetails', 'files') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=config" role="tab" aria-selected="true">
-                  <i class="fas fa-cogs"></i>Config</a>
+                  <i class="fas fa-cogs"></i>{{ translate('serverDetails', 'config') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=admin_controls" role="tab" aria-selected="true">
-                  <i class="fas fa-users"></i>Player Controls</a>
+                  <i class="fas fa-users"></i>{{ translate('serverDetails', 'playerControls') }}</a>
               </li>
 
             </ul>
@@ -95,7 +95,7 @@
                     font-size: 1.1rem;
                   }
                 </style>
-                <h2>Players:</h2>
+                <h2>{{ translate('serverPlayerManagement', 'players') }}:</h2>
                 <ul style="list-style: none;padding: 0px;margin: 0px; margin-bottom: 1rem;gap: 1rem;">
                   {% for player in data['get_players']() %}
                     <li class="playerItem">
@@ -111,10 +111,10 @@
                 </ul>
               </div>
               <div class="col-md-6 col-sm-12">
-                <h2>Banned Players:</h2>
+                <h2>{{ translate('serverPlayerManagement', 'bannedPlayers') }}:</h2>
                 <ul id="bannedPlayers" style="list-style: none;padding: 0px;margin: 0px; margin-bottom: 1rem;gap: 1rem;">
                   <li class="playerItem banned">
-                    <h3>Loading Banned Players</h3>
+                    <h3>{{ translate('serverPlayerManagement', 'loadingBannedPlayers') }}</h3>
                   </li>
                   
                 </ul>
