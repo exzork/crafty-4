@@ -32,12 +32,11 @@
                   <div class="col-sm-12 grid-margin stretch-card">
                 <div class="card card-statistics social-card google-card card-colored">
                   <div class="card-body">
-                    <h4 class="platform-name mb-3 mt-4 font-weight-semibold user-name">Access Denied</h4>
-                    <h5 class="headline font-weight-medium">You do not have access to this resource</h5>
+                    <h4 class="platform-name mb-3 mt-4 font-weight-semibold user-name">{{ translate('accessDenied', 'accessDenied') }}</h4>
+                    <h5 class="headline font-weight-medium">{{ translate('accessDenied', 'noAccess') }}</h5>
                     <p class="mb-2 comment font-weight-light">
-                      Contact your server administrator for access to this resource, or if you think you should have access
-                      to this resource, contact support.<br /><br />
-                      <a class="d-inline font-weight-medium" href="https://discord.gg/9VJPhCE"> Contact Crafty Control Support via Discord</a>
+                      {{ translate('accessDenied', 'contactAdmin') }}<br /><br />
+                      <a class="d-inline font-weight-medium" href="https://discord.gg/9VJPhCE"> {{ translate('accessDenied', 'contact') }}</a>
                     </p>
                   </div>
                 </div>

@@ -69,7 +69,8 @@ class ServerHandler(BaseHandler):
 
         self.render(
             template,
-            data=page_data
+            data=page_data,
+            translate=self.translator.translate,
         )
 
     @tornado.web.authenticated
@@ -197,5 +198,6 @@ class ServerHandler(BaseHandler):
 
         self.render(
             template,
-            data=page_data
+            data=page_data,
+            translate=self.translator.translate,
         )

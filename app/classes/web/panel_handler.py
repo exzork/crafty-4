@@ -399,6 +399,7 @@ class PanelHandler(BaseHandler):
             data=page_data,
             time=time,
             utc_offset=(time.timezone * -1 / 60 / 60),
+            translate=self.translator.translate,
         )
 
     @tornado.web.authenticated
@@ -705,4 +706,7 @@ class PanelHandler(BaseHandler):
 
         else:
             self.set_status(404)
-            self.render("public/404.html")
+            self.render(
+                "public/404.html",
+                translate=self.translator.translate,
+            )

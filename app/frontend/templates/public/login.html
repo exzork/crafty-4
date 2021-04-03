@@ -57,25 +57,25 @@
                 <form action="/public/login" method="post">
                   {% raw xsrf_form_html() %}
                   <div class="form-group">
-                    <label class="label">Username</label>
+                    <label class="label">{{ translate('login', 'username') }}</label>
                     <div class="input-group">
-                      <input type="text" class="form-control login-text-input login-input" placeholder="username" name="username" id="username" required="true">
+                      <input type="text" class="form-control login-text-input login-input" placeholder="{{ translate('login', 'username') }}" name="username" id="username" required="true">
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="label">Password</label>
+                    <label class="label">{{ translate('login', 'password') }}</label>
                     <div class="input-group">
-                      <input type="password" class="form-control login-text-input login-input" placeholder="" name="password" id="password" required="true">
+                      <input type="password" class="form-control login-text-input login-input" placeholder="{{ translate('login', 'password') }}" name="password" id="password" required="true">
                     </div>
                   </div>
                   <div class="form-group">
-                    <button class="login-input btn btn-primary submit-btn btn-block">Login</button>
+                    <button class="login-input btn btn-primary submit-btn btn-block">{{ translate('login', 'login') }}</button>
                   </div>
                   <div class="form-group d-flex justify-content-between">
                     <div class="form-check form-check-flat mt-0">
                       &nbsp;
                     </div>
-                    <a href="#" class="text-small forgot-password ">Forgot Password</a>
+                    <a href="#" class="text-small forgot-password ">{{ translate('login', 'forgotPassword') }}</a>
                   </div>
 
                   <div class="text-block text-center my-3">

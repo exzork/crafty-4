@@ -4,7 +4,7 @@
 <!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
-{% block title %}Crafty Controller - Server Details{% end %}
+{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails') }}{% end %}
 
 {% block content %}
 
@@ -15,7 +15,7 @@
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
-          Server Details - {{ data['server_stats']['server_id']['server_name'] }}
+          {{ translate('serverDetails', 'serverDetails') }} - {{ data['server_stats']['server_id']['server_name'] }}
             <br />
             <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
         </h4>
@@ -35,31 +35,31 @@
             <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=term" role="tab" aria-selected="false">
-                  <i class="fas fa-file-signature"></i>Terminal</a>
+                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'terminal') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=logs" role="tab" aria-selected="false">
-                  <i class="fas fa-file-signature"></i>Logs</a>
+                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'logs') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=tasks" role="tab" aria-selected="false">
-                  <i class="fas fa-clock"></i>Schedule</a>
+                  <i class="fas fa-clock"></i>{{ translate('serverDetails', 'schedule') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="false">
-                  <i class="fas fa-save"></i>Backup</a>
+                  <i class="fas fa-save"></i>{{ translate('serverDetails', 'backup') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files" role="tab" aria-selected="false">
-                  <i class="fas fa-folder-tree"></i>Files</a>
+                  <i class="fas fa-folder-tree"></i>{{ translate('serverDetails', 'files') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=config" role="tab" aria-selected="true">
-                  <i class="fas fa-cogs"></i>Config</a>
+                  <i class="fas fa-cogs"></i>{{ translate('serverDetails', 'config') }}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=admin_controls" role="tab" aria-selected="true">
-                  <i class="fas fa-users"></i>Player Controls</a>
+                  <i class="fas fa-users"></i>{{ translate('serverDetails', 'playerControls') }}</a>
               </li>
 
             </ul>
@@ -72,109 +72,97 @@
                       <input type="hidden" name="subpage" value="config">
 
                       <div class="form-group">
-                        <label for="server_name">Server Name <small class="text-muted ml-1"> - What you wish to call this server</small> </label>
-                        <input type="text" class="form-control" name="server_name" id="server_name" value="{{ data['server_stats']['server_id']['server_name']  }}" placeholder="Server Name" >
+                        <label for="server_name">{{ translate('serverConfig', 'serverName') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverNameDesc') }}</small> </label>
+                        <input type="text" class="form-control" name="server_name" id="server_name" value="{{ data['server_stats']['server_id']['server_name']  }}" placeholder="{{ translate('serverConfig', 'serverName') }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="server_path">Server Path <small class="text-muted ml-1"> - Absolute full path (not including executable)</small> </label>
-                        <input type="text" class="form-control" name="server_path" id="server_path" value="{{ data['server_stats']['server_id']['path']  }}" placeholder="Server Path" >
+                        <label for="server_path">{{ translate('serverConfig', 'serverPath') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPathDesc') }}</small> </label>
+                        <input type="text" class="form-control" name="server_path" id="server_path" value="{{ data['server_stats']['server_id']['path']  }}" placeholder="{{ translate('serverConfig', 'serverPath') }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="log_path">Server Log Location <small class="text-muted ml-1"> - Absolute full path to the log file</small> </label>
-                        <input type="text" class="form-control" name="log_path" id="log_path" value="{{ data['server_stats']['server_id']['log_path']  }}" placeholder="Server Log" >
+                        <label for="log_path">{{ translate('serverConfig', 'serverLogLocation') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverLogLocationDesc') }}</small> </label>
+                        <input type="text" class="form-control" name="log_path" id="log_path" value="{{ data['server_stats']['server_id']['log_path']  }}" placeholder="{{ translate('serverConfig', 'serverLogLocation') }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="executable">Server Executable <small class="text-muted ml-1"> - Just the executable file</small> </label>
-                        <input type="text" class="form-control" name="executable" id="executable" value="{{ data['server_stats']['server_id']['executable']  }}" placeholder="Server Executable" >
+                        <label for="executable">{{ translate('serverConfig', 'serverExecutable') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverExecutableDesc') }}</small> </label>
+                        <input type="text" class="form-control" name="executable" id="executable" value="{{ data['server_stats']['server_id']['executable']  }}" placeholder="{{ translate('serverConfig', 'serverExecutable') }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="execution_command">Server Execution Command <small class="text-muted ml-1"> - What will be launched in a hidden terminal</small> </label>
-                        <input type="text" class="form-control" name="execution_command" id="execution_command" value="{{ data['server_stats']['server_id']['execution_command']  }}" placeholder="Server Execution Command" >
+                        <label for="execution_command">{{ translate('serverConfig', 'serverExecutionCommand') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverExecutionCommandDesc') }}</small> </label>
+                        <input type="text" class="form-control" name="execution_command" id="execution_command" value="{{ data['server_stats']['server_id']['execution_command']  }}" placeholder="{{ translate('serverConfig', 'serverExecutionCommand') }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="stop_command">Server Stop Command <small class="text-muted ml-1"> - Command to send the program to stop it</small> </label>
-                        <input type="text" class="form-control" name="stop_command" id="stop_command" value="{{ data['server_stats']['server_id']['stop_command']  }}" placeholder="Server Stop Command" >
+                        <label for="stop_command">{{ translate('serverConfig', 'serverStopCommand') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverStopCommandDesc') }}</small> </label>
+                        <input type="text" class="form-control" name="stop_command" id="stop_command" value="{{ data['server_stats']['server_id']['stop_command']  }}" placeholder="{{ translate('serverConfig', 'serverStopCommand') }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="auto_start_delay">Server Autostart Delay <small class="text-muted ml-1"> - Delay before auto starting (if enabled below)</small> </label>
+                        <label for="auto_start_delay">{{ translate('serverConfig', 'serverAutostartDelay') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverAutostartDelayDesc') }}</small> </label>
                         <input type="number" class="form-control" name="auto_start_delay" id="auto_start_delay" value="{{ data['server_stats']['server_id']['auto_start_delay']  }}" step="1" max="999" min="10" >
                       </div>
 
                       <div class="form-group">
-                        <label for="server_ip">Server IP <small class="text-muted ml-1"> - IP Crafty should connect to for stats (Try a real ip instead of 127.0.0.1 if you have issues)</small> </label>
+                        <label for="server_ip">{{ translate('serverConfig', 'serverPort') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPortDesc') }}</small> </label>
                         <input type="text" class="form-control" name="server_ip" id="server_ip" value="{{ data['server_stats']['server_id']['server_ip']  }}">
                       </div>
 
                       <div class="form-group">
-                        <label for="server_port">Server Port <small class="text-muted ml-1"> - Port Crafty should connect to for stats</small> </label>
+                        <label for="server_port">{{ translate('serverConfig', 'serverIP') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverIPDesc') }}</small> </label>
                         <input type="number" class="form-control" name="server_port" id="server_port" value="{{ data['server_stats']['server_id']['server_port']  }}" step="1" max="65566" min="1" >
                       </div>
 
                       <div class="form-group">
-                        <label for="logs_delete_after">Remove Old Logs After <small class="text-muted ml-1"> - How many days will a log file has to be old to get deleted (0 is off)</small> </label>
+                        <label for="logs_delete_after">{{ translate('serverConfig', 'removeOldLogsAfter') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'removeOldLogsAfterDesc') }}</small> </label>
                         <input type="number" class="form-control" name="logs_delete_after" id="logs_delete_after" value="{{ data['server_stats']['server_id']['logs_delete_after']  }}" step="1" max="365" min="0" >
                       </div>
 
                       <div class="form-check-flat">
                         <label for="auto_start" class="form-check-label ml-4 mb-4">
                             {% if data['server_stats']['server_id']['auto_start'] %}
-                                <input type="checkbox" class="form-check-input" id="auto_start" name="auto_start" checked="" value="1">Server Auto Start
+                                <input type="checkbox" class="form-check-input" id="auto_start" name="auto_start" checked="" value="1">{{ translate('serverConfig', 'serverAutoStart') }}
                             {% else %}
-                                <input type="checkbox" class="form-check-input" id="auto_start" name="auto_start" value="1">Server Auto Start
+                                <input type="checkbox" class="form-check-input" id="auto_start" name="auto_start" value="1">{{ translate('serverConfig', 'serverAutoStart') }}
                             {% end %}
                         </label>
 
                         <label for="crash_detection" class="form-check-label ml-4 mb-4">
                             {% if data['server_stats']['server_id']['crash_detection'] %}
-                                <input type="checkbox" class="form-check-input" id="crash_detection" name="crash_detection" checked="" value="1">Server Crash Detection
+                                <input type="checkbox" class="form-check-input" id="crash_detection" name="crash_detection" checked="" value="1">{{ translate('serverConfig', 'serverCrashDetection') }}
                             {% else %}
-                                <input type="checkbox" class="form-check-input" id="crash_detection" name="crash_detection" value="1" >Server Crash Detection
+                                <input type="checkbox" class="form-check-input" id="crash_detection" name="crash_detection" value="1" >{{ translate('serverConfig', 'serverCrashDetection') }}
                             {% end %}
                         </label>
 
                       </div>
 
-                      <button type="submit" class="btn btn-success mr-2">Save</button>
-                      <button type="reset" class="btn btn-light">Cancel</button>
+                      <button type="submit" class="btn btn-success mr-2">{{ translate('serverConfig', 'save') }}</button>
+                      <button type="reset" class="btn btn-light">{{ translate('serverConfig', 'cancel') }}</button>
                     </form>
                 </div>
 
                 <div class="col-md-6 col-sm-12">
                     <div class="card">
                       <div class="card-body">
-                        <h4 class="card-title">Server Config Area</h4>
-                        <p class="card-description"> Here is where you can change the configuration of your server</p>
+                        <h4 class="card-title">{{ translate('serverConfigHelp', 'title') }}</h4>
+                        <p class="card-description"> {{ translate('serverConfigHelp', 'desc') }}</p>
                         <blockquote class="blockquote">
                           <p class="mb-0">
-                              It is recommended to <code>NOT</code> change the paths of a server managed by Crafty.
-                              Changing paths <code>CAN</code> break things, especially on Linux type operating systems where
-                              file permissions are more locked down.
-                              <br /><br/>
-                              If you feel you have to change a where a server is located
-                              you may do so as long as you give the "Crafty" user permission to read / write to the server path.
-                              <br />
-                              <br />
-                              On Linux this is best done by executing the following:<br />
-                              <code>
-                                  sudo chown crafty:crafty /path/to/your/server -R<br />
-                                  sudo chmod 2775 /path/to/your/server -R<br />
-                              </code>
+                            {% raw translate('serverConfigHelp', 'perms') %}
                           </p>
                         </blockquote>
                       </div>
                     </div>
                     <div class="text-center">
                         {% if data['server_stats']['running'] %}
-                            <a class="btn btn-sm btn-danger disabled">Delete Server</a><br />
-                            <small>Please stop the server before deleting it</small>
+                            <a class="btn btn-sm btn-danger disabled">{{ translate('serverConfig', 'deleteServer') }}</a><br />
+                            <small>{{ translate('serverConfig', 'stopBeforeDeleting') }}</small>
                         {% else %}
-                            <a href="/panel/remove_server?id={{ data['server_stats']['server_id']['server_id'] }}" class="btn btn-sm btn-danger">Delete Server</a>
+                            <a href="/panel/remove_server?id={{ data['server_stats']['server_id']['server_id'] }}" class="btn btn-sm btn-danger">{{ translate('serverConfig', 'deleteServer') }}</a>
                         {% end %}
 
                     </div>
