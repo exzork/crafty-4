@@ -185,11 +185,18 @@ class ServerHandler(BaseHandler):
                 # todo: add server type check here and call the correct server add functions if not a jar
                 new_server_id = self.controller.create_jar_server(server_parts[0], server_parts[1], server_name, min_mem, max_mem, port)
 
-            if new_server_id:
+            if new_server_id is not None and exec_user_data is not None and len(server_parts) > 1:
                 db_helper.add_to_audit_log(exec_user_data['user_id'],
                                            "created a {} {} server named \"{}\"".format(server_parts[1], str(server_parts[0]).capitalize(), server_name), # Example: Admin created a 1.16.5 Bukkit server named "survival"
                                            new_server_id,
                                            self.get_remote_ip())
+
+            elif new_server_id is not None and exec_user_data is not None:
+                db_helper.add_to_audit_log(exec_user_data['user_id'],
+                                           "created a {} {} server named \"{}\"".format("Minecraft", str(server_parts[0]).capitalize(), server_name), # Example: Admin created a 1.16.5 Bukkit server named "survival"
+                                           new_server_id,
+                                           self.get_remote_ip())
+
             else:
                 logger.error("Unable to create server")
                 console.error("Unable to create server")
