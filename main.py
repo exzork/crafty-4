@@ -138,7 +138,7 @@ if __name__ == '__main__':
                     break
                 time.sleep(1)
             except KeyboardInterrupt:
-                logger.info("Recieved SIGTERM, stopping Crafty")
+                logger.info("Recieved SIGINT, stopping Crafty")
                 break
        
         logger.info("Stopping all server daemons / threads")
