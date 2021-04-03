@@ -27,8 +27,8 @@ try:
     from argon2 import PasswordHasher
 
 except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e, e.name))
-    console.critical("Import Error: Unable to load {} module".format(e, e.name))
+    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
+    console.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
     sys.exit(1)
 
 class Helpers:
