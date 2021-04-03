@@ -402,7 +402,7 @@ class db_shortcuts:
 
         for s in authorizedServers:
             latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
-            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)})
+            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0]})
         return server_data
 
     @staticmethod
@@ -512,10 +512,10 @@ class db_shortcuts:
             #    servers.add(s.server_id.server_id)
             user['roles'] = roles
             #user['servers'] = servers
-            logger.debug("user: ({}) {}".format(user_id, user))
+            #logger.debug("user: ({}) {}".format(user_id, user))
             return user
         else:
-            logger.debug("user: ({}) {}".format(user_id, {}))
+            #logger.debug("user: ({}) {}".format(user_id, {}))
             return {}
 
     @staticmethod
@@ -532,9 +532,9 @@ class db_shortcuts:
             elif key == "roles":
                 added_roles = user_data['roles'].difference(base_data['roles'])
                 removed_roles = base_data['roles'].difference(user_data['roles'])
-            elif key == "servers":
-                added_servers = user_data['servers'].difference(base_data['servers'])
-                removed_servers = base_data['servers'].difference(user_data['servers'])
+            #elif key == "servers":
+            #    added_servers = user_data['servers'].difference(base_data['servers'])
+            #    removed_servers = base_data['servers'].difference(user_data['servers'])
             elif key == "regen_api":
                 if user_data['regen_api']:
                     up_data['api_token'] = db_shortcuts.new_api_token()
@@ -581,9 +581,10 @@ class db_shortcuts:
 
     @staticmethod
     def remove_user(user_id):
-        User_Servers.delete().where(User_Servers.user_id == user_id).execute()
-        user = Users.get(Users.user_id == user_id)
-        return user.delete_instance()
+        with database.atomic():
+            User_Roles.delete().where(User_Servers.user_id == user_id).execute()
+            user = Users.get(Users.user_id == user_id)
+            return user.delete_instance()
 
     @staticmethod
     def user_id_exists(user_id):
@@ -609,10 +610,10 @@ class db_shortcuts:
             for s in servers_query:
                 servers.add(s.server_id.server_id)
             role['servers'] = servers
-            logger.debug("role: ({}) {}".format(role_id, role))
+            #logger.debug("role: ({}) {}".format(role_id, role))
             return role
         else:
-            logger.debug("role: ({}) {}".format(role_id, {}))
+            #logger.debug("role: ({}) {}".format(role_id, {}))
             return {}
 
     @staticmethod
@@ -704,17 +705,16 @@ class db_shortcuts:
                 Commands.executed: True
             }).where(Commands.command_id == command_id).execute()
 
-    @staticmethod
-    def add_to_audit_log(user_id, log_msg, server_id=None, source_ip=None):
+    def add_to_audit_log(self, user_id, log_msg, server_id=None, source_ip=None):
         logger.debug("Adding to audit log User:{} - Message: {} ".format(user_id, log_msg))
-        user_data = Users.get_by_id(user_id)
+        user_data = self.get_user(user_id)
 
-        audit_msg = "{} {}".format(str(user_data.username).capitalize(), log_msg)
+        audit_msg = "{} {}".format(str(user_data['username']).capitalize(), log_msg)
 
         websocket_helper.broadcast('notification', audit_msg)
 
         Audit_Log.insert({
-            Audit_Log.user_name: user_data.username,
+            Audit_Log.user_name: user_data['username'],
             Audit_Log.user_id: user_id,
             Audit_Log.server_id: server_id,
             Audit_Log.log_msg: audit_msg,

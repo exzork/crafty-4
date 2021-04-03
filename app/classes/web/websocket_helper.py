@@ -1,6 +1,9 @@
 import json
+import logging
 
 from app.classes.shared.console import console
+
+logger = logging.getLogger(__name__)
 
 class WebSocketHelper:
     clients = set()
@@ -17,7 +20,7 @@ class WebSocketHelper:
             client.write_message(message)
 
     def broadcast(self, event_type, data):
-        console.debug('Sending: ' + str(json.dumps({'event': event_type, 'data': data})))
+        logger.debug('Sending: ' + str(json.dumps({'event': event_type, 'data': data})))
         for client in self.clients:
             try:
                 self.send_message(client, event_type, data)

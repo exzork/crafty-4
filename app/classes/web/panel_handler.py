@@ -20,7 +20,6 @@ class PanelHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self, page):
-        user_data = json.loads(self.get_secure_cookie("user_data"))
         error = bleach.clean(self.get_argument('error', "WTF Error!"))
 
         template = "panel/denied.html"
@@ -28,25 +27,27 @@ class PanelHandler(BaseHandler):
         now = time.time()
         formatted_time = str(datetime.datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S'))
 
-        userId = user_data['user_id']
-        user = db_helper.get_user(userId)
+        exec_user_data = json.loads(self.get_secure_cookie("user_data"))
+        exec_user_id = exec_user_data['user_id']
+        exec_user = db_helper.get_user(exec_user_id)
         
-        user_role = []
-        if user['superuser'] == 1:
+        exec_user_role = set()
+        if exec_user['superuser'] == 1:
             defined_servers = self.controller.list_defined_servers()
-            user_role = {"Super User"}
+            exec_user_role.add("Super User")
         else:
-            defined_servers = self.controller.list_authorized_servers(userId)
-            for r in user['roles']:
+            defined_servers = self.controller.list_authorized_servers(exec_user_id)
+            logger.debug(exec_user['roles'])
+            for r in exec_user['roles']:
                 role = db_helper.get_role(r)
-                user_role.append(role['role_name'])
+                exec_user_role.add(role['role_name'])
 
         page_data = {
             # todo: make this actually pull and compare version data
             'update_available': False,
             'version_data': helper.get_version_string(),
-            'user_data': user_data,
-            'user_role' : user_role,
+            'user_data': exec_user_data,
+            'user_role' : exec_user_role,
             'server_stats': {
                 'total': len(defined_servers),
                 'running': len(self.controller.list_running_servers()),
@@ -84,10 +85,18 @@ class PanelHandler(BaseHandler):
 
         elif page == "remove_server":
             server_id = self.get_argument('id', None)
+
+            if not exec_user['superuser']:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return
+            elif server_id is None:
+                self.redirect("/panel/error?error=Invalid Server ID")
+                return
+
             server_data = self.controller.get_server_data(server_id)
             server_name = server_data['server_name']
 
-            db_helper.add_to_audit_log(user_data['user_id'],
+            db_helper.add_to_audit_log(exec_user_data['user_id'],
                                        "Deleted server {} named {}".format(server_id, server_name),
                                        server_id,
                                        self.get_remote_ip())
@@ -97,11 +106,13 @@ class PanelHandler(BaseHandler):
             return
 
         elif page == 'dashboard':
-            if user['superuser'] == 1:
+            if exec_user['superuser'] == 1:
                 page_data['servers'] = db_helper.get_all_servers_stats()
             else:
-                #page_data['servers'] = db_helper.get_authorized_servers_stats(userId)
-                page_data['servers'] = db_helper.get_authorized_servers_stats_from_roles(userId)
+                #page_data['servers'] = db_helper.get_authorized_servers_stats(exec_user_id)
+                ras = db_helper.get_authorized_servers_stats_from_roles(exec_user_id)
+                logger.debug("ASFR: {}".format(ras))
+                page_data['servers'] = ras
 
             for s in page_data['servers']:
                 try:
@@ -125,9 +136,9 @@ class PanelHandler(BaseHandler):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
 
-                if user['superuser'] != 1:
-                    #if not db_helper.server_id_authorized(server_id, userId):
-                    if not db_helper.server_id_authorized_from_roles(int(server_id), userId):
+                if exec_user['superuser'] != 1:
+                    #if not db_helper.server_id_authorized(server_id, exec_user_id):
+                    if not db_helper.server_id_authorized_from_roles(int(server_id), exec_user_id):
                         self.redirect("/panel/error?error=Invalid Server ID")
                         return False
 
@@ -185,9 +196,9 @@ class PanelHandler(BaseHandler):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
 
-                if user['superuser'] != 1:
-                    #if not db_helper.server_id_authorized(server_id, userId):
-                    if not db_helper.server_id_authorized_from_roles(int(server_id), userId):
+                if exec_user['superuser'] != 1:
+                    #if not db_helper.server_id_authorized(server_id, exec_user_id):
+                    if not db_helper.server_id_authorized_from_roles(int(server_id), exec_user_id):
                         self.redirect("/panel/error?error=Invalid Server ID")
                         return False
 
@@ -234,9 +245,9 @@ class PanelHandler(BaseHandler):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
 
-                if user['superuser'] != 1:
-                    #if not db_helper.server_id_authorized(server_id, userId):
-                    if not db_helper.server_id_authorized_from_roles(int(server_id), userId):
+                if exec_user['superuser'] != 1:
+                    #if not db_helper.server_id_authorized(server_id, exec_user_id):
+                    if not db_helper.server_id_authorized_from_roles(int(server_id), exec_user_id):
                         self.redirect("/panel/error?error=Invalid Server ID")
                         return False
 
@@ -246,7 +257,6 @@ class PanelHandler(BaseHandler):
         elif page == 'panel_config':
             page_data['users'] = db_helper.get_all_users()
             page_data['roles'] = db_helper.get_all_roles()
-            exec_user = db_helper.get_user(user_data['user_id'])
             for user in page_data['users']:
                 if user.user_id != exec_user['user_id']:
                     user.api_token = "********"
@@ -265,15 +275,13 @@ class PanelHandler(BaseHandler):
             page_data['user']['last_ip'] = "N/A"
             page_data['user']['last_update'] = "N/A"
             page_data['user']['roles'] = set()
-            page_data['user']['servers'] = set()
-
-            exec_user = db_helper.get_user(user_data['user_id'])
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return
 
             page_data['roles_all'] = db_helper.get_all_roles()
+            page_data['servers'] = []
             page_data['servers_all'] = self.controller.list_defined_servers()
             template = "panel/panel_edit_user.html"
 
@@ -281,10 +289,9 @@ class PanelHandler(BaseHandler):
             page_data['new_user'] = False
             user_id = self.get_argument('id', None)
             page_data['user'] = db_helper.get_user(user_id)
+            page_data['servers'] = db_helper.get_authorized_servers_stats_from_roles(user_id)
             page_data['roles_all'] = db_helper.get_all_roles()
             page_data['servers_all'] = self.controller.list_defined_servers()
-
-            exec_user = db_helper.get_user(user_data['user_id'])
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
@@ -299,9 +306,6 @@ class PanelHandler(BaseHandler):
 
         elif page == "remove_user":
             user_id = bleach.clean(self.get_argument('id', None))
-
-            user_data = json.loads(self.get_secure_cookie("user_data"))
-            exec_user = db_helper.get_user(user_data['user_id'])
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
@@ -336,8 +340,6 @@ class PanelHandler(BaseHandler):
             page_data['role']['last_update'] = "N/A"
             page_data['role']['servers'] = set()
 
-            exec_user = db_helper.get_user(user_data['user_id'])
-
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return
@@ -351,8 +353,6 @@ class PanelHandler(BaseHandler):
             page_data['role'] = db_helper.get_role(role_id)
             page_data['servers_all'] = self.controller.list_defined_servers()
 
-            exec_user = db_helper.get_user(user_data['user_id'])
-
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return
@@ -364,9 +364,6 @@ class PanelHandler(BaseHandler):
 
         elif page == "remove_role":
             role_id = bleach.clean(self.get_argument('id', None))
-
-            user_data = json.loads(self.get_secure_cookie("user_data"))
-            exec_user = db_helper.get_user(user_data['user_id'])
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
@@ -403,6 +400,19 @@ class PanelHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, page):
+        exec_user_data = json.loads(self.get_secure_cookie("user_data"))
+        exec_user_id = exec_user_data['user_id']
+        exec_user = db_helper.get_user(exec_user_id)
+
+        exec_user_role = set()
+        if exec_user['superuser'] == 1:
+            defined_servers = self.controller.list_defined_servers()
+            exec_user_role.add("Super User")
+        else:
+            defined_servers = self.controller.list_authorized_servers(exec_user_id)
+            for r in exec_user['roles']:
+                role = db_helper.get_role(r)
+                exec_user_role.add(role['role_name'])
 
         if page == 'server_detail':
             server_id = self.get_argument('id', None)
@@ -419,9 +429,6 @@ class PanelHandler(BaseHandler):
             crash_detection = int(float(self.get_argument('crash_detection', '0')))
             logs_delete_after = int(float(self.get_argument('logs_delete_after', '0')))
             subpage = self.get_argument('subpage', None)
-
-            user_data = json.loads(self.get_secure_cookie("user_data"))
-            exec_user = db_helper.get_user(user_data['user_id'])
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
@@ -452,7 +459,7 @@ class PanelHandler(BaseHandler):
 
             self.controller.refresh_server_settings(server_id)
 
-            db_helper.add_to_audit_log(user_data['user_id'],
+            db_helper.add_to_audit_log(exec_user['user_id'],
                                        "Edited server {} named {}".format(server_id, server_name),
                                        server_id,
                                        self.get_remote_ip())
@@ -465,9 +472,6 @@ class PanelHandler(BaseHandler):
             backup_path = bleach.clean(self.get_argument('backup_path', None))
             max_backups = bleach.clean(self.get_argument('max_backups', None))
             enabled = int(float(bleach.clean(self.get_argument('auto_enabled'), '0')))
-
-            user_data = json.loads(self.get_secure_cookie("user_data"))
-            exec_user = db_helper.get_user(user_data['user_id'])
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
@@ -487,7 +491,7 @@ class PanelHandler(BaseHandler):
                 }).where(Servers.server_id == server_id).execute()
                 db_helper.set_backup_config(server_id, max_backups=max_backups)
 
-            db_helper.add_to_audit_log(user_data['user_id'],
+            db_helper.add_to_audit_log(exec_user['user_id'],
                                        "Edited server {}: updated backups".format(server_id),
                                        server_id,
                                        self.get_remote_ip())
@@ -501,9 +505,6 @@ class PanelHandler(BaseHandler):
             password1 = bleach.clean(self.get_argument('password1', None))
             enabled = int(float(bleach.clean(self.get_argument('enabled'), '0')))
             regen_api = int(float(bleach.clean(self.get_argument('regen_api', '0'))))
-
-            user_data = json.loads(self.get_secure_cookie("user_data"))
-            exec_user = db_helper.get_user(user_data['user_id'])
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
@@ -534,28 +535,17 @@ class PanelHandler(BaseHandler):
                 if argument:
                     roles.add(role.role_id)
 
-            servers = set()
-            for server in self.controller.list_defined_servers():
-                argument = int(float(
-                    bleach.clean(
-                        self.get_argument('server_{}_access'.format(server['server_id']), '0')
-                    )
-                ))
-                if argument:
-                    servers.add(server['server_id'])
-
             user_data = {
                 "username": username,
                 "password": password0,
                 "enabled": enabled,
                 "regen_api": regen_api,
                 "roles": roles,
-                "servers": servers
             }
             db_helper.update_user(user_id, user_data=user_data)
 
             db_helper.add_to_audit_log(exec_user['user_id'],
-                                       "Edited user {} (UID:{}) with roles {} and servers {}".format(username, user_id, roles, servers),
+                                       "Edited user {} (UID:{}) with roles {}".format(username, user_id, roles),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
@@ -567,8 +557,6 @@ class PanelHandler(BaseHandler):
             password1 = bleach.clean(self.get_argument('password1', None))
             enabled = int(float(bleach.clean(self.get_argument('enabled'), '0')))
 
-            user_data = json.loads(self.get_secure_cookie("user_data"))
-            exec_user = db_helper.get_user(user_data['user_id'])
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return
@@ -606,14 +594,14 @@ class PanelHandler(BaseHandler):
                     servers.add(server['server_id'])
 
             user_id = db_helper.add_user(username, password=password0, enabled=enabled)
-            db_helper.update_user(user_id, {"roles":roles, "servers": servers})
+            db_helper.update_user(user_id, {"roles":roles})
 
             db_helper.add_to_audit_log(exec_user['user_id'],
                                        "Added user {} (UID:{})".format(username, user_id),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             db_helper.add_to_audit_log(exec_user['user_id'],
-                                       "Edited user {} (UID:{}) with roles {} and servers {}".format(username, user_id, roles, servers),
+                                       "Edited user {} (UID:{}) with roles {}".format(username, user_id, roles),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
@@ -621,9 +609,6 @@ class PanelHandler(BaseHandler):
         elif page == "edit_role":
             role_id = bleach.clean(self.get_argument('id', None))
             role_name = bleach.clean(self.get_argument('role_name', None))
-
-            user_data = json.loads(self.get_secure_cookie("user_data"))
-            exec_user = db_helper.get_user(user_data['user_id'])
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
@@ -666,8 +651,6 @@ class PanelHandler(BaseHandler):
         elif page == "add_role":
             role_name = bleach.clean(self.get_argument('role_name', None))
 
-            user_data = json.loads(self.get_secure_cookie("user_data"))
-            exec_user = db_helper.get_user(user_data['user_id'])
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return

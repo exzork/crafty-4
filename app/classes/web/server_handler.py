@@ -29,18 +29,17 @@ class ServerHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, page):
         # name = tornado.escape.json_decode(self.current_user)
-        user_data = json.loads(self.get_secure_cookie("user_data"))
-        
-        userId = user_data['user_id']
-        user = db_helper.get_user(userId)
+        exec_user_data = json.loads(self.get_secure_cookie("user_data"))
+        exec_user_id = exec_user_data['user_id']
+        exec_user = db_helper.get_user(exec_user_id)
         
         user_role = []
-        if user['superuser'] == 1:
-            defined_servers = controller.list_defined_servers()
+        if exec_user['superuser'] == 1:
+            defined_servers = self.controller.list_defined_servers()
             user_role = "Super User"
         else:
-            defined_servers = controller.list_authorized_servers(userId)
-            for r in user['roles']:
+            defined_servers = self.controller.list_authorized_servers(exec_user_id)
+            for r in exec_user['roles']:
                 role = db_helper.get_role(r)
                 user_role.append(role['role_name'])
 
@@ -50,7 +49,7 @@ class ServerHandler(BaseHandler):
 
         page_data = {
             'version_data': helper.get_version_string(),
-            'user_data': user_data,
+            'user_data': exec_user_data,
             'user_role' : user_role,
             'server_stats': {
                 'total': len(self.controller.list_defined_servers()),
@@ -75,12 +74,14 @@ class ServerHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, page):
 
-        user_data = json.loads(self.get_secure_cookie("user_data"))
+        exec_user_data = json.loads(self.get_secure_cookie("user_data"))
+        exec_user_id = exec_user_data['user_id']
+        exec_user = db_helper.get_user(exec_user_id)
 
         template = "public/404.html"
         page_data = {
             'version_data': "version_data_here",
-            'user_data': user_data,
+            'user_data': exec_user_data,
             'show_contribute': helper.get_setting("show_contribute_link", True)
         }
 
@@ -147,7 +148,7 @@ class ServerHandler(BaseHandler):
 
                     return
                 
-                db_helper.send_command(user_data['user_id'], server_id, self.get_remote_ip(), command)
+                db_helper.send_command(exec_user_data['user_id'], server_id, self.get_remote_ip(), command)
 
         if page == "step1":
 
@@ -184,7 +185,7 @@ class ServerHandler(BaseHandler):
                 new_server_id = self.controller.create_jar_server(server_parts[0], server_parts[1], server_name, min_mem, max_mem, port)
 
             if new_server_id:
-                db_helper.add_to_audit_log(user_data['user_id'],
+                db_helper.add_to_audit_log(exec_user_data['user_id'],
                                            "created a {} {} server named \"{}\"".format(server_parts[1], str(server_parts[0]).capitalize(), server_name), # Example: Admin created a 1.16.5 Bukkit server named "survival"
                                            new_server_id,
                                            self.get_remote_ip())
