@@ -314,6 +314,29 @@ class db_shortcuts:
         return rows
 
     @staticmethod
+    def create_server(name: str, server_uuid: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port=25565):
+        return Servers.insert({
+            Servers.server_name: name,
+            Servers.server_uuid: server_uuid,
+            Servers.path: server_dir,
+            Servers.executable: server_file,
+            Servers.execution_command: server_command,
+            Servers.auto_start: False,
+            Servers.auto_start_delay: 10,
+            Servers.crash_detection: False,
+            Servers.log_path: server_log_file,
+            Servers.server_port: server_port,
+            Servers.stop_command: server_stop,
+            Servers.backup_path: backup_path
+        }).execute()
+
+    @staticmethod
+    def remove_server(server_id):
+        with database.atomic():
+            Role_Servers.delete().where(Role_Servers.server_id == server_id).execute()
+            Servers.delete().where(Servers.server_id == server_id).execute()
+
+    @staticmethod
     def get_server_data_by_id(server_id):
         query = Servers.select().where(Servers.server_id == server_id).limit(1)
         try:

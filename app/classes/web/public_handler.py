@@ -117,6 +117,6 @@ class PublicHandler(BaseHandler):
 
                 next_page = "/panel/dashboard"
                 self.redirect(next_page)
-
+        else:
             self.redirect("/public/login")
 

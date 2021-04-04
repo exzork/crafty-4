@@ -10,7 +10,7 @@ from distutils import dir_util
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 
-from app.classes.shared.models import db_helper, Servers
+from app.classes.shared.models import db_helper
 
 from app.classes.shared.server import Server
 from app.classes.minecraft.server_props import ServerProps
@@ -293,22 +293,9 @@ class Controller:
                                       server_log_file, server_stop, port)
         return new_id
 
-    def register_server(self, name: str, server_id: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port=25565):
+    def register_server(self, name: str, server_uuid: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port=25565):
         # put data in the db
-        new_id = Servers.insert({
-            Servers.server_name: name,
-            Servers.server_uuid: server_id,
-            Servers.path: server_dir,
-            Servers.executable: server_file,
-            Servers.execution_command: server_command,
-            Servers.auto_start: False,
-            Servers.auto_start_delay: 10,
-            Servers.crash_detection: False,
-            Servers.log_path: server_log_file,
-            Servers.server_port: server_port,
-            Servers.stop_command: server_stop,
-            Servers.backup_path: backup_path
-        }).execute()
+        new_id = db_helper.create_server(name, server_uuid, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, server_port)
 
         try:
             # place a file in the dir saying it's owned by crafty
@@ -345,9 +332,7 @@ class Controller:
                     self.stop_server(server_id)
 
                 # remove the server from the DB
-                with database.atomic():
-                    Role_Servers.delete().where(Role_Servers.server_id == server_id).execute()
-                    Servers.delete().where(Servers.server_id == server_id).execute()
+                db_helper.remove_server(server_id)
 
                 # remove the server from servers list
                 self.servers_list.pop(counter)

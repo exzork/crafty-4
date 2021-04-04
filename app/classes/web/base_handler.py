@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 class BaseHandler(tornado.web.RequestHandler):
 
     nobleach = {bool, type(None)}
+    redactables = ("pass", "api")
 
     def initialize(self, controller=None, tasks_manager=None, translator=None):
         self.controller = controller
@@ -28,8 +29,14 @@ class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         return self.get_secure_cookie("user", max_age_days=1)
 
-    def autobleach(self, text):
+    def autobleach(self, name, text):
+        for r in self.redactables:
+            if r in name:
+                logger.debug("Auto-bleaching {}: {}".format(name, "[**REDACTED* c,mmvkkkkkkkkkkkkkkkkkkkkkkkkn*]"))
+            else:
+                logger.debug("Auto-bleaching {}: {}".format(name, text))
         if type(text) in self.nobleach:
+            logger.debug("Auto-bleaching - bypass type")
             return text
         else:
             return bleach.clean(text)
@@ -41,14 +48,12 @@ class BaseHandler(tornado.web.RequestHandler):
             strip: bool = True,
             ) -> Optional[str]:
         arg = self._get_argument(name, default, self.request.arguments, strip)
-        logger.debug("Bleaching {}: {}".format(name, arg))
-        return self.autobleach(arg)
+        return self.autobleach(name, arg)
 
     def get_arguments(self, name: str, strip: bool = True) -> List[str]:
         assert isinstance(strip, bool)
         args = self._get_arguments(name, self.request.arguments, strip)
         args_ret = []
         for arg in args:
-            logger.debug("Bleaching {}: {}".format(name, arg))
-            args_ret += self.autobleach(arg)
+            args_ret += self.autobleach(name, arg)
         return args_ret
