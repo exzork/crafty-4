@@ -504,8 +504,8 @@ class PanelHandler(BaseHandler):
             username = bleach.clean(self.get_argument('username', None))
             password0 = bleach.clean(self.get_argument('password0', None))
             password1 = bleach.clean(self.get_argument('password1', None))
-            enabled = int(float(bleach.clean(self.get_argument('enabled'), '0')))
-            regen_api = int(float(bleach.clean(self.get_argument('regen_api', '0'))))
+            enabled = int(float(self.get_argument('enabled', '0')))
+            regen_api = int(float(self.get_argument('regen_api', '0')))
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
@@ -556,7 +556,7 @@ class PanelHandler(BaseHandler):
             username = bleach.clean(self.get_argument('username', None))
             password0 = bleach.clean(self.get_argument('password0', None))
             password1 = bleach.clean(self.get_argument('password1', None))
-            enabled = int(float(bleach.clean(self.get_argument('enabled'), '0')))
+            enabled = int(float(self.get_argument('enabled', '0')))
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
@@ -566,7 +566,7 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this user id exist?
-                if db_helper.get_userid_by_name(username) is not None:
+                if db_helper.get_user_id_by_name(username) is not None:
                     self.redirect("/panel/error?error=User exists")
                     return
 

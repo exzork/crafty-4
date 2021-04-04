@@ -32,7 +32,8 @@ class BaseHandler(tornado.web.RequestHandler):
     def autobleach(self, name, text):
         for r in self.redactables:
             if r in name:
-                logger.debug("Auto-bleaching {}: {}".format(name, "[**REDACTED* c,mmvkkkkkkkkkkkkkkkkkkkkkkkkn*]"))
+                logger.debug("Auto-bleaching {}: {}".format(name, "[**REDACTED**]"))
+                break
             else:
                 logger.debug("Auto-bleaching {}: {}".format(name, text))
         if type(text) in self.nobleach:
