@@ -1,28 +1,40 @@
 {
   "patreons": [
     {
+      "name": "Dean of Approval",
+      "level": "sustainer"
+    },
+    {
+      "name": "iSilverfyre",
+      "level": "sustainer"
+    },
+    {
+      "name": "Lightkeeper",
+      "level": "sustainer"
+    },
+    {
+      "name": "Lino",
+      "level": "sustainer"
+    },
+    {
+      "name": "Nicolas T",
+      "level": "sustainer"
+    },
+    {
       "name": "Richard B",
-      "level": "substainer"
+      "level": "sustainer"
+    },
+    {
+      "name": "ryuk228",
+      "level": "sustainer"
+    },
+    {
+      "name": "Zedifus",
+      "level": "sustainer"
     },
     {
       "name": "John C",
       "level": "advocate"
-    },
-    {
-      "name": "Nicolas T",
-      "level": "substainer"
-    },
-    {
-      "name": "Lightkeeper",
-      "level": "substainer"
-    },
-    {
-      "name": "test user 1",
-      "level": "supporter"
-    },
-    {
-      "name": "test user 2",
-      "level": "other"
     }
   ],
   "staff": {
@@ -130,8 +142,9 @@
     ]
   },
   "translations": {
-    "UltraBlack": [ "German" ],
+    "Lukas": [ "Finnish" ],
     "Manu": [ "French" ],
-    "ptarrant": [ "Sarcasm", "Wit" ]
+    "ptarrant": [ "Sarcasm", "Wit" ],
+    "UltraBlack": [ "German" ],
   }
 }
