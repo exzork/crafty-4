@@ -9,8 +9,8 @@ try:
     from termcolor import colored
 
 except ModuleNotFoundError as e:
-    logging.critical("Import Error: Unable to load {} module".format(e, e.name))
-    print("Import Error: Unable to load {} module".format(e, e.name))
+    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
+    print("Import Error: Unable to load {} module".format(e.name))
     from app.classes.shared.installer import installer
     installer.do_install()
     sys.exit(1)

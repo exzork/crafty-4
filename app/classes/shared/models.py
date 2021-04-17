@@ -18,8 +18,8 @@ try:
     import yaml
 
 except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e, e.name))
-    console.critical("Import Error: Unable to load {} module".format(e, e.name))
+    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
+    console.critical("Import Error: Unable to load {} module".format(e.name))
     sys.exit(1)
 
 schema_version = (0, 1, 0) # major, minor, patch semver
