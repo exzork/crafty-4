@@ -25,6 +25,7 @@ try:
     from app.classes.web.ajax_handler import AjaxHandler
     from app.classes.web.api_handler import ServersStats, NodeStats
     from app.classes.web.websocket_handler import SocketHandler
+    from app.classes.web.static_handler import CustomStaticHandler
     from app.classes.shared.translation import translation
 
 except ModuleNotFoundError as e:
@@ -143,7 +144,9 @@ class Webserver:
             autoreload=False,
             log_function=self.log_function,
             login_url="/login",
-            default_handler_class=PublicHandler
+            default_handler_class=PublicHandler,
+            static_handler_class=CustomStaticHandler,
+            serve_traceback=debug_errors,
         )
 
         self.HTTP_Server = tornado.httpserver.HTTPServer(app)
