@@ -502,6 +502,43 @@ class db_shortcuts:
             return (Users.get(Users.username == username)).user_id
         except DoesNotExist:
             return None
+    
+    @staticmethod
+    def get_user_by_api_token(token: str):
+        query = Users.select().where(Users.api_token == token)
+
+        if query.exists():
+            user = model_to_dict(Users.get(Users.api_token == token))
+            # I know it should apply it without setting it but I'm just making sure
+            user = db_shortcuts.add_user_roles(user)
+            return user
+        else:
+            return {}
+    
+    @staticmethod
+    def add_user_roles(user):
+        if type(user) == dict:
+            user_id = user['user_id']
+        else:
+            user_id = user.user_id
+
+        # I just copied this code from get_user, it had those TODOs & comments made by mac - Lukas
+        
+        roles_query = User_Roles.select().join(Roles, JOIN.INNER).where(User_Roles.user_id == user_id)
+        # TODO: this query needs to be narrower
+        roles = set()
+        for r in roles_query:
+            roles.add(r.role_id.role_id)
+        #servers_query = User_Servers.select().join(Servers, JOIN.INNER).where(User_Servers.user_id == user_id)
+        ## TODO: this query needs to be narrower
+        servers = set()
+        #for s in servers_query:
+        #    servers.add(s.server_id.server_id)
+        user['roles'] = roles
+        #user['servers'] = servers
+        #logger.debug("user: ({}) {}".format(user_id, user))
+        return user
+
 
     @staticmethod
     def get_user(user_id):
@@ -523,19 +560,8 @@ class db_shortcuts:
         user = model_to_dict(Users.get(Users.user_id == user_id))
 
         if user:
-            roles_query = User_Roles.select().join(Roles, JOIN.INNER).where(User_Roles.user_id == user_id)
-            # TODO: this query needs to be narrower
-            roles = set()
-            for r in roles_query:
-                roles.add(r.role_id.role_id)
-            #servers_query = User_Servers.select().join(Servers, JOIN.INNER).where(User_Servers.user_id == user_id)
-            ## TODO: this query needs to be narrower
-            servers = set()
-            #for s in servers_query:
-            #    servers.add(s.server_id.server_id)
-            user['roles'] = roles
-            #user['servers'] = servers
-            #logger.debug("user: ({}) {}".format(user_id, user))
+            # I know it should apply it without setting it but I'm just making sure
+            user = db_shortcuts.add_user_roles(user)
             return user
         else:
             #logger.debug("user: ({}) {}".format(user_id, {}))
