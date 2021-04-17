@@ -106,7 +106,7 @@
         "version": "Version",
         "description": "Description",
         "errorCalculatingUptime": "Error Calculating Uptime",
-        "serverTime": "Server Time",
+        "serverTime": "UTC Time",
         "unableToConnect": "Unable To Connect"
     },
     "serverDetails": {

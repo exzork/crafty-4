@@ -86,11 +86,8 @@
     let startedLocal;
 
     if (started != null) {
-      console.log('88', '{{ data['server_stats']['started'] }}');
-      {% if data['server_stats']['started'] != 'False' %}
-        startedUTC = '{{ (datetime.datetime.strptime(data['server_stats']['started'], '%Y-%m-%d %H:%M:%S') - datetime.timedelta(seconds=-time.timezone)).strftime('%Y-%m-%d %H:%M:%S') }}';
-      {% end %}
-      console.log('utc', startedUTC);
+      startedUTC = '{{ data['server_stats']['started'] }}';
+      console.log('started utc:', startedUTC);
       startedUTC = moment.utc(startedUTC, 'YYYY-MM-DD HH:mm:ss');
 
       let browserUTCOffset = moment().utcOffset(); // This is in minutes
@@ -98,32 +95,25 @@
       startedLocal = startedUTC.utcOffset(browserUTCOffset);
       startedLocalFormatted = startedLocal.format('YYYY-MM-DD HH:mm:ss');
 
-      console.log('startedLocal', startedLocal);
-      console.log('startedLocalFormatted', startedLocalFormatted);
+      console.log('started local time:', startedLocalFormatted);
 
       started.textContent = startedLocalFormatted
     }
 
-    let nowServerTime = '{{ data['time'] }}';
-    let startedServerTime = '{{ data['server_stats']['started'] }}';
-
-    if (uptime != null && started != null) {
-
-      var msdiff = moment(nowServerTime,"YYYY-MM-DD hh:mm:ss")
-          .diff(moment(startedServerTime,"YYYY-MM-DD hh:mm:ss"));
+    var calculateUptime = () => {
+      var msdiff = moment()
+        .diff(startedLocal);
       var diff = moment.duration(msdiff);
 
       uptime.textContent = durationToHumanizedString(diff);
+    }
+
+    if (uptime != null && started != null) {
 
       console.log('startedLocal', startedLocal)
       if (startedLocal) {
-        var uptimeLoop = setInterval(() => {
-          var msdiff = moment()
-            .diff(startedLocal);
-          var diff = moment.duration(msdiff);
-
-          uptime.textContent = durationToHumanizedString(diff);
-        }, 1000)
+        calculateUptime()
+        var uptimeLoop = setInterval(calculateUptime, 1000)
       }
     }
 

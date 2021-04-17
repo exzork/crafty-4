@@ -106,7 +106,7 @@
         "version": "Versio",
         "description": "Kuvaus",
         "errorCalculatingUptime": "Virhe laskettaessa käyttöaikaa",
-        "serverTime": "Palvelimen aikaa",
+        "serverTime": "UTC aikaa",
         "unableToConnect": "Yhteyden muodostaminen epäonnistui"
     },
     "serverDetails": {
