@@ -141,10 +141,4 @@ if __name__ == '__main__':
                 logger.info("Recieved SIGINT, stopping Crafty")
                 break
        
-        logger.info("Stopping all server daemons / threads")
-        console.info("Stopping all server daemons / threads - This may take a few seconds")
-        Crafty._clean_shutdown()
-        while True:
-            if tasks_manager.get_main_thread_run_status():
-                sys.exit(0)
-        time.sleep(1)
+        Crafty.universal_exit()

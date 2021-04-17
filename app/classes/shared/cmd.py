@@ -49,6 +49,9 @@ class MainPrompt(cmd.Cmd, object):
             console.critical("Unable to write exit file due to error: {}".format(e))
 
     def do_exit(self, line):
+        self.universal_exit()
+    
+    def universal_exit(self):
         logger.info("Stopping all server daemons / threads")
         console.info("Stopping all server daemons / threads - This may take a few seconds")
         websocket_helper.disconnect_all()
