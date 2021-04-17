@@ -43,10 +43,12 @@
                 <a class="nav-link active" href="/panel/edit_user?id={{ data['user']['user_id'] }}&subpage=config" role="tab" aria-selected="true">
                   <i class="fas fa-cogs"></i>Config</a>
               </li>
+              {% if data['new_user'] %}
               <li class="nav-item">
                 <a class="nav-link" href="/panel/edit_user?id={{ data['user']['user_id'] }}&subpage=other" role="tab" aria-selected="false">
                   <i class="fas fa-folder-tree"></i>Other</a>
               </li>
+              {% end %}
             </ul>
 
             <div class="row">
