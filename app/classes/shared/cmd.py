@@ -29,10 +29,6 @@ class MainPrompt(cmd.Cmd, object):
     # overrides the default Prompt
     prompt = "Crafty Controller v{} > ".format(helper.get_version_string())
 
-    def __init__(self, tasks_manager):
-        super().__init__()
-        self.tasks_manager = tasks_manager
-
     @staticmethod
     def emptyline():
         pass
