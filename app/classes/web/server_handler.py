@@ -163,6 +163,10 @@ class ServerHandler(BaseHandler):
             import_server_jar = bleach.clean(self.get_argument('server_jar', ''))
             server_parts = server.split("|")
 
+            if not server_name:
+                self.redirect("/panel/error?error=Server name cannot be empty!")
+                return False
+
             if import_type == 'import_jar':
                 good_path = self.controller.verify_jar_server(import_server_path, import_server_jar)
 
