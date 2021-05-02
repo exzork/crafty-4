@@ -81,13 +81,13 @@ class PublicHandler(BaseHandler):
 
             # if we don't have a user
             if not user_data:
-                next_page = "/public/error?error=Login_Failed"
+                next_page = "/public/error?error=Login Failed"
                 self.redirect(next_page)
                 return False
 
             # if they are disabled
             if not user_data.enabled:
-                next_page = "/public/error?error=Login_Failed"
+                next_page = "/public/error?error=Login Failed"
                 self.redirect(next_page)
                 return False
 
@@ -117,6 +117,10 @@ class PublicHandler(BaseHandler):
 
                 next_page = "/panel/dashboard"
                 self.redirect(next_page)
+            else:
+                # log this failed login attempt
+                db_helper.add_to_audit_log(user_data.user_id, "Tried to log in", 0, self.get_remote_ip())
+                self.redirect('/public/error?error=Login Failed')
         else:
             self.redirect("/public/login")
 
