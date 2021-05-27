@@ -166,11 +166,12 @@
         "createDirQuestion": "Minkä nimen haluat uudelle hakemistolle?",
         "renameItemQuestion": "Mikä uuden nimen pitäisi olla?",
         "deleteItemQuestion": "Haluatko varmasti poistaa \" + name + \"?",
-        "deleteItemQuestionMessage": "Olet poistamassa \\\"\" + path + \"\\\"!<br/><br/>Tämä toiminta on peruuttamaton ja se menetetään ikuisesti!",
+        "deleteItemQuestionMessage": "Olet poistamassa \\\"\" + path + \"\\\"!<br/><br/>Tämä toiminto on peruuttamaton ja se menetetään ikuisesti!",
         "yesDelete": "Kyllä, ymmärrän seuraukset",
         "noDelete": "En",
         "unsupportedLanguage": "Varoitus: Tätä tiedostotyyppiä ei tueta",
-        "keybindings": "Pikanäppäimet"
+        "keybindings": "Pikanäppäimet",
+        "fileReadError": "Tiedoston lukuvirhe"
     },
     "serverConfig": {
         "serverName": "Palvelimen nimi",

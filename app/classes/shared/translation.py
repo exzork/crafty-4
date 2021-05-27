@@ -11,14 +11,21 @@ logger = logging.getLogger(__name__)
 class Translation():
     def __init__(self):
         self.translations_path = os.path.join(helper.root_dir, 'app', 'translations')
+        self.cached_translation = None
+        self.cached_translation_lang = None
     def translate(self, page, word):
         translated_word = None
         lang = helper.get_setting('language')
         fallback_lang = 'en_EN'
 
-        translated_word = \
-            self.translate_inner(page, word, lang) or \
-            self.translate_inner(page, word, fallback_lang)
+        lang_file_exists = helper.check_file_exists(
+            os.path.join(
+                self.translations_path, lang + '.json'
+            )
+        )
+
+        translated_word = self.translate_inner(page, word, lang) \
+            if lang_file_exists else self.translate_inner(page, word, fallback_lang)
 
         if translated_word:
             if isinstance(translated_word, dict): return json.dumps(translated_word)
@@ -31,8 +38,17 @@ class Translation():
             lang + '.json'
         )
         try:
-            with open(lang_file, 'r') as f:
-                data = json.load(f)
+            if not self.cached_translation:
+                with open(lang_file, 'r') as f:
+                    data = json.load(f)
+                    self.cached_translation = data
+            elif self.cached_translation_lang != lang:
+                with open(lang_file, 'r') as f:
+                    data = json.load(f)
+                    self.cached_translation = data
+                    self.cached_translation_lang = lang
+            else:
+                data = self.cached_translation
             
             try:
                 translated_page = data[page]

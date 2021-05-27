@@ -194,6 +194,7 @@
                 }
               </style>
               <div class="col-md-6 col-sm-12">
+                <h2 id="fileError"></h2>
                 <div id="editorParent">
                   {{ translate('serverFiles', 'editingFile') }} <span id="editingFile"></span>
                   <div id="editor" onresize="editor.resize()" style="resize: both;width: 100%;">file_contents</div>
@@ -344,10 +345,13 @@
           console.log('Got File Contents From Server');
           json = JSON.parse(data)
           if (json.error) {
-            $('#editorParent').toggle(false)
+            $('#editorParent').toggle(false) // hide
+            $('#fileError').toggle(true)     // show
+            $('#fileError').text("{{ translate('serverFiles', 'fileReadError') }}: " + json.error) // show error
             editor.blur()
           } else {
-            $('#editorParent').toggle(true)
+            $('#editorParent').toggle(true) // show
+            $('#fileError').toggle(false)   // hide
             setFileName(event.target.innerText);
             editor.session.setValue(json.content);
           }
@@ -376,7 +380,8 @@
     }
 
     setFileName();
-    $('#editorParent').toggle(false)
+    $('#editorParent').toggle(false) // show
+    $('#fileError').toggle(false)    // hide
     editor.blur()
 
     function setMode (extension) {
