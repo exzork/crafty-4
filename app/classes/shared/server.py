@@ -130,7 +130,6 @@ class Server:
         self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
         self.is_crashed = False
 
-        # see https://docs.python.org/3/library/datetime.html#datetime.datetime.now
         self.start_time = str(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
 
         if psutil.pid_exists(self.process.pid):
