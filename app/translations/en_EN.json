@@ -106,7 +106,7 @@
         "version": "Version",
         "description": "Description",
         "errorCalculatingUptime": "Error Calculating Uptime",
-        "serverTime": "Server Time",
+        "serverTime": "UTC Time",
         "unableToConnect": "Unable To Connect"
     },
     "serverDetails": {
@@ -170,7 +170,8 @@
         "yesDelete": "Yes, I understand the consequences",
         "noDelete": "No",
         "unsupportedLanguage": "Warning: This is not a supported file type",
-        "keybindings": "Keybindings"
+        "keybindings": "Keybindings",
+        "fileReadError": "File read error"
     },
     "serverConfig": {
         "serverName": "Server Name",

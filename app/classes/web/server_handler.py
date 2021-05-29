@@ -19,8 +19,8 @@ try:
     import bleach
 
 except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e, e.name))
-    console.critical("Import Error: Unable to load {} module".format(e, e.name))
+    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
+    console.critical("Import Error: Unable to load {} module".format(e.name))
     sys.exit(1)
 
 
@@ -163,6 +163,10 @@ class ServerHandler(BaseHandler):
             import_server_jar = bleach.clean(self.get_argument('server_jar', ''))
             server_parts = server.split("|")
 
+            if not server_name:
+                self.redirect("/panel/error?error=Server name cannot be empty!")
+                return False
+
             if import_type == 'import_jar':
                 good_path = self.controller.verify_jar_server(import_server_path, import_server_jar)
 
@@ -171,7 +175,12 @@ class ServerHandler(BaseHandler):
                     return False
 
                 new_server_id = self.controller.import_jar_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
+                db_helper.add_to_audit_log(exec_user_data['user_id'],
+                                           "imported a jar server named \"{}\"".format(server_name), # Example: Admin imported a server named "old creative"
+                                           new_server_id,
+                                           self.get_remote_ip())
             elif import_type == 'import_zip':
+                # here import_server_path means the zip path
                 good_path = self.controller.verify_zip_server(import_server_path)
                 if not good_path:
                     self.redirect("/panel/error?error=Zip file not found!")
@@ -179,27 +188,23 @@ class ServerHandler(BaseHandler):
 
                 new_server_id = self.controller.import_zip_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
                 if new_server_id == "false":
-                    self.redirect("/panel/error?error=ZIP file not accessible! You can fix this permissions issue with sudo chown -R crafty:crafty {} And sudo chmod 2775 -R {}".format(import_server_path, import_server_path))
+                    self.redirect("/panel/error?error=Zip file not accessible! You can fix this permissions issue with sudo chown -R crafty:crafty {} And sudo chmod 2775 -R {}".format(import_server_path, import_server_path))
                     return False
+                db_helper.add_to_audit_log(exec_user_data['user_id'],
+                                           "imported a zip server named \"{}\"".format(server_name), # Example: Admin imported a server named "old creative"
+                                           new_server_id,
+                                           self.get_remote_ip())
             else:
+                if len(server_parts) != 2:
+                    self.redirect("/panel/error?error=Invalid server data")
+                    return False
+                server_type, server_version = server_parts
                 # todo: add server type check here and call the correct server add functions if not a jar
-                new_server_id = self.controller.create_jar_server(server_parts[0], server_parts[1], server_name, min_mem, max_mem, port)
-
-            if new_server_id is not None and exec_user_data is not None and len(server_parts) > 1:
+                new_server_id = self.controller.create_jar_server(server_type, server_version, server_name, min_mem, max_mem, port)
                 db_helper.add_to_audit_log(exec_user_data['user_id'],
-                                           "created a {} {} server named \"{}\"".format(server_parts[1], str(server_parts[0]).capitalize(), server_name), # Example: Admin created a 1.16.5 Bukkit server named "survival"
+                                           "created a {} {} server named \"{}\"".format(server_version, str(server_type).capitalize(), server_name), # Example: Admin created a 1.16.5 Bukkit server named "survival"
                                            new_server_id,
                                            self.get_remote_ip())
-
-            elif new_server_id is not None and exec_user_data is not None:
-                db_helper.add_to_audit_log(exec_user_data['user_id'],
-                                           "created a {} {} server named \"{}\"".format("Minecraft", str(server_parts[0]).capitalize(), server_name), # Example: Admin created a 1.16.5 Bukkit server named "survival"
-                                           new_server_id,
-                                           self.get_remote_ip())
-
-            else:
-                logger.error("Unable to create server")
-                console.error("Unable to create server")
 
             self.controller.stats.record_stats()
             self.redirect("/panel/dashboard")

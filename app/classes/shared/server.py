@@ -23,8 +23,8 @@ try:
     import pexpect
 
 except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e, e.name))
-    console.critical("Import Error: Unable to load {} module".format(e, e.name))
+    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
+    console.critical("Import Error: Unable to load {} module".format(e.name))
     sys.exit(1)
 
 
@@ -130,8 +130,7 @@ class Server:
         self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
         self.is_crashed = False
 
-        ts = time.time()
-        self.start_time = str(datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'))
+        self.start_time = str(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
 
         if psutil.pid_exists(self.process.pid):
             self.PID = self.process.pid

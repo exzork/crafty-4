@@ -25,6 +25,7 @@ try:
     from app.classes.web.ajax_handler import AjaxHandler
     from app.classes.web.api_handler import ServersStats, NodeStats
     from app.classes.web.websocket_handler import SocketHandler
+    from app.classes.web.static_handler import CustomStaticHandler
     from app.classes.shared.translation import translation
 
 except ModuleNotFoundError as e:
@@ -112,9 +113,6 @@ class Webserver:
 
         logger.info("Starting Web Server on ports http:{} https:{}".format(http_port, https_port))
 
-        console.info("http://{}:{} is up and ready for connection:".format(helper.get_local_ip(), http_port))
-        console.info("https://{}:{} is up and ready for connection:".format(helper.get_local_ip(), https_port))
-
         asyncio.set_event_loop(asyncio.new_event_loop())
 
         tornado.template.Loader('.')
@@ -143,7 +141,9 @@ class Webserver:
             autoreload=False,
             log_function=self.log_function,
             login_url="/login",
-            default_handler_class=PublicHandler
+            default_handler_class=PublicHandler,
+            static_handler_class=CustomStaticHandler,
+            serve_traceback=debug_errors,
         )
 
         self.HTTP_Server = tornado.httpserver.HTTPServer(app)
@@ -151,6 +151,11 @@ class Webserver:
 
         self.HTTPS_Server = tornado.httpserver.HTTPServer(app, ssl_options=cert_objects)
         self.HTTPS_Server.listen(https_port)
+
+        logger.info("http://{}:{} is up and ready for connections.".format(helper.get_local_ip(), http_port))
+        logger.info("https://{}:{} is up and ready for connections.".format(helper.get_local_ip(), https_port))
+        console.info("http://{}:{} is up and ready for connections.".format(helper.get_local_ip(), http_port))
+        console.info("https://{}:{} is up and ready for connections.".format(helper.get_local_ip(), https_port))
 
         console.info("Server Init Complete: Listening For Connections:")
 

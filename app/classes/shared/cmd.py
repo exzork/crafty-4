@@ -16,7 +16,7 @@ try:
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
+    console.critical("Import Error: Unable to load {} module".format(e.name))
     sys.exit(1)
 
 
@@ -28,10 +28,6 @@ class MainPrompt(cmd.Cmd, object):
 
     # overrides the default Prompt
     prompt = "Crafty Controller v{} > ".format(helper.get_version_string())
-
-    def __init__(self, tasks_manager):
-        super().__init__()
-        self.tasks_manager = tasks_manager
 
     @staticmethod
     def emptyline():
@@ -49,6 +45,9 @@ class MainPrompt(cmd.Cmd, object):
             console.critical("Unable to write exit file due to error: {}".format(e))
 
     def do_exit(self, line):
+        self.universal_exit()
+    
+    def universal_exit(self):
         logger.info("Stopping all server daemons / threads")
         console.info("Stopping all server daemons / threads - This may take a few seconds")
         websocket_helper.disconnect_all()
