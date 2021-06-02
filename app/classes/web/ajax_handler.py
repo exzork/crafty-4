@@ -5,6 +5,7 @@ import tornado.escape
 import bleach
 import os
 import shutil
+import html
 
 from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
@@ -68,7 +69,7 @@ class AjaxHandler(BaseHandler):
 
             for d in data:
                 try:
-                    line = helper.log_colors(d)
+                    line = helper.log_colors(html.escape(d))
                     self.write('{}<br />'.format(line))
                     # self.write(d.encode("utf-8"))
 
