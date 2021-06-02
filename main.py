@@ -129,7 +129,13 @@ if __name__ == '__main__':
 
     Crafty = MainPrompt(tasks_manager)
     if not args.daemon:
-        Crafty.cmdloop()
+        try:
+            Crafty.cmdloop()
+        except KeyboardInterrupt:
+            print() # for newline
+            logger.info("Recieved SIGINT, stopping Crafty")
+            console.info("Recieved SIGINT, stopping Crafty")
+            Crafty.universal_exit()
     else:
         print("Crafty started in daemon mode, no shell will be printed")
         while True:
@@ -139,6 +145,7 @@ if __name__ == '__main__':
                 time.sleep(1)
             except KeyboardInterrupt:
                 logger.info("Recieved SIGINT, stopping Crafty")
+                console.info("Recieved SIGINT, stopping Crafty")
                 break
-       
+        
         Crafty.universal_exit()
