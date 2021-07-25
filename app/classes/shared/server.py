@@ -115,6 +115,8 @@ class Server:
 
     def start_server(self):
 
+        logger.info("Start command detected. Reloading settings from DB for server {}".format(self.name))
+        self.setup_server_run_command()
         # fail safe in case we try to start something already running
         if self.check_running():
             logger.error("Server is already running - Cancelling Startup")
