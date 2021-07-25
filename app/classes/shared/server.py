@@ -10,6 +10,7 @@ import threading
 import schedule
 import logging.config
 import zipfile
+from threading import Thread
 
 
 from app.classes.shared.helpers import helper
@@ -48,6 +49,8 @@ class Server:
         self.restart_count = 0
         self.crash_watcher_schedule = None
         self.stats = stats
+        self.backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name="backup")
+        self.is_backingup = False
 
     def reload_server_settings(self):
         server_data = db_helper.get_server_data_by_id(self.server_id)
@@ -320,20 +323,49 @@ class Server:
         console.info("Removing old crash detection watcher thread")
         schedule.clear(self.name)
 
+    def is_backup_running(self):
+        if self.is_backingup:
+            return True
+        else:
+            return False
+
     def backup_server(self):
+        backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name="backup")
+        logger.info("Starting Backup Thread for server {}.".format(self.settings['server_name']))
+        #checks if the backup thread is currently alive for this server
+        if not self.is_backingup:
+            try:
+                backup_thread.start()
+            except Exception as ex:
+                logger.error("Failed to start backup: {}".format(ex))
+                return False
+        else:
+            logger.error("Backup is already being processed for server {}. Canceling backup request".format(self.settings['server_name']))
+            return False
+        logger.info("Backup Thread started for server {}.".format(self.settings['server_name']))
+
+    def a_backup_server(self):
         logger.info("Starting server {} (ID {}) backup".format(self.name, self.server_id))
+        self.is_backingup = True
         conf = db_helper.get_backup_config(self.server_id)
         try:
-            backup_filename = "{}/{}.zip".format(conf['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+            backup_filename = "{}/{}.zip".format(self.settings['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
             logger.info("Creating backup of server '{}' (ID#{}) at '{}'".format(self.settings['server_name'], self.server_id, backup_filename))
             helper.zip_directory(backup_filename, self.server_path)
-            backup_list = self.list_backups()
-            if len(self.list_backups()) > conf["max_backups"]:
+            while len(self.list_backups()) > conf["max_backups"]:
+                backup_list = self.list_backups()
                 oldfile = backup_list[0]
+                backup_path = self.settings['backup_path']
+                old_file_name = oldfile['path']
+                back_old_file = os.path.join(backup_path, old_file_name)
                 logger.info("Removing old backup '{}'".format(oldfile))
-                os.remove(oldfile)
+                os.remove(back_old_file)
+            self.is_backingup = False
+            return
         except:
             logger.exception("Failed to create backup of server {} (ID {})".format(self.name, self.server_id))
+            self.is_backingup = False
+            return
 
     def list_backups(self):
         conf = db_helper.get_backup_config(self.server_id)
@@ -344,27 +376,31 @@ class Server:
             return []
 
     def jar_update(self):
+        wasStarted = "-1"
         #checks if server is running. Calls shutdown if it is running.
         if self.check_running():
-            logger.info("Server with PID %s is running. Sending shutdown command", self.PID)
+            wasStarted = True
+            logger.info("Server with PID %s is running. Sending shutdown command".format(self.PID))
             self.stop_threaded_server()
+        else:
+            wasStarted = False
 
         backup_dir = os.path.join(self.settings['path'], 'crafty_executable_backups')
         #checks if backup directory already exists
         if os.path.isdir(backup_dir):
             backup_executable = os.path.join(backup_dir, 'old_server.jar')
         else:
-            logger.info("Executable backup directory not found for Server: {}}. Creating one.", self.name)
+            logger.info("Executable backup directory not found for Server: {}}. Creating one.".format(self.name))
             os.mkdir(backup_dir)
             backup_executable = os.path.join(backup_dir, 'old_server.jar')
 
             if os.path.isfile(backup_executable):
                 #removes old backup
-                logger.info("Old backup found for server: {}. Removing...", self.name)
+                logger.info("Old backup found for server: {}. Removing...".format(self.name))
                 os.remove(backup_executable)
-                logger.info("Old backup removed for server: {}.", self.name)
+                logger.info("Old backup removed for server: {}.".format(self.name))
             else:
-                logger.info("No old backups found for server: {}", self.name)
+                logger.info("No old backups found for server: {}".format(self.name))
 
         current_executable = os.path.join(self.settings['path'], self.settings['executable'])
 
@@ -376,5 +412,7 @@ class Server:
 
         if downloaded:
             logger.info("Executable updated successfully.")
+            if wasStarted:
+                self.start_server()
         else:
             logger.error("Executable download failed.")
