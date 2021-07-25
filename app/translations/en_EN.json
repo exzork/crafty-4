@@ -198,7 +198,12 @@
         "save": "Save",
         "cancel": "Cancel",
         "deleteServer": "Delete Server",
-        "stopBeforeDeleting": "Please stop the server before deleting it"
+        "stopBeforeDeleting": "Please stop the server before deleting it",
+        "exeUpdateURLDesc": "Direct Download URL for  updates.",
+        "exeUpdateURL": "Server Executable Update URL",
+        "update": "Update Executable",
+        "bePatientUpdate": "Please be patient while we update the server.<br /> This screen will refresh in a moment",
+        "sendingRequest": "Sending your request..."
     },
     "serverConfigHelp": {
         "title": "Server Config Area",
