@@ -202,7 +202,7 @@
         "exeUpdateURLDesc": "Direct Download URL for  updates.",
         "exeUpdateURL": "Server Executable Update URL",
         "update": "Update Executable",
-        "bePatientUpdate": "Please be patient while we update the server.<br /> This screen will refresh in a moment",
+        "bePatientUpdate": "Please be patient while we update the server.Download times can vary depending upon your internet speeds.<br /> This screen will refresh in a moment",
         "sendingRequest": "Sending your request..."
     },
     "serverConfigHelp": {
