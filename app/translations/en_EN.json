@@ -125,7 +125,8 @@
         "sendCommand": "Send command",
         "start": "Start",
         "restart": "Restart",
-        "stop": "Stop"
+        "stop": "Stop",
+        "updating": "Updating..."
     },
     "serverPlayerManagement": {
         "players": "Players",

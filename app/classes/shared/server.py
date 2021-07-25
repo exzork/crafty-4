@@ -16,6 +16,7 @@ from threading import Thread
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.shared.models import db_helper, Servers
+from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
 
@@ -121,6 +122,9 @@ class Server:
         if self.check_running():
             logger.error("Server is already running - Cancelling Startup")
             console.error("Server is already running - Cancelling Startup")
+            return False
+        if self.settings['updating']:
+            websocket_helper.broadcast('warn', "Server is updating. Not starting. Please wait for update to finish.")
             return False
 
         logger.info("Launching Server {} with command {}".format(self.name, self.server_command))
@@ -379,6 +383,11 @@ class Server:
             return []
 
     def jar_update(self):
+        db_helper.set_update(self.server_id, True)
+        update_thread = threading.Thread(target=self.a_jar_update, daemon=True, name="exe_update")
+        update_thread.start()
+
+    def a_jar_update(self):
         wasStarted = "-1"
         self.backup_server()
         #checks if server is running. Calls shutdown if it is running.
@@ -394,7 +403,7 @@ class Server:
         if os.path.isdir(backup_dir):
             backup_executable = os.path.join(backup_dir, 'old_server.jar')
         else:
-            logger.info("Executable backup directory not found for Server: {}}. Creating one.".format(self.name))
+            logger.info("Executable backup directory not found for Server: {}. Creating one.".format(self.name))
             os.mkdir(backup_dir)
             backup_executable = os.path.join(backup_dir, 'old_server.jar')
 
@@ -415,10 +424,18 @@ class Server:
         downloaded = helper.download_file(self.settings['executable_update_url'], current_executable)
 
         if downloaded:
-            logger.info("Executable updated successfully.")
+            while self.is_backingup:
+                db_helper.set_update(self.server_id, True)
+                pass
+            logger.info("Executable updated successfully. Starting Server")
+            time.sleep(5)
+            db_helper.set_update(self.server_id, False)
+            websocket_helper.broadcast('notification', "Executable update finished for "+self.name)
+            db_helper.add_to_audit_log_raw('Alert', '-1', self.server_id, "Executable update finished for "+self.name, self.settings['server_ip'])
             if wasStarted:
-                while self.is_backingup:
-                    pass
                 self.start_server()
         else:
+            time.sleep(5)
+            db_helper.set_update(self.server_id, False)
+            websocket_helper.broadcast('notification', "Executable update failed for " + self.name+". Check log file for details.")
             logger.error("Executable download failed.")
