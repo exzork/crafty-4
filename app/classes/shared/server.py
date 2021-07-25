@@ -363,6 +363,7 @@ class Server:
                 logger.info("Removing old backup '{}'".format(oldfile))
                 os.remove(back_old_file)
             self.is_backingup = False
+            logger.info("Backup of server: {} completed".format(self.name))
             return
         except:
             logger.exception("Failed to create backup of server {} (ID {})".format(self.name, self.server_id))
@@ -379,10 +380,11 @@ class Server:
 
     def jar_update(self):
         wasStarted = "-1"
+        self.backup_server()
         #checks if server is running. Calls shutdown if it is running.
         if self.check_running():
             wasStarted = True
-            logger.info("Server with PID %s is running. Sending shutdown command".format(self.PID))
+            logger.info("Server with PID {} is running. Sending shutdown command".format(self.PID))
             self.stop_threaded_server()
         else:
             wasStarted = False
@@ -415,6 +417,8 @@ class Server:
         if downloaded:
             logger.info("Executable updated successfully.")
             if wasStarted:
+                while self.is_backingup:
+                    pass
                 self.start_server()
         else:
             logger.error("Executable download failed.")
