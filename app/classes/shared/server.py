@@ -348,33 +348,33 @@ class Server:
         if self.check_running():
             logger.info("Server with PID %s is running. Sending shutdown command", self.PID)
             self.stop_threaded_server()
+
+        backup_dir = os.path.join(self.settings['path'], 'crafty_executable_backups')
+        #checks if backup directory already exists
+        if os.path.isdir(backup_dir):
+            backup_executable = os.path.join(backup_dir, 'old_server.jar')
         else:
-            backup_dir = os.path.join(self.settings['path'], 'crafty_executable_backups')
-            #checks if backup directory already exists
-            if os.path.isdir(backup_dir):
-                backup_executable = os.path.join(backup_dir, 'old_server.jar')
+            logger.info("Executable backup directory not found for Server: {}}. Creating one.", self.name)
+            os.mkdir(backup_dir)
+            backup_executable = os.path.join(backup_dir, 'old_server.jar')
+
+            if os.path.isfile(backup_executable):
+                #removes old backup
+                logger.info("Old backup found for server: {}. Removing...", self.name)
+                os.remove(backup_executable)
+                logger.info("Old backup removed for server: {}.", self.name)
             else:
-                logger.info("Executable backup directory not found for Server: {}}. Creating one.", self.name)
-                os.mkdir(backup_dir)
-                backup_executable = os.path.join(backup_dir, 'old_server.jar')
+                logger.info("No old backups found for server: {}", self.name)
 
-                if os.path.isfile(backup_executable):
-                    #removes old backup
-                    logger.info("Old backup found for server: {}. Removing...", self.name)
-                    os.remove(backup_executable)
-                    logger.info("Old backup removed for server: {}.", self.name)
-                else:
-                    logger.info("No old backups found for server: {}", self.name)
+        current_executable = os.path.join(self.settings['path'], self.settings['executable'])
 
-            current_executable = os.path.join(self.settings['path'], self.settings['executable'])
+        #copies to backup dir
+        helper.copy_files(current_executable, backup_executable)
 
-            #copies to backup dir
-            helper.copy_files(current_executable, backup_executable)
+    #boolean returns true for false for success
+        downloaded = helper.download_file(self.settings['executable_update_url'], current_executable)
 
-        #boolean returns true for false for success
-            downloaded = helper.download_file(self.settings['executable_update_url'], current_executable)
-
-            if downloaded:
-                logger.info("Executable updated successfully.")
-            else:
-                logger.error("Executable download failed.")
+        if downloaded:
+            logger.info("Executable updated successfully.")
+        else:
+            logger.error("Executable download failed.")
