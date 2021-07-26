@@ -123,7 +123,7 @@
                     </a>
                   </td>
 
-                  <td class="actions_serverlist">
+                  <td id="controls{{server['server_data']['server_id']}}" class="actions_serverlist">
                     {% if server['stats']['running'] %}
                       <a class="stop_button" data-id="{{server['server_data']['server_id']}}"> <i class="fas fa-stop"></i></a> &nbsp;
                       <a class="restart_button" data-id="{{server['server_data']['server_id']}}"> <i class="fas fa-sync"></i></a> &nbsp;
@@ -280,6 +280,28 @@ $( document ).ready(function() {
       cpu_usage.textContent = hostStats.cpu_usage;
       mem_usage.setAttribute('data-original-title', `{% raw translate("dashboard", "memUsage") %}: ${hostStats.mem_usage}`);
       mem_percent.textContent = hostStats.mem_percent + '%';
+    });
+  }
+      if (webSocket) {
+    webSocket.on('update_button_status', function (updateButton) {
+    var id = 'controls';
+    var id = id.concat(updateButton.server_id);
+    console.log("ID " + id);
+      if (updateButton.isUpdating){
+        console.log(updateButton.isUpdating)
+        document.getElementById(id).innerHTML = '<a data-id="{{server["server_data"]["server_id"]}}" class="clone_button"> UPDATING...</i></a>';
+      }
+      else{
+        if (updateButton.wasStarted){
+            document.getElementById(id).innerHTML = '<a class="stop_button" data-id="{{server["server_data"]["server_id"]}}"> <i class="fas fa-stop"></i></a> &nbsp;<a class="restart_button" data-id="{{server["server_data"]["server_id"]}}"> <i class="fas fa-sync"></i></a> &nbsp;';
+
+        }else{
+            document.getElementById(id).innerHTML = '<a data-id="{{server["server_data"]["server_id"]}}" class="play_button"><i class="fas fa-play"></i></a> &nbsp;<a data-id="{{server["server_data"]["server_id"]}}" class="clone_button"> <i class="fas fa-clone"></i></a>&nbsp;';
+
+        }
+
+        document.getElementById(id).innerHTML = '<button onclick="send_command(server_id, "start_server");" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "start") }}</button><button onclick="send_command(server_id, "restart_server");" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart") %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop") }}</button>';
+        }
     });
   }
 

@@ -396,7 +396,8 @@ class Server:
 
     def a_jar_update(self):
         wasStarted = "-1"
-        self.backup_server()
+        #self.backup_server()
+        time.sleep(5)
         #checks if server is running. Calls shutdown if it is running.
         if self.check_running():
             wasStarted = True
@@ -436,8 +437,20 @@ class Server:
                 pass
             logger.info("Executable updated successfully. Starting Server")
             time.sleep(5)
+
             db_helper.set_update(self.server_id, False)
+
+            if len(websocket_helper.clients) > 0:
+                # There are clients
+                self.check_update()
+                websocket_helper.broadcast('update_button_status', {
+                    'isUpdating': self.check_update(),
+                    'server_id': self.server_id,
+                    'wasRunning': wasStarted
+                })
+            time.sleep(3)
             websocket_helper.broadcast('notification', "Executable update finished for "+self.name)
+
             db_helper.add_to_audit_log_raw('Alert', '-1', self.server_id, "Executable update finished for "+self.name, self.settings['server_ip'])
             if wasStarted:
                 self.start_server()
