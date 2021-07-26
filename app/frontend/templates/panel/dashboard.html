@@ -299,8 +299,6 @@ $( document ).ready(function() {
             document.getElementById(id).innerHTML = '<a data-id="{{server["server_data"]["server_id"]}}" class="play_button"><i class="fas fa-play"></i></a> &nbsp;<a data-id="{{server["server_data"]["server_id"]}}" class="clone_button"> <i class="fas fa-clone"></i></a>&nbsp;';
 
         }
-
-        document.getElementById(id).innerHTML = '<button onclick="send_command(server_id, "start_server");" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "start") }}</button><button onclick="send_command(server_id, "restart_server");" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart") %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop") }}</button>';
         }
     });
   }
