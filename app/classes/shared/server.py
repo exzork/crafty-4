@@ -123,8 +123,8 @@ class Server:
             logger.error("Server is already running - Cancelling Startup")
             console.error("Server is already running - Cancelling Startup")
             return False
-        if self.settings['updating']:
-            websocket_helper.broadcast('warn', "Server is updating. Not starting. Please wait for update to finish.")
+        if self.check_update():
+            logger.error("Server is updating. Terminating startup.")
             return False
 
         logger.info("Launching Server {} with command {}".format(self.name, self.server_command))
@@ -386,6 +386,13 @@ class Server:
         db_helper.set_update(self.server_id, True)
         update_thread = threading.Thread(target=self.a_jar_update, daemon=True, name="exe_update")
         update_thread.start()
+
+    def check_update(self):
+        server_stats = db_helper.get_server_stats_by_id(self.server_id)
+        if server_stats['updating']:
+            return True
+        else:
+            return False
 
     def a_jar_update(self):
         wasStarted = "-1"
