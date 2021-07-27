@@ -449,12 +449,13 @@ class Server:
             if len(websocket_helper.clients) > 0:
                 # There are clients
                 self.check_update()
+                websocket_helper.broadcast('notification', "Executable update finished for " + self.name)
+                time.sleep(3)
                 websocket_helper.broadcast('update_button_status', {
                     'isUpdating': self.check_update(),
                     'server_id': self.server_id,
                     'wasRunning': wasStarted
                 })
-            time.sleep(7)
             websocket_helper.broadcast('notification', "Executable update finished for "+self.name)
 
             db_helper.add_to_audit_log_raw('Alert', '-1', self.server_id, "Executable update finished for "+self.name, self.settings['server_ip'])
