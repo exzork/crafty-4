@@ -454,6 +454,7 @@ class Server:
                     'server_id': self.server_id,
                     'wasRunning': wasStarted
                 })
+            time.sleep(7)
             websocket_helper.broadcast('notification', "Executable update finished for "+self.name)
 
             db_helper.add_to_audit_log_raw('Alert', '-1', self.server_id, "Executable update finished for "+self.name, self.settings['server_ip'])
