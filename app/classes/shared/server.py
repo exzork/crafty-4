@@ -407,10 +407,12 @@ class Server:
             if len(websocket_helper.clients) > 0:
                 # There are clients
                 self.check_update()
+                message = '<a data-id="'+self.server_id+'" class=""> UPDATING...</i></a>'
                 websocket_helper.broadcast('update_button_status', {
                     'isUpdating': self.check_update(),
                     'server_id': self.server_id,
-                    'wasRunning': wasStarted
+                    'wasRunning': wasStarted,
+                    'string': message
                 })
         backup_dir = os.path.join(self.settings['path'], 'crafty_executable_backups')
         #checks if backup directory already exists

@@ -286,10 +286,11 @@ $( document ).ready(function() {
     webSocket.on('update_button_status', function (updateButton) {
     var id = 'controls';
     var dataId = updateButton.server_id;
+    var string = updateButton.string
     var id = id.concat(updateButton.server_id);
       if (updateButton.isUpdating){
         console.log(updateButton.isUpdating)
-        document.getElementById(id).innerHTML = '<a data-id="dataId" class=""> UPDATING...</i></a>';
+        document.getElementById(id).innerHTML = string;
       }
       else{
       window.location.reload()
