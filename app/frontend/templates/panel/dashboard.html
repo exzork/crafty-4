@@ -286,23 +286,13 @@ $( document ).ready(function() {
     webSocket.on('update_button_status', function (updateButton) {
     var id = 'controls';
     var dataId = updateButton.server_id;
-    console.log(dataId)
     var id = id.concat(updateButton.server_id);
-    console.log("ID " + id);
       if (updateButton.isUpdating){
         console.log(updateButton.isUpdating)
         document.getElementById(id).innerHTML = '<a data-id="dataId" class=""> UPDATING...</i></a>';
       }
       else{
       window.location.reload()
-        if (updateButton.wasStarted){
-            document.getElementById(id).innerHTML = '<a class="stop_button" data-id="dataId"> <i class="fas fa-stop"></i></a> &nbsp;<a class="restart_button" data-id="{{server["server_data"]["server_id"]}}"> <i class="fas fa-sync"></i></a> &nbsp;';
-
-        }else{
-            document.getElementById(id).innerHTML = updateButton.dashOffGetString;
-            console.log(updateButton.dashOffGetString);
-
-        }
         }
     });
   }

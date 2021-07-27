@@ -439,15 +439,13 @@ class Server:
             time.sleep(5)
 
             db_helper.set_update(self.server_id, False)
-            dashOffHtmlString = '<a data-id="'+str(self.server_id)+'" class="play_button"><i class="fas fa-play"></i></a> &nbsp;<a data-id="'+str(self.server_id)+'" class="clone_button"> <i class="fas fa-clone"></i></a>&nbsp;'
             if len(websocket_helper.clients) > 0:
                 # There are clients
                 self.check_update()
                 websocket_helper.broadcast('update_button_status', {
                     'isUpdating': self.check_update(),
                     'server_id': self.server_id,
-                    'wasRunning': wasStarted,
-                    'dashOffGetString': dashOffHtmlString
+                    'wasRunning': wasStarted
                 })
             time.sleep(3)
             websocket_helper.broadcast('notification', "Executable update finished for "+self.name)
