@@ -125,7 +125,8 @@
         "sendCommand": "Send command",
         "start": "Start",
         "restart": "Restart",
-        "stop": "Stop"
+        "stop": "Stop",
+        "updating": "Updating..."
     },
     "serverPlayerManagement": {
         "players": "Players",
@@ -199,7 +200,12 @@
         "save": "Save",
         "cancel": "Cancel",
         "deleteServer": "Delete Server",
-        "stopBeforeDeleting": "Please stop the server before deleting it"
+        "stopBeforeDeleting": "Please stop the server before deleting it",
+        "exeUpdateURLDesc": "Direct Download URL for  updates.",
+        "exeUpdateURL": "Server Executable Update URL",
+        "update": "Update Executable",
+        "bePatientUpdate": "Please be patient while we update the server. Download times can vary depending upon your internet speeds.<br /> This screen will refresh in a moment",
+        "sendingRequest": "Sending your request..."
     },
     "serverConfigHelp": {
         "title": "Server Config Area",

@@ -10,11 +10,13 @@ import threading
 import schedule
 import logging.config
 import zipfile
+from threading import Thread
 
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.shared.models import db_helper, Servers
+from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +44,14 @@ class Server:
         self.settings = None
         self.updating = False
         self.server_id = None
+        self.jar_update_url = None
         self.name = None
         self.is_crashed = False
         self.restart_count = 0
         self.crash_watcher_schedule = None
         self.stats = stats
+        self.backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name="backup")
+        self.is_backingup = False
 
     def reload_server_settings(self):
         server_data = db_helper.get_server_data_by_id(self.server_id)
@@ -111,10 +116,15 @@ class Server:
 
     def start_server(self):
 
+        logger.info("Start command detected. Reloading settings from DB for server {}".format(self.name))
+        self.setup_server_run_command()
         # fail safe in case we try to start something already running
         if self.check_running():
             logger.error("Server is already running - Cancelling Startup")
             console.error("Server is already running - Cancelling Startup")
+            return False
+        if self.check_update():
+            logger.error("Server is updating. Terminating startup.")
             return False
 
         logger.info("Launching Server {} with command {}".format(self.name, self.server_command))
@@ -127,7 +137,11 @@ class Server:
             logger.info("Linux Detected")
 
         logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
-        self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
+        try:
+            self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
+        except Exception as ex:
+            logger.error("Server {} failed to start with error code: {}".format(self.name, ex))
+            return False
         self.is_crashed = False
 
         self.start_time = str(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
@@ -318,20 +332,50 @@ class Server:
         console.info("Removing old crash detection watcher thread")
         schedule.clear(self.name)
 
+    def is_backup_running(self):
+        if self.is_backingup:
+            return True
+        else:
+            return False
+
     def backup_server(self):
+        backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name="backup")
+        logger.info("Starting Backup Thread for server {}.".format(self.settings['server_name']))
+        #checks if the backup thread is currently alive for this server
+        if not self.is_backingup:
+            try:
+                backup_thread.start()
+            except Exception as ex:
+                logger.error("Failed to start backup: {}".format(ex))
+                return False
+        else:
+            logger.error("Backup is already being processed for server {}. Canceling backup request".format(self.settings['server_name']))
+            return False
+        logger.info("Backup Thread started for server {}.".format(self.settings['server_name']))
+
+    def a_backup_server(self):
         logger.info("Starting server {} (ID {}) backup".format(self.name, self.server_id))
+        self.is_backingup = True
         conf = db_helper.get_backup_config(self.server_id)
         try:
-            backup_filename = "{}/{}.zip".format(conf['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+            backup_filename = "{}/{}.zip".format(self.settings['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
             logger.info("Creating backup of server '{}' (ID#{}) at '{}'".format(self.settings['server_name'], self.server_id, backup_filename))
             helper.zip_directory(backup_filename, self.server_path)
-            backup_list = self.list_backups()
-            if len(self.list_backups()) > conf["max_backups"]:
+            while len(self.list_backups()) > conf["max_backups"]:
+                backup_list = self.list_backups()
                 oldfile = backup_list[0]
+                backup_path = self.settings['backup_path']
+                old_file_name = oldfile['path']
+                back_old_file = os.path.join(backup_path, old_file_name)
                 logger.info("Removing old backup '{}'".format(oldfile))
-                os.remove(oldfile)
+                os.remove(back_old_file)
+            self.is_backingup = False
+            logger.info("Backup of server: {} completed".format(self.name))
+            return
         except:
             logger.exception("Failed to create backup of server {} (ID {})".format(self.name, self.server_id))
+            self.is_backingup = False
+            return
 
     def list_backups(self):
         conf = db_helper.get_backup_config(self.server_id)
@@ -340,3 +384,88 @@ class Server:
             return [{"path": os.path.relpath(f['path'], start=conf['backup_path']), "size": f["size"]} for f in files]
         else:
             return []
+
+    def jar_update(self):
+        db_helper.set_update(self.server_id, True)
+        update_thread = threading.Thread(target=self.a_jar_update, daemon=True, name="exe_update")
+        update_thread.start()
+
+    def check_update(self):
+        server_stats = db_helper.get_server_stats_by_id(self.server_id)
+        if server_stats['updating']:
+            return True
+        else:
+            return False
+
+    def a_jar_update(self):
+        wasStarted = "-1"
+        self.backup_server()
+        #checks if server is running. Calls shutdown if it is running.
+        if self.check_running():
+            wasStarted = True
+            logger.info("Server with PID {} is running. Sending shutdown command".format(self.PID))
+            self.stop_threaded_server()
+        else:
+            wasStarted = False
+        if len(websocket_helper.clients) > 0:
+            # There are clients
+            self.check_update()
+            message = '<a data-id="'+str(self.server_id)+'" class=""> UPDATING...</i></a>'
+            websocket_helper.broadcast('update_button_status', {
+                'isUpdating': self.check_update(),
+                'server_id': self.server_id,
+                'wasRunning': wasStarted,
+                'string': message
+            })
+        backup_dir = os.path.join(self.settings['path'], 'crafty_executable_backups')
+        #checks if backup directory already exists
+        if os.path.isdir(backup_dir):
+            backup_executable = os.path.join(backup_dir, 'old_server.jar')
+        else:
+            logger.info("Executable backup directory not found for Server: {}. Creating one.".format(self.name))
+            os.mkdir(backup_dir)
+            backup_executable = os.path.join(backup_dir, 'old_server.jar')
+
+            if os.path.isfile(backup_executable):
+                #removes old backup
+                logger.info("Old backup found for server: {}. Removing...".format(self.name))
+                os.remove(backup_executable)
+                logger.info("Old backup removed for server: {}.".format(self.name))
+            else:
+                logger.info("No old backups found for server: {}".format(self.name))
+
+        current_executable = os.path.join(self.settings['path'], self.settings['executable'])
+
+        #copies to backup dir
+        helper.copy_files(current_executable, backup_executable)
+
+    #boolean returns true for false for success
+        downloaded = helper.download_file(self.settings['executable_update_url'], current_executable)
+
+        if downloaded:
+            while self.is_backingup:
+                db_helper.set_update(self.server_id, True)
+                pass
+            logger.info("Executable updated successfully. Starting Server")
+
+            db_helper.set_update(self.server_id, False)
+            if len(websocket_helper.clients) > 0:
+                # There are clients
+                self.check_update()
+                websocket_helper.broadcast('notification', "Executable update finished for " + self.name)
+                time.sleep(3)
+                websocket_helper.broadcast('update_button_status', {
+                    'isUpdating': self.check_update(),
+                    'server_id': self.server_id,
+                    'wasRunning': wasStarted
+                })
+            websocket_helper.broadcast('notification', "Executable update finished for "+self.name)
+
+            db_helper.add_to_audit_log_raw('Alert', '-1', self.server_id, "Executable update finished for "+self.name, self.settings['server_ip'])
+            if wasStarted:
+                self.start_server()
+        else:
+            time.sleep(5)
+            db_helper.set_update(self.server_id, False)
+            websocket_helper.broadcast('notification', "Executable update failed for " + self.name+". Check log file for details.")
+            logger.error("Executable download failed.")
