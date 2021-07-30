@@ -96,7 +96,7 @@ class ServerHandler(BaseHandler):
                         for server in db_helper.get_all_defined_servers():
                             if server['server_name'] == name:
                                 return True
-                        return False
+                        return
                     
                     server_data = db_helper.get_server_data_by_id(server_id)
                     server_uuid = server_data.get('server_uuid')
@@ -165,14 +165,14 @@ class ServerHandler(BaseHandler):
 
             if not server_name:
                 self.redirect("/panel/error?error=Server name cannot be empty!")
-                return False
+                return
 
             if import_type == 'import_jar':
                 good_path = self.controller.verify_jar_server(import_server_path, import_server_jar)
 
                 if not good_path:
                     self.redirect("/panel/error?error=Server path or Server Jar not found!")
-                    return False
+                    return
 
                 new_server_id = self.controller.import_jar_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
                 db_helper.add_to_audit_log(exec_user_data['user_id'],
@@ -184,12 +184,12 @@ class ServerHandler(BaseHandler):
                 good_path = self.controller.verify_zip_server(import_server_path)
                 if not good_path:
                     self.redirect("/panel/error?error=Zip file not found!")
-                    return False
+                    return
 
                 new_server_id = self.controller.import_zip_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
                 if new_server_id == "false":
                     self.redirect("/panel/error?error=Zip file not accessible! You can fix this permissions issue with sudo chown -R crafty:crafty {} And sudo chmod 2775 -R {}".format(import_server_path, import_server_path))
-                    return False
+                    return
                 db_helper.add_to_audit_log(exec_user_data['user_id'],
                                            "imported a zip server named \"{}\"".format(server_name), # Example: Admin imported a server named "old creative"
                                            new_server_id,
@@ -197,7 +197,7 @@ class ServerHandler(BaseHandler):
             else:
                 if len(server_parts) != 2:
                     self.redirect("/panel/error?error=Invalid server data")
-                    return False
+                    return
                 server_type, server_version = server_parts
                 # todo: add server type check here and call the correct server add functions if not a jar
                 new_server_id = self.controller.create_jar_server(server_type, server_version, server_name, min_mem, max_mem, port)
