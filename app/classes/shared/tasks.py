@@ -211,7 +211,6 @@ class TasksManager:
                 time.sleep(8)
 
     def log_watcher(self):
-        console.debug('in log_watcher')
         helper.check_for_old_logs(db_helper)
         schedule.every(6).hours.do(lambda: helper.check_for_old_logs(db_helper)).tag('log-mgmt')
 

@@ -107,8 +107,6 @@ class ServerHandler(BaseHandler):
                         name_counter += 1
                         new_server_name = server_data.get('server_name') + " (Copy {})".format(name_counter)
 
-                    console.debug('new_server_name: "{}"'.format(new_server_name))
-
                     new_server_uuid = helper.create_uuid()
                     while os.path.exists(os.path.join(helper.servers_dir, new_server_uuid)):
                         new_server_uuid = helper.create_uuid()
@@ -145,7 +143,6 @@ class ServerHandler(BaseHandler):
                     }).execute()
 
                     self.controller.init_all_servers()
-                    console.debug('initted all servers')
 
                     return
                 
