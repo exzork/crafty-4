@@ -157,7 +157,7 @@ class Helpers:
         version = "{}.{}.{}-{}".format(version_data.get('major', '?'),
                                     version_data.get('minor', '?'),
                                     version_data.get('sub', '?'),
-                                    version_data.get('patch', '?'))
+                                    version_data.get('meta', '?'))
         return str(version)
 
     def do_exit(self):
