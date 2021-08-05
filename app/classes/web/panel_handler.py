@@ -426,6 +426,7 @@ class PanelHandler(BaseHandler):
             auto_start_delay = self.get_argument('auto_start_delay', '10')
             server_ip = self.get_argument('server_ip', None)
             server_port = self.get_argument('server_port', None)
+            executable_update_url = self.get_argument('executable_update_url', None)
             auto_start = int(float(self.get_argument('auto_start', '0')))
             crash_detection = int(float(self.get_argument('crash_detection', '0')))
             logs_delete_after = int(float(self.get_argument('logs_delete_after', '0')))
@@ -454,6 +455,7 @@ class PanelHandler(BaseHandler):
                 Servers.server_ip: server_ip,
                 Servers.server_port: server_port,
                 Servers.auto_start: auto_start,
+                Servers.executable_update_url: executable_update_url,
                 Servers.crash_detection: crash_detection,
                 Servers.logs_delete_after: logs_delete_after,
             }).where(Servers.server_id == server_id).execute()

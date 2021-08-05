@@ -122,6 +122,7 @@ class Servers(BaseModel):
     auto_start_delay = IntegerField(default=10)
     crash_detection = BooleanField(default=0)
     stop_command = CharField(default="stop")
+    executable_update_url = CharField(default="")
     server_ip = CharField(default="127.0.0.1")
     server_port = IntegerField(default=25565)
     logs_delete_after = IntegerField(default=0)
@@ -156,6 +157,7 @@ class Server_Stats(BaseModel):
     players = CharField(default="")
     desc = CharField(default="Unable to Connect")
     version = CharField(default="")
+    updating = BooleanField(default=False)
 
 
     class Meta:
@@ -841,6 +843,15 @@ class db_shortcuts:
                 "server_id": server_id
             }
         return conf
+
+    @staticmethod
+    def set_update(server_id, value):
+        try:
+            row = Server_Stats.select().where(Server_Stats.server_id == server_id)
+        except Exception as ex:
+            logger.error("Database entry not found. ".format(ex))
+        with database.atomic():
+            Server_Stats.update(updating=value).where(Server_Stats.server_id == server_id).execute()
 
     @staticmethod
     def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, auto_enabled: bool = True):

@@ -110,6 +110,9 @@ class TasksManager:
                 elif command == "backup_server":
                     svr.backup_server()
 
+                elif command == "update_executable":
+                    svr.jar_update()
+
                 db_helper.mark_command_complete(c.get('command_id', None))
 
             time.sleep(1)
