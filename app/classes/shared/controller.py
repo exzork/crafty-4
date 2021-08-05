@@ -4,6 +4,8 @@ import logging
 import sys
 import yaml
 import asyncio
+import shutil
+import tempfile
 import zipfile
 from distutils import dir_util
 
@@ -276,8 +278,24 @@ class Controller:
         if helper.check_file_perms(zip_path):
             helper.ensure_dir_exists(new_server_dir)
             helper.ensure_dir_exists(backup_path)
+            tempDir = tempfile.mkdtemp()
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                zip_ref.extractall(new_server_dir)
+                zip_ref.extractall(tempDir)
+                test = zip_ref.filelist[1].filename
+                path_list = test.split('/')
+                root_path = path_list[0]
+                if len(path_list) > 1:
+                    for i in range(len(path_list)-2):
+                        root_path = os.path.join(root_path, path_list[i+1])
+                        print(root_path)
+
+                full_root_path = os.path.join(tempDir, root_path)
+                for item in os.listdir(full_root_path):
+                    try:
+                        shutil.move(os.path.join(full_root_path, item), os.path.join(new_server_dir, item))
+                    except Exception as ex:
+                        logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
+                zip_ref.close()
         else:
             return "false"
 
