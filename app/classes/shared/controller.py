@@ -287,14 +287,22 @@ class Controller:
                 if len(path_list) > 1:
                     for i in range(len(path_list)-2):
                         root_path = os.path.join(root_path, path_list[i+1])
-                        print(root_path)
 
                 full_root_path = os.path.join(tempDir, root_path)
+
+                has_properties = False
                 for item in os.listdir(full_root_path):
+                    if str(item) == 'server.properties':
+                        has_properties = True
                     try:
                         shutil.move(os.path.join(full_root_path, item), os.path.join(new_server_dir, item))
                     except Exception as ex:
                         logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
+                if not has_properties:
+                    logger.info("No server.properties found on zip file import. Creating one with port selection of {}".format(str(port)))
+                    with open(os.path.join(new_server_dir, "server.properties"), "w") as f:
+                        f.write("server-port={}".format(port))
+                        f.close()
                 zip_ref.close()
         else:
             return "false"
