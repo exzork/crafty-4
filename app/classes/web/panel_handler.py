@@ -254,8 +254,12 @@ class PanelHandler(BaseHandler):
             self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
 
         elif page == 'panel_config':
-            page_data['users'] = db_helper.get_all_users()
-            page_data['roles'] = db_helper.get_all_roles()
+            if exec_user['superuser'] == 1:
+                page_data['users'] = db_helper.get_all_users()
+                page_data['roles'] = db_helper.get_all_roles()
+            else:
+                page_data['users'] = db_helper.user_query(exec_user['user_id'])
+                page_data['roles'] = db_helper.user_role_query(exec_user['user_id'])
             for user in page_data['users']:
                 if user.user_id != exec_user['user_id']:
                     user.api_token = "********"
@@ -286,11 +290,8 @@ class PanelHandler(BaseHandler):
 
         elif page == "edit_user":
             user_id = self.get_argument('id', None)
-            role_servers = db_helper.get_authorized_servers_stats_from_roles(user_id)
             user_servers = db_helper.get_authorized_servers(user_id)
             servers = set()
-            for server in role_servers:
-                servers.add(server['server_id'])
             for server in user_servers:
                 servers.add(server['server_id'])
             page_data['new_user'] = False

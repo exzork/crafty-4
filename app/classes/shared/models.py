@@ -371,7 +371,7 @@ class db_shortcuts:
             server_data.append(db_helper.get_server_data_by_id(u.server_id))
 
         return server_data
-        
+
     @staticmethod
     def get_authorized_servers_from_roles(user_id):
         user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
@@ -423,7 +423,9 @@ class db_shortcuts:
                 role_server.append(t)
 
         for s in role_server:
-            authorized_servers.append(db_helper.get_server_data_by_id(s.server_id))
+            for item in user_servers:
+                if item.server_id != s.server_id:
+                    authorized_servers.append(db_helper.get_server_data_by_id(s.server_id))
 
         for s in authorized_servers:
             latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(
@@ -567,6 +569,20 @@ class db_shortcuts:
         #logger.debug("user: ({}) {}".format(user_id, user))
         return user
 
+
+    @staticmethod
+    def user_query(user_id):
+        user_query = Users.select().where(Users.user_id == user_id)
+        return user_query
+
+    @staticmethod
+    def user_role_query(user_id):
+        user_query = User_Roles.select().where(User_Roles.user_id == user_id)
+        query = Roles.select().where(Roles.role_id == -1)
+        for u in user_query:
+            query = Roles.select().where(Roles.role_id == u.role_id)
+        print(query)
+        return query
 
     @staticmethod
     def get_user(user_id):
