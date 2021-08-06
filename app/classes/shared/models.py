@@ -569,6 +569,11 @@ class db_shortcuts:
         #logger.debug("user: ({}) {}".format(user_id, user))
         return user
 
+    @staticmethod
+    def add_user_server(server_id, user_id):
+        servers = User_Servers.insert({User_Servers.server_id: server_id, User_Servers.user_id: user_id}).execute()
+        return servers
+
 
     @staticmethod
     def user_query(user_id):
