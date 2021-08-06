@@ -36,11 +36,11 @@ class PanelHandler(BaseHandler):
             defined_servers = self.controller.list_defined_servers()
             exec_user_role.add("Super User")
         else:
-            defined_servers = db_helper.get_all_authorized_servers(exec_user_id)
             logger.debug(exec_user['roles'])
             for r in exec_user['roles']:
                 role = db_helper.get_role(r)
                 exec_user_role.add(role['role_name'])
+            defined_servers = db_helper.get_all_authorized_servers(exec_user_id)
 
         page_data = {
             # todo: make this actually pull and compare version data

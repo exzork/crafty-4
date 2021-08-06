@@ -455,12 +455,9 @@ class db_shortcuts:
         for s in role_server:
             found = False
             for item in user_servers:
-                print("SERVER ID: "+ str(s.server_id) + "ITEM ID"+ str(item.server_id))
                 if s.server_id == item.server_id:
-                    print("IN FOUND")
                     found = True
             if not found:
-                print("NOT FOUND?")
                 authorized_servers.append(db_helper.get_server_data_by_id(s.server_id))
 
         for s in authorized_servers:
