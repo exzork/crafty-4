@@ -254,12 +254,8 @@ class PanelHandler(BaseHandler):
             self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
 
         elif page == 'panel_config':
-            if exec_user['superuser'] == 1:
-                page_data['users'] = db_helper.get_all_users()
-                page_data['roles'] = db_helper.get_all_roles()
-            else:
-                page_data['users'] = db_helper.get_user(exec_user_id)
-                page_data['roles'] = db_helper.get_user_roles(exec_user_id)
+            page_data['users'] = db_helper.get_all_users()
+            page_data['roles'] = db_helper.get_all_roles()
             for user in page_data['users']:
                 if user.user_id != exec_user['user_id']:
                     user.api_token = "********"
