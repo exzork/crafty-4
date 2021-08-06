@@ -254,7 +254,7 @@ class PanelHandler(BaseHandler):
             self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
 
         elif page == 'panel_config':
-            if exec_user['super_user']:
+            if exec_user['superuser'] == 1:
                 page_data['users'] = db_helper.get_all_users()
                 page_data['roles'] = db_helper.get_all_roles()
             else:
