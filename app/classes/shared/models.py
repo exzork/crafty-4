@@ -373,6 +373,36 @@ class db_shortcuts:
         return server_data
 
     @staticmethod
+    def get_all_authorized_servers(user_id):
+        user_servers = User_Servers.select().where(User_Servers.user_id == user_id)
+        user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        server_data = []
+        roles_list = []
+        role_server = []
+        server_data = []
+
+        for u in user_servers:
+            server_data.append(db_helper.get_server_data_by_id(u.server_id))
+
+        for u in user_roles:
+            roles_list.append(db_helper.get_role(u.role_id))
+
+        for r in roles_list:
+            role_test = Role_Servers.select().where(Role_Servers.role_id == r.get('role_id'))
+            for t in role_test:
+                role_server.append(t)
+
+        for s in role_server:
+            found = False
+            for item in user_servers:
+                if s.server_id == item.server_id:
+                    found = True
+            if not found:
+                server_data.append(db_helper.get_server_data_by_id(s.server_id))
+
+        return server_data
+
+    @staticmethod
     def get_authorized_servers_from_roles(user_id):
         user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
         roles_list = []
@@ -423,9 +453,15 @@ class db_shortcuts:
                 role_server.append(t)
 
         for s in role_server:
+            found = False
             for item in user_servers:
-                if item.server_id != s.server_id:
-                    authorized_servers.append(db_helper.get_server_data_by_id(s.server_id))
+                print("SERVER ID: "+ str(s.server_id) + "ITEM ID"+ str(item.server_id))
+                if s.server_id == item.server_id:
+                    print("IN FOUND")
+                    found = True
+            if not found:
+                print("NOT FOUND?")
+                authorized_servers.append(db_helper.get_server_data_by_id(s.server_id))
 
         for s in authorized_servers:
             latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(

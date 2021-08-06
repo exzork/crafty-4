@@ -36,7 +36,7 @@ class PanelHandler(BaseHandler):
             defined_servers = self.controller.list_defined_servers()
             exec_user_role.add("Super User")
         else:
-            defined_servers = self.controller.list_authorized_servers(exec_user_id)
+            defined_servers = db_helper.get_all_authorized_servers(exec_user_id)
             logger.debug(exec_user['roles'])
             for r in exec_user['roles']:
                 role = db_helper.get_role(r)
@@ -53,7 +53,7 @@ class PanelHandler(BaseHandler):
                 'running': len(self.controller.list_running_servers()),
                 'stopped': (len(self.controller.list_defined_servers()) - len(self.controller.list_running_servers()))
             },
-            'menu_servers': self.controller.list_authorized_servers(exec_user_id),
+            'menu_servers': defined_servers,
             'hosts_data': db_helper.get_latest_hosts_stats(),
             'show_contribute': helper.get_setting("show_contribute_link", True),
             'error': error,
