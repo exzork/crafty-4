@@ -431,6 +431,12 @@ class db_shortcuts:
             server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0]})
         return server_data
 
+    @staticmethod
+    def get_user_roles(user_id):
+        user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        return user_roles
+
+
         
     @staticmethod
     def get_authorized_servers_stats_from_roles(user_id):
