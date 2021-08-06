@@ -123,9 +123,9 @@
                                 <td>{{ server['server_name'] }}</td>
                                 <td>
                                   {% if server['server_id'] in data['servers'] %}
-                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" disabled>
+                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" value="1">
                                   {% else %}
-                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" disabled>
+                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" value="1">
                                   {% end %}
                                 </td>
                               </tr>

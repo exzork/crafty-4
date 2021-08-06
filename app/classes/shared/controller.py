@@ -112,10 +112,15 @@ class Controller:
         
     @staticmethod
     def list_authorized_servers(userId):
-        #servers = db_helper.get_authorized_servers(userId)
-        servers = db_helper.get_authorized_servers_from_roles(userId)
+        servers = db_helper.get_authorized_servers(userId)
+        server_list = []
+        for item in servers:
+            server_list.append(item)
+        role_servers = db_helper.get_authorized_servers_from_roles(userId)
+        for item in role_servers:
+            server_list.append(item)
         logger.debug("servers list = {}".format(servers))
-        return servers
+        return server_list
 
     def get_server_data(self, server_id):
         for s in self.servers_list:

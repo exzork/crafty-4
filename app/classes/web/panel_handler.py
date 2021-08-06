@@ -53,7 +53,7 @@ class PanelHandler(BaseHandler):
                 'running': len(self.controller.list_running_servers()),
                 'stopped': (len(self.controller.list_defined_servers()) - len(self.controller.list_running_servers()))
             },
-            'menu_servers': defined_servers,
+            'menu_servers': self.controller.list_authorized_servers(exec_user_id),
             'hosts_data': db_helper.get_latest_hosts_stats(),
             'show_contribute': helper.get_setting("show_contribute_link", True),
             'error': error,
@@ -109,10 +109,9 @@ class PanelHandler(BaseHandler):
             if exec_user['superuser'] == 1:
                 page_data['servers'] = db_helper.get_all_servers_stats()
             else:
-                #page_data['servers'] = db_helper.get_authorized_servers_stats(exec_user_id)
-                ras = db_helper.get_authorized_servers_stats_from_roles(exec_user_id)
-                logger.debug("ASFR: {}".format(ras))
-                page_data['servers'] = ras
+                user_auth = db_helper.get_authorized_servers_stats(exec_user_id)
+                logger.debug("ASFR: {}".format(user_auth))
+                page_data['servers'] = user_auth
 
             for s in page_data['servers']:
                 try:
@@ -137,10 +136,10 @@ class PanelHandler(BaseHandler):
                     return
 
                 if exec_user['superuser'] != 1:
-                    #if not db_helper.server_id_authorized(server_id, exec_user_id):
-                    if not db_helper.server_id_authorized_from_roles(int(server_id), exec_user_id):
-                        self.redirect("/panel/error?error=Invalid Server ID")
-                        return False
+                    if not db_helper.server_id_authorized(server_id, exec_user_id):
+                        if not db_helper.server_id_authorized_from_roles(int(server_id), exec_user_id):
+                            self.redirect("/panel/error?error=Invalid Server ID")
+                            return False
 
             valid_subpages = ['term', 'logs', 'backup', 'config', 'files', 'admin_controls']
 
@@ -286,10 +285,17 @@ class PanelHandler(BaseHandler):
             template = "panel/panel_edit_user.html"
 
         elif page == "edit_user":
-            page_data['new_user'] = False
             user_id = self.get_argument('id', None)
+            role_servers = db_helper.get_authorized_servers_stats_from_roles(user_id)
+            user_servers = db_helper.get_authorized_servers(user_id)
+            servers = set()
+            for server in role_servers:
+                servers.add(server['server_id'])
+            for server in user_servers:
+                servers.add(server['server_id'])
+            page_data['new_user'] = False
             page_data['user'] = db_helper.get_user(user_id)
-            page_data['servers'] = db_helper.get_authorized_servers_stats_from_roles(user_id)
+            page_data['servers'] = servers
             page_data['roles_all'] = db_helper.get_all_roles()
             page_data['servers_all'] = self.controller.list_defined_servers()
 
@@ -433,8 +439,10 @@ class PanelHandler(BaseHandler):
             subpage = self.get_argument('subpage', None)
 
             if not exec_user['superuser']:
-                self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return
+                if not db_helper.server_id_authorized(server_id, exec_user_id):
+                    if not db_helper.server_id_authorized_from_roles(server_id, exec_user_id):
+                        self.redirect("/panel/error?error=Unauthorized access: invalid server id")
+                        return
             elif server_id is None:
                 self.redirect("/panel/error?error=Invalid Server ID")
                 return
@@ -538,17 +546,28 @@ class PanelHandler(BaseHandler):
                 if argument:
                     roles.add(role.role_id)
 
+            servers = set()
+            for server in self.controller.list_defined_servers():
+                argument = int(float(
+                    bleach.clean(
+                        self.get_argument('server_{}_access'.format(server['server_id']), '0')
+                    )
+                ))
+                if argument:
+                    servers.add(server['server_id'])
+
             user_data = {
                 "username": username,
                 "password": password0,
                 "enabled": enabled,
                 "regen_api": regen_api,
                 "roles": roles,
+                "servers": servers,
             }
             db_helper.update_user(user_id, user_data=user_data)
 
             db_helper.add_to_audit_log(exec_user['user_id'],
-                                       "Edited user {} (UID:{}) with roles {}".format(username, user_id, roles),
+                                       "Edited user {} (UID:{}) with roles {} and servers {}".format(username, user_id, roles, servers),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
@@ -597,7 +616,11 @@ class PanelHandler(BaseHandler):
                     servers.add(server['server_id'])
 
             user_id = db_helper.add_user(username, password=password0, enabled=enabled)
-            db_helper.update_user(user_id, {"roles":roles})
+            user_data = {
+                "roles": roles,
+                "servers": servers,
+            }
+            db_helper.update_user(user_id, user_data)
 
             db_helper.add_to_audit_log(exec_user['user_id'],
                                        "Added user {} (UID:{})".format(username, user_id),

@@ -130,6 +130,16 @@ class Servers(BaseModel):
     class Meta:
         table_name = "servers"
 
+
+class User_Servers(BaseModel):
+    user_id = ForeignKeyField(Users, backref='user_server')
+    server_id = ForeignKeyField(Servers, backref='user_server')
+
+    class Meta:
+        table_name = 'user_servers'
+        primary_key = CompositeKey('user_id', 'server_id')
+
+
 class Role_Servers(BaseModel):
     role_id = ForeignKeyField(Roles, backref='role_server')
     server_id = ForeignKeyField(Servers, backref='role_server')
@@ -222,6 +232,7 @@ class db_builder:
                 Users,
                 Roles,
                 User_Roles,
+                User_Servers,
                 Host_Stats,
                 Webhooks,
                 Servers,
@@ -396,13 +407,28 @@ class db_shortcuts:
         user_servers = User_Servers.select().where(User_Servers.user_id == user_id)
         authorized_servers = []
         server_data = []
+        user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        roles_list = []
+        role_server = []
 
         for u in user_servers:
             authorized_servers.append(db_helper.get_server_data_by_id(u.server_id))
 
+        for u in user_roles:
+            roles_list.append(db_helper.get_role(u.role_id))
+
+        for r in roles_list:
+            role_test = Role_Servers.select().where(Role_Servers.role_id == r.get('role_id'))
+            for t in role_test:
+                role_server.append(t)
+
+        for s in role_server:
+            authorized_servers.append(db_helper.get_server_data_by_id(s.server_id))
+
         for s in authorized_servers:
-            latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
-            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)})
+            latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(
+                Server_Stats.created.desc()).limit(1)
+            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0]})
         return server_data
 
         
@@ -531,13 +557,13 @@ class db_shortcuts:
         roles = set()
         for r in roles_query:
             roles.add(r.role_id.role_id)
-        #servers_query = User_Servers.select().join(Servers, JOIN.INNER).where(User_Servers.user_id == user_id)
+        servers_query = User_Servers.select().join(Servers, JOIN.INNER).where(User_Servers.user_id == user_id)
         ## TODO: this query needs to be narrower
         servers = set()
-        #for s in servers_query:
-        #    servers.add(s.server_id.server_id)
+        for s in servers_query:
+            servers.add(s.server_id.server_id)
         user['roles'] = roles
-        #user['servers'] = servers
+        user['servers'] = servers
         #logger.debug("user: ({}) {}".format(user_id, user))
         return user
 
@@ -557,7 +583,7 @@ class db_shortcuts:
                 superuser: False,
                 api_token: None,
                 roles: [],
-                servers: []
+                servers: [],
             }
         user = model_to_dict(Users.get(Users.user_id == user_id))
 
@@ -583,9 +609,9 @@ class db_shortcuts:
             elif key == "roles":
                 added_roles = user_data['roles'].difference(base_data['roles'])
                 removed_roles = base_data['roles'].difference(user_data['roles'])
-            #elif key == "servers":
-            #    added_servers = user_data['servers'].difference(base_data['servers'])
-            #    removed_servers = base_data['servers'].difference(user_data['servers'])
+            elif key == "servers":
+                added_servers = user_data['servers'].difference(base_data['servers'])
+                removed_servers = base_data['servers'].difference(user_data['servers'])
             elif key == "regen_api":
                 if user_data['regen_api']:
                     up_data['api_token'] = db_shortcuts.new_api_token()
@@ -602,10 +628,10 @@ class db_shortcuts:
                 # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
             User_Roles.delete().where(User_Roles.user_id == user_id).where(User_Roles.role_id.in_(removed_roles)).execute()
 
-            #for server in added_servers:
-            #    User_Servers.get_or_create(user_id=user_id, server_id=server)
+            for server in added_servers:
+                User_Servers.get_or_create(user_id=user_id, server_id=server)
             #    # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
-            #User_Servers.delete().where(User_Servers.user_id == user_id).where(User_Servers.server_id.in_(removed_servers)).execute()
+            User_Servers.delete().where(User_Servers.user_id == user_id).where(User_Servers.server_id.in_(removed_servers)).execute()
             if up_data:
                 Users.update(up_data).where(Users.user_id == user_id).execute()
 
