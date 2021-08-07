@@ -146,6 +146,8 @@ class Server:
                 'error': msg
             })
             return False
+        websocket_helper.broadcast('send_start_reload', {
+        })
         self.is_crashed = False
 
         self.start_time = str(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))

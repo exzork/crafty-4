@@ -221,6 +221,7 @@
 
 if (webSocket) {
     webSocket.on('send_start_error', function (start_error) {
+
        var closeEl = document.createElement('span');
       var strongEL = document.createElement('strong');
       var msgEl = document.createElement('div');
@@ -248,7 +249,12 @@ if (webSocket) {
       parentEl.appendChild(msgEl);
 
       document.querySelector('.warnings').appendChild(parentEl);
+    });
+  }
 
+  if (webSocket) {
+    webSocket.on('send_start_reload', function (start_error) {
+    location.reload()
     });
   }
 

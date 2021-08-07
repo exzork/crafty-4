@@ -127,7 +127,11 @@
         success: function(data){
           console.log("got response:");
           console.log(data);
-          setTimeout(function(){ location.reload(); }, 10000);
+          setTimeout(function(){
+          if (command != 'start_server'){
+            location.reload();
+          }
+          }, 10000);
 
         }
       });
