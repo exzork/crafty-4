@@ -144,7 +144,38 @@
         }
     });
   }
+if (webSocket) {
+    webSocket.on('send_start_error', function (start_error) {
+       var closeEl = document.createElement('span');
+      var strongEL = document.createElement('strong');
+      var msgEl = document.createElement('div');
 
+      closeEl.innerHTML = '&times;';
+      strongEL.textContent = 'Warning: ';
+      msgEl.append(strongEL, start_error.error);
+
+
+      closeEl.style.marginLeft = '15px';
+      closeEl.style.fontWeight = 'bold';
+      closeEl.style.float = 'right';
+      closeEl.style.fontSize = '22px';
+      closeEl.style.lineHeight = '20px';
+      closeEl.style.cursor = 'pointer';
+
+      closeEl.addEventListener('click', function () {this.parentElement.style.display='none';});
+
+      var parentEl = document.createElement('div');
+
+      parentEl.style.padding = '20px';
+      parentEl.style.backgroundColor = '#f7970f';
+
+      parentEl.appendChild(closeEl);
+      parentEl.appendChild(msgEl);
+
+      document.querySelector('.warnings').appendChild(parentEl);
+
+    });
+  }
     // Convert running to lower case (example: 'True' converts to 'true') and
     // then to boolean via JSON.parse()
     let online = JSON.parse('{{ data['server_stats']['running'] }}'.toLowerCase());
