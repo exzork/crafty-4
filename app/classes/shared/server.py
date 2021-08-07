@@ -140,8 +140,14 @@ class Server:
         try:
             self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
         except Exception as ex:
-            logger.error("Server {} failed to start with error code: {}".format(self.name, ex))
+            msg = "Server {} failed to start with error code: {}".format(self.name, ex)
+            logger.error(msg)
+            websocket_helper.broadcast('send_start_error', {
+                'error': msg
+            })
             return False
+        websocket_helper.broadcast('send_start_reload', {
+        })
         self.is_crashed = False
 
         self.start_time = str(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))

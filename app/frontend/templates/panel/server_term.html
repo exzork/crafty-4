@@ -127,7 +127,11 @@
         success: function(data){
           console.log("got response:");
           console.log(data);
-          setTimeout(function(){ location.reload(); }, 10000);
+          setTimeout(function(){
+          if (command != 'start_server'){
+            location.reload();
+          }
+          }, 10000);
 
         }
       });
@@ -144,7 +148,6 @@
         }
     });
   }
-
     // Convert running to lower case (example: 'True' converts to 'true') and
     // then to boolean via JSON.parse()
     let online = JSON.parse('{{ data['server_stats']['running'] }}'.toLowerCase());
