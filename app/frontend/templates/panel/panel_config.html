@@ -45,6 +45,7 @@
                           <th>Enabled</th>
                           <th>API Token</th>
                           <th>Allowed Servers</th>
+                          <th>Assigned Roles</th>
                           <th>Edit</th>
                         </tr>
                       </thead>
@@ -66,7 +67,16 @@
 
                           </td>
                           <td>{{ user.api_token }}</td>
-                          <td>{{ [] }}</td>
+                          <td class="server_list_{{user.user_id}}"><ul id="{{user.user_id}}">
+                            {% for item in data['auth-servers'][user.user_id] %}
+                            <li>{{item}}</li>
+                            {% end %}
+                          </ul></td>
+                          <td class="role_list_{{user.user_id}}"><ul>
+                            {% for item in data['user-roles'][user.user_id] %}
+                            <li>{{item}}</li>
+                            {% end %}
+
                           <td><a href="/panel/edit_user?id={{user.user_id}}"><i class="fas fa-pencil-alt"></i></a></td>
                         </tr>
                       {% end %}
@@ -102,7 +112,11 @@
                       {% for role in data['roles'] %}
                         <tr>
                           <td>{{ role.role_name }}</td>
-                          <td>{{ [] }}</td>
+                          <td class="role_list_{{role.role_id}}"><ul id="{{role.role_id}}">
+                            {% for item in data['role-servers'][role.role_id] %}
+                            <li>{{item}}</li>
+                            {% end %}
+                          </ul></td>
                           <td><a href="/panel/edit_role?id={{role.role_id}}"><i class="fas fa-pencil-alt"></i></a></td>
                         </tr>
                       {% end %}
