@@ -7,6 +7,8 @@ import time
 import datetime
 import os
 
+from tornado import iostream
+
 from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
 from app.classes.web.base_handler import BaseHandler
@@ -254,12 +256,39 @@ class PanelHandler(BaseHandler):
             self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
 
         elif page == 'panel_config':
+            auth_servers = {}
+            auth_role_servers = {}
+            roles = db_helper.get_all_roles()
+            role_servers = []
+            user_roles = {}
+            for user in db_helper.get_all_users():
+                user_roles_list = db_helper.get_user_roles_names(user.user_id)
+                user_servers = db_helper.get_all_authorized_servers(user.user_id)
+                servers = []
+                for server in user_servers:
+                    servers.append(server['server_name'])
+                new_item = {user.user_id: servers}
+                auth_servers.update(new_item)
+                data = {user.user_id: user_roles_list}
+                user_roles.update(data)
+            for role in roles:
+                role = db_helper.get_role(role.role_id)
+                for serv_id in role['servers']:
+                    role_servers.append(db_helper.get_server_data_by_id(serv_id)['server_name'])
+                data = {role['role_id']: role_servers}
+                auth_role_servers.update(data)
+
+            page_data['auth-servers'] = auth_servers
+            page_data['role-servers'] = auth_role_servers
+            page_data['user-roles'] = user_roles
+
             if exec_user['superuser'] == 1:
                 page_data['users'] = db_helper.get_all_users()
                 page_data['roles'] = db_helper.get_all_roles()
             else:
                 page_data['users'] = db_helper.user_query(exec_user['user_id'])
                 page_data['roles'] = db_helper.user_role_query(exec_user['user_id'])
+
             for user in page_data['users']:
                 if user.user_id != exec_user['user_id']:
                     user.api_token = "********"
@@ -297,6 +326,7 @@ class PanelHandler(BaseHandler):
             page_data['new_user'] = False
             page_data['user'] = db_helper.get_user(user_id)
             page_data['servers'] = servers
+            page_data['role-servers'] = db_helper.get_authorized_servers_from_roles(exec_user_id)
             page_data['roles_all'] = db_helper.get_all_roles()
             page_data['servers_all'] = self.controller.list_defined_servers()
 
