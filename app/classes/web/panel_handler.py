@@ -320,13 +320,22 @@ class PanelHandler(BaseHandler):
         elif page == "edit_user":
             user_id = self.get_argument('id', None)
             user_servers = db_helper.get_authorized_servers(user_id)
+            role_servers = db_helper.get_authorized_servers_from_roles(user_id)
+            page_role_servers = []
             servers = set()
             for server in user_servers:
-                servers.add(server['server_id'])
+                flag = False
+                for rserver in role_servers:
+                    if rserver['server_id'] == server['server_id']:
+                        flag = True
+                if not flag:
+                    servers.add(server['server_id'])
+            for server in role_servers:
+                page_role_servers.append(server['server_id'])
             page_data['new_user'] = False
             page_data['user'] = db_helper.get_user(user_id)
             page_data['servers'] = servers
-            page_data['role-servers'] = db_helper.get_authorized_servers_from_roles(exec_user_id)
+            page_data['role-servers'] = page_role_servers
             page_data['roles_all'] = db_helper.get_all_roles()
             page_data['servers_all'] = self.controller.list_defined_servers()
 
