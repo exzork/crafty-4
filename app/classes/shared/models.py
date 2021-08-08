@@ -619,7 +619,6 @@ class db_shortcuts:
         query = Roles.select().where(Roles.role_id == -1)
         for u in user_query:
             query = Roles.select().where(Roles.role_id == u.role_id)
-        print(query)
         return query
 
     @staticmethod
