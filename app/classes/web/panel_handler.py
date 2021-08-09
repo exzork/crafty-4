@@ -385,6 +385,12 @@ class PanelHandler(BaseHandler):
             self.redirect("/panel/panel_config")
 
         elif page == "add_role":
+            user_roles = {}
+            for user in db_helper.get_all_users():
+                user_roles_list = db_helper.get_user_roles_names(user.user_id)
+                user_servers = db_helper.get_all_authorized_servers(user.user_id)
+                data = {user.user_id: user_roles_list}
+                user_roles.update(data)
             page_data['new_role'] = True
             page_data['role'] = {}
             page_data['role']['role_name'] = ""
@@ -392,6 +398,8 @@ class PanelHandler(BaseHandler):
             page_data['role']['created'] = "N/A"
             page_data['role']['last_update'] = "N/A"
             page_data['role']['servers'] = set()
+            page_data['user-roles'] = user_roles
+            page_data['users'] = db_helper.get_all_users()
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
