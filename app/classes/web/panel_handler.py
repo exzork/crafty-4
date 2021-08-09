@@ -316,6 +316,7 @@ class PanelHandler(BaseHandler):
             page_data['roles_all'] = db_helper.get_all_roles()
             page_data['servers'] = []
             page_data['servers_all'] = self.controller.list_defined_servers()
+            page_data['role-servers'] = []
             template = "panel/panel_edit_user.html"
 
         elif page == "edit_user":
