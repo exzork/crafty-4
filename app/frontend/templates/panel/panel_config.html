@@ -105,6 +105,7 @@
                         <tr class="rounded">
                           <th>Role</th>
                           <th>Allowed Servers</th>
+                          <th>Role Users</th>
                           <th>Edit</th>
                         </tr>
                       </thead>
@@ -117,6 +118,16 @@
                             <li>{{item}}</li>
                             {% end %}
                           </ul></td>
+                          <td><ul>
+                            {% for user in data['users'] %}
+                              {% for ruser in data['user-roles'][user.user_id] %}
+                                {% if ruser == role.role_name %}
+                                <li>{{ user.username }}</li>
+                            {% end %}
+                            {% end %}
+                          {% end %}
+                          </ul>
+                          </td>
                           <td><a href="/panel/edit_role?id={{role.role_id}}"><i class="fas fa-pencil-alt"></i></a></td>
                         </tr>
                       {% end %}

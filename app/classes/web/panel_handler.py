@@ -258,6 +258,8 @@ class PanelHandler(BaseHandler):
         elif page == 'panel_config':
             auth_servers = {}
             auth_role_servers = {}
+            users_list = []
+            role_users = {}
             roles = db_helper.get_all_roles()
             role_servers = []
             user_roles = {}
@@ -278,6 +280,7 @@ class PanelHandler(BaseHandler):
                     role_servers.append(db_helper.get_server_data_by_id(serv_id)['server_name'])
                 data = {role['role_id']: role_servers}
                 auth_role_servers.update(data)
+
 
             page_data['auth-servers'] = auth_servers
             page_data['role-servers'] = auth_role_servers
@@ -341,14 +344,14 @@ class PanelHandler(BaseHandler):
             page_data['roles_all'] = db_helper.get_all_roles()
             page_data['servers_all'] = self.controller.list_defined_servers()
 
-            if not exec_user['superuser']:
+            if user_id is None:
+                self.redirect("/panel/error?error=Invalid User ID")
+                return
+            elif not exec_user['superuser']:
                 page_data['servers'] = []
                 page_data['role-servers'] = []
                 page_data['roles_all'] = []
                 page_data['servers_all'] = []
-            elif user_id is None:
-                self.redirect("/panel/error?error=Invalid User ID")
-                return
 
             if exec_user['user_id'] != page_data['user']['user_id']:
                 page_data['user']['api_token'] = "********"
@@ -398,10 +401,20 @@ class PanelHandler(BaseHandler):
             template = "panel/panel_edit_role.html"
 
         elif page == "edit_role":
+            auth_servers = {}
+
+            user_roles = {}
+            for user in db_helper.get_all_users():
+                user_roles_list = db_helper.get_user_roles_names(user.user_id)
+                user_servers = db_helper.get_all_authorized_servers(user.user_id)
+                data = {user.user_id: user_roles_list}
+                user_roles.update(data)
             page_data['new_role'] = False
             role_id = self.get_argument('id', None)
             page_data['role'] = db_helper.get_role(role_id)
             page_data['servers_all'] = self.controller.list_defined_servers()
+            page_data['user-roles'] = user_roles
+            page_data['users'] = db_helper.get_all_users()
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
