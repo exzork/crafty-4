@@ -341,8 +341,10 @@ class PanelHandler(BaseHandler):
             page_data['servers_all'] = self.controller.list_defined_servers()
 
             if not exec_user['superuser']:
-                self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return
+                page_data['servers'] = []
+                page_data['role-servers'] = []
+                page_data['roles_all'] = []
+                page_data['servers_all'] = []
             elif user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
@@ -559,7 +561,18 @@ class PanelHandler(BaseHandler):
             regen_api = int(float(self.get_argument('regen_api', '0')))
 
             if not exec_user['superuser']:
-                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                user_data = {
+                    "username": username,
+                    "password": password0,
+                }
+                db_helper.update_user(user_id, user_data=user_data)
+
+                db_helper.add_to_audit_log(exec_user['user_id'],
+                                           "Edited user {} (UID:{}) password".format(username,
+                                                                                                         user_id),
+                                           server_id=0,
+                                           source_ip=self.get_remote_ip())
+                self.redirect("/panel/panel_config")
                 return
             elif username is None or username == "":
                 self.redirect("/panel/error?error=Invalid username")
