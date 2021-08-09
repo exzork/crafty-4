@@ -272,6 +272,7 @@ class PanelHandler(BaseHandler):
                 data = {user.user_id: user_roles_list}
                 user_roles.update(data)
             for role in roles:
+                role_servers = []
                 role = db_helper.get_role(role.role_id)
                 for serv_id in role['servers']:
                     role_servers.append(db_helper.get_server_data_by_id(serv_id)['server_name'])
