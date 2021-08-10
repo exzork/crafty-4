@@ -344,7 +344,7 @@ class Controller:
 
         return new_id
 
-    def remove_server(self, server_id):
+    def remove_server(self, server_id, files):
         counter = 0
         for s in self.servers_list:
 
@@ -361,7 +361,8 @@ class Controller:
 
                 if running:
                     self.stop_server(server_id)
-
+                if files:
+                    shutil.rmtree(db_helper.get_server_data_by_id(server_id)['path'])
                 # remove the server from the DB
                 db_helper.remove_server(server_id)
 

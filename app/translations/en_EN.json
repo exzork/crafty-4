@@ -126,7 +126,15 @@
         "start": "Start",
         "restart": "Restart",
         "stop": "Stop",
-        "updating": "Updating..."
+        "updating": "Updating...",
+        "deleteServerQuestion": "Delete Server?",
+        "deleteServerQuestionMessage": "Are you sure you want to delete this server? After this there is no going back...",
+        "yesDelete": "Yes, delete",
+        "noDelete": "No, go back",
+        "deleteFilesQuestion": "Delete server files from machine?",
+        "deleteFilesQuestionMessage": "Would you like Crafty to delete all server files from the host machine?",
+        "yesDeleteFiles": "Yes, delete files",
+        "noDeleteFiles": "No, just remove from panel"
     },
     "serverPlayerManagement": {
         "players": "Players",

@@ -169,7 +169,7 @@
                             <small>{{ translate('serverConfig', 'stopBeforeDeleting') }}</small>
                         {% else %}
                             <button onclick="send_command(server_id, 'update_executable');" id="update_executable" style="max-width: 7rem;" class="btn btn-warning m-1 flex-grow-1">{{ translate('serverConfig', 'update') }}</button>
-                            <a href="/panel/remove_server?id={{ data['server_stats']['server_id']['server_id'] }}" class="btn btn-sm btn-danger">{{ translate('serverConfig', 'deleteServer') }}</a>
+                            <button onclick="deleteConfirm()" class="btn btn-sm btn-danger">{{ translate('serverConfig', 'deleteServer') }}</button>
                         {% end %}
 
                     </div>
@@ -224,6 +224,80 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
       title: '{% raw translate("serverConfig", "sendingRequest") %}',
       message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientUpdate") %} </div>'
     });
+    }
+
+     function deleteServer (){
+      path = "{{data['server_stats']['server_id']['path']}}";
+      name = "{{data['server_stats']['server_id']['server_name']}}";
+      bootbox.confirm({
+          size: "",
+          title: "{% raw translate('serverTerm', 'deleteFilesQuestion') %}",
+          closeButton: false,
+          message: "{% raw translate('serverTerm', 'deleteFilesQuestionMessage') %}",
+          buttons: {
+            confirm: {
+              label: "{{ translate('serverTerm', 'yesDeleteFiles') }}",
+              className: 'btn-danger',
+            },
+            cancel: {
+              label: "{{ translate('serverTerm', 'noDeleteFiles') }}",
+              className: 'btn-link',
+            }
+          },
+          callback: function(result) {
+            if (!result){
+                send_command(server_id, 'delete_server');
+                setTimeout(function(){ window.location = '/panel/dashboard'; }, 5000);
+                bootbox.dialog({
+                backdrop: true,
+                closeButton: false,
+                title: '{% raw translate("serverConfig", "sendingRequest") %}',
+                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientUpdate") %} </div>'
+    });
+
+             return;}
+             else{
+                send_command(server_id, 'delete_server_files');
+                                 setTimeout(function(){ window.location = '/panel/dashboard'; }, 5000);
+                bootbox.dialog({
+                backdrop: true,
+                closeButton: false,
+                title: '{% raw translate("serverConfig", "sendingRequest") %}',
+                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientUpdate") %} </div>'
+    });
+             }
+
+          }
+      });
+    }
+    function deleteConfirm (){
+      path = "{{data['server_stats']['server_id']['path']}}";
+      name = "{{data['server_stats']['server_id']['server_name']}}";
+      bootbox.confirm({
+          size: "",
+          title: "{% raw translate('serverTerm', 'deleteServerQuestion') %}",
+          closeButton: false,
+          message: "{% raw translate('serverTerm', 'deleteServerQuestionMessage') %}",
+          buttons: {
+            confirm: {
+              label: "{{ translate('serverTerm', 'yesDelete') }}",
+              className: 'btn-danger',
+            },
+            cancel: {
+              label: "{{ translate('serverTerm', 'noDelete') }}",
+              className: 'btn-link',
+            }
+          },
+          callback: function(result) {
+            if (!result){
+                return;
+             return;}
+             else{
+             deleteServer();
+             }
+
+          }
+      });
     }
 
 </script>
