@@ -10,11 +10,13 @@ import threading
 import schedule
 import logging.config
 import zipfile
+import html
 
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.shared.models import db_helper, Servers
+from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +28,58 @@ except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
     console.critical("Import Error: Unable to load {} module".format(e.name))
     sys.exit(1)
+
+class ServerOutBuf:
+    lines = {}
+    def __init__(self, p, server_id):
+        self.p = p
+        self.server_id = str(server_id)
+        # Buffers text for virtual_terminal_lines config number of lines
+        self.max_lines = helper.get_setting('virtual_terminal_lines')
+        self.line_buffer = ''
+        ServerOutBuf.lines[self.server_id] = []
+
+    def check(self):
+        while self.p.isalive():
+            char = self.p.read(1)
+            if char == os.linesep:
+                ServerOutBuf.lines[self.server_id].append(self.line_buffer)
+                self.new_line_handler(self.line_buffer)
+                self.line_buffer = ''
+                # Limit list length to self.max_lines:
+                if len(ServerOutBuf.lines[self.server_id]) > self.max_lines:
+                    ServerOutBuf.lines[self.server_id].pop(0)
+            else:
+                self.line_buffer += char
+
+    def new_line_handler(self, new_line):
+        console.debug('New line: {}'.format(new_line))
+
+        highlighted = helper.log_colors(html.escape(new_line))
+
+        print('broadcasting new vterm line')
+
+        websocket_helper.broadcast_page_params(
+            '/panel/server_detail',
+            {
+                'id': self.server_id
+            },
+            'notification',
+            'test test test'
+        )
+
+        # TODO: Do not send data to clients who do not have permission to view this server's console
+        websocket_helper.broadcast_page_params(
+            '/panel/server_detail',
+            {
+                'id': self.server_id
+            },
+            'vterm_new_line',
+            {
+                'line': highlighted + '<br />',
+                'server_id': self.server_id
+            }
+        )
 
 
 class Server:
@@ -127,7 +181,13 @@ class Server:
             logger.info("Linux Detected")
 
         logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
-        self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
+
+        self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
+        out_buf = ServerOutBuf(self.process, self.server_id)
+
+        console.cyan('Start vterm listener')
+        threading.Thread(target=out_buf.check, daemon=True).start()
+        
         self.is_crashed = False
 
         self.start_time = str(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))

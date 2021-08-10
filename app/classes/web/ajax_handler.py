@@ -12,6 +12,7 @@ from app.classes.shared.models import Users, installer
 from app.classes.web.base_handler import BaseHandler
 from app.classes.shared.models import db_helper
 from app.classes.shared.helpers import helper
+from app.classes.shared.server import ServerOutBuf
 
 logger = logging.getLogger(__name__)
 
@@ -56,16 +57,17 @@ class AjaxHandler(BaseHandler):
             if not server_data:
                 logger.warning("Server Data not found in server_log ajax call")
                 self.redirect("/panel/error?error=Server ID Not Found")
+                return
 
             if not server_data['log_path']:
                 logger.warning("Log path not found in server_log ajax call ({})".format(server_id))
 
             if full_log:
                 log_lines = helper.get_setting('max_log_lines')
+                data = helper.tail_file(server_data['log_path'], log_lines)
             else:
-                log_lines = helper.get_setting('virtual_terminal_lines')
+                data = ServerOutBuf.lines.get(server_id, [])
 
-            data = helper.tail_file(server_data['log_path'], log_lines)
 
             for d in data:
                 try:

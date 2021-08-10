@@ -1,9 +1,10 @@
 import json
 import logging
 
+from urllib.parse import parse_qsl
 import tornado.websocket
-from app.classes.shared.console import console
 from app.classes.shared.models import Users, db_helper
+from app.classes.shared.helpers import helper
 from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
@@ -35,6 +36,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
 
 
     def open(self):
+        logger.debug('Checking WebSocket authentication')
         if self.check_auth():
             self.handle()
         else:
@@ -42,10 +44,15 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
             self.close()
             db_helper.add_to_audit_log_raw('unknown', 0, 0, 'Someone tried to connect via WebSocket without proper authentication', self.get_remote_ip())
             websocket_helper.broadcast('notification', 'Someone tried to connect via WebSocket without proper authentication')
+            logger.warning('Someone tried to connect via WebSocket without proper authentication')
 
     def handle(self):
-        
-        websocket_helper.addClient(self)
+        self.page = self.get_query_argument('page')
+        self.page_query_params = dict(parse_qsl(helper.remove_prefix(
+            self.get_query_argument('page_query_params'),
+            '?'
+        )))
+        websocket_helper.add_client(self)
         logger.debug('Opened WebSocket connection')
         # websocket_helper.broadcast('notification', 'New client connected')
 
@@ -56,7 +63,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         logger.debug('Event Type: {}, Data: {}'.format(message['event'], message['data']))
 
     def on_close(self):
-        websocket_helper.removeClient(self)
+        websocket_helper.remove_client(self)
         logger.debug('Closed WebSocket connection')
         # websocket_helper.broadcast('notification', 'Client disconnected')
 

@@ -161,6 +161,12 @@
       }
     }
 
+    function new_line_handler(data) {
+        if (server_id === data.server_id) {
+            $('#virt_console').append(data.line)
+        }
+    }
+
     //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
     function getCookie(name) {
         var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
@@ -171,9 +177,13 @@
         console.log( "ready!" );
         get_server_log()
 
-        setInterval(function(){
-            get_server_log() // this will run after every 5 seconds
-        }, 1500);
+        if (webSocket) {
+            webSocket.on('vterm_new_line', new_line_handler)
+        } else {
+            setInterval(function(){
+                get_server_log() // this will run after every 5 seconds
+            }, 1500);
+        }
     });
 
     $('#server_command').on('keydown', function (e) {

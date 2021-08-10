@@ -562,4 +562,10 @@ class Helpers:
                                os.path.relpath(os.path.join(root, file), 
                                                os.path.join(path, '..')))
 
+    @staticmethod
+    def remove_prefix(text, prefix):
+        if text.startswith(prefix):
+            return text[len(prefix):]
+        return text
+
 helper = Helpers()
