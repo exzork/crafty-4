@@ -231,16 +231,16 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
       name = "{{data['server_stats']['server_id']['server_name']}}";
       bootbox.confirm({
           size: "",
-          title: "{% raw translate('serverTerm', 'deleteFilesQuestion') %}",
+          title: "{% raw translate('serverConfig', 'deleteFilesQuestion') %}",
           closeButton: false,
-          message: "{% raw translate('serverTerm', 'deleteFilesQuestionMessage') %}",
+          message: "{% raw translate('serverConfig', 'deleteFilesQuestionMessage') %}",
           buttons: {
             confirm: {
-              label: "{{ translate('serverTerm', 'yesDeleteFiles') }}",
+              label: "{{ translate('serverConfig', 'yesDeleteFiles') }}",
               className: 'btn-danger',
             },
             cancel: {
-              label: "{{ translate('serverTerm', 'noDeleteFiles') }}",
+              label: "{{ translate('serverConfig', 'noDeleteFiles') }}",
               className: 'btn-link',
             }
           },
@@ -251,8 +251,8 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
                 bootbox.dialog({
                 backdrop: true,
                 closeButton: false,
-                title: '{% raw translate("serverConfig", "sendingRequest") %}',
-                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientUpdate") %} </div>'
+                title: '{% raw translate("serverConfig", "sendingDelete") %}',
+                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDelete") %} </div>'
     });
 
              return;}
@@ -262,8 +262,8 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
                 bootbox.dialog({
                 backdrop: true,
                 closeButton: false,
-                title: '{% raw translate("serverConfig", "sendingRequest") %}',
-                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientUpdate") %} </div>'
+                title: '{% raw translate("serverConfig", "sendingDelete") %}',
+                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDeleteFiles") %} </div>'
     });
              }
 
@@ -275,16 +275,16 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
       name = "{{data['server_stats']['server_id']['server_name']}}";
       bootbox.confirm({
           size: "",
-          title: "{% raw translate('serverTerm', 'deleteServerQuestion') %}",
+          title: "{% raw translate('serverConfig', 'deleteServerQuestion') %}",
           closeButton: false,
-          message: "{% raw translate('serverTerm', 'deleteServerQuestionMessage') %}",
+          message: "{% raw translate('serverConfig', 'deleteServerQuestionMessage') %}",
           buttons: {
             confirm: {
-              label: "{{ translate('serverTerm', 'yesDelete') }}",
+              label: "{{ translate('serverConfig', 'yesDelete') }}",
               className: 'btn-danger',
             },
             cancel: {
-              label: "{{ translate('serverTerm', 'noDelete') }}",
+              label: "{{ translate('serverConfig', 'noDelete') }}",
               className: 'btn-link',
             }
           },
