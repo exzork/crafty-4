@@ -112,12 +112,12 @@
                       </div>
 
                       <div class="form-group">
-                        <label for="server_ip">{{ translate('serverConfig', 'serverPort') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPortDesc') }}</small> </label>
+                        <label for="server_ip">{{ translate('serverConfig', 'serverIP') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPortDesc') }}</small> </label>
                         <input type="text" class="form-control" name="server_ip" id="server_ip" value="{{ data['server_stats']['server_id']['server_ip']  }}">
                       </div>
 
                       <div class="form-group">
-                        <label for="server_port">{{ translate('serverConfig', 'serverIP') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverIPDesc') }}</small> </label>
+                        <label for="server_port">{{ translate('serverConfig', 'serverPort') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverIPDesc') }}</small> </label>
                         <input type="number" class="form-control" name="server_port" id="server_port" value="{{ data['server_stats']['server_id']['server_port']  }}" step="1" max="65566" min="1" >
                       </div>
 
