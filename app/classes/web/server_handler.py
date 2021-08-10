@@ -45,8 +45,6 @@ class ServerHandler(BaseHandler):
 
         template = "public/404.html"
 
-        defined_servers = self.controller.list_defined_servers()
-
         page_data = {
             'version_data': helper.get_version_string(),
             'user_data': exec_user_data,
