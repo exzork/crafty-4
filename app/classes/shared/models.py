@@ -347,6 +347,7 @@ class db_shortcuts:
     def remove_server(server_id):
         with database.atomic():
             Role_Servers.delete().where(Role_Servers.server_id == server_id).execute()
+            User_Servers.delete().where(User_Servers.server_id == server_id).execute()
             Servers.delete().where(Servers.server_id == server_id).execute()
 
     @staticmethod

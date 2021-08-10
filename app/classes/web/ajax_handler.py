@@ -210,7 +210,7 @@ class AjaxHandler(BaseHandler):
             server_id = self.get_argument('id', None)
             print(server_id)
 
-            console.warning("delete {} for server {}".format(file_path, server_id))
+            console.warning("delete {} for server {}".format(dir_path, server_id))
 
             if not self.check_server_id(server_id, 'del_dir'): return False
             else: server_id = bleach.clean(server_id)
