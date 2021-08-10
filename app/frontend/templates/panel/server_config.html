@@ -219,11 +219,14 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
           setTimeout(function(){ location.reload(); }, 10000);
 
         }
-      });bootbox.alert({
+      });
+      if(command != "delete_server" && command != "delete_server_files"){
+       bootbox.alert({
       backdrop: true,
       title: '{% raw translate("serverConfig", "sendingRequest") %}',
       message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientUpdate") %} </div>'
     });
+      }
     }
 
      function deleteServer (){
@@ -250,10 +253,10 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
                 setTimeout(function(){ window.location = '/panel/dashboard'; }, 5000);
                 bootbox.dialog({
                 backdrop: true,
-                closeButton: false,
                 title: '{% raw translate("serverConfig", "sendingDelete") %}',
-                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDelete") %} </div>'
-    });
+                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDelete") %} </div>',
+                closeButton: false
+    })
 
              return;}
              else{
@@ -261,10 +264,10 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
                                  setTimeout(function(){ window.location = '/panel/dashboard'; }, 5000);
                 bootbox.dialog({
                 backdrop: true,
-                closeButton: false,
                 title: '{% raw translate("serverConfig", "sendingDelete") %}',
-                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDeleteFiles") %} </div>'
-    });
+                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDeleteFiles") %} </div>',
+                closeButton: false
+    })
              }
 
           }
