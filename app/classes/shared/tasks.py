@@ -196,7 +196,6 @@ class TasksManager:
 
                 host_stats = db_helper.get_latest_hosts_stats()
                 if len(websocket_helper.clients) > 0:
-                    print('there are clients')
                     # There are clients
                     websocket_helper.broadcast_page('/panel/dashboard', 'update_host_stats', {
                         'cpu_usage': host_stats.get('cpu_usage'),

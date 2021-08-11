@@ -1,14 +1,21 @@
 import json
 import logging
+import asyncio
 
 from urllib.parse import parse_qsl
-import tornado.websocket
 from app.classes.shared.models import Users, db_helper
 from app.classes.shared.helpers import helper
 from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
 
+try:
+    import tornado.websocket
+
+except ModuleNotFoundError as e:
+    logger.critical("Import Error: Unable to load {} module".format(e, e.name))
+    console.critical("Import Error: Unable to load {} module".format(e, e.name))
+    sys.exit(1)
 
 class SocketHandler(tornado.websocket.WebSocketHandler):
 
@@ -16,6 +23,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         self.controller = controller
         self.tasks_manager = tasks_manager
         self.translator = translator
+        self.io_loop = tornado.ioloop.IOLoop.current()
 
     def get_remote_ip(self):
         remote_ip = self.request.headers.get("X-Real-IP") or \
@@ -66,4 +74,10 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         websocket_helper.remove_client(self)
         logger.debug('Closed WebSocket connection')
         # websocket_helper.broadcast('notification', 'Client disconnected')
+
+    async def write_message_int(self, message):
+        self.write_message(message)
+    
+    def write_message_helper(self, message):
+        asyncio.run_coroutine_threadsafe(self.write_message_int(message), self.io_loop.asyncio_loop)
 

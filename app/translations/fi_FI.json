@@ -120,7 +120,7 @@
         "playerControls": "Pelaajahallinta"
     },
     "serverTerm": {
-        "stopRefresh": "Lopeta päivitys",
+        "stopScroll": "Lopeta automaattinen vieritys",
         "commandInput": "Kirjoita komento",
         "sendCommand": "Lähetä komento",
         "start": "Käynnistä",

@@ -6,6 +6,7 @@ import bleach
 import os
 import shutil
 import html
+import re
 
 from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
@@ -71,6 +72,8 @@ class AjaxHandler(BaseHandler):
 
             for d in data:
                 try:
+                    d = re.sub('(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)|(> )', '', d)
+                    d = re.sub('[A-z]{2}\b\b', '', d)
                     line = helper.log_colors(html.escape(d))
                     self.write('{}<br />'.format(line))
                     # self.write(d.encode("utf-8"))
@@ -152,7 +155,6 @@ class AjaxHandler(BaseHandler):
             file_name = self.get_body_argument('file_name', default=None, strip=True)
             file_path = os.path.join(file_parent, file_name)
             server_id = self.get_argument('id', None)
-            print(server_id)
 
             if not self.check_server_id(server_id, 'create_file'): return
             else: server_id = bleach.clean(server_id)
@@ -172,7 +174,6 @@ class AjaxHandler(BaseHandler):
             dir_name = self.get_body_argument('dir_name', default=None, strip=True)
             dir_path = os.path.join(dir_parent, dir_name)
             server_id = self.get_argument('id', None)
-            print(server_id)
 
             if not self.check_server_id(server_id, 'create_dir'): return
             else: server_id = bleach.clean(server_id)
@@ -211,7 +212,6 @@ class AjaxHandler(BaseHandler):
         elif page == "del_dir":
             dir_path = self.get_body_argument('dir_path', default=None, strip=True)
             server_id = self.get_argument('id', None)
-            print(server_id)
 
             console.warning("delete {} for server {}".format(file_path, server_id))
 
@@ -235,9 +235,6 @@ class AjaxHandler(BaseHandler):
             file_contents = self.get_body_argument('file_contents', default=None, strip=True)
             file_path = self.get_body_argument('file_path', default=None, strip=True)
             server_id = self.get_argument('id', None)
-            print(file_contents)
-            print(file_path)
-            print(server_id)
 
             if not self.check_server_id(server_id, 'save_file'): return
             else: server_id = bleach.clean(server_id)
@@ -256,7 +253,6 @@ class AjaxHandler(BaseHandler):
             item_path = self.get_body_argument('item_path', default=None, strip=True)
             new_item_name = self.get_body_argument('new_item_name', default=None, strip=True)
             server_id = self.get_argument('id', None)
-            print(server_id)
 
             if not self.check_server_id(server_id, 'rename_item'): return
             else: server_id = bleach.clean(server_id)

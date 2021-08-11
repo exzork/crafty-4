@@ -53,20 +53,11 @@ class ServerOutBuf:
                 self.line_buffer += char
 
     def new_line_handler(self, new_line):
-        console.debug('New line: {}'.format(new_line))
-
+        new_line = re.sub('(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)|(> )', '', new_line)
+        new_line = re.sub('[A-z]{2}\b\b', '', new_line)
         highlighted = helper.log_colors(html.escape(new_line))
 
-        print('broadcasting new vterm line')
-
-        websocket_helper.broadcast_page_params(
-            '/panel/server_detail',
-            {
-                'id': self.server_id
-            },
-            'notification',
-            'test test test'
-        )
+        logger.debug('Broadcasting new virtual terminal line')
 
         # TODO: Do not send data to clients who do not have permission to view this server's console
         websocket_helper.broadcast_page_params(
@@ -76,8 +67,7 @@ class ServerOutBuf:
             },
             'vterm_new_line',
             {
-                'line': highlighted + '<br />',
-                'server_id': self.server_id
+                'line': highlighted + '<br />'
             }
         )
 
@@ -137,7 +127,7 @@ class Server:
 
     def run_threaded_server(self):
         # start the server
-        self.server_thread = threading.Thread(target=self.start_server, daemon=True)
+        self.server_thread = threading.Thread(target=self.start_server, daemon=True, name='{}_server_thread'.format(self.server_id))
         self.server_thread.start()
 
     def setup_server_run_command(self):
@@ -185,8 +175,8 @@ class Server:
         self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
         out_buf = ServerOutBuf(self.process, self.server_id)
 
-        console.cyan('Start vterm listener')
-        threading.Thread(target=out_buf.check, daemon=True).start()
+        logger.debug('Starting virtual terminal listener for server {}'.format(self.name))
+        threading.Thread(target=out_buf.check, daemon=True, name='{}_virtual_terminal'.format(self.server_id)).start()
         
         self.is_crashed = False
 
