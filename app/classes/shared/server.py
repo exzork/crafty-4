@@ -448,10 +448,8 @@ class Server:
     #boolean returns true for false for success
         downloaded = helper.download_file(self.settings['executable_update_url'], current_executable)
 
-        if downloaded:
-            while self.is_backingup:
-                db_helper.set_update(self.server_id, True)
-                pass
+        if downloaded and not self.is_backingup:
+
             logger.info("Executable updated successfully. Starting Server")
 
             db_helper.set_update(self.server_id, False)
