@@ -360,31 +360,28 @@ class Server:
         logger.info("Backup Thread started for server {}.".format(self.settings['server_name']))
 
     def a_backup_server(self):
-        if not self.is_backingup:
-            logger.info("Starting server {} (ID {}) backup".format(self.name, self.server_id))
-            self.is_backingup = True
-            conf = db_helper.get_backup_config(self.server_id)
-            try:
-                backup_filename = "{}/{}.zip".format(self.settings['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
-                logger.info("Creating backup of server '{}' (ID#{}) at '{}'".format(self.settings['server_name'], self.server_id, backup_filename))
-                helper.zip_directory(backup_filename, self.server_path)
-                while len(self.list_backups()) > conf["max_backups"]:
-                    backup_list = self.list_backups()
-                    oldfile = backup_list[0]
-                    backup_path = self.settings['backup_path']
-                    old_file_name = oldfile['path']
-                    back_old_file = os.path.join(backup_path, old_file_name)
-                    logger.info("Removing old backup '{}'".format(oldfile))
-                    os.remove(back_old_file)
-                self.is_backingup = False
-                logger.info("Backup of server: {} completed".format(self.name))
-                return
-            except:
-                logger.exception("Failed to create backup of server {} (ID {})".format(self.name, self.server_id))
-                self.is_backingup = False
-                return
-        else:
-            logger.error("Server {} is already backing up. Please wait for backup to finish.".format(self.server_id))
+        logger.info("Starting server {} (ID {}) backup".format(self.name, self.server_id))
+        self.is_backingup = True
+        conf = db_helper.get_backup_config(self.server_id)
+        try:
+            backup_filename = "{}/{}.zip".format(self.settings['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+            logger.info("Creating backup of server '{}' (ID#{}) at '{}'".format(self.settings['server_name'], self.server_id, backup_filename))
+            helper.zip_directory(backup_filename, self.server_path)
+            while len(self.list_backups()) > conf["max_backups"]:
+                backup_list = self.list_backups()
+                oldfile = backup_list[0]
+                backup_path = self.settings['backup_path']
+                old_file_name = oldfile['path']
+                back_old_file = os.path.join(backup_path, old_file_name)
+                logger.info("Removing old backup '{}'".format(oldfile))
+                os.remove(back_old_file)
+            self.is_backingup = False
+            logger.info("Backup of server: {} completed".format(self.name))
+            return
+        except:
+            logger.exception("Failed to create backup of server {} (ID {})".format(self.name, self.server_id))
+            self.is_backingup = False
+            return
 
     def list_backups(self):
         conf = db_helper.get_backup_config(self.server_id)
@@ -454,7 +451,6 @@ class Server:
 
         while db_helper.get_server_stats_by_id(self.server_id)['updating']:
             if downloaded and not self.is_backingup:
-
                 logger.info("Executable updated successfully. Starting Server")
 
                 db_helper.set_update(self.server_id, False)
