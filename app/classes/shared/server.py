@@ -404,6 +404,7 @@ class Server:
             return False
 
     def a_jar_update(self):
+        error = False
         wasStarted = "-1"
         self.backup_server()
         #checks if server is running. Calls shutdown if it is running.
@@ -448,28 +449,32 @@ class Server:
     #boolean returns true for false for success
         downloaded = helper.download_file(self.settings['executable_update_url'], current_executable)
 
-        if downloaded and not self.is_backingup:
-
-            logger.info("Executable updated successfully. Starting Server")
-
-            db_helper.set_update(self.server_id, False)
-            if len(websocket_helper.clients) > 0:
-                # There are clients
-                self.check_update()
-                websocket_helper.broadcast('notification', "Executable update finished for " + self.name)
-                time.sleep(3)
-                websocket_helper.broadcast('update_button_status', {
-                    'isUpdating': self.check_update(),
-                    'server_id': self.server_id,
-                    'wasRunning': wasStarted
-                })
-            websocket_helper.broadcast('notification', "Executable update finished for "+self.name)
-
-            db_helper.add_to_audit_log_raw('Alert', '-1', self.server_id, "Executable update finished for "+self.name, self.settings['server_ip'])
-            if wasStarted:
-                self.start_server()
-        else:
+        if not downloaded:
             time.sleep(5)
             db_helper.set_update(self.server_id, False)
-            websocket_helper.broadcast('notification', "Executable update failed for " + self.name+". Check log file for details.")
+            websocket_helper.broadcast('notification',
+                                       "Executable update failed for " + self.name + ". Check log file for details.")
             logger.error("Executable download failed.")
+
+        while db_helper.get_server_data_by_id(self.server_id)['updating']:
+            if downloaded and not self.is_backingup:
+
+                logger.info("Executable updated successfully. Starting Server")
+
+                db_helper.set_update(self.server_id, False)
+                if len(websocket_helper.clients) > 0:
+                    # There are clients
+                    self.check_update()
+                    websocket_helper.broadcast('notification', "Executable update finished for " + self.name)
+                    time.sleep(3)
+                    websocket_helper.broadcast('update_button_status', {
+                        'isUpdating': self.check_update(),
+                        'server_id': self.server_id,
+                        'wasRunning': wasStarted
+                    })
+                websocket_helper.broadcast('notification', "Executable update finished for "+self.name)
+
+                db_helper.add_to_audit_log_raw('Alert', '-1', self.server_id, "Executable update finished for "+self.name, self.settings['server_ip'])
+                if wasStarted:
+                    self.start_server()
+            pass
