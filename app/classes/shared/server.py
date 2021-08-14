@@ -11,6 +11,8 @@ import schedule
 import logging.config
 import zipfile
 from threading import Thread
+import shutil
+import zlib
 
 
 from app.classes.shared.helpers import helper
@@ -366,15 +368,13 @@ class Server:
         try:
             backup_filename = "{}/{}.zip".format(self.settings['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
             logger.info("Creating backup of server '{}' (ID#{}) at '{}'".format(self.settings['server_name'], self.server_id, backup_filename))
-            helper.zip_directory(backup_filename, self.server_path)
+            shutil.make_archive(backup_filename, 'zip', self.server_path)
             while len(self.list_backups()) > conf["max_backups"]:
                 backup_list = self.list_backups()
                 oldfile = backup_list[0]
-                backup_path = self.settings['backup_path']
-                old_file_name = oldfile['path']
-                back_old_file = os.path.join(backup_path, old_file_name)
-                logger.info("Removing old backup '{}'".format(oldfile))
-                os.remove(back_old_file)
+                oldfile_path = "{}/{}".format(conf['backup_path'], oldfile['path'])
+                logger.info("Removing old backup '{}'".format(oldfile['path']))
+                os.remove(oldfile_path)
             self.is_backingup = False
             logger.info("Backup of server: {} completed".format(self.name))
             return
