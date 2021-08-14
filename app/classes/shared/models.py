@@ -122,12 +122,23 @@ class Servers(BaseModel):
     auto_start_delay = IntegerField(default=10)
     crash_detection = BooleanField(default=0)
     stop_command = CharField(default="stop")
+    executable_update_url = CharField(default="")
     server_ip = CharField(default="127.0.0.1")
     server_port = IntegerField(default=25565)
     logs_delete_after = IntegerField(default=0)
 
     class Meta:
         table_name = "servers"
+
+
+class User_Servers(BaseModel):
+    user_id = ForeignKeyField(Users, backref='user_server')
+    server_id = ForeignKeyField(Servers, backref='user_server')
+
+    class Meta:
+        table_name = 'user_servers'
+        primary_key = CompositeKey('user_id', 'server_id')
+
 
 class Role_Servers(BaseModel):
     role_id = ForeignKeyField(Roles, backref='role_server')
@@ -156,6 +167,7 @@ class Server_Stats(BaseModel):
     players = CharField(default="")
     desc = CharField(default="Unable to Connect")
     version = CharField(default="")
+    updating = BooleanField(default=False)
 
 
     class Meta:
@@ -220,6 +232,7 @@ class db_builder:
                 Users,
                 Roles,
                 User_Roles,
+                User_Servers,
                 Host_Stats,
                 Webhooks,
                 Servers,
@@ -334,6 +347,7 @@ class db_shortcuts:
     def remove_server(server_id):
         with database.atomic():
             Role_Servers.delete().where(Role_Servers.server_id == server_id).execute()
+            User_Servers.delete().where(User_Servers.server_id == server_id).execute()
             Servers.delete().where(Servers.server_id == server_id).execute()
 
     @staticmethod
@@ -358,7 +372,37 @@ class db_shortcuts:
             server_data.append(db_helper.get_server_data_by_id(u.server_id))
 
         return server_data
-        
+
+    @staticmethod
+    def get_all_authorized_servers(user_id):
+        user_servers = User_Servers.select().where(User_Servers.user_id == user_id)
+        user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        server_data = []
+        roles_list = []
+        role_server = []
+        server_data = []
+
+        for u in user_servers:
+            server_data.append(db_helper.get_server_data_by_id(u.server_id))
+
+        for u in user_roles:
+            roles_list.append(db_helper.get_role(u.role_id))
+
+        for r in roles_list:
+            role_test = Role_Servers.select().where(Role_Servers.role_id == r.get('role_id'))
+            for t in role_test:
+                role_server.append(t)
+
+        for s in role_server:
+            found = False
+            for item in user_servers:
+                if s.server_id == item.server_id:
+                    found = True
+            if not found:
+                server_data.append(db_helper.get_server_data_by_id(s.server_id))
+
+        return server_data
+
     @staticmethod
     def get_authorized_servers_from_roles(user_id):
         user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
@@ -394,16 +438,44 @@ class db_shortcuts:
         user_servers = User_Servers.select().where(User_Servers.user_id == user_id)
         authorized_servers = []
         server_data = []
+        user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        roles_list = []
+        role_server = []
 
         for u in user_servers:
             authorized_servers.append(db_helper.get_server_data_by_id(u.server_id))
 
+        for u in user_roles:
+            roles_list.append(db_helper.get_role(u.role_id))
+
+        for r in roles_list:
+            role_test = Role_Servers.select().where(Role_Servers.role_id == r.get('role_id'))
+            for t in role_test:
+                role_server.append(t)
+
+        for s in role_server:
+            found = False
+            for item in user_servers:
+                if s.server_id == item.server_id:
+                    found = True
+            if not found:
+                authorized_servers.append(db_helper.get_server_data_by_id(s.server_id))
+
         for s in authorized_servers:
-            latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
-            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)})
+            latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(
+                Server_Stats.created.desc()).limit(1)
+            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0]})
         return server_data
 
-        
+    @staticmethod
+    def get_user_roles_names(user_id):
+        roles_list = []
+        roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        for r in roles:
+            roles_list.append(db_helper.get_role(r.role_id)['role_name'])
+        return roles_list
+
+
     @staticmethod
     def get_authorized_servers_stats_from_roles(user_id):
         user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
@@ -529,16 +601,34 @@ class db_shortcuts:
         roles = set()
         for r in roles_query:
             roles.add(r.role_id.role_id)
-        #servers_query = User_Servers.select().join(Servers, JOIN.INNER).where(User_Servers.user_id == user_id)
+        servers_query = User_Servers.select().join(Servers, JOIN.INNER).where(User_Servers.user_id == user_id)
         ## TODO: this query needs to be narrower
         servers = set()
-        #for s in servers_query:
-        #    servers.add(s.server_id.server_id)
+        for s in servers_query:
+            servers.add(s.server_id.server_id)
         user['roles'] = roles
-        #user['servers'] = servers
+        user['servers'] = servers
         #logger.debug("user: ({}) {}".format(user_id, user))
         return user
 
+    @staticmethod
+    def add_user_server(server_id, user_id):
+        servers = User_Servers.insert({User_Servers.server_id: server_id, User_Servers.user_id: user_id}).execute()
+        return servers
+
+
+    @staticmethod
+    def user_query(user_id):
+        user_query = Users.select().where(Users.user_id == user_id)
+        return user_query
+
+    @staticmethod
+    def user_role_query(user_id):
+        user_query = User_Roles.select().where(User_Roles.user_id == user_id)
+        query = Roles.select().where(Roles.role_id == -1)
+        for u in user_query:
+            query = Roles.select().where(Roles.role_id == u.role_id)
+        return query
 
     @staticmethod
     def get_user(user_id):
@@ -555,7 +645,7 @@ class db_shortcuts:
                 superuser: False,
                 api_token: None,
                 roles: [],
-                servers: []
+                servers: [],
             }
         user = model_to_dict(Users.get(Users.user_id == user_id))
 
@@ -581,9 +671,9 @@ class db_shortcuts:
             elif key == "roles":
                 added_roles = user_data['roles'].difference(base_data['roles'])
                 removed_roles = base_data['roles'].difference(user_data['roles'])
-            #elif key == "servers":
-            #    added_servers = user_data['servers'].difference(base_data['servers'])
-            #    removed_servers = base_data['servers'].difference(user_data['servers'])
+            elif key == "servers":
+                added_servers = user_data['servers'].difference(base_data['servers'])
+                removed_servers = base_data['servers'].difference(user_data['servers'])
             elif key == "regen_api":
                 if user_data['regen_api']:
                     up_data['api_token'] = db_shortcuts.new_api_token()
@@ -600,10 +690,10 @@ class db_shortcuts:
                 # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
             User_Roles.delete().where(User_Roles.user_id == user_id).where(User_Roles.role_id.in_(removed_roles)).execute()
 
-            #for server in added_servers:
-            #    User_Servers.get_or_create(user_id=user_id, server_id=server)
+            for server in added_servers:
+                User_Servers.get_or_create(user_id=user_id, server_id=server)
             #    # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
-            #User_Servers.delete().where(User_Servers.user_id == user_id).where(User_Servers.server_id.in_(removed_servers)).execute()
+            User_Servers.delete().where(User_Servers.user_id == user_id).where(User_Servers.server_id.in_(removed_servers)).execute()
             if up_data:
                 Users.update(up_data).where(Users.user_id == user_id).execute()
 
@@ -841,6 +931,15 @@ class db_shortcuts:
                 "server_id": server_id
             }
         return conf
+
+    @staticmethod
+    def set_update(server_id, value):
+        try:
+            row = Server_Stats.select().where(Server_Stats.server_id == server_id)
+        except Exception as ex:
+            logger.error("Database entry not found. ".format(ex))
+        with database.atomic():
+            Server_Stats.update(updating=value).where(Server_Stats.server_id == server_id).execute()
 
     @staticmethod
     def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, auto_enabled: bool = True):

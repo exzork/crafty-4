@@ -219,6 +219,25 @@
       var webSocket;
     // {% end%}
 
+if (webSocket) {
+    webSocket.on('send_start_error', function (start_error) {
+            var x = document.querySelector('.bootbox');
+            if(x){
+            x.remove()}
+            var x = document.querySelector('.modal-backdrop');
+            if(x){
+            x.remove()}
+            bootbox.alert(start_error.error);
+    });
+  }
+
+  if (webSocket) {
+    webSocket.on('send_start_reload', function (start_error) {
+    location.reload()
+    });
+  }
+
+
     function warn(message) {
       var closeEl = document.createElement('span');
       var strongEL = document.createElement('strong');

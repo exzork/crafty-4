@@ -106,13 +106,18 @@
                         <input type="number" class="form-control" name="auto_start_delay" id="auto_start_delay" value="{{ data['server_stats']['server_id']['auto_start_delay']  }}" step="1" max="999" min="10" >
                       </div>
 
+                        <div class="form-group">
+                        <label for="executable_update_url">{{ translate('serverConfig', 'exeUpdateURL') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'exeUpdateURLDesc') }}</small> </label>
+                        <input type="text" class="form-control" name="executable_update_url" id="executable_update_url" value="{{ data['server_stats']['server_id']['executable_update_url']  }}" placeholder="{{ translate('serverConfig', 'exeUpdateURL') }}" >
+                      </div>
+
                       <div class="form-group">
-                        <label for="server_ip">{{ translate('serverConfig', 'serverPort') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPortDesc') }}</small> </label>
+                        <label for="server_ip">{{ translate('serverConfig', 'serverIP') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPortDesc') }}</small> </label>
                         <input type="text" class="form-control" name="server_ip" id="server_ip" value="{{ data['server_stats']['server_id']['server_ip']  }}">
                       </div>
 
                       <div class="form-group">
-                        <label for="server_port">{{ translate('serverConfig', 'serverIP') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverIPDesc') }}</small> </label>
+                        <label for="server_port">{{ translate('serverConfig', 'serverPort') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverIPDesc') }}</small> </label>
                         <input type="number" class="form-control" name="server_port" id="server_port" value="{{ data['server_stats']['server_id']['server_port']  }}" step="1" max="65566" min="1" >
                       </div>
 
@@ -159,10 +164,12 @@
                     </div>
                     <div class="text-center">
                         {% if data['server_stats']['running'] %}
+                            <button onclick="send_command(server_id, 'update_executable');" id="update_executable" style="max-width: 7rem;" class="btn btn-warning m-1 flex-grow-1 disabled">{{ translate('serverConfig', 'update') }}</button>
                             <a class="btn btn-sm btn-danger disabled">{{ translate('serverConfig', 'deleteServer') }}</a><br />
                             <small>{{ translate('serverConfig', 'stopBeforeDeleting') }}</small>
                         {% else %}
-                            <a href="/panel/remove_server?id={{ data['server_stats']['server_id']['server_id'] }}" class="btn btn-sm btn-danger">{{ translate('serverConfig', 'deleteServer') }}</a>
+                            <button onclick="send_command(server_id, 'update_executable');" id="update_executable" style="max-width: 7rem;" class="btn btn-warning m-1 flex-grow-1">{{ translate('serverConfig', 'update') }}</button>
+                            <button onclick="deleteConfirm()" class="btn btn-sm btn-danger">{{ translate('serverConfig', 'deleteServer') }}</button>
                         {% end %}
 
                     </div>
@@ -196,6 +203,105 @@
 
     });
 
+let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
+
+      function send_command (server_id, command){
+      <!--  this getCookie function is in base.html-->
+      var token = getCookie("_xsrf");
+
+      $.ajax({
+        type: "POST",
+        headers: {'X-XSRFToken': token},
+        url: '/server/command?command=' + command + '&id=' + server_id,
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+          setTimeout(function(){ location.reload(); }, 10000);
+
+        }
+      });
+      if(command != "delete_server" && command != "delete_server_files"){
+       bootbox.alert({
+      backdrop: true,
+      title: '{% raw translate("serverConfig", "sendingRequest") %}',
+      message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientUpdate") %} </div>'
+    });
+      }
+    }
+
+     function deleteServer (){
+      path = "{{data['server_stats']['server_id']['path']}}";
+      name = "{{data['server_stats']['server_id']['server_name']}}";
+      bootbox.confirm({
+          size: "",
+          title: "{% raw translate('serverConfig', 'deleteFilesQuestion') %}",
+          closeButton: false,
+          message: "{% raw translate('serverConfig', 'deleteFilesQuestionMessage') %}",
+          buttons: {
+            confirm: {
+              label: "{{ translate('serverConfig', 'yesDeleteFiles') }}",
+              className: 'btn-danger',
+            },
+            cancel: {
+              label: "{{ translate('serverConfig', 'noDeleteFiles') }}",
+              className: 'btn-link',
+            }
+          },
+          callback: function(result) {
+            if (!result){
+                send_command(server_id, 'delete_server');
+                setTimeout(function(){ window.location = '/panel/dashboard'; }, 5000);
+                bootbox.dialog({
+                backdrop: true,
+                title: '{% raw translate("serverConfig", "sendingDelete") %}',
+                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDelete") %} </div>',
+                closeButton: false
+    })
+
+             return;}
+             else{
+                send_command(server_id, 'delete_server_files');
+                                 setTimeout(function(){ window.location = '/panel/dashboard'; }, 5000);
+                bootbox.dialog({
+                backdrop: true,
+                title: '{% raw translate("serverConfig", "sendingDelete") %}',
+                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDeleteFiles") %} </div>',
+                closeButton: false
+    })
+             }
+
+          }
+      });
+    }
+    function deleteConfirm (){
+      path = "{{data['server_stats']['server_id']['path']}}";
+      name = "{{data['server_stats']['server_id']['server_name']}}";
+      bootbox.confirm({
+          size: "",
+          title: "{% raw translate('serverConfig', 'deleteServerQuestion') %}",
+          closeButton: false,
+          message: "{% raw translate('serverConfig', 'deleteServerQuestionMessage') %}",
+          buttons: {
+            confirm: {
+              label: "{{ translate('serverConfig', 'yesDelete') }}",
+              className: 'btn-danger',
+            },
+            cancel: {
+              label: "{{ translate('serverConfig', 'noDelete') }}",
+              className: 'btn-link',
+            }
+          },
+          callback: function(result) {
+            if (!result){
+                return;
+             return;}
+             else{
+             deleteServer();
+             }
+
+          }
+      });
+    }
 
 </script>
 

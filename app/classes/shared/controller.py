@@ -4,6 +4,8 @@ import logging
 import sys
 import yaml
 import asyncio
+import shutil
+import tempfile
 import zipfile
 from distutils import dir_util
 
@@ -110,10 +112,15 @@ class Controller:
         
     @staticmethod
     def list_authorized_servers(userId):
-        #servers = db_helper.get_authorized_servers(userId)
-        servers = db_helper.get_authorized_servers_from_roles(userId)
+        servers = db_helper.get_authorized_servers(userId)
+        server_list = []
+        for item in servers:
+            server_list.append(item)
+        role_servers = db_helper.get_authorized_servers_from_roles(userId)
+        for item in role_servers:
+            server_list.append(item)
         logger.debug("servers list = {}".format(servers))
-        return servers
+        return server_list
 
     def get_server_data(self, server_id):
         for s in self.servers_list:
@@ -276,8 +283,32 @@ class Controller:
         if helper.check_file_perms(zip_path):
             helper.ensure_dir_exists(new_server_dir)
             helper.ensure_dir_exists(backup_path)
+            tempDir = tempfile.mkdtemp()
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                zip_ref.extractall(new_server_dir)
+                zip_ref.extractall(tempDir)
+                test = zip_ref.filelist[1].filename
+                path_list = test.split('/')
+                root_path = path_list[0]
+                if len(path_list) > 1:
+                    for i in range(len(path_list)-2):
+                        root_path = os.path.join(root_path, path_list[i+1])
+
+                full_root_path = os.path.join(tempDir, root_path)
+
+                has_properties = False
+                for item in os.listdir(full_root_path):
+                    if str(item) == 'server.properties':
+                        has_properties = True
+                    try:
+                        shutil.move(os.path.join(full_root_path, item), os.path.join(new_server_dir, item))
+                    except Exception as ex:
+                        logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
+                if not has_properties:
+                    logger.info("No server.properties found on zip file import. Creating one with port selection of {}".format(str(port)))
+                    with open(os.path.join(new_server_dir, "server.properties"), "w") as f:
+                        f.write("server-port={}".format(port))
+                        f.close()
+                zip_ref.close()
         else:
             return "false"
 
@@ -313,7 +344,7 @@ class Controller:
 
         return new_id
 
-    def remove_server(self, server_id):
+    def remove_server(self, server_id, files):
         counter = 0
         for s in self.servers_list:
 
@@ -330,7 +361,8 @@ class Controller:
 
                 if running:
                     self.stop_server(server_id)
-
+                if files:
+                    shutil.rmtree(db_helper.get_server_data_by_id(server_id)['path'])
                 # remove the server from the DB
                 db_helper.remove_server(server_id)
 

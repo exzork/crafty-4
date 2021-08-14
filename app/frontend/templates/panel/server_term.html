@@ -83,12 +83,19 @@
                   <button id="submit" class="btn btn-sm btn-info" type="button">{{ translate('serverTerm', 'sendCommand') }}</button>
                 </span>
               </div>
-
-              <div class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0">
+              {% if data['server_stats']['updating']%}
+                <div id="update_control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
+                <button onclick="" id="start-btn" style="max-width: 7rem;" class="btn btn-warning m-1 flex-grow-1 disabled">{{ translate('serverTerm', 'updating') }}</button>
+                <button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1 disabled">{% raw translate('serverTerm', 'restart') %}</button>
+                <button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate('serverTerm', 'stop') }}</button>
+              </div>
+              {% else %}
+              <div id="control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
                 <button onclick="send_command(server_id, 'start_server');" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate('serverTerm', 'start') }}</button>
                 <button onclick="send_command(server_id, 'restart_server');" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate('serverTerm', 'restart') %}</button>
                 <button onclick="send_command(server_id, 'stop_server');" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1">{{ translate('serverTerm', 'stop') }}</button>
               </div>
+              {% end %}
 
 
             </div>
@@ -120,12 +127,27 @@
         success: function(data){
           console.log("got response:");
           console.log(data);
-          setTimeout(function(){ location.reload(); }, 10000);
+          setTimeout(function(){
+          if (command != 'start_server'){
+            location.reload();
+          }
+          }, 10000);
 
         }
       });
     }
-
+     if (webSocket) {
+    webSocket.on('update_button_status', function (updateButton) {
+      if (updateButton.isUpdating){
+        console.log(updateButton.isUpdating)
+        document.getElementById('control_buttons').innerHTML = '<button onclick="" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "updating") }}</button><button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart") %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop") }}</button>';
+      }
+      else{
+        window.location.reload()
+        document.getElementById('update_control_buttons').innerHTML = '<button onclick="send_command(server_id, "start_server");" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "start") }}</button><button onclick="send_command(server_id, "restart_server");" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart") %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop") }}</button>';
+        }
+    });
+  }
     // Convert running to lower case (example: 'True' converts to 'true') and
     // then to boolean via JSON.parse()
     let online = JSON.parse('{{ data['server_stats']['running'] }}'.toLowerCase());

@@ -40,15 +40,14 @@
         <div class="card-body  pt-0">
             <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
               <li class="nav-item">
-                <a class="nav-link active" href="/panel/edit_role?id={{ data['role']['role_name'] }}&subpage=config" role="tab" aria-selected="true">
+                <a class="nav-link active" href="/panel/edit_role?id={{ data['role']['role_id'] }}&subpage=config" role="tab" aria-selected="true">
                   <i class="fas fa-cogs"></i>Config</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/panel/edit_role?id={{ data['role']['role_name'] }}&subpage=other" role="tab" aria-selected="false">
+                <a class="nav-link" href="/panel/edit_role?id={{ data['role']['role_id'] }}&subpage=other" role="tab" aria-selected="false">
                   <i class="fas fa-folder-tree"></i>Other</a>
               </li>
             </ul>
-
             <div class="row">
                 <div class="col-md-6 col-sm-12">
                   {% if data['new_role'] %}
@@ -95,11 +94,24 @@
                       </div>
 
                       <button type="submit" class="btn btn-success mr-2">Save</button>
-                      <button type="reset" class="btn btn-light">Cancel</button>
+                      <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light">Cancel</button>
                     </form>
-                </div>
 
-                <div class="col-md-6 col-sm-12">
+                </div>
+                <div class="col-md-3 col-sm-12">
+                                              <h6>Users Assigned to Role:</h6>
+                          <ul>
+                              {% for user in data['users'] %}
+                              {% for ruser in data['user-roles'][user.user_id] %}
+                                {% if ruser == data['role']['role_name'] %}
+                                <li>{{ user.username }}</li>
+                            {% end %}
+                            {% end %}
+                              {% end %}
+                          </ul>
+                          <br>
+                </div>
+                                <div class="col-md-3 col-sm-12">
                     <div class="card">
                       <div class="card-body">
                         <h4 class="card-title">Role Config Area</h4>
@@ -114,7 +126,9 @@
                         </blockquote>
                       </div>
                     </div>
-                    <div class="text-center">
+                </div>
+            </div>
+                                <div class="text-center">
                         {% if data['new_role'] %}
                             <a class="btn btn-sm btn-danger disabled">Delete Role</a><br />
                             <small>You cannot delete something that does not yet exist</small>
@@ -123,8 +137,6 @@
                         {% end %}
 
                     </div>
-                </div>
-            </div>
 
         </div>
       </div>

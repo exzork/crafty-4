@@ -12,6 +12,7 @@ import logging
 import html
 import zipfile
 import pathlib
+import shutil
 
 from datetime import datetime
 from socket import gethostname
@@ -552,5 +553,40 @@ class Helpers:
             return None
         
         return json.loads(content)
+
+    @staticmethod
+    def zip_directory(file, path, compression=zipfile.ZIP_LZMA):
+        with zipfile.ZipFile(file, 'w', compression) as zf:
+            for root, dirs, files in os.walk(path):
+                for file in files:
+                    zf.write(os.path.join(root, file),
+                               os.path.relpath(os.path.join(root, file), 
+                                               os.path.join(path, '..')))
+    @staticmethod
+    def copy_files(source, dest):
+        if os.path.isfile(source):
+            shutil.copyfile(source, dest)
+            logger.info("Copying jar %s to %s", source, dest)
+        else:
+            logger.info("Source jar does not exist.")
+
+    @staticmethod
+    def download_file(executable_url, jar_path):
+        try:
+            r = requests.get(executable_url, timeout=5)
+        except Exception as ex:
+            logger.error("Could not download executable: %s", ex)
+            return False
+        if r.status_code != 200:
+            logger.error("Unable to download file from %s", executable_url)
+            return False
+
+        try:
+            open(jar_path, "wb").write(r.content)
+        except Exception as e:
+            logger.error("Unable to finish executable download. Error: %s", e)
+            return False
+        return True
+
 
 helper = Helpers()
