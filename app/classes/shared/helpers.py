@@ -553,13 +553,4 @@ class Helpers:
         
         return json.loads(content)
 
-    @staticmethod
-    def zip_directory(file, path, compression=zipfile.ZIP_LZMA):
-        with zipfile.ZipFile(file, 'w', compression) as zf:
-            for root, dirs, files in os.walk(path):
-                for file in files:
-                    zf.write(os.path.join(root, file),
-                               os.path.relpath(os.path.join(root, file), 
-                                               os.path.join(path, '..')))
-
 helper = Helpers()
