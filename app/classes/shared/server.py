@@ -369,7 +369,7 @@ class Server:
             backup_filename = "{}/{}".format(self.settings['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
             logger.info("Creating backup of server '{}' (ID#{}) at '{}'".format(self.settings['server_name'], self.server_id, backup_filename))
             shutil.make_archive(backup_filename, 'zip', self.server_path)
-            while len(self.list_backups()) > conf["max_backups"]:
+            while len(self.list_backups()) > conf["max_backups"] and conf["max_backups"] > 0:
                 backup_list = self.list_backups()
                 oldfile = backup_list[0]
                 oldfile_path = "{}/{}".format(conf['backup_path'], oldfile['path'])
