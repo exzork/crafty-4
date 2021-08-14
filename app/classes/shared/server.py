@@ -366,7 +366,7 @@ class Server:
         self.is_backingup = True
         conf = db_helper.get_backup_config(self.server_id)
         try:
-            backup_filename = "{}/{}.zip".format(self.settings['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+            backup_filename = "{}/{}".format(self.settings['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
             logger.info("Creating backup of server '{}' (ID#{}) at '{}'".format(self.settings['server_name'], self.server_id, backup_filename))
             shutil.make_archive(backup_filename, 'zip', self.server_path)
             while len(self.list_backups()) > conf["max_backups"]:
