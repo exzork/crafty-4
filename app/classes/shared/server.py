@@ -324,15 +324,15 @@ class Server:
         logger.info("Starting server {} (ID {}) backup".format(self.name, self.server_id))
         conf = db_helper.get_backup_config(self.server_id)
         try:
-            backup_filename = "{}/{}.zip".format(conf['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+            backup_filename = "{}/{}".format(conf['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
             logger.info("Creating backup of server '{}' (ID#{}) at '{}'".format(self.settings['server_name'], self.server_id, backup_filename))
-            # helper.zip_directory(backup_filename, self.server_path)
-            shutil.make_archive(backup_filename, zip, self.server_path)
-            backup_list = self.list_backups()
-            if len(self.list_backups()) > conf["max_backups"]:
+            shutil.make_archive(backup_filename, 'zip', self.server_path)
+            while len(self.list_backups()) > conf["max_backups"]:
+                backup_list = self.list_backups()
                 oldfile = backup_list[0]
-                logger.info("Removing old backup '{}'".format(oldfile))
-                os.remove(oldfile)
+                oldfile_path = "{}/{}".format(conf['backup_path'], oldfile['path'])
+                logger.info("Removing old backup '{}'".format(oldfile['path']))
+                os.remove(oldfile_path)
         except:
             logger.exception("Failed to create backup of server {} (ID {})".format(self.name, self.server_id))
 
