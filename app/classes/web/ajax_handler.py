@@ -229,6 +229,18 @@ class AjaxHandler(BaseHandler):
             # os.rmdir(dir_path)     # Would only remove empty directories
             shutil.rmtree(dir_path)  # Removes also when there are contents
 
+        elif page == "delete_server":
+            server_id = self.get_argument('id', None)
+            logger.info(
+                "Removing server from panel for server: {}".format(db_helper.get_server_friendly_name(server_id)))
+            self.controller.remove_server(server_id, False)
+
+        elif page == "delete_server_files":
+            server_id = self.get_argument('id', None)
+            logger.info(
+                "Removing server and all associated files for server: {}".format(db_helper.get_server_friendly_name(server_id)))
+            self.controller.remove_server(server_id, True)
+
     @tornado.web.authenticated
     def put(self, page):
         if page == "save_file":

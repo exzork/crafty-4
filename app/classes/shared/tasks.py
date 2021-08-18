@@ -113,16 +113,6 @@ class TasksManager:
 
                 elif command == "update_executable":
                     svr.jar_update()
-                elif command == "delete_server":
-                    logger.info(
-                        "Removing server from panel for server: {}".format(c['server_id']['server_name']))
-                    self.controller.remove_server(c['server_id']['server_id'], False)
-
-                elif command == "delete_server_files":
-                    logger.info(
-                        "Removing server and all associated files for server: {}".format(c['server_id']['server_name']))
-                    self.controller.remove_server(c['server_id']['server_id'], True)
-
                 db_helper.mark_command_complete(c.get('command_id', None))
 
             time.sleep(1)
