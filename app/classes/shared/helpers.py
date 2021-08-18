@@ -40,6 +40,7 @@ class Helpers:
         self.webroot = os.path.join(self.root_dir, 'app', 'frontend')
         self.servers_dir = os.path.join(self.root_dir, 'servers')
         self.backup_path = os.path.join(self.root_dir, 'backups')
+        self.migration_dir = os.path.join(self.root_dir, 'app', 'migrations')
 
         self.session_file = os.path.join(self.root_dir, 'app', 'config', 'session.lock')
         self.settings_file = os.path.join(self.root_dir, 'app', 'config', 'config.json')

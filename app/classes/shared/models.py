@@ -22,32 +22,12 @@ except ModuleNotFoundError as e:
     console.critical("Import Error: Unable to load {} module".format(e.name))
     sys.exit(1)
 
-schema_version = (0, 1, 0) # major, minor, patch semver
-
 database = SqliteDatabase(helper.db_path, pragmas={
     'journal_mode': 'wal',
     'cache_size': -1024 * 10})
 
-class BaseModel(Model):
-    class Meta:
-        database = database
 
-class SchemaVersion(BaseModel):
-    # DO NOT EVER CHANGE THE SCHEMA OF THIS TABLE
-    # (unless we have a REALLY good reason to)
-    # There will only ever be one row, and it allows the database loader to detect
-    # what it needs to do on major version upgrades so you don't have to wipe the DB
-    # every time you upgrade
-    schema_major = IntegerField()
-    schema_minor = IntegerField()
-    schema_patch = IntegerField()
-
-    class Meta:
-        table_name = 'schema_version'
-        primary_key = CompositeKey('schema_major', 'schema_minor', 'schema_patch')
-
-
-class Users(BaseModel):
+class Users(Model):
     user_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     last_login = DateTimeField(default=datetime.datetime.now)
@@ -61,9 +41,10 @@ class Users(BaseModel):
 
     class Meta:
         table_name = "users"
+        database = database
 
 
-class Roles(BaseModel):
+class Roles(Model):
     role_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     last_update = DateTimeField(default=datetime.datetime.now)
@@ -71,18 +52,20 @@ class Roles(BaseModel):
 
     class Meta:
         table_name = "roles"
+        database = database
 
 
-class User_Roles(BaseModel):
+class User_Roles(Model):
     user_id = ForeignKeyField(Users, backref='user_role')
     role_id = ForeignKeyField(Roles, backref='user_role')
 
     class Meta:
         table_name = 'user_roles'
         primary_key = CompositeKey('user_id', 'role_id')
+        database = database
 
 
-class Audit_Log(BaseModel):
+class Audit_Log(Model):
     audit_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     user_name = CharField(default="")
@@ -91,8 +74,11 @@ class Audit_Log(BaseModel):
     server_id = IntegerField(default=None, index=True) # When auditing global events, use server ID 0
     log_msg = TextField(default='')
 
+    class Meta:
+        database = database
 
-class Host_Stats(BaseModel):
+
+class Host_Stats(Model):
     time = DateTimeField(default=datetime.datetime.now, index=True)
     boot_time = CharField(default="")
     cpu_usage = FloatField(default=0)
@@ -106,9 +92,10 @@ class Host_Stats(BaseModel):
 
     class Meta:
         table_name = "host_stats"
+        database = database
 
 
-class Servers(BaseModel):
+class Servers(Model):
     server_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     server_uuid = CharField(default="", index=True)
@@ -129,27 +116,30 @@ class Servers(BaseModel):
 
     class Meta:
         table_name = "servers"
+        database = database
 
 
-class User_Servers(BaseModel):
+class User_Servers(Model):
     user_id = ForeignKeyField(Users, backref='user_server')
     server_id = ForeignKeyField(Servers, backref='user_server')
 
     class Meta:
         table_name = 'user_servers'
         primary_key = CompositeKey('user_id', 'server_id')
+        database = database
 
 
-class Role_Servers(BaseModel):
+class Role_Servers(Model):
     role_id = ForeignKeyField(Roles, backref='role_server')
     server_id = ForeignKeyField(Servers, backref='role_server')
 
     class Meta:
         table_name = 'role_servers'
         primary_key = CompositeKey('role_id', 'server_id')
+        database = database
 
 
-class Server_Stats(BaseModel):
+class Server_Stats(Model):
     stats_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     server_id = ForeignKeyField(Servers, backref='server', index=True)
@@ -172,9 +162,10 @@ class Server_Stats(BaseModel):
 
     class Meta:
         table_name = "server_stats"
+        database = database
 
 
-class Commands(BaseModel):
+class Commands(Model):
     command_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     server_id = ForeignKeyField(Servers, backref='server', index=True)
@@ -185,9 +176,10 @@ class Commands(BaseModel):
 
     class Meta:
         table_name = "commands"
+        database = database
 
 
-class Webhooks(BaseModel):
+class Webhooks(Model):
     id = AutoField()
     name = CharField(max_length=64, unique=True, index=True)
     method = CharField(default="POST")
@@ -197,8 +189,10 @@ class Webhooks(BaseModel):
 
     class Meta:
         table_name = "webhooks"
+        database = database
 
-class Schedules(BaseModel):
+
+class Schedules(Model):
     schedule_id = IntegerField(unique=True, primary_key=True)
     server_id = ForeignKeyField(Servers, backref='schedule_server')
     enabled = BooleanField()
@@ -211,8 +205,10 @@ class Schedules(BaseModel):
 
     class Meta:
         table_name = 'schedules'
+        database = database
 
-class Backups(BaseModel):
+
+class Backups(Model):
     directories = CharField(null=True)
     max_backups = IntegerField()
     server_id = ForeignKeyField(Servers, backref='backups_server')
@@ -220,39 +216,15 @@ class Backups(BaseModel):
 
     class Meta:
         table_name = 'backups'
+        database = database
 
 
 class db_builder:
 
     @staticmethod
-    def create_tables():
-        with database:
-            database.create_tables([
-                Backups,
-                Users,
-                Roles,
-                User_Roles,
-                User_Servers,
-                Host_Stats,
-                Webhooks,
-                Servers,
-                Role_Servers,
-                Server_Stats,
-                Commands,
-                Audit_Log,
-                SchemaVersion,
-                Schedules
-            ])
-
-    @staticmethod
     def default_settings():
         logger.info("Fresh Install Detected - Creating Default Settings")
         console.info("Fresh Install Detected - Creating Default Settings")
-        SchemaVersion.insert({
-            SchemaVersion.schema_major: schema_version[0],
-            SchemaVersion.schema_minor: schema_version[1],
-            SchemaVersion.schema_patch: schema_version[2]
-            }).execute()
         default_data = helper.find_default_password()
 
         username = default_data.get("username", 'admin')
@@ -279,38 +251,7 @@ class db_builder:
             return True
             pass
 
-    @staticmethod
-    def check_schema_version():
-        svs = SchemaVersion.select().execute()
-        if len(svs) != 1:
-            raise exceptions.SchemaError("Multiple or no schema versions detected - potentially a failed upgrade?")
-        sv = svs[0]
-        svt = (sv.schema_major, sv.schema_minor, sv.schema_patch)
-        logger.debug("Schema: found {}, expected {}".format(svt, schema_version))
-        console.debug("Schema: found {}, expected {}".format(svt, schema_version))
-        if sv.schema_major > schema_version[0]:
-            raise exceptions.SchemaError("Major version mismatch - possible code reversion")
-        elif sv.schema_major < schema_version[0]:
-            db_shortcuts.upgrade_schema()
-
-        if sv.schema_minor > schema_version[1]:
-            logger.warning("Schema minor mismatch detected: found {}, expected {}. Proceed with caution".format(svt, schema_version))
-            console.warning("Schema minor mismatch detected: found {}, expected {}. Proceed with caution".format(svt, schema_version))
-        elif sv.schema_minor < schema_version[1]:
-            db_shortcuts.upgrade_schema()
-
-        if sv.schema_patch > schema_version[2]:
-            logger.info("Schema patch mismatch detected: found {}, expected {}. Proceed with caution".format(svt, schema_version))
-            console.info("Schema patch mismatch detected: found {}, expected {}. Proceed with caution".format(svt, schema_version)) 
-        elif sv.schema_patch < schema_version[2]:
-            db_shortcuts.upgrade_schema()
-    logger.info("Schema validation successful! {}".format(schema_version))
-
 class db_shortcuts:
-
-    @staticmethod
-    def upgrade_schema():
-        raise NotImplemented("I don't know who you are or how you reached this code, but this should NOT have happened.  Please report it to the developer with due haste.")
 
     @staticmethod
     def return_rows(query):

@@ -8,10 +8,11 @@ import logging.config
 """ Our custom classes / pip packages """
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
-from app.classes.shared.models import installer
+from app.classes.shared.models import installer, database
 
 from app.classes.shared.tasks import TasksManager
 from app.classes.shared.controller import Controller
+from app.classes.shared.migration import MigrationManager
 
 from app.classes.shared.cmd import MainPrompt
 
@@ -90,16 +91,18 @@ if __name__ == '__main__':
     # our session file, helps prevent multiple controller agents on the same machine.
     helper.create_session_file(ignore=args.ignore)
 
+
+    migration_manager = MigrationManager(database)
+    migration_manager.up() # Automatically runs migrations
+    
     # do our installer stuff
     fresh_install = installer.is_fresh_install()
 
     if fresh_install:
         console.debug("Fresh install detected")
-        installer.create_tables()
         installer.default_settings()
     else:
         console.debug("Existing install detected")
-        installer.check_schema_version()
 
     # now the tables are created, we can load the tasks_manger and server controller
     controller = Controller()
@@ -127,7 +130,7 @@ if __name__ == '__main__':
     # this should always be last
     tasks_manager.start_main_kill_switch_watcher()
 
-    Crafty = MainPrompt(tasks_manager)
+    Crafty = MainPrompt(tasks_manager, migration_manager)
     if not args.daemon:
         Crafty.cmdloop()
     else:

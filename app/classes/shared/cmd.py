@@ -22,9 +22,10 @@ except ModuleNotFoundError as e:
 
 class MainPrompt(cmd.Cmd, object):
 
-    def __init__(self, tasks_manager):
+    def __init__(self, tasks_manager, migration_manager):
         super().__init__()
         self.tasks_manager = tasks_manager
+        self.migration_manager = migration_manager
 
     # overrides the default Prompt
     prompt = "Crafty Controller v{} > ".format(helper.get_version_string())
@@ -47,6 +48,27 @@ class MainPrompt(cmd.Cmd, object):
     def do_exit(self, line):
         self.universal_exit()
     
+    def do_migrations(self, line):
+        if (line == 'up'):
+            self.migration_manager.up()
+        elif (line == 'down'):
+            self.migration_manager.down()
+        elif (line == 'done'):
+            console.info(self.migration_manager.done)
+        elif (line == 'todo'):
+            console.info(self.migration_manager.todo)
+        elif (line == 'diff'):
+            console.info(self.migration_manager.diff)
+        elif (line == 'info'):
+            console.info('Done: {}'.format(self.migration_manager.done))
+            console.info('FS:   {}'.format(self.migration_manager.todo))
+            console.info('Todo: {}'.format(self.migration_manager.diff))
+        elif (line.startswith('add ')):
+            migration_name = line[len('add '):]
+            self.migration_manager.create(migration_name, False)
+        else:
+            console.info('Unknown migration command')
+    
     def universal_exit(self):
         logger.info("Stopping all server daemons / threads")
         console.info("Stopping all server daemons / threads - This may take a few seconds")
@@ -62,3 +84,7 @@ class MainPrompt(cmd.Cmd, object):
     @staticmethod
     def help_exit():
         console.help("Stops the server if running, Exits the program")
+    
+    @staticmethod
+    def help_migrations():
+        console.help("Only for advanced users. Use with caution")
