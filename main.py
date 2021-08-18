@@ -131,7 +131,7 @@ if __name__ == '__main__':
     # this should always be last
     tasks_manager.start_main_kill_switch_watcher()
 
-    Crafty = MainPrompt(tasks_manager)
+    Crafty = MainPrompt(tasks_manager, migration_manager)
 
     def sigterm_handler(signum, current_stack_frame):
         print() # for newline

@@ -30,8 +30,10 @@ except ModuleNotFoundError as e:
     console.critical("Import Error: Unable to load {} module".format(e.name))
     sys.exit(1)
 
+
 class ServerOutBuf:
     lines = {}
+
     def __init__(self, p, server_id):
         self.p = p
         self.server_id = str(server_id)
@@ -180,7 +182,6 @@ class Server:
             logger.info("Linux Detected")
 
         logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
-<<<<<<< app/classes/shared/server.py
         try:
             self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
         except Exception as ex:
@@ -192,15 +193,13 @@ class Server:
             return False
         websocket_helper.broadcast('send_start_reload', {
         })
-=======
 
         self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
         out_buf = ServerOutBuf(self.process, self.server_id)
 
         logger.debug('Starting virtual terminal listener for server {}'.format(self.name))
         threading.Thread(target=out_buf.check, daemon=True, name='{}_virtual_terminal'.format(self.server_id)).start()
-        
->>>>>>> app/classes/shared/server.py
+
         self.is_crashed = False
 
         self.start_time = str(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
