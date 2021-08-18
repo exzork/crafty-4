@@ -12,6 +12,7 @@ import logging
 import html
 import zipfile
 import pathlib
+import shutil
 
 from datetime import datetime
 from socket import gethostname
@@ -39,6 +40,7 @@ class Helpers:
         self.webroot = os.path.join(self.root_dir, 'app', 'frontend')
         self.servers_dir = os.path.join(self.root_dir, 'servers')
         self.backup_path = os.path.join(self.root_dir, 'backups')
+        self.migration_dir = os.path.join(self.root_dir, 'app', 'migrations')
 
         self.session_file = os.path.join(self.root_dir, 'app', 'config', 'session.lock')
         self.settings_file = os.path.join(self.root_dir, 'app', 'config', 'config.json')
@@ -564,6 +566,32 @@ class Helpers:
                     zf.write(os.path.join(root, file),
                                os.path.relpath(os.path.join(root, file), 
                                                os.path.join(path, '..')))
+    @staticmethod
+    def copy_files(source, dest):
+        if os.path.isfile(source):
+            shutil.copyfile(source, dest)
+            logger.info("Copying jar %s to %s", source, dest)
+        else:
+            logger.info("Source jar does not exist.")
+
+    @staticmethod
+    def download_file(executable_url, jar_path):
+        try:
+            r = requests.get(executable_url, timeout=5)
+        except Exception as ex:
+            logger.error("Could not download executable: %s", ex)
+            return False
+        if r.status_code != 200:
+            logger.error("Unable to download file from %s", executable_url)
+            return False
+
+        try:
+            open(jar_path, "wb").write(r.content)
+        except Exception as e:
+            logger.error("Unable to finish executable download. Error: %s", e)
+            return False
+        return True
+
 
     @staticmethod
     def remove_prefix(text, prefix):

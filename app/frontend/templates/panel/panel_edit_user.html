@@ -76,7 +76,7 @@
                         <label for="password1">Repeat Password <small class="text-muted ml-1"></small> </label>
                         <input type="password" class="form-control" name="password1" id="password1" value="" placeholder="Repeat Password" >
                       </div>
-
+                        {% if len(data['servers_all']) > 0 %}
                       <div class="form-group">
                         <label for="role_membership">Roles <small class="text-muted ml-1"> - the roles this user is a member of</small> </label>
                         <div class="table-responsive">
@@ -106,7 +106,6 @@
                           </table>
                         </div>
                       </div>
-
                       <div class="form-group">
                         <label for="server_membership">Servers <small class="text-muted ml-1"> - servers this user is allowed to access </small> </label>
                         <div class="table-responsive">
@@ -123,9 +122,11 @@
                                 <td>{{ server['server_name'] }}</td>
                                 <td>
                                   {% if server['server_id'] in data['servers'] %}
-                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" disabled>
+                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" value="1">
+                                    {% elif server['server_id'] in data['role-servers'] %}
+                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" value="" disabled>
                                   {% else %}
-                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" disabled>
+                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" value="1">
                                   {% end %}
                                 </td>
                               </tr>
@@ -135,6 +136,7 @@
                           </table>
                         </div>
                       </div>
+
 
                       <div class="form-check-flat">
                         <label for="enabled" class="form-check-label ml-4 mb-4">
@@ -162,9 +164,9 @@
                         </label>
 
                       </div>
-
+{% end %}
                       <button type="submit" class="btn btn-success mr-2">Save</button>
-                      <button type="reset" class="btn btn-light">Cancel</button>
+                      <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light">Cancel</button>
                     </form>
                 </div>
 

@@ -22,32 +22,12 @@ except ModuleNotFoundError as e:
     console.critical("Import Error: Unable to load {} module".format(e.name))
     sys.exit(1)
 
-schema_version = (0, 1, 0) # major, minor, patch semver
-
 database = SqliteDatabase(helper.db_path, pragmas={
     'journal_mode': 'wal',
     'cache_size': -1024 * 10})
 
-class BaseModel(Model):
-    class Meta:
-        database = database
 
-class SchemaVersion(BaseModel):
-    # DO NOT EVER CHANGE THE SCHEMA OF THIS TABLE
-    # (unless we have a REALLY good reason to)
-    # There will only ever be one row, and it allows the database loader to detect
-    # what it needs to do on major version upgrades so you don't have to wipe the DB
-    # every time you upgrade
-    schema_major = IntegerField()
-    schema_minor = IntegerField()
-    schema_patch = IntegerField()
-
-    class Meta:
-        table_name = 'schema_version'
-        primary_key = CompositeKey('schema_major', 'schema_minor', 'schema_patch')
-
-
-class Users(BaseModel):
+class Users(Model):
     user_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     last_login = DateTimeField(default=datetime.datetime.now)
@@ -61,9 +41,10 @@ class Users(BaseModel):
 
     class Meta:
         table_name = "users"
+        database = database
 
 
-class Roles(BaseModel):
+class Roles(Model):
     role_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     last_update = DateTimeField(default=datetime.datetime.now)
@@ -71,18 +52,20 @@ class Roles(BaseModel):
 
     class Meta:
         table_name = "roles"
+        database = database
 
 
-class User_Roles(BaseModel):
+class User_Roles(Model):
     user_id = ForeignKeyField(Users, backref='user_role')
     role_id = ForeignKeyField(Roles, backref='user_role')
 
     class Meta:
         table_name = 'user_roles'
         primary_key = CompositeKey('user_id', 'role_id')
+        database = database
 
 
-class Audit_Log(BaseModel):
+class Audit_Log(Model):
     audit_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     user_name = CharField(default="")
@@ -91,8 +74,11 @@ class Audit_Log(BaseModel):
     server_id = IntegerField(default=None, index=True) # When auditing global events, use server ID 0
     log_msg = TextField(default='')
 
+    class Meta:
+        database = database
 
-class Host_Stats(BaseModel):
+
+class Host_Stats(Model):
     time = DateTimeField(default=datetime.datetime.now, index=True)
     boot_time = CharField(default="")
     cpu_usage = FloatField(default=0)
@@ -106,9 +92,10 @@ class Host_Stats(BaseModel):
 
     class Meta:
         table_name = "host_stats"
+        database = database
 
 
-class Servers(BaseModel):
+class Servers(Model):
     server_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     server_uuid = CharField(default="", index=True)
@@ -122,23 +109,37 @@ class Servers(BaseModel):
     auto_start_delay = IntegerField(default=10)
     crash_detection = BooleanField(default=0)
     stop_command = CharField(default="stop")
+    executable_update_url = CharField(default="")
     server_ip = CharField(default="127.0.0.1")
     server_port = IntegerField(default=25565)
     logs_delete_after = IntegerField(default=0)
 
     class Meta:
         table_name = "servers"
+        database = database
 
-class Role_Servers(BaseModel):
+
+class User_Servers(Model):
+    user_id = ForeignKeyField(Users, backref='user_server')
+    server_id = ForeignKeyField(Servers, backref='user_server')
+
+    class Meta:
+        table_name = 'user_servers'
+        primary_key = CompositeKey('user_id', 'server_id')
+        database = database
+
+
+class Role_Servers(Model):
     role_id = ForeignKeyField(Roles, backref='role_server')
     server_id = ForeignKeyField(Servers, backref='role_server')
 
     class Meta:
         table_name = 'role_servers'
         primary_key = CompositeKey('role_id', 'server_id')
+        database = database
 
 
-class Server_Stats(BaseModel):
+class Server_Stats(Model):
     stats_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     server_id = ForeignKeyField(Servers, backref='server', index=True)
@@ -156,13 +157,15 @@ class Server_Stats(BaseModel):
     players = CharField(default="")
     desc = CharField(default="Unable to Connect")
     version = CharField(default="")
+    updating = BooleanField(default=False)
 
 
     class Meta:
         table_name = "server_stats"
+        database = database
 
 
-class Commands(BaseModel):
+class Commands(Model):
     command_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     server_id = ForeignKeyField(Servers, backref='server', index=True)
@@ -173,9 +176,10 @@ class Commands(BaseModel):
 
     class Meta:
         table_name = "commands"
+        database = database
 
 
-class Webhooks(BaseModel):
+class Webhooks(Model):
     id = AutoField()
     name = CharField(max_length=64, unique=True, index=True)
     method = CharField(default="POST")
@@ -185,8 +189,10 @@ class Webhooks(BaseModel):
 
     class Meta:
         table_name = "webhooks"
+        database = database
 
-class Schedules(BaseModel):
+
+class Schedules(Model):
     schedule_id = IntegerField(unique=True, primary_key=True)
     server_id = ForeignKeyField(Servers, backref='schedule_server')
     enabled = BooleanField()
@@ -199,8 +205,10 @@ class Schedules(BaseModel):
 
     class Meta:
         table_name = 'schedules'
+        database = database
 
-class Backups(BaseModel):
+
+class Backups(Model):
     directories = CharField(null=True)
     max_backups = IntegerField()
     server_id = ForeignKeyField(Servers, backref='backups_server')
@@ -208,38 +216,15 @@ class Backups(BaseModel):
 
     class Meta:
         table_name = 'backups'
+        database = database
 
 
 class db_builder:
 
     @staticmethod
-    def create_tables():
-        with database:
-            database.create_tables([
-                Backups,
-                Users,
-                Roles,
-                User_Roles,
-                Host_Stats,
-                Webhooks,
-                Servers,
-                Role_Servers,
-                Server_Stats,
-                Commands,
-                Audit_Log,
-                SchemaVersion,
-                Schedules
-            ])
-
-    @staticmethod
     def default_settings():
         logger.info("Fresh Install Detected - Creating Default Settings")
         console.info("Fresh Install Detected - Creating Default Settings")
-        SchemaVersion.insert({
-            SchemaVersion.schema_major: schema_version[0],
-            SchemaVersion.schema_minor: schema_version[1],
-            SchemaVersion.schema_patch: schema_version[2]
-            }).execute()
         default_data = helper.find_default_password()
 
         username = default_data.get("username", 'admin')
@@ -266,38 +251,7 @@ class db_builder:
             return True
             pass
 
-    @staticmethod
-    def check_schema_version():
-        svs = SchemaVersion.select().execute()
-        if len(svs) != 1:
-            raise exceptions.SchemaError("Multiple or no schema versions detected - potentially a failed upgrade?")
-        sv = svs[0]
-        svt = (sv.schema_major, sv.schema_minor, sv.schema_patch)
-        logger.debug("Schema: found {}, expected {}".format(svt, schema_version))
-        console.debug("Schema: found {}, expected {}".format(svt, schema_version))
-        if sv.schema_major > schema_version[0]:
-            raise exceptions.SchemaError("Major version mismatch - possible code reversion")
-        elif sv.schema_major < schema_version[0]:
-            db_shortcuts.upgrade_schema()
-
-        if sv.schema_minor > schema_version[1]:
-            logger.warning("Schema minor mismatch detected: found {}, expected {}. Proceed with caution".format(svt, schema_version))
-            console.warning("Schema minor mismatch detected: found {}, expected {}. Proceed with caution".format(svt, schema_version))
-        elif sv.schema_minor < schema_version[1]:
-            db_shortcuts.upgrade_schema()
-
-        if sv.schema_patch > schema_version[2]:
-            logger.info("Schema patch mismatch detected: found {}, expected {}. Proceed with caution".format(svt, schema_version))
-            console.info("Schema patch mismatch detected: found {}, expected {}. Proceed with caution".format(svt, schema_version)) 
-        elif sv.schema_patch < schema_version[2]:
-            db_shortcuts.upgrade_schema()
-    logger.info("Schema validation successful! {}".format(schema_version))
-
 class db_shortcuts:
-
-    @staticmethod
-    def upgrade_schema():
-        raise NotImplemented("I don't know who you are or how you reached this code, but this should NOT have happened.  Please report it to the developer with due haste.")
 
     @staticmethod
     def return_rows(query):
@@ -334,6 +288,7 @@ class db_shortcuts:
     def remove_server(server_id):
         with database.atomic():
             Role_Servers.delete().where(Role_Servers.server_id == server_id).execute()
+            User_Servers.delete().where(User_Servers.server_id == server_id).execute()
             Servers.delete().where(Servers.server_id == server_id).execute()
 
     @staticmethod
@@ -358,7 +313,37 @@ class db_shortcuts:
             server_data.append(db_helper.get_server_data_by_id(u.server_id))
 
         return server_data
-        
+
+    @staticmethod
+    def get_all_authorized_servers(user_id):
+        user_servers = User_Servers.select().where(User_Servers.user_id == user_id)
+        user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        server_data = []
+        roles_list = []
+        role_server = []
+        server_data = []
+
+        for u in user_servers:
+            server_data.append(db_helper.get_server_data_by_id(u.server_id))
+
+        for u in user_roles:
+            roles_list.append(db_helper.get_role(u.role_id))
+
+        for r in roles_list:
+            role_test = Role_Servers.select().where(Role_Servers.role_id == r.get('role_id'))
+            for t in role_test:
+                role_server.append(t)
+
+        for s in role_server:
+            found = False
+            for item in user_servers:
+                if s.server_id == item.server_id:
+                    found = True
+            if not found:
+                server_data.append(db_helper.get_server_data_by_id(s.server_id))
+
+        return server_data
+
     @staticmethod
     def get_authorized_servers_from_roles(user_id):
         user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
@@ -394,16 +379,44 @@ class db_shortcuts:
         user_servers = User_Servers.select().where(User_Servers.user_id == user_id)
         authorized_servers = []
         server_data = []
+        user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        roles_list = []
+        role_server = []
 
         for u in user_servers:
             authorized_servers.append(db_helper.get_server_data_by_id(u.server_id))
 
+        for u in user_roles:
+            roles_list.append(db_helper.get_role(u.role_id))
+
+        for r in roles_list:
+            role_test = Role_Servers.select().where(Role_Servers.role_id == r.get('role_id'))
+            for t in role_test:
+                role_server.append(t)
+
+        for s in role_server:
+            found = False
+            for item in user_servers:
+                if s.server_id == item.server_id:
+                    found = True
+            if not found:
+                authorized_servers.append(db_helper.get_server_data_by_id(s.server_id))
+
         for s in authorized_servers:
-            latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
-            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)})
+            latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(
+                Server_Stats.created.desc()).limit(1)
+            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0]})
         return server_data
 
-        
+    @staticmethod
+    def get_user_roles_names(user_id):
+        roles_list = []
+        roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        for r in roles:
+            roles_list.append(db_helper.get_role(r.role_id)['role_name'])
+        return roles_list
+
+
     @staticmethod
     def get_authorized_servers_stats_from_roles(user_id):
         user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
@@ -529,16 +542,34 @@ class db_shortcuts:
         roles = set()
         for r in roles_query:
             roles.add(r.role_id.role_id)
-        #servers_query = User_Servers.select().join(Servers, JOIN.INNER).where(User_Servers.user_id == user_id)
+        servers_query = User_Servers.select().join(Servers, JOIN.INNER).where(User_Servers.user_id == user_id)
         ## TODO: this query needs to be narrower
         servers = set()
-        #for s in servers_query:
-        #    servers.add(s.server_id.server_id)
+        for s in servers_query:
+            servers.add(s.server_id.server_id)
         user['roles'] = roles
-        #user['servers'] = servers
+        user['servers'] = servers
         #logger.debug("user: ({}) {}".format(user_id, user))
         return user
 
+    @staticmethod
+    def add_user_server(server_id, user_id):
+        servers = User_Servers.insert({User_Servers.server_id: server_id, User_Servers.user_id: user_id}).execute()
+        return servers
+
+
+    @staticmethod
+    def user_query(user_id):
+        user_query = Users.select().where(Users.user_id == user_id)
+        return user_query
+
+    @staticmethod
+    def user_role_query(user_id):
+        user_query = User_Roles.select().where(User_Roles.user_id == user_id)
+        query = Roles.select().where(Roles.role_id == -1)
+        for u in user_query:
+            query = Roles.select().where(Roles.role_id == u.role_id)
+        return query
 
     @staticmethod
     def get_user(user_id):
@@ -555,7 +586,7 @@ class db_shortcuts:
                 superuser: False,
                 api_token: None,
                 roles: [],
-                servers: []
+                servers: [],
             }
         user = model_to_dict(Users.get(Users.user_id == user_id))
 
@@ -581,9 +612,9 @@ class db_shortcuts:
             elif key == "roles":
                 added_roles = user_data['roles'].difference(base_data['roles'])
                 removed_roles = base_data['roles'].difference(user_data['roles'])
-            #elif key == "servers":
-            #    added_servers = user_data['servers'].difference(base_data['servers'])
-            #    removed_servers = base_data['servers'].difference(user_data['servers'])
+            elif key == "servers":
+                added_servers = user_data['servers'].difference(base_data['servers'])
+                removed_servers = base_data['servers'].difference(user_data['servers'])
             elif key == "regen_api":
                 if user_data['regen_api']:
                     up_data['api_token'] = db_shortcuts.new_api_token()
@@ -600,10 +631,10 @@ class db_shortcuts:
                 # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
             User_Roles.delete().where(User_Roles.user_id == user_id).where(User_Roles.role_id.in_(removed_roles)).execute()
 
-            #for server in added_servers:
-            #    User_Servers.get_or_create(user_id=user_id, server_id=server)
+            for server in added_servers:
+                User_Servers.get_or_create(user_id=user_id, server_id=server)
             #    # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
-            #User_Servers.delete().where(User_Servers.user_id == user_id).where(User_Servers.server_id.in_(removed_servers)).execute()
+            User_Servers.delete().where(User_Servers.user_id == user_id).where(User_Servers.server_id.in_(removed_servers)).execute()
             if up_data:
                 Users.update(up_data).where(Users.user_id == user_id).execute()
 
@@ -841,6 +872,15 @@ class db_shortcuts:
                 "server_id": server_id
             }
         return conf
+
+    @staticmethod
+    def set_update(server_id, value):
+        try:
+            row = Server_Stats.select().where(Server_Stats.server_id == server_id)
+        except Exception as ex:
+            logger.error("Database entry not found. ".format(ex))
+        with database.atomic():
+            Server_Stats.update(updating=value).where(Server_Stats.server_id == server_id).execute()
 
     @staticmethod
     def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, auto_enabled: bool = True):
