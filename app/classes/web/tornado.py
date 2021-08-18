@@ -159,7 +159,7 @@ class Webserver:
 
         console.info("Server Init Complete: Listening For Connections:")
 
-        self.ioloop = tornado.ioloop.IOLoop.instance()
+        self.ioloop = tornado.ioloop.IOLoop.current()
         self.ioloop.start()
 
     def stop_web_server(self):

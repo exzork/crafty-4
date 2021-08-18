@@ -11,6 +11,7 @@ import schedule
 import logging.config
 import zipfile
 from threading import Thread
+import html
 
 
 from app.classes.shared.helpers import helper
@@ -28,6 +29,48 @@ except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
     console.critical("Import Error: Unable to load {} module".format(e.name))
     sys.exit(1)
+
+class ServerOutBuf:
+    lines = {}
+    def __init__(self, p, server_id):
+        self.p = p
+        self.server_id = str(server_id)
+        # Buffers text for virtual_terminal_lines config number of lines
+        self.max_lines = helper.get_setting('virtual_terminal_lines')
+        self.line_buffer = ''
+        ServerOutBuf.lines[self.server_id] = []
+
+    def check(self):
+        while self.p.isalive():
+            char = self.p.read(1)
+            if char == os.linesep:
+                ServerOutBuf.lines[self.server_id].append(self.line_buffer)
+                self.new_line_handler(self.line_buffer)
+                self.line_buffer = ''
+                # Limit list length to self.max_lines:
+                if len(ServerOutBuf.lines[self.server_id]) > self.max_lines:
+                    ServerOutBuf.lines[self.server_id].pop(0)
+            else:
+                self.line_buffer += char
+
+    def new_line_handler(self, new_line):
+        new_line = re.sub('(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)|(> )', '', new_line)
+        new_line = re.sub('[A-z]{2}\b\b', '', new_line)
+        highlighted = helper.log_colors(html.escape(new_line))
+
+        logger.debug('Broadcasting new virtual terminal line')
+
+        # TODO: Do not send data to clients who do not have permission to view this server's console
+        websocket_helper.broadcast_page_params(
+            '/panel/server_detail',
+            {
+                'id': self.server_id
+            },
+            'vterm_new_line',
+            {
+                'line': highlighted + '<br />'
+            }
+        )
 
 
 class Server:
@@ -88,7 +131,7 @@ class Server:
 
     def run_threaded_server(self):
         # start the server
-        self.server_thread = threading.Thread(target=self.start_server, daemon=True)
+        self.server_thread = threading.Thread(target=self.start_server, daemon=True, name='{}_server_thread'.format(self.server_id))
         self.server_thread.start()
 
     def setup_server_run_command(self):
@@ -137,6 +180,7 @@ class Server:
             logger.info("Linux Detected")
 
         logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
+<<<<<<< app/classes/shared/server.py
         try:
             self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
         except Exception as ex:
@@ -148,6 +192,15 @@ class Server:
             return False
         websocket_helper.broadcast('send_start_reload', {
         })
+=======
+
+        self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
+        out_buf = ServerOutBuf(self.process, self.server_id)
+
+        logger.debug('Starting virtual terminal listener for server {}'.format(self.name))
+        threading.Thread(target=out_buf.check, daemon=True, name='{}_virtual_terminal'.format(self.server_id)).start()
+        
+>>>>>>> app/classes/shared/server.py
         self.is_crashed = False
 
         self.start_time = str(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))

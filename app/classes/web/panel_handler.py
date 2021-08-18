@@ -201,7 +201,7 @@ class PanelHandler(BaseHandler):
                     #if not db_helper.server_id_authorized(server_id, exec_user_id):
                     if not db_helper.server_id_authorized_from_roles(int(server_id), exec_user_id):
                         self.redirect("/panel/error?error=Invalid Server ID")
-                        return False
+                        return
 
             server_info = db_helper.get_server_data_by_id(server_id)
             backup_file = os.path.abspath(os.path.join(server_info["backup_path"], file))
@@ -250,7 +250,7 @@ class PanelHandler(BaseHandler):
                     #if not db_helper.server_id_authorized(server_id, exec_user_id):
                     if not db_helper.server_id_authorized_from_roles(int(server_id), exec_user_id):
                         self.redirect("/panel/error?error=Invalid Server ID")
-                        return False
+                        return
 
             server = self.controller.get_server_obj(server_id).backup_server()
             self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))

@@ -159,7 +159,7 @@ class Helpers:
         version = "{}.{}.{}-{}".format(version_data.get('major', '?'),
                                     version_data.get('minor', '?'),
                                     version_data.get('sub', '?'),
-                                    version_data.get('patch', '?'))
+                                    version_data.get('meta', '?'))
         return str(version)
 
     def do_exit(self):
@@ -195,6 +195,9 @@ class Helpers:
             (r'(\[.+?/ERROR\])', r'<span class="mc-log-error">\1</span>'),
             (r'(\w+?\[/\d+?\.\d+?\.\d+?\.\d+?\:\d+?\])', r'<span class="mc-log-keyword">\1</span>'),
             (r'\[(\d\d:\d\d:\d\d)\]', r'<span class="mc-log-time">[\1]</span>'),
+            (r'(\[.+? INFO\])', r'<span class="mc-log-info">\1</span>'),
+            (r'(\[.+? WARN\])', r'<span class="mc-log-warn">\1</span>'),
+            (r'(\[.+? ERROR\])', r'<span class="mc-log-error">\1</span>')
         ]
 
         # highlight users keywords
@@ -589,5 +592,11 @@ class Helpers:
             return False
         return True
 
+
+    @staticmethod
+    def remove_prefix(text, prefix):
+        if text.startswith(prefix):
+            return text[len(prefix):]
+        return text
 
 helper = Helpers()
