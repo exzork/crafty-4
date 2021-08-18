@@ -8,7 +8,7 @@
     "tornado_access": {
       "format": "%(asctime)s - [Tornado] - [Access] - %(levelname)s - %(message)s"
     },
-        "schedule": {
+    "schedule": {
       "format": "%(asctime)s - [Schedules] - %(levelname)s - %(message)s"
     }
   },

@@ -23,4 +23,3 @@ termcolor==1.1.0
 tornado==6.0.4
 urllib3==1.25.10
 webencodings==0.5.1
-peewee_migrate==1.4.6
