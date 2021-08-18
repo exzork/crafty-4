@@ -197,7 +197,7 @@ class TasksManager:
                 host_stats = db_helper.get_latest_hosts_stats()
                 if len(websocket_helper.clients) > 0:
                     # There are clients
-                    websocket_helper.broadcast('update_host_stats', {
+                    websocket_helper.broadcast_page('/panel/dashboard', 'update_host_stats', {
                         'cpu_usage': host_stats.get('cpu_usage'),
                         'cpu_cores': host_stats.get('cpu_cores'),
                         'cpu_cur_freq': host_stats.get('cpu_cur_freq'),
@@ -205,13 +205,9 @@ class TasksManager:
                         'mem_percent': host_stats.get('mem_percent'),
                         'mem_usage': host_stats.get('mem_usage')
                     })
-                time.sleep(4)
-            else:
-                # Stats are same
-                time.sleep(8)
+            time.sleep(4)
 
     def log_watcher(self):
-        console.debug('in log_watcher')
         helper.check_for_old_logs(db_helper)
         schedule.every(6).hours.do(lambda: helper.check_for_old_logs(db_helper)).tag('log-mgmt')
 

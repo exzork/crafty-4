@@ -41,11 +41,11 @@ class ApiHandler(BaseHandler):
             else:
                 logging.debug("Auth unsuccessful")
                 self.access_denied("unknown", "the user provided an invalid token")
-                return False
+                return
         except Exception as e:
             log.warning("An error occured while authenticating an API user: %s", e)
             self.access_denied("unknown"), "an error occured while authenticating the user"
-            return False
+            return
 
 
 class ServersStats(ApiHandler):

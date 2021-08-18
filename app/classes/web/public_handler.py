@@ -37,9 +37,6 @@ class PublicHandler(BaseHandler):
 
     def get(self, page=None):
 
-        self.clear_cookie("user")
-        self.clear_cookie("user_data")
-
         error = bleach.clean(self.get_argument('error', "Invalid Login!"))
 
         page_data = {
@@ -59,9 +56,16 @@ class PublicHandler(BaseHandler):
         elif page == "error":
             template = "public/error.html"
 
+        elif page == "logout":
+            self.clear_cookie("user")
+            self.clear_cookie("user_data")
+            self.redirect('/public/login')
+            return
+
         # if we have no page, let's go to login
         else:
             self.redirect('/public/login')
+            return
 
         self.render(
             template,
@@ -82,14 +86,18 @@ class PublicHandler(BaseHandler):
             # if we don't have a user
             if not user_data:
                 next_page = "/public/error?error=Login Failed"
+                self.clear_cookie("user")
+                self.clear_cookie("user_data")
                 self.redirect(next_page)
-                return False
+                return
 
             # if they are disabled
             if not user_data.enabled:
                 next_page = "/public/error?error=Login Failed"
+                self.clear_cookie("user")
+                self.clear_cookie("user_data")
                 self.redirect(next_page)
-                return False
+                return
 
             login_result = helper.verify_pass(entered_password, user_data.password)
 
@@ -118,6 +126,8 @@ class PublicHandler(BaseHandler):
                 next_page = "/panel/dashboard"
                 self.redirect(next_page)
             else:
+                self.clear_cookie("user")
+                self.clear_cookie("user_data")
                 # log this failed login attempt
                 db_helper.add_to_audit_log(user_data.user_id, "Tried to log in", 0, self.get_remote_ip())
                 self.redirect('/public/error?error=Login Failed')

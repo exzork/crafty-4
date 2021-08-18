@@ -4,6 +4,7 @@ import json
 import time
 import argparse
 import logging.config
+import signal
 
 """ Our custom classes / pip packages """
 from app.classes.shared.console import console
@@ -128,8 +129,23 @@ if __name__ == '__main__':
     tasks_manager.start_main_kill_switch_watcher()
 
     Crafty = MainPrompt(tasks_manager)
+
+    def sigterm_handler(signum, current_stack_frame):
+        print() # for newline
+        logger.info("Recieved SIGTERM, stopping Crafty")
+        console.info("Recieved SIGTERM, stopping Crafty")
+        Crafty.universal_exit()
+
+    signal.signal(signal.SIGTERM, sigterm_handler)
+
     if not args.daemon:
-        Crafty.cmdloop()
+        try:
+            Crafty.cmdloop()
+        except KeyboardInterrupt:
+            print() # for newline
+            logger.info("Recieved SIGINT, stopping Crafty")
+            console.info("Recieved SIGINT, stopping Crafty")
+            Crafty.universal_exit()
     else:
         print("Crafty started in daemon mode, no shell will be printed")
         while True:
@@ -139,6 +155,7 @@ if __name__ == '__main__':
                 time.sleep(1)
             except KeyboardInterrupt:
                 logger.info("Recieved SIGINT, stopping Crafty")
+                console.info("Recieved SIGINT, stopping Crafty")
                 break
-       
+        
         Crafty.universal_exit()

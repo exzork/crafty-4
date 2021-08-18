@@ -13,19 +13,19 @@ class Translation():
         self.translations_path = os.path.join(helper.root_dir, 'app', 'translations')
         self.cached_translation = None
         self.cached_translation_lang = None
+        self.lang_file_exists = []
     def translate(self, page, word):
         translated_word = None
         lang = helper.get_setting('language')
         fallback_lang = 'en_EN'
 
-        lang_file_exists = helper.check_file_exists(
-            os.path.join(
-                self.translations_path, lang + '.json'
-            )
-        )
+        if lang not in self.lang_file_exists and \
+            helper.check_file_exists(os.path.join(self.translations_path, lang + '.json')):
+            self.lang_file_exists.append(lang)
+
 
         translated_word = self.translate_inner(page, word, lang) \
-            if lang_file_exists else self.translate_inner(page, word, fallback_lang)
+            if lang in self.lang_file_exists else self.translate_inner(page, word, fallback_lang)
 
         if translated_word:
             if isinstance(translated_word, dict): return json.dumps(translated_word)

@@ -1,13 +1,21 @@
 import json
 import logging
+import asyncio
 
-import tornado.websocket
-from app.classes.shared.console import console
+from urllib.parse import parse_qsl
 from app.classes.shared.models import Users, db_helper
+from app.classes.shared.helpers import helper
 from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
 
+try:
+    import tornado.websocket
+
+except ModuleNotFoundError as e:
+    logger.critical("Import Error: Unable to load {} module".format(e, e.name))
+    console.critical("Import Error: Unable to load {} module".format(e, e.name))
+    sys.exit(1)
 
 class SocketHandler(tornado.websocket.WebSocketHandler):
 
@@ -15,6 +23,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         self.controller = controller
         self.tasks_manager = tasks_manager
         self.translator = translator
+        self.io_loop = tornado.ioloop.IOLoop.current()
 
     def get_remote_ip(self):
         remote_ip = self.request.headers.get("X-Real-IP") or \
@@ -35,6 +44,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
 
 
     def open(self):
+        logger.debug('Checking WebSocket authentication')
         if self.check_auth():
             self.handle()
         else:
@@ -42,10 +52,15 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
             self.close()
             db_helper.add_to_audit_log_raw('unknown', 0, 0, 'Someone tried to connect via WebSocket without proper authentication', self.get_remote_ip())
             websocket_helper.broadcast('notification', 'Someone tried to connect via WebSocket without proper authentication')
+            logger.warning('Someone tried to connect via WebSocket without proper authentication')
 
     def handle(self):
-        
-        websocket_helper.addClient(self)
+        self.page = self.get_query_argument('page')
+        self.page_query_params = dict(parse_qsl(helper.remove_prefix(
+            self.get_query_argument('page_query_params'),
+            '?'
+        )))
+        websocket_helper.add_client(self)
         logger.debug('Opened WebSocket connection')
         # websocket_helper.broadcast('notification', 'New client connected')
 
@@ -56,7 +71,13 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         logger.debug('Event Type: {}, Data: {}'.format(message['event'], message['data']))
 
     def on_close(self):
-        websocket_helper.removeClient(self)
+        websocket_helper.remove_client(self)
         logger.debug('Closed WebSocket connection')
         # websocket_helper.broadcast('notification', 'Client disconnected')
+
+    async def write_message_int(self, message):
+        self.write_message(message)
+    
+    def write_message_helper(self, message):
+        asyncio.run_coroutine_threadsafe(self.write_message_int(message), self.io_loop.asyncio_loop)
 

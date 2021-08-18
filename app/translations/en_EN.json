@@ -120,7 +120,7 @@
         "playerControls": "Player Management"
     },
     "serverTerm": {
-        "stopRefresh": "Stop Refresh",
+        "stopScroll": "Stop Auto Scrollling",
         "commandInput": "Enter your command",
         "sendCommand": "Send command",
         "start": "Start",

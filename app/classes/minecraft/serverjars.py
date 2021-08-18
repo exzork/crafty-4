@@ -71,6 +71,29 @@ class ServerJars:
         data = self._read_cache()
         return data.get('servers')
 
+    def get_serverjar_data_sorted(self):
+        data = self.get_serverjar_data()
+
+        def str_to_int(x, counter=0):
+            try:
+                return ord(x[0]) + str_to_int(x[1:], counter + 1) + len(x)
+            except IndexError:
+                return 0
+
+        def to_int(x):
+            try:
+                return int(x)
+            except ValueError:
+                temp = x.split('-')
+                return to_int(temp[0]) + str_to_int(temp[1]) / 100000
+
+        sort_key_fn = lambda x: [to_int(y) for y in x.split('.')]
+
+        for key in data.keys():
+            data[key] = sorted(data[key], key=sort_key_fn)
+
+        return data
+
     def _check_api_alive(self):
         logger.info("Checking serverjars.com API status")
 
