@@ -12,7 +12,7 @@ from tornado import iostream
 from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.models import db_helper, Servers
+from app.classes.shared.models import db_helper, permissions, Servers, Enum_Permissions
 from app.classes.shared.helpers import helper
 
 logger = logging.getLogger(__name__)
@@ -319,6 +319,7 @@ class PanelHandler(BaseHandler):
             page_data['roles_all'] = db_helper.get_all_roles()
             page_data['servers'] = []
             page_data['servers_all'] = self.controller.list_defined_servers()
+            page_data['permissions_all'] = self.controller.list_defined_permissions()
             page_data['role-servers'] = []
             template = "panel/panel_edit_user.html"
 
@@ -343,6 +344,7 @@ class PanelHandler(BaseHandler):
             page_data['role-servers'] = page_role_servers
             page_data['roles_all'] = db_helper.get_all_roles()
             page_data['servers_all'] = self.controller.list_defined_servers()
+            page_data['permissions_all'] = self.controller.list_defined_permissions()
 
             if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
@@ -406,6 +408,8 @@ class PanelHandler(BaseHandler):
                 return
 
             page_data['servers_all'] = self.controller.list_defined_servers()
+            page_data['permissions_all'] = self.controller.list_defined_permissions()
+            page_data['permissions_list'] = set()
             template = "panel/panel_edit_role.html"
 
         elif page == "edit_role":
@@ -421,6 +425,8 @@ class PanelHandler(BaseHandler):
             role_id = self.get_argument('id', None)
             page_data['role'] = db_helper.get_role(role_id)
             page_data['servers_all'] = self.controller.list_defined_servers()
+            page_data['permissions_all'] = self.controller.list_defined_permissions()
+            page_data['permissions_list'] = self.controller.get_role_permissions(role_id)
             page_data['user-roles'] = user_roles
             page_data['users'] = db_helper.get_all_users()
 
@@ -736,12 +742,22 @@ class PanelHandler(BaseHandler):
                 ))
                 if argument:
                     servers.add(server['server_id'])
+                    
+            permissions_mask = "00000000"
+            for permission in self.controller.list_defined_permissions():
+                argument = int(float(
+                    bleach.clean(
+                        self.get_argument('permission_{}'.format(permission.name), '0')
+                    )
+                ))
+                if argument:
+                    permissions_mask = permissions.set_permission(permissions_mask, permission, argument)
 
             role_data = {
                 "role_name": role_name,
                 "servers": servers
             }
-            db_helper.update_role(role_id, role_data=role_data)
+            db_helper.update_role(role_id, role_data=role_data, permissions_mask=permissions_mask)
 
             db_helper.add_to_audit_log(exec_user['user_id'],
                                        "Edited role {} (RID:{}) with servers {}".format(role_name, role_id, servers),
@@ -774,9 +790,19 @@ class PanelHandler(BaseHandler):
                 ))
                 if argument:
                     servers.add(server['server_id'])
+                    
+            permissions_mask = "00000000"
+            for permission in self.controller.list_defined_permissions():
+                argument = int(float(
+                    bleach.clean(
+                        self.get_argument('permission_{}'.format(permission.name), '0')
+                    )
+                ))
+                if argument:
+                    permissions_mask = permissions.set_permission(permissions_mask, permission, argument)
 
             role_id = db_helper.add_role(role_name)
-            db_helper.update_role(role_id, {"servers": servers})
+            db_helper.update_role(role_id, {"servers": servers}, permissions_mask)
 
             db_helper.add_to_audit_log(exec_user['user_id'],
                                        "Added role {} (RID:{})".format(role_name, role_id),

@@ -12,7 +12,7 @@ from distutils import dir_util
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 
-from app.classes.shared.models import db_helper
+from app.classes.shared.models import db_helper, permissions
 
 from app.classes.shared.server import Server
 from app.classes.minecraft.server_props import ServerProps
@@ -109,6 +109,21 @@ class Controller:
     def list_defined_servers():
         servers = db_helper.get_all_defined_servers()
         return servers
+        
+    @staticmethod
+    def list_defined_permissions():
+        permissions_list = permissions.get_permissions_list()
+        return permissions_list
+        
+    @staticmethod
+    def get_mask_permissions(role_id, server_id):
+        permissions_mask = db_helper.get_permissions_mask(role_id, server_id)
+        return permissions_mask
+        
+    @staticmethod
+    def get_role_permissions(role_id):
+        permissions_list = db_helper.get_role_permissions_list(role_id)
+        return permissions_list
         
     @staticmethod
     def list_authorized_servers(userId):

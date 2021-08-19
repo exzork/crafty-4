@@ -93,6 +93,35 @@
                         </div>
                       </div>
 
+                      <div class="form-group">
+                        <label for="server_membership">Permissions <small class="text-muted ml-1"> - permissions this role has on this/these servers </small> </label>
+                        <div class="table-responsive">
+                          <table class="table">
+                            <thead>
+                              <tr class="rounded">
+                                <th>Permission Name</th>
+                                <th>Authorized ?</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                            {% for permission in data['permissions_all'] %}
+                              <tr>
+                                <td>{{ permission.name }}</td>
+                                <td>
+                                  {% if permission in data['permissions_list'] %}
+                                    <input type="checkbox" class="form-check-input" id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" checked="" value="1">
+                                  {% else %}
+                                    <input type="checkbox" class="form-check-input" id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" value="1">
+                                  {% end %}
+                                </td>
+                              </tr>
+                            {% end %}
+
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
                       <button type="submit" class="btn btn-success mr-2">Save</button>
                       <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light">Cancel</button>
                     </form>

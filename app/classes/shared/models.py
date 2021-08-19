@@ -15,6 +15,7 @@ peewee_logger.setLevel(logging.INFO)
 try:
     from peewee import *
     from playhouse.shortcuts import model_to_dict
+    from enum import Enum
     import yaml
 
 except ModuleNotFoundError as e:
@@ -122,6 +123,7 @@ class Servers(Model):
 class User_Servers(Model):
     user_id = ForeignKeyField(Users, backref='user_server')
     server_id = ForeignKeyField(Servers, backref='user_server')
+    permissions = CharField(default="00000000")
 
     class Meta:
         table_name = 'user_servers'
@@ -132,6 +134,7 @@ class User_Servers(Model):
 class Role_Servers(Model):
     role_id = ForeignKeyField(Roles, backref='role_server')
     server_id = ForeignKeyField(Servers, backref='role_server')
+    permissions = CharField(default="00000000")
 
     class Meta:
         table_name = 'role_servers'
@@ -416,6 +419,20 @@ class db_shortcuts:
             roles_list.append(db_helper.get_role(r.role_id)['role_name'])
         return roles_list
 
+    @staticmethod
+    def get_permissions_mask(role_id, server_id):
+        permissions_mask = ''
+        role_server = Role_Servers.select().where(Role_Servers.role_id == role_id).where(Role_Servers.server_id == server_id).execute()
+        permissions_mask = role_server.permissions
+        return permissions_mask
+
+    @staticmethod
+    def get_role_permissions_list(role_id):
+        permissions_mask = ''
+        role_server = Role_Servers.select().where(Role_Servers.role_id == role_id).execute()
+        permissions_mask = role_server[0].permissions
+        permissions_list = permissions.get_permissions(permissions_mask)
+        return permissions_list
 
     @staticmethod
     def get_authorized_servers_stats_from_roles(user_id):
@@ -553,8 +570,8 @@ class db_shortcuts:
         return user
 
     @staticmethod
-    def add_user_server(server_id, user_id):
-        servers = User_Servers.insert({User_Servers.server_id: server_id, User_Servers.user_id: user_id}).execute()
+    def add_user_server(server_id, user_id, us_permissions):
+        servers = User_Servers.insert({User_Servers.server_id: server_id, User_Servers.user_id: user_id, User_Servers.permissions: us_permissions}).execute()
         return servers
 
 
@@ -697,10 +714,11 @@ class db_shortcuts:
             return {}
 
     @staticmethod
-    def update_role(role_id, role_data={}):
+    def update_role(role_id, role_data={}, permissions_mask="00000000"):
         base_data = db_helper.get_role(role_id)
         up_data = {}
         added_servers = set()
+        edited_servers = set()
         removed_servers = set()
         for key in role_data:
             if key == "role_id":
@@ -714,7 +732,11 @@ class db_shortcuts:
         logger.debug("role: {} +server:{} -server{}".format(role_data, added_servers, removed_servers))
         with database.atomic():
             for server in added_servers:
-                Role_Servers.get_or_create(role_id=role_id, server_id=server)
+                Role_Servers.get_or_create(role_id=role_id, server_id=server, permissions=permissions_mask)
+            for server in base_data['servers']:
+                role_server = Role_Servers.select().where(Role_Servers.role_id == role_id).where(Role_Servers.server_id == server).get()
+                role_server.permissions = permissions_mask
+                Role_Servers.save(role_server)
                 # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
             Role_Servers.delete().where(Role_Servers.role_id == role_id).where(Role_Servers.server_id.in_(removed_servers)).execute()
             if up_data:
@@ -928,5 +950,51 @@ class db_shortcuts:
                 b = Backups.create(**conf)
             logger.debug("Creating new backup record.")
 
+class Enum_Permissions(Enum):
+    Commands = 0
+    Terminal = 1
+    Logs = 2
+    Schedule = 3
+    Backup = 4
+    Files = 5
+    Config = 6
+    Players = 7
+
+class Permissions_Servers:
+
+    @staticmethod
+    def get_permissions_list():
+        permissions_list = []
+        for member in Enum_Permissions.__members__.items():
+            permissions_list.append(member[1])
+        return permissions_list
+        
+    @staticmethod
+    def get_permissions(permissions_mask):
+        permissions_list = []
+        for member in Enum_Permissions.__members__.items():
+            if permissions.has_permission(permissions_mask, member[1]):
+                permissions_list.append(member[1])
+        return permissions_list
+
+    @staticmethod
+    def has_permission(permission_mask, permission_tested):
+        result = False
+        if permission_mask[permission_tested.value] == '1':
+            result = True
+        return result
+        
+    @staticmethod
+    def set_permission(permission_mask, permission_tested, value):
+        l = list(permission_mask)
+        l[permission_tested.value] = str(value)
+        permission_mask = ''.join(l)
+        return permission_mask
+        
+    @staticmethod
+    def get_permission(permission_mask, permission_tested):
+        return permission_mask[permission_tested.value]    
+
 installer = db_builder()
 db_helper = db_shortcuts()
+permissions = Permissions_Servers()
