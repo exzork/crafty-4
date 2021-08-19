@@ -1,5 +1,8 @@
 import json
 import logging
+import tempfile
+import zipfile
+
 import tornado.web
 import tornado.escape
 import bleach
@@ -183,9 +186,63 @@ class AjaxHandler(BaseHandler):
                 logger.warning("Invalid path in create_dir ajax call ({})".format(dir_path))
                 console.warning("Invalid path in create_dir ajax call ({})".format(dir_path))
                 return
-
             # Create the directory
             os.mkdir(dir_path)
+
+        elif page == "upload_files":
+            server_id = self.get_argument('id', None)
+            path = self.get_argument('path', None)
+            unzip = self.get_argument('unzip', None)
+
+            if helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], path):
+                try:
+                    files = self.request.files['files']
+                    for file in files:
+                        if file['filename'].split('.') is not None:
+                            self._upload_file(file['body'], path, file['filename'], unzip)
+                        else:
+                            logger.error("Directory Detected. Skipping")
+                    self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
+                except Exception as e:
+                    print(e)
+                    self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
+            else:
+                logger.error("Invalid directory requested. Canceling upload")
+
+        elif page == 'unzip_file':
+            print("in unzip file")
+            path = self.get_argument('path', None)
+            helper.unzipFile(path)
+
+    def _upload_file(self, file_data, file_path, file_name, unzip):
+        error = ""
+
+        file_full_path = os.path.join(file_path, file_name)
+        if os.path.exists(file_full_path):
+            error = "A file with this name already exists."
+
+        if not helper.check_writeable(file_path):
+            error = "Unwritable Path"
+
+        if error != "":
+            logger.error("Unable to save uploaded file due to: {}".format(error))
+            return False
+
+        output_file = open(file_full_path, 'wb')
+        output_file.write(file_data)
+        logger.info('Saving File: {}'.format(file_full_path))
+        uploading = True
+        while uploading:
+            try:
+                new_output = open(file_full_path, 'wb')
+                new_output.close()
+                uploading = False
+            except:
+                print("file is still uploading")
+        if unzip == "True":
+            helper.unzipFile(file_full_path)
+        print("DONE")
+        return True
 
     @tornado.web.authenticated
     def delete(self, page):

@@ -503,6 +503,7 @@ class Server:
 
         while db_helper.get_server_stats_by_id(self.server_id)['updating']:
             if downloaded and not self.is_backingup:
+                print("Backup Status: " + str(self.is_backingup))
                 logger.info("Executable updated successfully. Starting Server")
 
                 db_helper.set_update(self.server_id, False)

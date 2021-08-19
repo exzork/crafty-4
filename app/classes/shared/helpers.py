@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import json
+import tempfile
 import time
 import uuid
 import string
@@ -257,6 +258,40 @@ class Helpers:
         except Exception as e:
             logger.critical("Unable to write to {} - Error: {}".format(path, e))
             return False
+
+    def unzipFile(self, zip_path):
+        new_dir_list = zip_path.split('/')
+        new_dir = ''
+        for i in range(len(new_dir_list)-1):
+            if i == 0:
+                new_dir += new_dir_list[i]
+            else:
+                new_dir += '/'+new_dir_list[i]
+
+        if helper.check_file_perms(zip_path):
+            helper.ensure_dir_exists(new_dir)
+            tempDir = tempfile.mkdtemp()
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(tempDir)
+                for item in os.listdir(tempDir):
+                    print(item)
+                test = zip_ref.filelist[1].filename
+                print(test)
+                path_list = test.split('/')
+                root_path = path_list[0]
+                if len(path_list) > 1:
+                    for i in range(len(path_list) - 2):
+                        root_path = os.path.join(root_path, path_list[i + 1])
+
+                full_root_path = os.path.join(tempDir, root_path)
+
+                for item in os.listdir(full_root_path):
+                    try:
+                        shutil.move(os.path.join(full_root_path, item), os.path.join(new_dir, item))
+                    except Exception as ex:
+                        logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
+        else:
+            return "false"
 
     def ensure_logging_setup(self):
         log_file = os.path.join(os.path.curdir, 'logs', 'commander.log')

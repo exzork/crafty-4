@@ -81,6 +81,8 @@
                     <a onclick="renameItemE(event)" href="javascript:void(0)" id="renameItem" href="#">{{ translate('serverFiles', 'rename') }}</a>
                     <a onclick="deleteFileE(event)" href="javascript:void(0)" id="deleteFile" href="#">{{ translate('serverFiles', 'delete') }}</a>
                     <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#">{{ translate('serverFiles', 'delete') }}</a>
+                    <a onclick="uploadFilesE(event)" href="javascript:void(0)" id="upload" href="#">Upload Files</a>
+                    <a onclick="unzipFilesE(event)" href="javascript:void(0)" id="unzip" href="#">Unzip</a>
                   </div>
 
                 </div>
@@ -519,6 +521,39 @@
       });
     }
 
+        function unZip(path, callback) {
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "POST",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/unzip_file?id={{ data['server_stats']['server_id']['server_id'] }}',
+        data: {
+          path: path
+        },
+      });
+    }
+
+    function uploadFilesE(e){
+    path = event.target.parentElement.getAttribute('data-path');
+    server_id = {{ data['server_stats']['server_id']['server_id'] }};
+  var uploadHtml = '<form enctype="multipart/form-data" action="/ajax/upload_files?id=' + server_id +'&path='+ path +'"method="post">{% raw xsrf_form_html() %}<div class="form-group"><label for="files">Upload A File Here</label><input id="files" type="file" name="files" class="form-control-file" multiple></div><input id="unzip" type = checkbox value="1" checked> Would you like us Unzip directories? </input><br><br><input id="upload_file" type="submit"value="Upload File" class="btn btn-success hidden"/></form>';
+
+  bootbox.dialog({
+      message: uploadHtml,
+      title: "Upload Files To "+path,
+  });
+
+  var fileList = document.getElementById("upload");
+  fileList.addEventListener("change", function (e) {
+      var list = "";
+      for (var i = 0; i < this.files.length; i++) {
+          list += "<div class='col-xs-12 file-list'>"+this.files[i].name+"</div>";
+      }
+
+      $("#fileList").text(list);
+  }, false);
+}
+
     function getTreeView() {
       $.ajax({
         type: "GET",
@@ -572,6 +607,7 @@
           $('#createFile').toggle(isDir);
           $('#createDir').toggle(isDir);
           $('#deleteDir').toggle(isDir);
+          $('#upload').toggle(isDir);
 
           var isFile = event.target.classList.contains('tree-file');
           $('#deleteFile').toggle(isFile);
@@ -583,6 +619,7 @@
             $('#renameItem').hide();
             $('#deleteDir').hide();
             $('#deleteFile').hide();
+            $('#upload').show();
           }
 
 
@@ -635,6 +672,10 @@
           document.getElementById('files-tree-nav').style.height = '0%';
         });
       })
+    }
+        function unzipFilesE(event) {
+        path = event.target.parentElement.getAttribute('data-path');
+      unZip(path)
     }
 
     function deleteFileE(event) {
