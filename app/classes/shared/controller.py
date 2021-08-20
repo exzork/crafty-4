@@ -286,7 +286,10 @@ class Controller:
             tempDir = tempfile.mkdtemp()
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall(tempDir)
-                test = zip_ref.filelist[1].filename
+                for i in range(len(zip_ref.filelist)):
+                    if len(zip_ref.filelist) > 1 or not zip_ref.filelist[i].filename.endswith('/'):
+                        test = zip_ref.filelist[i].filename
+                        break
                 path_list = test.split('/')
                 root_path = path_list[0]
                 if len(path_list) > 1:

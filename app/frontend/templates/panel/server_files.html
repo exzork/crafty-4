@@ -531,27 +531,59 @@
           path: path
         },
       });
+      location.href="/
+    }
+    function uploadFilesE(event){
+    path = event.target.parentElement.getAttribute('data-path');
+    console.log("PATH: " + path);
+      $(function () {
+    server_id = {{ data['server_stats']['server_id']['server_id'] }};
+  var uploadHtml = "<div>" +
+      '<form id="upload_file" enctype="multipart/form-data" action="/ajax/upload_files?id=' + server_id +'&path='+ path +'"method="post">{% raw xsrf_form_html() %}'+"<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
+          "<input id='files' name='files' type='file' style='display:none;' multiple='true'>" +
+          "<i class='fa fa-cloud-upload fa-3x'></i>" +
+          "<br />" +
+          "Click Here To Upload" +
+      "</label></form>" +
+      "<br />" +
+      "<ul style='margin-left:5px !important;' id='fileList'></ul>" +
+  "</div><div class='clearfix'></div>";
+
+  bootbox.dialog({
+      message: uploadHtml,
+      title: "File Upload",
+      buttons: {
+          success: {
+              label: "Upload",
+              className: "btn-default",
+              callback: function () {
+                  $('#upload_file').submit(); //.trigger('submit');
+              }
+          }
+      }
+  });
+
+  var fileList = document.getElementById("files");
+  fileList.addEventListener("change", function (e) {
+      var list = "";
+      for (var i = 0; i < this.files.length; i++) {
+          list += "<li class='col-xs-12 file-list'>" + this.files[i].name + "</li>"
+      }
+
+      document.getElementById("fileList").innerHTML = list;
+  }, false);
+});
     }
 
-    function uploadFilesE(e){
+
+    function uploadFiles(e){
     path = event.target.parentElement.getAttribute('data-path');
     server_id = {{ data['server_stats']['server_id']['server_id'] }};
-  var uploadHtml = '<form enctype="multipart/form-data" action="/ajax/upload_files?id=' + server_id +'&path='+ path +'"method="post">{% raw xsrf_form_html() %}<div class="form-group"><label for="files">Upload A File Here</label><input id="files" type="file" name="files" class="form-control-file" multiple></div><input id="unzip" type = checkbox value="1" checked> Would you like us Unzip directories? </input><br><br><input id="upload_file" type="submit"value="Upload File" class="btn btn-success hidden"/></form>';
-
+  var uploadHtml = '<form enctype="multipart/form-data" action="/ajax/upload_files?id=' + server_id +'&path='+ path +'"method="post">{% raw xsrf_form_html() %}<div class="form-group">'+"<label class='upload-area' style='width:100%;text-align:center;' for='fupload'>" +'<input id="files" type="file" name="files" multiple>' +"<i class='fa fa-cloud-upload fa-3x'></i>" +"<br />" +"Upload Files Here" +"</label>" +"<br />" +"<span style='margin-left:5px !important;' id='fileList'></span>"+'</div><br><br><input id="upload_file" type="submit"value="Upload File" class="btn btn-success hidden"/></form>';
   bootbox.dialog({
       message: uploadHtml,
       title: "Upload Files To "+path,
   });
-
-  var fileList = document.getElementById("upload");
-  fileList.addEventListener("change", function (e) {
-      var list = "";
-      for (var i = 0; i < this.files.length; i++) {
-          list += "<div class='col-xs-12 file-list'>"+this.files[i].name+"</div>";
-      }
-
-      $("#fileList").text(list);
-  }, false);
 }
 
     function getTreeView() {
