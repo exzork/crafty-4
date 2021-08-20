@@ -72,7 +72,6 @@
                 <div id="files-tree-nav" class="overlay">
 
                   <!-- Button to close the overlay navigation -->
-                  <a href="javascript:void(0)" class="closebtn" onclick="document.getElementById('files-tree-nav').style.height = '0%';">&times;</a>
 
                   <!-- Overlay content -->
                   <div id="files-tree-nav-content" class="overlay-content">
@@ -83,55 +82,65 @@
                     <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#">{{ translate('serverFiles', 'delete') }}</a>
                     <a onclick="uploadFilesE(event)" href="javascript:void(0)" id="upload" href="#">Upload Files</a>
                     <a onclick="unzipFilesE(event)" href="javascript:void(0)" id="unzip" href="#">Unzip</a>
+                    <a href="javascript:void(0)" class="closebtn" style="color: red;" onclick="document.getElementById('files-tree-nav').style.display = 'none';">Close</a>
                   </div>
 
                 </div>
                 <style>
                   /* The Overlay (background) */
                   .overlay {
-                    /* Height & width depends on how you want to reveal the overlay (see JS below) */
-                    height: 0;
-                    width: 100vw;
-                    position: fixed; /* Stay in place */
-                    z-index: 1031; /* Sit on top */
-                    left: 0;
-                    top: 0;
-                    background-color: rgb(0,0,0); /* Black fallback color */
-                    background-color: rgba(0,0,0, 0.9); /* Black w/opacity */
-                    overflow-x: hidden; /* Disable horizontal scroll */
-                    transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+                  display: none;
+                  flex-direction: column;
+                  background-color: #fff;
+                  border-radius: 10px;
+                  box-shadow: 0 10px 20px rgb(64 64 64 / 5%);
+                  padding: 10px 0;
+                  z-index: 10000;
+                  overflow: scroll;
+
                   }
 
                   /* Position the content inside the overlay */
                   .overlay-content {
-                    position: relative;
-                    top: 25%; /* 25% from the top */
-                    width: 100%; /* 100% width */
-                    text-align: center; /* Centered text/links */
-                    margin-top: 30px; /* 30px top margin to avoid conflict with the close button on smaller screens */
+                  overflow: scroll;
+                   display: flex;
+                    flex-direction: column;
+                    background-color: #fff;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 20px rgb(64 64 64 / 5%);
+                    padding: 10px 0;
                   }
 
                   /* The navigation links inside the overlay */
                   .overlay a {
-                    padding: 8px;
-                    text-decoration: none;
-                    font-size: 36px;
-                    color: #818181;
-                    display: block; /* Display block instead of inline */
-                    transition: 0.3s; /* Transition effects on hover (color) */
+                      font: inherit;
+                      border: 0;
+                      padding: 10px 30px 10px 15px;
+                      width: 100%;
+                      display: flex;
+                      align-items: center;
+                      position: relative;
+                      text-decoration: unset;
+                      color: #000;
+                      font-weight: 500;
+                      transition: 0.5s linear;
+                      -webkit-transition: 0.5s linear;
+                      -moz-transition: 0.5s linear;
+                      -ms-transition: 0.5s linear;
+                      -o-transition: 0.5s linear;
                   }
 
                   /* When you mouse over the navigation links, change their color */
                   .overlay a:hover, .overlay a:focus {
-                    color: #f1f1f1;
+                     background:#f1f3f7;
+                      color: #4b00ff;
                   }
 
                   /* Position the close button (top right corner) */
-                  .overlay .closebtn {
-                    position: absolute;
-                    top: 20px;
-                    right: 45px;
-                    font-size: 60px;
+                  .overlay .closebtn .closebtn:hover {
+                    background-color: red;
+                    color: red;
+                    z-index: 10000;
                   }
 
                   /* When the height of the screen is less than 450 pixels, change the font-size of the links and position the close button again, so they don't overlap */
@@ -653,15 +662,22 @@
             $('#deleteFile').hide();
             $('#upload').show();
           }
+                      if(event.target.textContent.endsWith('.zip')){
+             $('#unzip').show();
+             console.log(event.target.textContent)
+            }else{
+            $('#unzip').hide();}
+
 
 
           document.getElementById('files-tree-nav-content')
             .setAttribute('data-path', ctxmenuPath);
-
           document.getElementById('files-tree-nav-content')
             .setAttribute('data-name', ctxmenuName);
-
-          document.getElementById("files-tree-nav").style.height = "100%";
+          document.getElementById("files-tree-nav").style.display = "flex";
+          document.getElementById("files-tree-nav").style.position = "fixed";
+          document.getElementById("files-tree-nav").style.top = event.clientY + 'px';
+          document.getElementById("files-tree-nav").style.left = event.clientX + 'px';
         })
       }
     }
@@ -675,7 +691,7 @@
 
         createFile(path, result, function () {
           getTreeView()
-          document.getElementById('files-tree-nav').style.height = '0%';
+          document.getElementById('files-tree-nav').style.display = 'none';
         });
       })
     }
@@ -688,7 +704,7 @@
 
         createDir(path, result, function () {
           getTreeView()
-          document.getElementById('files-tree-nav').style.height = '0%';
+          document.getElementById('files-tree-nav').style.display = 'none';
         });
       })
     }
@@ -701,7 +717,7 @@
 
         renameItem(path, result, function () {
           getTreeView()
-          document.getElementById('files-tree-nav').style.height = '0%';
+          document.getElementById('files-tree-nav').style.display = 'none';
         });
       })
     }
@@ -732,7 +748,7 @@
             if (!result) return;
             deleteFile(path, function () {
               getTreeView()
-              document.getElementById('files-tree-nav').style.height = '0%';
+              document.getElementById('files-tree-nav').style.display = 'none';
             });
           }
       });
@@ -760,7 +776,7 @@
             if (!result) return;
             deleteDir(path, function () {
               getTreeView()
-              document.getElementById('files-tree-nav').style.height = '0%';
+              document.getElementById('files-tree-nav').style.display = 'none';
             });
           }
       });
