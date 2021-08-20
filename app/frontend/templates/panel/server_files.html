@@ -668,6 +668,9 @@
             }else{
             $('#unzip').hide();}
 
+        var clientX = event.clientX;
+        var clientY = event.clientY;
+
 
 
           document.getElementById('files-tree-nav-content')
@@ -676,11 +679,26 @@
             .setAttribute('data-name', ctxmenuName);
           document.getElementById("files-tree-nav").style.display = "flex";
           document.getElementById("files-tree-nav").style.position = "fixed";
-          document.getElementById("files-tree-nav").style.top = event.clientY + 'px';
-          document.getElementById("files-tree-nav").style.left = event.clientX + 'px';
+          domRect = document.getElementById("files-tree-nav").getBoundingClientRect();
+          sum = (clientY+domRect['height']) - window.innerHeight
+          if(domRect['height']+clientY > window.innerHeight){
+            clientY = clientY - sum
+          }
+          document.getElementById("files-tree-nav").style.top = clientY + 'px';
+          document.getElementById("files-tree-nav").style.left =  clientX + 'px';
+          console.log(domRect)
+          console.log(window.innerHeight)
         })
       }
     }
+
+    document.addEventListener('click', function(e){
+  let inside = (e.target.closest('#files-tree-nav'));
+  if(!inside){
+    let contextMenu = document.getElementById('files-tree-nav');
+    contextMenu.setAttribute('style', 'display:none');
+  }
+});
 
 
     function createFileE(event) {
