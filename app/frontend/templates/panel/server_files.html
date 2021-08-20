@@ -72,7 +72,6 @@
                 <div id="files-tree-nav" class="overlay">
 
                   <!-- Button to close the overlay navigation -->
-                  <a href="javascript:void(0)" class="closebtn" onclick="document.getElementById('files-tree-nav').style.height = '0%';">&times;</a>
 
                   <!-- Overlay content -->
                   <div id="files-tree-nav-content" class="overlay-content">
@@ -81,55 +80,67 @@
                     <a onclick="renameItemE(event)" href="javascript:void(0)" id="renameItem" href="#">{{ translate('serverFiles', 'rename') }}</a>
                     <a onclick="deleteFileE(event)" href="javascript:void(0)" id="deleteFile" href="#">{{ translate('serverFiles', 'delete') }}</a>
                     <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#">{{ translate('serverFiles', 'delete') }}</a>
+                    <a onclick="uploadFilesE(event)" href="javascript:void(0)" id="upload" href="#">Upload Files</a>
+                    <a onclick="unzipFilesE(event)" href="javascript:void(0)" id="unzip" href="#">Unzip</a>
+                    <a href="javascript:void(0)" class="closebtn" style="color: red;" onclick="document.getElementById('files-tree-nav').style.display = 'none';">Close</a>
                   </div>
 
                 </div>
                 <style>
                   /* The Overlay (background) */
                   .overlay {
-                    /* Height & width depends on how you want to reveal the overlay (see JS below) */
-                    height: 0;
-                    width: 100vw;
-                    position: fixed; /* Stay in place */
-                    z-index: 1031; /* Sit on top */
-                    left: 0;
-                    top: 0;
-                    background-color: rgb(0,0,0); /* Black fallback color */
-                    background-color: rgba(0,0,0, 0.9); /* Black w/opacity */
-                    overflow-x: hidden; /* Disable horizontal scroll */
-                    transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+                  display: none;
+                  flex-direction: column;
+                  background-color: #fff;
+                  border-radius: 10px;
+                  box-shadow: 0 10px 20px rgb(64 64 64 / 5%);
+                  padding: 10px 0;
+                  z-index: 10000;
+                  overflow: scroll;
+
                   }
 
                   /* Position the content inside the overlay */
                   .overlay-content {
-                    position: relative;
-                    top: 25%; /* 25% from the top */
-                    width: 100%; /* 100% width */
-                    text-align: center; /* Centered text/links */
-                    margin-top: 30px; /* 30px top margin to avoid conflict with the close button on smaller screens */
+                  overflow: scroll;
+                   display: flex;
+                    flex-direction: column;
+                    background-color: #fff;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 20px rgb(64 64 64 / 5%);
+                    padding: 10px 0;
                   }
 
                   /* The navigation links inside the overlay */
                   .overlay a {
-                    padding: 8px;
-                    text-decoration: none;
-                    font-size: 36px;
-                    color: #818181;
-                    display: block; /* Display block instead of inline */
-                    transition: 0.3s; /* Transition effects on hover (color) */
+                      font: inherit;
+                      border: 0;
+                      padding: 10px 30px 10px 15px;
+                      width: 100%;
+                      display: flex;
+                      align-items: center;
+                      position: relative;
+                      text-decoration: unset;
+                      color: #000;
+                      font-weight: 500;
+                      transition: 0.5s linear;
+                      -webkit-transition: 0.5s linear;
+                      -moz-transition: 0.5s linear;
+                      -ms-transition: 0.5s linear;
+                      -o-transition: 0.5s linear;
                   }
 
                   /* When you mouse over the navigation links, change their color */
                   .overlay a:hover, .overlay a:focus {
-                    color: #f1f1f1;
+                     background:#f1f3f7;
+                      color: #4b00ff;
                   }
 
                   /* Position the close button (top right corner) */
-                  .overlay .closebtn {
-                    position: absolute;
-                    top: 20px;
-                    right: 45px;
-                    font-size: 60px;
+                  .overlay .closebtn .closebtn:hover {
+                    background-color: red;
+                    color: red;
+                    z-index: 10000;
                   }
 
                   /* When the height of the screen is less than 450 pixels, change the font-size of the links and position the close button again, so they don't overlap */
@@ -519,6 +530,71 @@
       });
     }
 
+        function unZip(path, callback) {
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "POST",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/unzip_file?id={{ data['server_stats']['server_id']['server_id'] }}',
+        data: {
+          path: path
+        },
+      });
+      window.location.href = "/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files"
+    }
+    function uploadFilesE(event){
+    path = event.target.parentElement.getAttribute('data-path');
+    console.log("PATH: " + path);
+      $(function () {
+    server_id = {{ data['server_stats']['server_id']['server_id'] }};
+  var uploadHtml = "<div>" +
+      '<form id="upload_file" enctype="multipart/form-data" action="/ajax/upload_files?id=' + server_id +'&path='+ path +'"method="post">{% raw xsrf_form_html() %}'+"<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
+          "<input id='files' name='files' type='file' style='display:none;' multiple='true'>" +
+          "<i class='fa fa-cloud-upload fa-3x'></i>" +
+          "<br />" +
+          "Click Here To Upload" +
+      "</label></form>" +
+      "<br />" +
+      "<ul style='margin-left:5px !important;' id='fileList'></ul>" +
+  "</div><div class='clearfix'></div>";
+
+  bootbox.dialog({
+      message: uploadHtml,
+      title: "File Upload",
+      buttons: {
+          success: {
+              label: "Upload",
+              className: "btn-default",
+              callback: function () {
+                  $('#upload_file').submit(); //.trigger('submit');
+              }
+          }
+      }
+  });
+
+  var fileList = document.getElementById("files");
+  fileList.addEventListener("change", function (e) {
+      var list = "";
+      for (var i = 0; i < this.files.length; i++) {
+          list += "<li class='col-xs-12 file-list'>" + this.files[i].name + "</li>"
+      }
+
+      document.getElementById("fileList").innerHTML = list;
+  }, false);
+});
+    }
+
+
+    function uploadFiles(e){
+    path = event.target.parentElement.getAttribute('data-path');
+    server_id = {{ data['server_stats']['server_id']['server_id'] }};
+  var uploadHtml = '<form enctype="multipart/form-data" action="/ajax/upload_files?id=' + server_id +'&path='+ path +'"method="post">{% raw xsrf_form_html() %}<div class="form-group">'+"<label class='upload-area' style='width:100%;text-align:center;' for='fupload'>" +'<input id="files" type="file" name="files" multiple>' +"<i class='fa fa-cloud-upload fa-3x'></i>" +"<br />" +"Upload Files Here" +"</label>" +"<br />" +"<span style='margin-left:5px !important;' id='fileList'></span>"+'</div><br><br><input id="upload_file" type="submit"value="Upload File" class="btn btn-success hidden"/></form>';
+  bootbox.dialog({
+      message: uploadHtml,
+      title: "Upload Files To "+path,
+  });
+}
+
     function getTreeView() {
       $.ajax({
         type: "GET",
@@ -572,6 +648,7 @@
           $('#createFile').toggle(isDir);
           $('#createDir').toggle(isDir);
           $('#deleteDir').toggle(isDir);
+          $('#upload').toggle(isDir);
 
           var isFile = event.target.classList.contains('tree-file');
           $('#deleteFile').toggle(isFile);
@@ -583,19 +660,45 @@
             $('#renameItem').hide();
             $('#deleteDir').hide();
             $('#deleteFile').hide();
+            $('#upload').show();
           }
+                      if(event.target.textContent.endsWith('.zip')){
+             $('#unzip').show();
+             console.log(event.target.textContent)
+            }else{
+            $('#unzip').hide();}
+
+        var clientX = event.clientX;
+        var clientY = event.clientY;
+
 
 
           document.getElementById('files-tree-nav-content')
             .setAttribute('data-path', ctxmenuPath);
-
           document.getElementById('files-tree-nav-content')
             .setAttribute('data-name', ctxmenuName);
-
-          document.getElementById("files-tree-nav").style.height = "100%";
+          document.getElementById("files-tree-nav").style.display = "flex";
+          document.getElementById("files-tree-nav").style.position = "fixed";
+          domRect = document.getElementById("files-tree-nav").getBoundingClientRect();
+          sum = (clientY+domRect['height']) - window.innerHeight
+          if(domRect['height']+clientY > window.innerHeight){
+            clientY = clientY - sum
+          }
+          document.getElementById("files-tree-nav").style.top = clientY + 'px';
+          document.getElementById("files-tree-nav").style.left =  clientX + 'px';
+          console.log(domRect)
+          console.log(window.innerHeight)
         })
       }
     }
+
+    document.addEventListener('click', function(e){
+  let inside = (e.target.closest('#files-tree-nav'));
+  if(!inside){
+    let contextMenu = document.getElementById('files-tree-nav');
+    contextMenu.setAttribute('style', 'display:none');
+  }
+});
 
 
     function createFileE(event) {
@@ -606,7 +709,7 @@
 
         createFile(path, result, function () {
           getTreeView()
-          document.getElementById('files-tree-nav').style.height = '0%';
+          document.getElementById('files-tree-nav').style.display = 'none';
         });
       })
     }
@@ -619,7 +722,7 @@
 
         createDir(path, result, function () {
           getTreeView()
-          document.getElementById('files-tree-nav').style.height = '0%';
+          document.getElementById('files-tree-nav').style.display = 'none';
         });
       })
     }
@@ -632,9 +735,13 @@
 
         renameItem(path, result, function () {
           getTreeView()
-          document.getElementById('files-tree-nav').style.height = '0%';
+          document.getElementById('files-tree-nav').style.display = 'none';
         });
       })
+    }
+        function unzipFilesE(event) {
+        path = event.target.parentElement.getAttribute('data-path');
+      unZip(path)
     }
 
     function deleteFileE(event) {
@@ -659,7 +766,7 @@
             if (!result) return;
             deleteFile(path, function () {
               getTreeView()
-              document.getElementById('files-tree-nav').style.height = '0%';
+              document.getElementById('files-tree-nav').style.display = 'none';
             });
           }
       });
@@ -687,7 +794,7 @@
             if (!result) return;
             deleteDir(path, function () {
               getTreeView()
-              document.getElementById('files-tree-nav').style.height = '0%';
+              document.getElementById('files-tree-nav').style.display = 'none';
             });
           }
       });
