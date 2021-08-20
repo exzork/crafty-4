@@ -99,10 +99,18 @@
                   overflow: scroll;
 
                   }
+                  .overlay::-webkit-scrollbar {
+                      display: none;
+                  }
+
+                  /* Hide scrollbar for IE, Edge and Firefox */
+                  .overlay {
+                    -ms-overflow-style: none;  /* IE and Edge */
+                    scrollbar-width: none;  /* Firefox */
+                  }
 
                   /* Position the content inside the overlay */
                   .overlay-content {
-                  overflow: scroll;
                    display: flex;
                     flex-direction: column;
                     background-color: #fff;
