@@ -531,7 +531,7 @@
           path: path
         },
       });
-      location.href="/
+      window.location.href = "/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files"
     }
     function uploadFilesE(event){
     path = event.target.parentElement.getAttribute('data-path');

@@ -193,7 +193,7 @@ class AjaxHandler(BaseHandler):
             server_id = self.get_argument('id', None)
             path = self.get_argument('path', None)
             helper.unzipFile(path)
-            self.render_page("/panel/server_detail?id={}&subpage=files".format(server_id))
+            self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
             return
 
 
