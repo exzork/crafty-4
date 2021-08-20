@@ -1,6 +1,7 @@
 import json
 import logging
 import tempfile
+import threading
 import zipfile
 
 import tornado.web
@@ -196,25 +197,28 @@ class AjaxHandler(BaseHandler):
             self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
             return
 
-
         elif page == "upload_files":
             server_id = self.get_argument('id', None)
             path = self.get_argument('path', None)
+            files = self.request.files['files']
+            upload_thread = threading.Thread(target=self.do_upload, daemon=True, name=files[0]['filename'],
+                                             args=(server_id, path, files))
+            upload_thread.start()
+            self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
 
-            if helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], path):
-                try:
-                    files = self.request.files['files']
-                    for file in files:
-                        if file['filename'].split('.') is not None:
-                            self._upload_file(file['body'], path, file['filename'])
-                        else:
-                            logger.error("Directory Detected. Skipping")
-                    self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
-                except Exception as e:
-                    self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
-            else:
-                logger.error("Invalid directory requested. Canceling upload")
-            return
+    def do_upload(self, server_id, path, files):
+        if helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], path):
+            try:
+                for file in files:
+                    if file['filename'].split('.') is not None:
+                        self._upload_file(file['body'], path, file['filename'])
+                    else:
+                        logger.error("Directory Detected. Skipping")
+            except Exception as e:
+                logger.error("Error while uploading files: {}".format(e))
+        else:
+            logger.error("Invalid directory requested. Canceling upload")
+        return
 
     def _upload_file(self, file_data, file_path, file_name):
         error = ""
