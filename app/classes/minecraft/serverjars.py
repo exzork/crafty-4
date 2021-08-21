@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import threading
 import time
 import shutil
 import logging
@@ -173,6 +174,10 @@ class ServerJars:
         return response
 
     def download_jar(self, server, version, path):
+        update_thread = threading.Thread(target=self.a_download_jar, daemon=True, name="exe_download", args=(server, version, path))
+        update_thread.start()
+
+    def a_download_jar(self, server, version, path):
         fetch_url = "{base}/api/fetchJar/{server}/{version}".format(base=self.base_url, server=server, version=version)
 
         # open a file stream

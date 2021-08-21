@@ -149,7 +149,6 @@ class Server:
         if not helper.check_file_exists(full_path):
             logger.critical("Server executable path: {} does not seem to exist".format(full_path))
             console.critical("Server executable path: {} does not seem to exist".format(full_path))
-            helper.do_exit()
 
         if not helper.check_path_exists(self.server_path):
             logger.critical("Server path: {} does not seem to exits".format(self.server_path))
