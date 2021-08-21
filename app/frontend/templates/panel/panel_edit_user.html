@@ -62,79 +62,97 @@
                       <input type="hidden" name="id" value="{{ data['user']['user_id'] }}">
                       <input type="hidden" name="subpage" value="config">
 
-                      <div class="form-group">
-                        <label for="username">User Name <small class="text-muted ml-1"> - What you wish to call this user</small> </label>
-                        <input type="text" class="form-control" name="username" id="username" value="{{ data['user']['username']  }}" placeholder="User Name" >
-                      </div>
-
-                      <div class="form-group">
-                        <label for="password0">Password <small class="text-muted ml-1"></small> </label>
-                        <input type="password" class="form-control" name="password0" id="password0" value="" placeholder="Password" >
-                      </div>
-
-                      <div class="form-group">
-                        <label for="password1">Repeat Password <small class="text-muted ml-1"></small> </label>
-                        <input type="password" class="form-control" name="password1" id="password1" value="" placeholder="Repeat Password" >
-                      </div>
-                        {% if len(data['servers_all']) > 0 %}
-                      <div class="form-group">
-                        <label for="role_membership">Roles <small class="text-muted ml-1"> - the roles this user is a member of</small> </label>
-                        <div class="table-responsive">
-                          <table class="table">
-                            <thead>
-                              <tr class="rounded">
-                                <th>Role Name</th>
-                                <th>Member?</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                            {% for role in data['roles_all'] %}
-                              <tr>
-                                <td>{{ role.role_name }}</td>
-                                <td>
-                                  {% if role.role_id in data['user']['roles'] %}
-                                    <input type="checkbox" class="form-check-input" id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership" checked="" value="1">
-                                  {% else %}
-                                    <input type="checkbox" class="form-check-input" id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership" value="1">
-                                  {% end %}
-
-                                </td>
-                              </tr>
-                            {% end %}
-
-                            </tbody>
-                          </table>
+                      
+                      <div class="card">
+                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                          <h4 class="card-title"><i class="fas fa-user"></i> User Settings</h4>
+                        </div>
+                        <div class="card-body">                          
+                          <div class="form-group">
+                            <label for="username">User Name <small class="text-muted ml-1"> - What you wish to call this user</small> </label>
+                            <input type="text" class="form-control" name="username" id="username" value="{{ data['user']['username']  }}" placeholder="User Name" >
+                          </div>
+                          <div class="form-group">
+                            <label for="password0">Password <small class="text-muted ml-1"> - leave blank to don't change</small> </label>
+                            <input type="password" class="form-control" name="password0" id="password0" value="" placeholder="Password" >
+                          </div>
+                          <div class="form-group">
+                            <label for="password1">Repeat Password <small class="text-muted ml-1"> - leave blank to don't change</small> </label>
+                            <input type="password" class="form-control" name="password1" id="password1" value="" placeholder="Repeat Password" >
+                          </div>
                         </div>
                       </div>
-                      <div class="form-group">
-                        <label for="server_membership">Servers <small class="text-muted ml-1"> - servers this user is allowed to access </small> </label>
-                        <div class="table-responsive">
-                          <table class="table">
-                            <thead>
-                              <tr class="rounded">
-                                <th>Server Name</th>
-                                <th>Access?</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                            {% for server in data['servers_all'] %}
-                              <tr>
-                                <td>{{ server['server_name'] }}</td>
-                                <td>
-                                  {% if server['server_id'] in data['role-servers'] %}
-                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" value="" disabled>
-                                  {% else %}
-                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" value="1" disabled>
-                                  {% end %}
-                                </td>
-                              </tr>
-                            {% end %}
+                      
+                      
+                      {% if len(data['servers_all']) > 0 %}
+                      <div class="card">
+                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                          <h4 class="card-title"><i class="fas fa-user-tag"></i> Roles <small class="text-muted ml-1"> - the roles this user is a member of</small></h4>
+                        </div>
+                        <div class="card-body">
+                          <div class="form-group">
+                            <div class="table-responsive">
+                              <table class="table table-hover">
+                                <thead>
+                                  <tr class="rounded">
+                                    <th>Role Name</th>
+                                    <th>Member?</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                {% for role in data['roles_all'] %}
+                                  <tr>
+                                    <td>{{ role.role_name }}</td>
+                                    <td>
+                                      {% if role.role_id in data['user']['roles'] %}
+                                        <input type="checkbox" class="" id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership" checked="" value="1">
+                                      {% else %}
+                                        <input type="checkbox" class="" id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership" value="1">
+                                      {% end %}
 
-                            </tbody>
-                          </table>
+                                    </td>
+                                  </tr>
+                                {% end %}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
                         </div>
                       </div>
-
+                      
+                      <div class="card">
+                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                          <h4 class="card-title"><i class="fas fa-server"></i> Servers <small class="text-muted ml-1"> - servers this user is allowed to access </small></h4>
+                        </div>
+                        <div class="card-body">                          
+                          <div class="form-group">
+                            <div class="table-responsive">
+                              <table class="table table-hover">
+                                <thead>
+                                  <tr class="rounded">
+                                    <th>Server Name</th>
+                                    <th>Access?</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                {% for server in data['servers_all'] %}
+                                  <tr>
+                                    <td>{{ server['server_name'] }}</td>
+                                    <td>
+                                      {% if server['server_id'] in data['role-servers'] %}
+                                        <input type="checkbox" class="" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" value="" disabled>
+                                      {% else %}
+                                        <input type="checkbox" class="" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" value="1" disabled>
+                                      {% end %}
+                                    </td>
+                                  </tr>
+                                {% end %}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>      
 
                       <div class="form-check-flat">
                         <label for="enabled" class="form-check-label ml-4 mb-4">
@@ -163,15 +181,15 @@
 
                       </div>
 {% end %}
-                      <button type="submit" class="btn btn-success mr-2">Save</button>
-                      <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light">Cancel</button>
+                      <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('panelConfig', 'save') }}</button>
+                      <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light"><i class="fas fa-undo-alt"></i> {{ translate('panelConfig', 'cancel') }}</button>
                     </form>
                 </div>
 
                 <div class="col-md-6 col-sm-12">
                     <div class="card">
                       <div class="card-body">
-                        <h4 class="card-title">User Config Area</h4>
+                        <h4 class="card-title"><i class="fas fa-user-cog"></i> User Config Area</h4>
                         <p class="card-description"> Here is where you can change the configuration of your user</p>
                         <blockquote class="blockquote">
                           <p class="mb-0">
@@ -191,13 +209,13 @@
                     </div>
                     <div class="text-center">
                         {% if data['new_user'] %}
-                            <a class="btn btn-sm btn-danger disabled">Delete User</a><br />
+                            <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i> Delete User</a><br />
                             <small>You cannot delete something that does not yet exist</small>
                         {% elif data['user']['superuser'] %}
-                            <a class="btn btn-sm btn-danger disabled">Delete User</a><br />
+                            <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i> Delete User</a><br />
                             <small>You cannot delete a superuser</small>
                         {% else %}
-                            <a href="/panel/remove_user?id={{ data['user']['user_id'] }}" class="btn btn-sm btn-danger">Delete User</a>
+                            <a href="/panel/remove_user?id={{ data['user']['user_id'] }}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Delete User</a>
                         {% end %}
 
                     </div>

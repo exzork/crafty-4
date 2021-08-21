@@ -43,10 +43,10 @@
                 <a class="nav-link active" href="/panel/edit_role?id={{ data['role']['role_id'] }}&subpage=config" role="tab" aria-selected="true">
                   <i class="fas fa-cogs"></i>Config</a>
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <a class="nav-link" href="/panel/edit_role?id={{ data['role']['role_id'] }}&subpage=other" role="tab" aria-selected="false">
                   <i class="fas fa-folder-tree"></i>Other</a>
-              </li>
+              </li> -->
             </ul>
             <div class="row">
                 <div class="col-md-6 col-sm-12">
@@ -58,115 +58,153 @@
                       {% raw xsrf_form_html() %}
                       <input type="hidden" name="id" value="{{ data['role']['role_id'] }}">
                       <input type="hidden" name="subpage" value="config">
-
-                      <div class="form-group">
-                        <label for="role_name">Role Name <small class="text-muted ml-1"> - What you wish to call this role</small> </label>
-                        <input type="text" class="form-control" name="role_name" id="role_name" value="{{ data['role']['role_name']  }}" placeholder="Role Name" >
+                      
+                      <div class="card">
+                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                          <h4 class="card-title"><i class="fas fa-user-tag"></i> Role Settings</h4>
+                        </div>
+                        <div class="card-body">
+                          <div class="form-group">
+                            <label for="role_name">Role Name <small class="text-muted ml-1"> - What you wish to call this role</small> </label>
+                            <input type="text" class="form-control" name="role_name" id="role_name" value="{{ data['role']['role_name']  }}" placeholder="Role Name" >
+                          </div>
+                        </div>
                       </div>
+                      
+                      <div class="card">
+                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                          <h4 class="card-title"><i class="fas fa-server"></i> Allowed Servers  <small class="text-muted ml-1"> - servers this role is allowed to access </small> </h4>
+                        </div>
+                        <div class="card-body">
+                          <div class="form-group">
+                            <div class="table-responsive">
+                              <table class="table table-hover">
+                                <thead>
+                                  <tr class="rounded">
+                                    <th>Server Name</th>
+                                    <th>Access?</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                {% for server in data['servers_all'] %}
+                                  <tr>
+                                    <td>{{ server['server_name'] }}</td>
+                                    <td>
+                                      {% if server['server_id'] in data['role']['servers'] %}
+                                        <input type="checkbox" class="" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" value="1">
+                                      {% else %}
+                                        <input type="checkbox" class="" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" value="1">
+                                      {% end %}
+                                    </td>
+                                  </tr>
+                                {% end %}
 
-                      <div class="form-group">
-                        <label for="server_membership">Servers <small class="text-muted ml-1"> - servers this role is allowed to access </small> </label>
-                        <div class="table-responsive">
-                          <table class="table">
-                            <thead>
-                              <tr class="rounded">
-                                <th>Server Name</th>
-                                <th>Access?</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                            {% for server in data['servers_all'] %}
-                              <tr>
-                                <td>{{ server['server_name'] }}</td>
-                                <td>
-                                  {% if server['server_id'] in data['role']['servers'] %}
-                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" value="1">
-                                  {% else %}
-                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" value="1">
-                                  {% end %}
-                                </td>
-                              </tr>
-                            {% end %}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="card">
+                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                          <h4 class="card-title"><i class="fas fa-user-lock"></i> Roles Permissions <small class="text-muted ml-1"> - permissions this role has on this/these servers </small></h4>
+                        </div>
+                        <div class="card-body">                          
+                          <div class="form-group">
+                            <div class="table-responsive">
+                              <table class="table table-hover">
+                                <thead>
+                                  <tr class="rounded">
+                                    <th>Permission Name</th>
+                                    <th>Authorized ?</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                {% for permission in data['permissions_all'] %}
+                                  <tr>
+                                    <td>{{ permission.name }}</td>
+                                    <td>
+                                      {% if permission in data['permissions_list'] %}
+                                        <input type="checkbox" class="" id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" checked="" value="1">
+                                      {% else %}
+                                        <input type="checkbox" class="" id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" value="1">
+                                      {% end %}
+                                    </td>
+                                  </tr>
+                                {% end %}
 
-                            </tbody>
-                          </table>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
-                      <div class="form-group">
-                        <label for="server_membership">Permissions <small class="text-muted ml-1"> - permissions this role has on this/these servers </small> </label>
-                        <div class="table-responsive">
-                          <table class="table">
-                            <thead>
-                              <tr class="rounded">
-                                <th>Permission Name</th>
-                                <th>Authorized ?</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                            {% for permission in data['permissions_all'] %}
-                              <tr>
-                                <td>{{ permission.name }}</td>
-                                <td>
-                                  {% if permission in data['permissions_list'] %}
-                                    <input type="checkbox" class="form-check-input" id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" checked="" value="1">
-                                  {% else %}
-                                    <input type="checkbox" class="form-check-input" id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" value="1">
-                                  {% end %}
-                                </td>
-                              </tr>
-                            {% end %}
-
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      <button type="submit" class="btn btn-success mr-2">Save</button>
-                      <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light">Cancel</button>
+                      <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('panelConfig', 'save') }}</button>
+                      <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light"><i class="fas fa-undo-alt"></i> {{ translate('panelConfig', 'cancel') }}</button>
                     </form>
 
                 </div>
                 <div class="col-md-3 col-sm-12">
-                                              <h6>Users Assigned to Role:</h6>
-                          <ul>
-                              {% for user in data['users'] %}
-                              {% for ruser in data['user-roles'][user.user_id] %}
-                                {% if ruser == data['role']['role_name'] %}
-                                <li>{{ user.username }}</li>
-                            {% end %}
-                            {% end %}
+                  <div class="card">
+                    <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                      <h4  class="card-title"><i class="fas fa-users"></i> Users Assigned to Role:</h4>
+                    </div>
+                    <div class="card-body">                      
+                      <div class="table-responsive">
+                        <table class="table table-hover">
+                          <thead>
+                            <tr class="rounded">
+                              <th>User Name</th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          {% for user in data['users'] %}
+                            {% for ruser in data['user-roles'][user.user_id] %}
+                              {% if ruser == data['role']['role_name'] %}
+                                <tr>
+                                  <td>{{ user.username }}</td>
+                                  <td>
+                                    <a href="/panel/edit_user?id={{user.user_id}}"><i class="fas fa-user-edit"></i></a>
+                                  </td>
+                                </tr>
                               {% end %}
-                          </ul>
-                          <br>
-                </div>
-                                <div class="col-md-3 col-sm-12">
-                    <div class="card">
-                      <div class="card-body">
-                        <h4 class="card-title">Role Config Area</h4>
-                        <p class="card-description"> Here is where you can change the configuration of your role</p>
-                        <blockquote class="blockquote">
-                          <p class="mb-0">
-                              Created: {{ str(data['role']['created']) }}
-                              <br />
-                              Last updated: {{ str(data['role']['last_update']) }}
-                              <br />
-                          </p>
-                        </blockquote>
+                            {% end %}
+                          {% end %}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
-                </div>
-            </div>
-                                <div class="text-center">
+                  </div>
+                  <br>
+              </div>
+                <div class="col-md-3 col-sm-12">
+                  <div class="card">
+                    <div class="card-body">
+                      <h4 class="card-title">Role Config Area</h4>
+                      <p class="card-description"> Here is where you can change the configuration of your role</p>
+                      <blockquote class="blockquote">
+                        <p class="mb-0">
+                            Created: {{ str(data['role']['created']) }}
+                            <br />
+                            Last updated: {{ str(data['role']['last_update']) }}
+                            <br />
+                        </p>
+                      </blockquote>
+                      <div class="text-center">
                         {% if data['new_role'] %}
-                            <a class="btn btn-sm btn-danger disabled">Delete Role</a><br />
-                            <small>You cannot delete something that does not yet exist</small>
+                          <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i> Delete Role</a><br />
+                          <small>You cannot delete something that does not yet exist</small>
                         {% else %}
-                            <a href="/panel/remove_role?id={{ data['role']['role_id'] }}" class="btn btn-sm btn-danger">Delete Role</a>
+                          <a href="/panel/remove_role?id={{ data['role']['role_id'] }}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Delete Role</a>
                         {% end %}
-
                     </div>
-
+                    </div>
+                  </div>
+              </div>
+            </div>
         </div>
       </div>
     </div>

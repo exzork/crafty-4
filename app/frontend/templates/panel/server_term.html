@@ -126,6 +126,7 @@
     let restartBtn = document.querySelector('#restart-btn');
     let stopBtn = document.querySelector('#stop-btn');
 
+    {% if data['permissions']['Commands'] in data['user_permissions'] %}
     if (online) {
       startBtn.setAttribute('disabled', 'disabled');
       restartBtn.removeAttribute('disabled');
@@ -135,6 +136,7 @@
       restartBtn.setAttribute('disabled', 'disabled');
       stopBtn.setAttribute('disabled', 'disabled');
     }
+    {% end %}
 
     let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
 

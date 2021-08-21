@@ -218,6 +218,11 @@
             "</code>"
         ]
     },
+    "panelConfig": {
+        "save": "Tallenna",
+        "cancel": "Peruuta",
+        "delete": "Poista"
+    },
     "datatables": {
         "i18n": {
             "decimal":        "",

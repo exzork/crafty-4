@@ -114,7 +114,7 @@ class PanelHandler(BaseHandler):
                 user_auth = db_helper.get_authorized_servers_stats(exec_user_id)
                 logger.debug("ASFR: {}".format(user_auth))
                 page_data['servers'] = user_auth
-
+                
             for s in page_data['servers']:
                 try:
                     data = json.loads(s['int_ping_results'])

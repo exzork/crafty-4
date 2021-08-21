@@ -115,8 +115,8 @@
 
                       </div>
 
-                      <button type="submit" class="btn btn-success mr-2">{{ translate('serverConfig', 'save') }}</button>
-                      <button type="reset" class="btn btn-light">{{ translate('serverConfig', 'cancel') }}</button>
+                      <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('serverConfig', 'save') }}</button>
+                      <button type="reset" class="btn btn-light"><i class="fas fa-times"></i> {{ translate('serverConfig', 'cancel') }}</button>
                     </form>
                 </div>
 
@@ -242,7 +242,7 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
               className: 'btn-danger',
             },
             cancel: {
-              label: "{{ translate('serverConfig', 'noDeleteFiles') }}",
+              label: "<i class="fas fa-times"></i>{{ translate('serverConfig', 'noDeleteFiles') }}",
               className: 'btn-link',
             }
           },

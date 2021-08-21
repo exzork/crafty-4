@@ -101,7 +101,7 @@
         <div class="card-body">
 
           <div class="table-responsive">
-            <table class="table">
+            <table class="table table-hover">
               <thead>
                 <tr class="rounded">
                   <th>{{ translate('dashboard', 'server') }}</th>
@@ -124,16 +124,17 @@
                   </td>
 
                   <td id="controls{{server['server_data']['server_id']}}" class="actions_serverlist">
-                    {% if server['stats']['running'] %}
-                      <a class="stop_button" data-id="{{server['server_data']['server_id']}}"> <i class="fas fa-stop"></i></a> &nbsp;
-                      <a class="restart_button" data-id="{{server['server_data']['server_id']}}"> <i class="fas fa-sync"></i></a> &nbsp;
-                    {% elif server['stats']['updating']%}
-                      <a data-id="{{server['server_data']['server_id']}}" class=""> UPDATING...</i></a>
-                    {% else %}
-                    <a data-id="{{server['server_data']['server_id']}}" class="play_button"><i class="fas fa-play"></i></a> &nbsp;
-                      <a data-id="{{server['server_data']['server_id']}}" class="clone_button"> <i class="fas fa-clone"></i></a>&nbsp;
+                    {% if server['user_command_permission'] %}
+                      {% if server['stats']['running'] %}
+                        <a class="stop_button" data-id="{{server['server_data']['server_id']}}"> <i class="fas fa-stop"></i></a> &nbsp;
+                        <a class="restart_button" data-id="{{server['server_data']['server_id']}}"> <i class="fas fa-sync"></i></a> &nbsp;
+                      {% elif server['stats']['updating']%}
+                        <a data-id="{{server['server_data']['server_id']}}" class=""> UPDATING...</i></a>
+                      {% else %}
+                      <a data-id="{{server['server_data']['server_id']}}" class="play_button"><i class="fas fa-play"></i></a> &nbsp;
+                        <a data-id="{{server['server_data']['server_id']}}" class="clone_button"> <i class="fas fa-clone"></i></a>&nbsp;
+                      {% end %}
                     {% end %}
-
                   </td>
 
                   <td>

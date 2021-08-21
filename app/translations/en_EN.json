@@ -235,6 +235,11 @@
             "</code>"
         ]
     },
+    "panelConfig": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete"
+    },
     "datatables": {
         "i18n": {
             "decimal":        "",

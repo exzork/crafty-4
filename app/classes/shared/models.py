@@ -373,7 +373,7 @@ class db_shortcuts:
 
         for s in servers:
             latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
-            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0]})
+            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0], "user_command_permission":True})
         return server_data
 
     @staticmethod
@@ -407,7 +407,12 @@ class db_shortcuts:
         for s in authorized_servers:
             latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(
                 Server_Stats.created.desc()).limit(1)
-            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0]})
+            user_permissions = db_helper.get_user_permissions_list(user_id, s.get('server_id'))
+            if Enum_Permissions.Commands in user_permissions:
+                user_command_permission = True
+            else:
+                user_command_permission = False
+            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0], "user_command_permission":user_command_permission})
         return server_data
 
     @staticmethod
