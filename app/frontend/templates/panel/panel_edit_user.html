@@ -121,12 +121,10 @@
                               <tr>
                                 <td>{{ server['server_name'] }}</td>
                                 <td>
-                                  {% if server['server_id'] in data['servers'] %}
-                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" value="1">
-                                    {% elif server['server_id'] in data['role-servers'] %}
+                                  {% if server['server_id'] in data['role-servers'] %}
                                     <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" value="" disabled>
                                   {% else %}
-                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" value="1">
+                                    <input type="checkbox" class="form-check-input" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" value="1" disabled>
                                   {% end %}
                                 </td>
                               </tr>

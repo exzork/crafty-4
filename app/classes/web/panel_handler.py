@@ -324,17 +324,9 @@ class PanelHandler(BaseHandler):
 
         elif page == "edit_user":
             user_id = self.get_argument('id', None)
-            user_servers = db_helper.get_authorized_servers(user_id)
             role_servers = db_helper.get_authorized_servers_from_roles(user_id)
             page_role_servers = []
             servers = set()
-            for server in user_servers:
-                flag = False
-                for rserver in role_servers:
-                    if rserver['server_id'] == server['server_id']:
-                        flag = True
-                if not flag:
-                    servers.add(server['server_id'])
             for server in role_servers:
                 page_role_servers.append(server['server_id'])
             page_data['new_user'] = False
@@ -638,7 +630,6 @@ class PanelHandler(BaseHandler):
                 "enabled": enabled,
                 "regen_api": regen_api,
                 "roles": roles,
-                "servers": servers,
             }
             db_helper.update_user(user_id, user_data=user_data)
 
@@ -694,7 +685,6 @@ class PanelHandler(BaseHandler):
             user_id = db_helper.add_user(username, password=password0, enabled=enabled)
             user_data = {
                 "roles": roles,
-                "servers": servers,
             }
             db_helper.update_user(user_id, user_data)
 
