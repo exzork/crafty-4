@@ -1,6 +1,6 @@
 # Database change guide for contributors
 
-When updating a database schema modify the schema in `app/classes/shared/models.py` and create a new migration with the `migration add <name>` command (in Crafty's prompt).
+When updating a database schema modify the schema in `app/classes/shared/models.py` and create a new migration with the `migrations add <name>` command (in Crafty's prompt).
 
 A full list of helper functions you can find in `app/classes/shared/models.py`
 
