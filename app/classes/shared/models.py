@@ -412,6 +412,14 @@ class db_shortcuts:
         return server_data
 
     @staticmethod
+    def get_user_roles_id(user_id):
+        roles_list = []
+        roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        for r in roles:
+            roles_list.append(db_helper.get_role(r.role_id)['role_id'])
+        return roles_list
+
+    @staticmethod
     def get_user_roles_names(user_id):
         roles_list = []
         roles = User_Roles.select().where(User_Roles.user_id == user_id)
@@ -432,6 +440,21 @@ class db_shortcuts:
         role_server = Role_Servers.select().where(Role_Servers.role_id == role_id).execute()
         permissions_mask = role_server[0].permissions
         permissions_list = permissions.get_permissions(permissions_mask)
+        return permissions_list
+
+    @staticmethod
+    def get_user_permissions_list(user_id, server_id):
+        permissions_mask = ''
+        permissions_list = []
+
+        user = db_helper.get_user(user_id)
+        if user['superuser'] == True:
+            permissions_list = permissions.get_permissions_list()
+        else:
+            roles_list = db_helper.get_user_roles_id(user_id)
+            role_server = Role_Servers.select().where(Role_Servers.role_id.in_(roles_list)).where(Role_Servers.server_id == int(server_id)).execute()
+            permissions_mask = role_server[0].permissions
+            permissions_list = permissions.get_permissions(permissions_mask)
         return permissions_list
 
     @staticmethod
@@ -592,18 +615,18 @@ class db_shortcuts:
     def get_user(user_id):
         if user_id == 0:
             return {
-                user_id: 0,
-                created: None,
-                last_login: None,
-                last_update: None,
-                last_ip: "127.27.23.89",
-                username: "SYSTEM",
-                password: None,
-                enabled: True,
-                superuser: False,
-                api_token: None,
-                roles: [],
-                servers: [],
+                'user_id': 0,
+                'created': None,
+                'last_login': None,
+                'last_update': None,
+                'last_ip': "127.27.23.89",
+                'username': "SYSTEM",
+                'password': None,
+                'enabled': True,
+                'superuser': False,
+                'api_token': None,
+                'roles': [],
+                'servers': [],
             }
         user = model_to_dict(Users.get(Users.user_id == user_id))
 

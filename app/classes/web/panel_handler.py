@@ -155,6 +155,19 @@ class PanelHandler(BaseHandler):
             page_data['server_data'] = db_helper.get_server_data_by_id(server_id)
             page_data['server_stats'] = db_helper.get_server_stats_by_id(server_id)
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
+            page_data['active_link'] = subpage
+            page_data['permissions'] = {
+                'Commands': Enum_Permissions.Commands,
+                'Terminal': Enum_Permissions.Terminal,
+                'Logs': Enum_Permissions.Logs,
+                'Schedule': Enum_Permissions.Schedule,
+                'Backup': Enum_Permissions.Backup,
+                'Files': Enum_Permissions.Files,
+                'Config': Enum_Permissions.Config,
+                'Players': Enum_Permissions.Players,
+            }
+            page_data['user_permissions'] = self.controller.get_server_permissions_foruser(exec_user_id, server_id)
+
             if subpage == "backup":
                 page_data['backup_config'] = db_helper.get_backup_config(server_id)
                 page_data['backup_list'] = server.list_backups()

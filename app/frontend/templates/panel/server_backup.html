@@ -32,37 +32,7 @@
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-            <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=term" role="tab" aria-selected="false">
-                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'terminal') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=logs" role="tab" aria-selected="false">
-                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'logs') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=tasks" role="tab" aria-selected="false">
-                  <i class="fas fa-clock"></i>{{ translate('serverDetails', 'schedule') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link active" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="true">
-                  <i class="fas fa-save"></i>{{ translate('serverDetails', 'backup') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files" role="tab" aria-selected="false">
-                  <i class="fas fa-folder-tree"></i>{{ translate('serverDetails', 'files') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=config" role="tab" aria-selected="false">
-                  <i class="fas fa-cogs"></i>{{ translate('serverDetails', 'config') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=admin_controls" role="tab" aria-selected="false">
-                  <i class="fas fa-users"></i>{{ translate('serverDetails', 'playerControls') }}</a>
-              </li>
-
-            </ul>
+            {% include "parts/server_controls_list.html %}
 
             <div class="row">
                 <div class="col-md-6 col-sm-12">

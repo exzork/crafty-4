@@ -1,0 +1,44 @@
+<ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
+    {% if data['permissions']['Terminal'] in data['user_permissions'] %}
+    <li class="nav-item term-nav-item">
+        <a class="nav-link {% if data['active_link'] == 'term' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=term" role="tab" aria-selected="false">
+        <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'terminal') }}</a>
+    </li>
+    {% end %}
+    {% if data['permissions']['Logs'] in data['user_permissions'] %}
+    <li class="nav-item term-nav-item">
+        <a class="nav-link {% if data['active_link'] == 'logs' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=logs" role="tab" aria-selected="false">
+        <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'logs') }}</a>
+    </li>
+    {% end %}
+    {% if data['permissions']['Schedule'] in data['user_permissions'] %}
+    <li class="nav-item term-nav-item">
+        <a class="nav-link {% if data['active_link'] == 'schedule' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=tasks" role="tab" aria-selected="false">
+        <i class="fas fa-clock"></i>{{ translate('serverDetails', 'schedule') }}</a>
+    </li>
+    {% end %}
+    {% if data['permissions']['Backup'] in data['user_permissions'] %}
+    <li class="nav-item term-nav-item">
+        <a class="nav-link {% if data['active_link'] == 'backup' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="false">
+        <i class="fas fa-save"></i>{{ translate('serverDetails', 'backup') }}</a>
+    </li>
+    {% end %}
+    {% if data['permissions']['Files'] in data['user_permissions'] %}
+    <li class="nav-item term-nav-item">
+        <a class="nav-link {% if data['active_link'] == 'files' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files" role="tab" aria-selected="false">
+        <i class="fas fa-folder-tree"></i>{{ translate('serverDetails', 'files') }}</a>
+    </li>
+    {% end %}
+    {% if data['permissions']['Config'] in data['user_permissions'] %}
+    <li class="nav-item term-nav-item">
+        <a class="nav-link {% if data['active_link'] == 'config' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=config" role="tab" aria-selected="true">
+        <i class="fas fa-cogs"></i>{{ translate('serverDetails', 'config') }}</a>
+    </li>
+    {% end %}
+    {% if data['permissions']['Players'] in data['user_permissions'] %}
+    <li class="nav-item term-nav-item">
+        <a class="nav-link {% if data['active_link'] == 'admin_controls' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=admin_controls" role="tab" aria-selected="true">
+        <i class="fas fa-users"></i>{{ translate('serverDetails', 'playerControls') }}</a>
+    </li>
+    {% end %}
+</ul>

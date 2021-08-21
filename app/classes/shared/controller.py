@@ -124,6 +124,11 @@ class Controller:
     def get_role_permissions(role_id):
         permissions_list = db_helper.get_role_permissions_list(role_id)
         return permissions_list
+
+    @staticmethod
+    def get_server_permissions_foruser(user_id, server_id):
+        permissions_list = db_helper.get_user_permissions_list(user_id, server_id)
+        return permissions_list
         
     @staticmethod
     def list_authorized_servers(userId):
