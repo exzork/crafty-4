@@ -11,6 +11,8 @@ import schedule
 import logging.config
 import zipfile
 from threading import Thread
+import shutil
+import zlib
 import html
 
 
@@ -416,17 +418,15 @@ class Server:
         self.is_backingup = True
         conf = db_helper.get_backup_config(self.server_id)
         try:
-            backup_filename = "{}/{}.zip".format(self.settings['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+            backup_filename = "{}/{}".format(self.settings['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
             logger.info("Creating backup of server '{}' (ID#{}) at '{}'".format(self.settings['server_name'], self.server_id, backup_filename))
-            helper.zip_directory(backup_filename, self.server_path)
-            while len(self.list_backups()) > conf["max_backups"]:
+            shutil.make_archive(backup_filename, 'zip', self.server_path)
+            while len(self.list_backups()) > conf["max_backups"] and conf["max_backups"] > 0:
                 backup_list = self.list_backups()
                 oldfile = backup_list[0]
-                backup_path = self.settings['backup_path']
-                old_file_name = oldfile['path']
-                back_old_file = os.path.join(backup_path, old_file_name)
-                logger.info("Removing old backup '{}'".format(oldfile))
-                os.remove(back_old_file)
+                oldfile_path = "{}/{}".format(conf['backup_path'], oldfile['path'])
+                logger.info("Removing old backup '{}'".format(oldfile['path']))
+                os.remove(oldfile_path)
             self.is_backingup = False
             logger.info("Backup of server: {} completed".format(self.name))
             return
@@ -503,6 +503,7 @@ class Server:
 
         while db_helper.get_server_stats_by_id(self.server_id)['updating']:
             if downloaded and not self.is_backingup:
+                print("Backup Status: " + str(self.is_backingup))
                 logger.info("Executable updated successfully. Starting Server")
 
                 db_helper.set_update(self.server_id, False)

@@ -195,8 +195,11 @@ class ServerHandler(BaseHandler):
                     return
                 server_type, server_version = server_parts
                 # todo: add server type check here and call the correct server add functions if not a jar
+                role_ids = db_helper.get_user_roles_id(exec_user_id)
                 new_server_id = self.controller.create_jar_server(server_type, server_version, server_name, min_mem, max_mem, port)
                 db_helper.add_user_server(new_server_id, exec_user_id, "11111111")
+                for role in role_ids:
+                    db_helper.add_role_server(new_server_id, role)
                 db_helper.add_to_audit_log(exec_user_data['user_id'],
                                            "created a {} {} server named \"{}\"".format(server_version, str(server_type).capitalize(), server_name), # Example: Admin created a 1.16.5 Bukkit server named "survival"
                                            new_server_id,

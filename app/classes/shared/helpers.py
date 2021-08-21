@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import json
+import tempfile
 import time
 import uuid
 import string
@@ -257,6 +258,44 @@ class Helpers:
         except Exception as e:
             logger.critical("Unable to write to {} - Error: {}".format(path, e))
             return False
+
+    def unzipFile(self, zip_path):
+        new_dir_list = zip_path.split('/')
+        new_dir = ''
+        for i in range(len(new_dir_list)-1):
+            if i == 0:
+                new_dir += new_dir_list[i]
+            else:
+                new_dir += '/'+new_dir_list[i]
+
+        if helper.check_file_perms(zip_path) and os.path.isfile(zip_path):
+            helper.ensure_dir_exists(new_dir)
+            tempDir = tempfile.mkdtemp()
+            try:
+                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                    zip_ref.extractall(tempDir)
+                for i in range(len(zip_ref.filelist)):
+                    if len(zip_ref.filelist) > 1 or not zip_ref.filelist[i].filename.endswith('/'):
+                        test = zip_ref.filelist[i].filename
+                        break
+                path_list = test.split('/')
+                root_path = path_list[0]
+                if len(path_list) > 1:
+                    for i in range(len(path_list) - 2):
+                        root_path = os.path.join(root_path, path_list[i + 1])
+
+                full_root_path = os.path.join(tempDir, root_path)
+
+                for item in os.listdir(full_root_path):
+                    try:
+                        shutil.move(os.path.join(full_root_path, item), os.path.join(new_dir, item))
+                    except Exception as ex:
+                        logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
+            except Exception as ex:
+                print(ex)
+        else:
+            return "false"
+        return
 
     def ensure_logging_setup(self):
         log_file = os.path.join(os.path.curdir, 'logs', 'commander.log')
@@ -558,14 +597,6 @@ class Helpers:
         
         return json.loads(content)
 
-    @staticmethod
-    def zip_directory(file, path, compression=zipfile.ZIP_LZMA):
-        with zipfile.ZipFile(file, 'w', compression) as zf:
-            for root, dirs, files in os.walk(path):
-                for file in files:
-                    zf.write(os.path.join(root, file),
-                               os.path.relpath(os.path.join(root, file), 
-                                               os.path.join(path, '..')))
     @staticmethod
     def copy_files(source, dest):
         if os.path.isfile(source):

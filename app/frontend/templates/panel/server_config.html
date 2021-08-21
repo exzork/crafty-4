@@ -173,6 +173,35 @@
 
     });
 
+        function deleteServerE(callback) {
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "DELETE",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/delete_server?id={{ data['server_stats']['server_id']['server_id'] }}',
+        data: {
+        },
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+        },
+      });
+    }
+        function deleteServerFilesE(path, callback) {
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "DELETE",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/delete_server_files?id={{ data['server_stats']['server_id']['server_id'] }}',
+        data: {
+        },
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+        },
+      });
+    }
+
 let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
 
       function send_command (server_id, command){
@@ -219,7 +248,7 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
           },
           callback: function(result) {
             if (!result){
-                send_command(server_id, 'delete_server');
+                deleteServerE()
                 setTimeout(function(){ window.location = '/panel/dashboard'; }, 5000);
                 bootbox.dialog({
                 backdrop: true,
@@ -230,7 +259,7 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
 
              return;}
              else{
-                send_command(server_id, 'delete_server_files');
+                deleteServerFilesE();
                                  setTimeout(function(){ window.location = '/panel/dashboard'; }, 5000);
                 bootbox.dialog({
                 backdrop: true,
