@@ -235,6 +235,11 @@
             "</code>"
         ]
     },
+    "panelConfig": {
+        "save": "Enregister",
+        "cancel": "Annuler",
+        "delete": "Supprimer"
+    },
     "datatables": {
         "i18n": {
             "decimal":        "",
