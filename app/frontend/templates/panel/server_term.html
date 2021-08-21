@@ -151,9 +151,13 @@
         });
     }
 
+
+
     function new_line_handler(data) {
         $('#virt_console').append(data.line)
-        if (!$("#stop_scroll").is(':checked')) {
+        const elem = document.getElementById('virt_console');
+        const scrollDiff = (elem.scrollHeight - elem.scrollTop) - elem.clientHeight;
+        if (!$("#stop_scroll").is(':checked') && scrollDiff < 450) {
           scrollConsole()
         }
     }
