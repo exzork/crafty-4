@@ -77,6 +77,16 @@
 <script>
 
     function send_command (server_id, command){
+              if (command == 'start_server'){
+            startBtn.setAttribute('disabled', 'disabled');
+            restartBtn.removeAttribute('disabled');
+            stopBtn.removeAttribute('disabled');
+          }
+          if (command == 'stop_server'){
+            startBtn.removeAttribute('disabled');
+      restartBtn.setAttribute('disabled', 'disabled');
+      stopBtn.setAttribute('disabled', 'disabled');
+          }
       <!--  this getCookie function is in base.html-->
       var token = getCookie("_xsrf");
 

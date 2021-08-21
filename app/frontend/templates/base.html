@@ -232,12 +232,6 @@ if (webSocket) {
     });
   }
 
-  if (webSocket) {
-    webSocket.on('send_start_reload', function (start_error) {
-    location.reload()
-    });
-  }
-
 
     function warn(message) {
       var closeEl = document.createElement('span');

@@ -286,6 +286,13 @@ $( document ).ready(function() {
       mem_percent.textContent = hostStats.mem_percent + '%';
     });
   }
+
+    if (webSocket) {
+    webSocket.on('send_start_reload', function (start_error) {
+    location.reload()
+    });
+  }
+  
       if (webSocket) {
     webSocket.on('update_button_status', function (updateButton) {
     var id = 'controls';
