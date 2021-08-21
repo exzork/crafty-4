@@ -318,7 +318,6 @@ class db_shortcuts:
     def get_all_authorized_servers(user_id):
         user_servers = User_Servers.select().where(User_Servers.user_id == user_id)
         user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
-        server_data = []
         roles_list = []
         role_server = []
         server_data = []
@@ -416,6 +415,13 @@ class db_shortcuts:
             roles_list.append(db_helper.get_role(r.role_id)['role_name'])
         return roles_list
 
+    @staticmethod
+    def get_user_roles_id(user_id):
+        roles_list = []
+        roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        for r in roles:
+            roles_list.append(db_helper.get_role(r.role_id)['role_id'])
+        return roles_list
 
     @staticmethod
     def get_authorized_servers_stats_from_roles(user_id):
@@ -553,8 +559,8 @@ class db_shortcuts:
         return user
 
     @staticmethod
-    def add_user_server(server_id, user_id):
-        servers = User_Servers.insert({User_Servers.server_id: server_id, User_Servers.user_id: user_id}).execute()
+    def add_role_server(server_id, role_id):
+        servers = Role_Servers.insert({Role_Servers.server_id: server_id, Role_Servers.role_id: role_id}).execute()
         return servers
 
 
