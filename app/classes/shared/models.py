@@ -576,7 +576,7 @@ class db_shortcuts:
             elif base_data[key] != user_data[key]:
                 up_data[key] = user_data[key]
         up_data['last_update'] = helper.get_time_as_string()
-        logger.debug("user: {} +role:{} -role:{} +server:{} -server{}".format(user_data, added_roles, removed_roles, added_servers, removed_servers))
+        logger.debug("user: {} +role:{} -role:{} +server:{} -server{}".format(user_data, added_roles, removed_roles))
         with database.atomic():
             for role in added_roles:
                 User_Roles.get_or_create(user_id=user_id, role_id=role)
