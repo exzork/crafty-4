@@ -141,6 +141,14 @@ class Role_Servers(Model):
         primary_key = CompositeKey('role_id', 'server_id')
         database = database
 
+class User_Crafty(Model):
+    user_id = ForeignKeyField(Users, backref='users_crafty')
+    permissions = CharField(default="00000000")
+    limit_server_creation = IntegerField(default=-1)
+
+    class Meta:
+        table_name = 'user_crafty'
+        database = database
 
 class Server_Stats(Model):
     stats_id = AutoField()
@@ -408,7 +416,7 @@ class db_shortcuts:
             latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(
                 Server_Stats.created.desc()).limit(1)
             user_permissions = db_helper.get_user_permissions_list(user_id, s.get('server_id'))
-            if Enum_Permissions.Commands in user_permissions:
+            if Enum_Permissions_Server.Commands in user_permissions:
                 user_command_permission = True
             else:
                 user_command_permission = False
@@ -443,7 +451,7 @@ class db_shortcuts:
         permissions_mask = ''
         role_server = Role_Servers.select().where(Role_Servers.role_id == role_id).execute()
         permissions_mask = role_server[0].permissions
-        permissions_list = permissions.get_permissions(permissions_mask)
+        permissions_list = server_permissions.get_permissions(permissions_mask)
         return permissions_list
 
     @staticmethod
@@ -453,12 +461,12 @@ class db_shortcuts:
 
         user = db_helper.get_user(user_id)
         if user['superuser'] == True:
-            permissions_list = permissions.get_permissions_list()
+            permissions_list = server_permissions.get_permissions_list()
         else:
             roles_list = db_helper.get_user_roles_id(user_id)
             role_server = Role_Servers.select().where(Role_Servers.role_id.in_(roles_list)).where(Role_Servers.server_id == int(server_id)).execute()
             permissions_mask = role_server[0].permissions
-            permissions_list = permissions.get_permissions(permissions_mask)
+            permissions_list = server_permissions.get_permissions(permissions_mask)
         return permissions_list
 
     @staticmethod
@@ -989,7 +997,7 @@ class db_shortcuts:
                 b = Backups.create(**conf)
             logger.debug("Creating new backup record.")
 
-class Enum_Permissions(Enum):
+class Enum_Permissions_Server(Enum):
     Commands = 0
     Terminal = 1
     Logs = 2
@@ -1004,36 +1012,77 @@ class Permissions_Servers:
     @staticmethod
     def get_permissions_list():
         permissions_list = []
-        for member in Enum_Permissions.__members__.items():
+        for member in Enum_Permissions_Server.__members__.items():
             permissions_list.append(member[1])
         return permissions_list
         
     @staticmethod
     def get_permissions(permissions_mask):
         permissions_list = []
-        for member in Enum_Permissions.__members__.items():
-            if permissions.has_permission(permissions_mask, member[1]):
+        for member in Enum_Permissions_Server.__members__.items():
+            if server_permissions.has_permission(permissions_mask, member[1]):
                 permissions_list.append(member[1])
         return permissions_list
 
     @staticmethod
-    def has_permission(permission_mask, permission_tested):
+    def has_permission(permission_mask, permission_tested: Enum_Permissions_Server):
         result = False
         if permission_mask[permission_tested.value] == '1':
             result = True
         return result
         
     @staticmethod
-    def set_permission(permission_mask, permission_tested, value):
+    def set_permission(permission_mask, permission_tested: Enum_Permissions_Server, value):
         l = list(permission_mask)
         l[permission_tested.value] = str(value)
         permission_mask = ''.join(l)
         return permission_mask
         
     @staticmethod
-    def get_permission(permission_mask, permission_tested):
+    def get_permission(permission_mask, permission_tested: Enum_Permissions_Server):
         return permission_mask[permission_tested.value]    
+
+class Enum_Permissions_Crafty(Enum):
+    Server_Creation = 0
+    User_Config = 1
+    Roles_Config = 2
+    
+class Permissions_Crafty:
+
+    @staticmethod
+    def get_permissions_list():
+        permissions_list = []
+        for member in Enum_Permissions_Crafty.__members__.items():
+            permissions_list.append(member[1])
+        return permissions_list
+        
+    @staticmethod
+    def get_permissions(permissions_mask):
+        permissions_list = []
+        for member in Enum_Permissions_Crafty.__members__.items():
+            if server_permissions.has_permission(permissions_mask, member[1]):
+                permissions_list.append(member[1])
+        return permissions_list
+
+    @staticmethod
+    def has_permission(permission_mask, permission_tested: Enum_Permissions_Crafty):
+        result = False
+        if permission_mask[permission_tested.value] == '1':
+            result = True
+        return result
+        
+    @staticmethod
+    def set_permission(permission_mask, permission_tested: Enum_Permissions_Crafty, value):
+        l = list(permission_mask)
+        l[permission_tested.value] = str(value)
+        permission_mask = ''.join(l)
+        return permission_mask
+        
+    @staticmethod
+    def get_permission(permission_mask, permission_tested: Enum_Permissions_Crafty):
+        return permission_mask[permission_tested.value]  
 
 installer = db_builder()
 db_helper = db_shortcuts()
-permissions = Permissions_Servers()
+server_permissions = Permissions_Servers()
+crafty_permissions = Permissions_Crafty()

@@ -12,7 +12,7 @@ from tornado import iostream
 from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.models import db_helper, permissions, Servers, Enum_Permissions
+from app.classes.shared.models import db_helper, server_permissions, Servers, Enum_Permissions_Server
 from app.classes.shared.helpers import helper
 
 logger = logging.getLogger(__name__)
@@ -157,14 +157,14 @@ class PanelHandler(BaseHandler):
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
             page_data['active_link'] = subpage
             page_data['permissions'] = {
-                'Commands': Enum_Permissions.Commands,
-                'Terminal': Enum_Permissions.Terminal,
-                'Logs': Enum_Permissions.Logs,
-                'Schedule': Enum_Permissions.Schedule,
-                'Backup': Enum_Permissions.Backup,
-                'Files': Enum_Permissions.Files,
-                'Config': Enum_Permissions.Config,
-                'Players': Enum_Permissions.Players,
+                'Commands': Enum_Permissions_Server.Commands,
+                'Terminal': Enum_Permissions_Server.Terminal,
+                'Logs': Enum_Permissions_Server.Logs,
+                'Schedule': Enum_Permissions_Server.Schedule,
+                'Backup': Enum_Permissions_Server.Backup,
+                'Files': Enum_Permissions_Server.Files,
+                'Config': Enum_Permissions_Server.Config,
+                'Players': Enum_Permissions_Server.Players,
             }
             page_data['user_permissions'] = self.controller.get_server_permissions_foruser(exec_user_id, server_id)
 
@@ -754,7 +754,7 @@ class PanelHandler(BaseHandler):
                     )
                 ))
                 if argument:
-                    permissions_mask = permissions.set_permission(permissions_mask, permission, argument)
+                    permissions_mask = server_permissions.set_permission(permissions_mask, permission, argument)
 
             role_data = {
                 "role_name": role_name,
@@ -802,7 +802,7 @@ class PanelHandler(BaseHandler):
                     )
                 ))
                 if argument:
-                    permissions_mask = permissions.set_permission(permissions_mask, permission, argument)
+                    permissions_mask = server_permissions.set_permission(permissions_mask, permission, argument)
 
             role_id = db_helper.add_role(role_name)
             db_helper.update_role(role_id, {"servers": servers}, permissions_mask)

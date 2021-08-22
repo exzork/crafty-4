@@ -12,7 +12,7 @@ from distutils import dir_util
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 
-from app.classes.shared.models import db_helper, permissions
+from app.classes.shared.models import db_helper, server_permissions
 
 from app.classes.shared.server import Server
 from app.classes.minecraft.server_props import ServerProps
@@ -112,7 +112,7 @@ class Controller:
         
     @staticmethod
     def list_defined_permissions():
-        permissions_list = permissions.get_permissions_list()
+        permissions_list = server_permissions.get_permissions_list()
         return permissions_list
         
     @staticmethod
