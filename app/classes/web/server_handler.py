@@ -6,7 +6,7 @@ import shutil
 
 from app.classes.shared.console import console
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.models import db_helper, Servers
+from app.classes.shared.models import db_helper
 from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.shared.helpers import helper
 
@@ -123,22 +123,7 @@ class ServerHandler(BaseHandler):
                     crash_detection = server_data.get('crash_detection')
                     server_port = server_data.get('server_port')
 
-
-                    # TODO create the server on the DB side
-
-                    Servers.insert({
-                        Servers.server_name: new_server_name,
-                        Servers.server_uuid: new_server_uuid,
-                        Servers.path: new_server_path,
-                        Servers.executable: new_executable,
-                        Servers.execution_command: new_server_command,
-                        Servers.auto_start: auto_start,
-                        Servers.auto_start_delay: auto_start_delay,
-                        Servers.crash_detection: crash_detection,
-                        Servers.log_path: new_server_log_file,
-                        Servers.server_port: server_port,
-                        Servers.stop_command: stop_command
-                    }).execute()
+                    db_helper.create_server(new_server_name, new_server_uuid, new_server_path, "", new_server_command, new_executable, new_server_log_file, stop_command, server_port)
 
                     self.controller.init_all_servers()
 
@@ -194,14 +179,21 @@ class ServerHandler(BaseHandler):
                     self.redirect("/panel/error?error=Invalid server data")
                     return
                 server_type, server_version = server_parts
-                # todo: add server type check here and call the correct server add functions if not a jar
+                # TODO: add server type check here and call the correct server add functions if not a jar
                 role_ids = db_helper.get_user_roles_id(exec_user_id)
                 new_server_id = self.controller.create_jar_server(server_type, server_version, server_name, min_mem, max_mem, port)
-                db_helper.add_user_server(new_server_id, exec_user_id, "11111111")
                 db_helper.add_to_audit_log(exec_user_data['user_id'],
                                            "created a {} {} server named \"{}\"".format(server_version, str(server_type).capitalize(), server_name), # Example: Admin created a 1.16.5 Bukkit server named "survival"
                                            new_server_id,
                                            self.get_remote_ip())
+
+            #TODO: Remove the following line to remove User_Servers table
+            db_helper.add_user_server(new_server_id, exec_user_id, "11111111")
+
+            #These lines create a new Role for the Server with full permissions and add the user to it
+            role_id = db_helper.add_role("Creator of Server with id={}".format(new_server_id))
+            db_helper.add_role_server(new_server_id, role_id, "11111111")
+            db_helper.add_role_to_user(exec_user_id, role_id)
 
             self.controller.stats.record_stats()
             self.redirect("/panel/dashboard")

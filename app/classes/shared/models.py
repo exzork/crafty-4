@@ -573,6 +573,13 @@ class db_shortcuts:
             return {}
     
     @staticmethod
+    def add_role_to_user(user_id, role_id):
+        User_Roles.insert({
+            User_Roles.user_id: user_id,
+            User_Roles.role_id: role_id
+        }).execute()
+
+    @staticmethod
     def add_user_roles(user):
         if type(user) == dict:
             user_id = user['user_id']
@@ -602,8 +609,8 @@ class db_shortcuts:
         return servers
                 
     @staticmethod
-    def add_role_server(server_id, role_id):
-        servers = Role_Servers.insert({Role_Servers.server_id: server_id, Role_Servers.role_id: role_id}).execute()
+    def add_role_server(server_id, role_id, rs_permissions="00000000"):
+        servers = Role_Servers.insert({Role_Servers.server_id: server_id, Role_Servers.role_id: role_id, Role_Servers.permissions: rs_permissions}).execute()
         return servers
 
 
