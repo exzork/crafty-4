@@ -139,7 +139,7 @@ class PanelHandler(BaseHandler):
 
                 if exec_user['superuser'] != 1:
                     if not db_helper.server_id_authorized(server_id, exec_user_id):
-                        if not db_helper.server_id_authorized_from_roles(int(server_id), exec_user_id):
+                        if not db_helper.server_id_authorized(int(server_id), exec_user_id):
                             self.redirect("/panel/error?error=Invalid Server ID")
                             return False
 
@@ -212,7 +212,7 @@ class PanelHandler(BaseHandler):
 
                 if exec_user['superuser'] != 1:
                     #if not db_helper.server_id_authorized(server_id, exec_user_id):
-                    if not db_helper.server_id_authorized_from_roles(int(server_id), exec_user_id):
+                    if not db_helper.server_id_authorized(int(server_id), exec_user_id):
                         self.redirect("/panel/error?error=Invalid Server ID")
                         return
 
@@ -261,7 +261,7 @@ class PanelHandler(BaseHandler):
 
                 if exec_user['superuser'] != 1:
                     #if not db_helper.server_id_authorized(server_id, exec_user_id):
-                    if not db_helper.server_id_authorized_from_roles(int(server_id), exec_user_id):
+                    if not db_helper.server_id_authorized(int(server_id), exec_user_id):
                         self.redirect("/panel/error?error=Invalid Server ID")
                         return
 
@@ -516,9 +516,8 @@ class PanelHandler(BaseHandler):
 
             if not exec_user['superuser']:
                 if not db_helper.server_id_authorized(server_id, exec_user_id):
-                    if not db_helper.server_id_authorized_from_roles(server_id, exec_user_id):
-                        self.redirect("/panel/error?error=Unauthorized access: invalid server id")
-                        return
+                    self.redirect("/panel/error?error=Unauthorized access: invalid server id")
+                    return
             elif server_id is None:
                 self.redirect("/panel/error?error=Invalid Server ID")
                 return

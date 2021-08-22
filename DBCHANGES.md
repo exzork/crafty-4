@@ -39,18 +39,21 @@ import peewee
 
 
 def migrate(migrator, database, **kwargs):
+    db = database
+    #Copy Paste here the class of the New Table from models.py
     class NewTable(peewee.Model):
         my_id = peewee.IntegerField(unique=True, primary_key=True)
 
         class Meta:
             table_name = 'new_table'
-            database = database
-    create_table(NewTable)
+            database = db
+            
+    migrator.create_table(NewTable)
 
 
 
 def rollback(migrator, database, **kwargs):
-    drop_table('new_table') # Can be model class OR table name
+    migrator.drop_table('new_table') # Can be model class OR table name
 
 ```
 

@@ -118,7 +118,7 @@ class Servers(Model):
     class Meta:
         table_name = "servers"
         database = database
-
+        
 
 class User_Servers(Model):
     user_id = ForeignKeyField(Users, backref='user_server')
@@ -506,33 +506,14 @@ class db_shortcuts:
         
     @staticmethod
     def server_id_authorized(serverId, user_id):
-        userServer = User_Servers.select().where(User_Servers.server_id == serverId)
-        authorized = userServer.select().where(User_Servers.user_id == user_id)      
+        authorized = 0
+        user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        for role in user_roles:
+            authorized = (Role_Servers.select().where(Role_Servers.role_id == role.role_id))
+
         #authorized = db_helper.return_rows(authorized)
 
         if authorized.count() == 0:
-            return False
-        return True
-
-    @staticmethod
-    def server_id_authorized_from_roles(serverId, user_id):
-        cpt_authorized = 0
-        roles_list = []
-        role_server = []
-        authorized = []
-        user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
-        
-        for u in user_roles:
-            roles_list.append(db_helper.get_role(u.role_id))
-            
-        for r in roles_list:
-            role_test = Role_Servers.select().where(Role_Servers.role_id == r.get('role_id'))
-
-        for s in role_test:
-            if s.server_id.server_id == serverId:
-                cpt_authorized += 1
-
-        if cpt_authorized == 0:
             return False
         return True
 
@@ -615,7 +596,7 @@ class db_shortcuts:
     def add_user_server(server_id, user_id, us_permissions):
         servers = User_Servers.insert({User_Servers.server_id: server_id, User_Servers.user_id: user_id, User_Servers.permissions: us_permissions}).execute()
         return servers
-                
+
     @staticmethod
     def add_role_server(server_id, role_id, rs_permissions="00000000"):
         servers = Role_Servers.insert({Role_Servers.server_id: server_id, Role_Servers.role_id: role_id, Role_Servers.permissions: rs_permissions}).execute()
