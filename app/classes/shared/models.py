@@ -118,18 +118,6 @@ class Servers(Model):
     class Meta:
         table_name = "servers"
         database = database
-        
-
-class User_Servers(Model):
-    user_id = ForeignKeyField(Users, backref='user_server')
-    server_id = ForeignKeyField(Servers, backref='user_server')
-    permissions = CharField(default="00000000")
-
-    class Meta:
-        table_name = 'user_servers'
-        primary_key = CompositeKey('user_id', 'server_id')
-        database = database
-
 
 class Role_Servers(Model):
     role_id = ForeignKeyField(Roles, backref='role_server')
