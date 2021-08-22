@@ -1,88 +1,79 @@
-from tornado.concurrent import Future
-from tornado.escape import utf8
-from tornado import gen
-from tornado.httpclient import AsyncHTTPClient
-from tornado.ioloop import IOLoop
-from tornado.options import parse_command_line, define, options
-from tornado.web import Application, RequestHandler, stream_request_body
-
+import tornado.options
+import tornado.web
+import tornado.httpserver
+from tornado.options import options
+from app.classes.shared.models import db_helper, Enum_Permissions
+from app.classes.shared.helpers import helper
+from app.classes.web.websocket_helper import websocket_helper
+from app.classes.shared.console import console
 import logging
-import toro
+import os
+import json
+import time
 
 logger = logging.getLogger(__name__)
 
+# Class&Function Defination
+MAX_STREAMED_SIZE = 1024 * 1024 * 1024
 
-define('server_delay', default=2.0)
-define('client_delay', default=1.0)
-define('num_chunks', default=40)
-
-@stream_request_body
-class UploadHandler(RequestHandler):
+@tornado.web.stream_request_body
+class UploadHandler(tornado.web.RequestHandler):
     def prepare(self):
-        print("In PREPARE")
-        logger.info('UploadHandler.prepare')
+        self.do_upload = True
+        user_data = json.loads(self.get_secure_cookie('user_data'))
+        user_id = user_data['user_id']
 
-    @gen.coroutine
-    def data_received(self, chunk):
-        print("In RECIEVED")
-        logger.info('UploadHandler.data_received(%d bytes: %r)',
-                     len(chunk), chunk[:9])
-        yield gen.Task(IOLoop.current().call_later, options.server_delay)
+        server_id = self.request.headers.get('X-ServerId', None)
 
-    def put(self):
-        print("In PUT")
-        logger.info('UploadHandler.put')
-        self.write('ok')
+        if user_id is None:
+            logger.warning('User ID not found in upload handler call')
+            console.warning('User ID not found in upload handler call')
+            self.do_upload = False
+        
+        if server_id is None:
+            logger.warning('Server ID not found in upload handler call')
+            console.warning('Server ID not found in upload handler call')
+            self.do_upload = False
 
-@stream_request_body
-class ProxyHandler(RequestHandler):
-    def prepare(self):
-        logger.info('ProxyHandler.prepare')
-        self.chunks = toro.Queue(1)
-        self.fetch_future = AsyncHTTPClient().fetch(
-            'http://localhost:%d/upload' % options.port,
-            method='PUT',
-            body_producer=self.body_producer,
-            request_timeout=3600.0)
+        user_permissions = db_helper.get_user_permissions_list(user_id, server_id)
+        if Enum_Permissions.Files not in user_permissions:
+            logger.warning(f'User {user_id} tried to upload a file to {server_id} without permissions!')
+            console.warning(f'User {user_id} tried to upload a file to {server_id} without permissions!')
+            self.do_upload = False
 
-    @gen.coroutine
-    def body_producer(self, write):
-        while True:
-            chunk = yield self.chunks.get()
-            if chunk is None:
-                return
-            yield write(chunk)
+        path = self.request.headers.get('X-Path', None)
+        filename = self.request.headers.get('X-FileName', None)
+        full_path = os.path.join(path, filename)
 
-    @gen.coroutine
-    def data_received(self, chunk):
-        logger.info('ProxyHandler.data_received(%d bytes: %r)',
-                     len(chunk), chunk[:9])
-        yield self.chunks.put(chunk)
+        if not helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], full_path):
+            print(user_id, server_id, db_helper.get_server_data_by_id(server_id)['path'], full_path)
+            logger.warning(f'User {user_id} tried to upload a file to {server_id} but the path is not inside of the server!')
+            console.warning(f'User {user_id} tried to upload a file to {server_id} but the path is not inside of the server!')
+            self.do_upload = False
+        
+        if self.do_upload:
+            try:
+                self.f = open(full_path, "wb")
+            except Exception as e:
+                logger.error("Upload failed with error: {}".format(e))
+                self.do_upload = False
+        # If max_body_size is not set, you cannot upload files > 100MB
+        self.request.connection.set_max_body_size(MAX_STREAMED_SIZE)
 
-    @gen.coroutine
-    def put(self):
-        logger.info('ProxyHandler.put')
-        # Write None to the chunk queue to signal body_producer to exit,
-        # then wait for the request to finish.
-        yield self.chunks.put(None)
-        response = yield self.fetch_future
-        self.set_status(response.code)
-        self.write(response.body)
+    def post(self):
+        logger.info("Upload completed")
+        
+        
+        if self.do_upload:
+            time.sleep(5)
+            websocket_helper.broadcast('close_upload_box', 'success')
+            self.finish('success') # Nope, I'm sending "success"
+            self.f.close()
+        else:
+            time.sleep(5)
+            websocket_helper.broadcast('close_upload_box', 'error')
+            self.finish('error')
 
-@gen.coroutine
-def client():
-    @gen.coroutine
-    def body_producer(write):
-        for i in range(options.num_chunks):
-            yield gen.Task(IOLoop.current().call_later, options.client_delay)
-            chunk = ('chunk %02d ' % i) * 10000
-            logger.info('client writing %d bytes: %r', len(chunk), chunk[:9])
-            yield write(utf8(chunk))
-
-    response = yield AsyncHTTPClient().fetch(
-        'http://localhost:%d/proxy' % options.port,
-        method='PUT',
-        body_producer=body_producer,
-        request_timeout=3600.0)
-    logger.info('client finished with response %d: %r',
-                 response.code, response.body)
+    def data_received(self, data):
+        if self.do_upload:
+            self.f.write(data)

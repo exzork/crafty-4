@@ -321,6 +321,10 @@
         regex: /^properties$/,
         replaceWith: 'ace/mode/properties'
       },
+      {
+        regex: /^log$/,
+        replaceWith: 'ace/mode/txt'
+      },
     ];
 
     var filePath = '';
@@ -520,51 +524,114 @@
       });
       window.location.href = "/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files"
     }
-    function uploadFilesE(event){
+
+  function sendFile(file, path, server_id, onProgress){
+    var xmlHttpRequest = new XMLHttpRequest();
+    var token = getCookie("_xsrf")
+    var fileName = file.name
+    var target = '/upload?server_id=' + server_id
+    var mimeType = file.type
+
+    xmlHttpRequest.open('POST', target, true);
+    xmlHttpRequest.setRequestHeader('X-Content-Type', mimeType);
+    xmlHttpRequest.setRequestHeader('X-XSRFToken', token);
+    xmlHttpRequest.setRequestHeader('X-Content-Disposition', 'attachment; filename="' + fileName + '"');
+    xmlHttpRequest.setRequestHeader('X-Path', path);
+    xmlHttpRequest.setRequestHeader('X-FileName', fileName);
+    xmlHttpRequest.setRequestHeader('X-ServerId', "{{ data['server_stats']['server_id']['server_id'] }}");
+    xmlHttpRequest.upload.addEventListener('progress', (event) =>
+      onProgress(Math.floor(event.loaded / event.total * 100)), false);
+    xmlHttpRequest.addEventListener('load', (event) => {
+      if (event.target.responseText == 'success') {
+        console.log('Upload for file', file.name, 'was successful!')
+      }
+      else {
+        alert('Upload failed with response: ' + event.target.responseText);
+        doUpload = false;
+      }
+    }, false);
+    xmlHttpRequest.addEventListener('error', (e) => {
+      console.error('Error while uploading file', file.name + '.', 'Event:', e)
+    }, false);
+    
+    xmlHttpRequest.send(file);
+  }
+
+  var uploadWaitDialog;
+  var doUpload = true;
+
+  function uploadFilesE(event){
     path = event.target.parentElement.getAttribute('data-path');
     console.log("PATH: " + path);
-      $(function () {
-    server_id = {{ data['server_stats']['server_id']['server_id'] }};
-  var uploadHtml = "<div>" +
-      '<form id="upload_file" enctype="multipart/form-data">'+"<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
-          "<input id='files' name='files' type='file' style='display:none;' multiple='true'>" +
-          "<i class='fa fa-cloud-upload fa-3x'></i>" +
-          "<br />" +
-          "Click Here To Upload" +
-      "</label></form>" +
-      "<br />" +
-      "<ul style='margin-left:5px !important;' id='fileList'></ul>" +
-  "</div><div class='clearfix'></div>";
-
-  bootbox.dialog({
-      message: uploadHtml,
-      title: "File Upload",
-      buttons: {
-          success: {
-              label: "Upload",
-              className: "btn-default",
-              callback: function () {
-                  $('#upload_file').submit(); //.trigger('submit');
-                  files = document.getElementById("upload_files").files
-                  for (i = 0; i < files.length; i++){
-
-                  var xmlHttpRequest = new XMLHttpRequest();
-                  var file = files[i]
-                  var fileName = files[i].name
-                  var target = '/proxy'
-                  var mimeType = files[i].type
-
-                  xmlHttpRequest.open('POSTT', target, true);
-                  console.log(xmlHttpRequest);
-                  xmlHttpRequest.setRequestHeader('Content-Type', mimeType);
-                  xmlHttpRequest.setRequestHeader('Content-Disposition', 'attachment; filename="' + fileName + '"');
-                  xmlHttpRequest.send(file);
-
+    $(function () {
+      server_id = {{ data['server_stats']['server_id']['server_id'] }};
+      var uploadHtml = "<div>" +
+        '<form id="upload_file" enctype="multipart/form-data">'+"<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
+            "<input id='files' name='files' type='file' style='display:none;' multiple='true'>" +
+            "<i class='fa fa-cloud-upload fa-3x'></i>" +
+            "<br />" +
+            "Click Here To Select Files" +
+        "</label></form>" +
+        "<br />" +
+        "<ul style='margin-left:5px !important;' id='fileList'></ul>" +
+    "</div><div class='clearfix'></div>";
+    bootbox.dialog({
+        message: uploadHtml,
+        title: "Upload Files to : "+path,
+        buttons: {
+            success: {
+                label: "Upload",
+                className: "btn-default",
+                callback: async function () {
+                    files = document.getElementById("files");
+                    uploadWaitDialog = bootbox.dialog({
+                      message: `
+                        <p class="text-center mb-0">
+                          <i class="fa fa-spin fa-cog"></i>
+                          Please wait while we upload your files... This may take a while.<br>
+                          <strong>DO NOT CLOSE THIS PAGE.</strong>
+                        </p>
+                        <div class="progress" id="upload-progress-bar-parent">
+                        </div>
+                      `,
+                      closeButton: false
+                  });
+                  let nFiles = files.files.length;
+                  for(i=0; i < files.files.length; i++) {
+                    if (!doUpload) {
+                      doUpload = true;
+                      hideUploadBox();
+                      break;
+                    }
+                    console.log(files.files[i]);
+                    const progressHtml = `
+                    <div>
+                      ${path + '/' + files.files[i]}:
+                      <div
+                        id="upload-progress-bar-${i + 1}"
+                        class="progress-bar progress-bar-striped progress-bar-animated"
+                        role="progressbar"
+                        style="width: 0%"
+                        aria-valuenow="0"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                      ></div>
+                    </div>
+                    `;
+                    $('#upload-progress-bar-parent').append(progressHtml);
+                    sendFile(files.files[i], path, server_id, (progress) => {
+                      $(`#upload-progress-bar-${i + 1}`).attr('aria-valuenow', progress)
+                      $(`#upload-progress-bar-${i + 1}`).css('width', progress + '%')
+                    });
                   }
-              }
-          }
-      }
+                  hideUploadBox();
+                  //$('#upload_file').submit(); //.trigger('submit');
+                }
+            }
+        }
   });
+
+  
 
   var fileList = document.getElementById("files");
   fileList.addEventListener("change", function (e) {
@@ -577,18 +644,6 @@
   }, false);
 });
     }
-
-
-    function uploadFiles(e){
-    path = event.target.parentElement.getAttribute('data-path');
-    server_id = {{ data['server_stats']['server_id']['server_id'] }};
-  var uploadHtml = '<form enctype="multipart/form-data" action="/ajax/upload_files?id=' + server_id +'&path='+ path +'"method="post">{% raw xsrf_form_html() %}<div class="form-group">'+"<label class='upload-area' style='width:100%;text-align:center;' for='fupload'>" +'<input id="files" type="file" name="files" multiple>' +"<i class='fa fa-cloud-upload fa-3x'></i>" +"<br />" +"Upload Files Here" +"</label>" +"<br />" +"<span style='margin-left:5px !important;' id='fileList'></span>"+'</div><br><br><input id="upload_file" type="submit"value="Upload File" class="btn btn-success hidden"/></form>';
-  bootbox.dialog({
-      message: uploadHtml,
-      title: "Upload Files To "+path,
-  });
-}
-
     function getTreeView() {
       $.ajax({
         type: "GET",
@@ -688,12 +743,25 @@
 
     document.addEventListener('click', function(e){
   let inside = (e.target.closest('#files-tree-nav'));
+  let contextMenu = document.getElementById('files-tree-nav');
   if(!inside){
-    let contextMenu = document.getElementById('files-tree-nav');
+    contextMenu.setAttribute('style', 'display:none');
+  }else{
     contextMenu.setAttribute('style', 'display:none');
   }
 });
 
+    if (webSocket) {
+      webSocket.on('close_upload_box', function (close_upload_box) {
+        hideUploadBox();
+      });
+    }
+
+    function hideUploadBox(){
+      if (!uploadWaitDialog) return;
+      uploadWaitDialog.modal('hide');
+      getTreeView();
+    }
 
     function createFileE(event) {
       bootbox.prompt("{% raw translate('serverFiles', 'createFileQuestion') %}", function(result) {
