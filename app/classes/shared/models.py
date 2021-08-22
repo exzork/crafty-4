@@ -499,8 +499,11 @@ class db_shortcuts:
         
     @staticmethod
     def server_id_authorized(serverId, user_id):
-        userServer = Role_Servers.select().where(Role_Servers.server_id == serverId)
-        authorized = userServer.select().where(User_Roles.user_id == user_id)
+        authorized = 0
+        user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        for role in user_roles:
+            authorized = (Role_Servers.select().where(Role_Servers.role_id == role.role_id))
+
         #authorized = db_helper.return_rows(authorized)
 
         if authorized.count() == 0:
