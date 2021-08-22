@@ -3,13 +3,13 @@ import peewee
 
 def migrate(migrator, database, **kwargs):
     try:
+        migrator.add_columns('user_servers', permissions=peewee.CharField(default="00000000")) # First argument can be model class OR table name
         migrator.add_columns('role_servers', permissions=peewee.CharField(default="00000000")) # First argument can be model class OR table name
     except Exception as e:
         print("Error in migrations:", e)
     """
     Write your migrations here.
     """
-
 
 
 def rollback(migrator, database, **kwargs):
