@@ -456,9 +456,10 @@ class db_shortcuts:
             permissions_list = permissions.get_permissions_list()
         else:
             roles_list = db_helper.get_user_roles_id(user_id)
-            role_server = Role_Servers.select().where(Role_Servers.role_id.in_(roles_list)).where(Role_Servers.server_id == int(server_id)).execute()
-            permissions_mask = role_server[0].permissions
-            permissions_list = permissions.get_permissions(permissions_mask)
+            role_server = Role_Servers.select().where(Role_Servers.role_id.in_(roles_list)).execute()
+            if role_server is not None:
+                permissions_mask = role_server[0].permissions
+                permissions_list = permissions.get_permissions(permissions_mask)
         return permissions_list
 
     @staticmethod
@@ -602,8 +603,8 @@ class db_shortcuts:
         return servers
                 
     @staticmethod
-    def add_role_server(server_id, role_id):
-        servers = Role_Servers.insert({Role_Servers.server_id: server_id, Role_Servers.role_id: role_id}).execute()
+    def add_role_server(server_id, role_id, us_permissions):
+        servers = Role_Servers.insert({Role_Servers.server_id: server_id, Role_Servers.role_id: role_id, Role_Servers.permissions: us_permissions}).execute()
         return servers
 
 
