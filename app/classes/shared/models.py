@@ -118,7 +118,7 @@ class Servers(Model):
     class Meta:
         table_name = "servers"
         database = database
-
+        
 
 class User_Servers(Model):
     user_id = ForeignKeyField(Users, backref='user_server')
