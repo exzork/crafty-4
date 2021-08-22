@@ -27,6 +27,7 @@ try:
     from app.classes.web.websocket_handler import SocketHandler
     from app.classes.web.static_handler import CustomStaticHandler
     from app.classes.shared.translation import translation
+    from app.classes.web.upload_handler import UploadHandler
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e, e.name))
@@ -129,6 +130,7 @@ class Webserver:
             (r'/api/stats/servers', ServersStats, handler_args),
             (r'/api/stats/node', NodeStats, handler_args),
             (r'/ws', SocketHandler, handler_args),
+            (r'/upload', UploadHandler),
             ]
 
         app = tornado.web.Application(
