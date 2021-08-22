@@ -118,7 +118,7 @@ class Servers(Model):
     class Meta:
         table_name = "servers"
         database = database
-        
+
 
 class Role_Servers(Model):
     role_id = ForeignKeyField(Roles, backref='role_server')
@@ -301,12 +301,7 @@ class db_shortcuts:
         user_roles = User_Roles.select().where(User_Roles.user_id == user_id)
         for r in user_roles:
             user_servers.append(Role_Servers.select().where(Role_Servers.role_id == r.role_id))
-        server_data = []
-
-        for u in user_servers:
-            server_data.append(db_helper.get_server_data_by_id(u.server_id))
-
-        return server_data
+        return user_servers
 
     @staticmethod
     def get_all_authorized_servers(user_id):
