@@ -197,7 +197,6 @@ class ServerHandler(BaseHandler):
                 # todo: add server type check here and call the correct server add functions if not a jar
                 role_ids = db_helper.get_user_roles_id(exec_user_id)
                 new_server_id = self.controller.create_jar_server(server_type, server_version, server_name, min_mem, max_mem, port)
-                db_helper.add_user_server(new_server_id, exec_user_id, "11111111")
                 roles = db_helper.get_user_roles_id(exec_user_id)
                 for role in roles:
                     db_helper.add_role_server(new_server_id, role, "11111111")
