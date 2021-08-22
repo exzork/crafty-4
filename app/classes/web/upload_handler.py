@@ -67,7 +67,7 @@ class UploadHandler(tornado.web.RequestHandler):
         if self.do_upload:
             time.sleep(5)
             websocket_helper.broadcast('close_upload_box', 'success')
-            self.finish('TESTING SOMETHING') # Nope, I'm sending "success"
+            self.finish('success') # Nope, I'm sending "success"
             self.f.close()
         else:
             time.sleep(5)
