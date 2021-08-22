@@ -16,10 +16,11 @@ pyminifier==2.1
 pyOpenSSL==19.1.0
 pyparsing==2.4.7
 PyYAML==5.3.1
-requests==2.24.0
+requests~=2.26.0
 schedule==0.6.0
 six==1.15.0
 termcolor==1.1.0
 tornado==6.0.4
 urllib3==1.25.10
 webencodings==0.5.1
+toro~=1.0.1

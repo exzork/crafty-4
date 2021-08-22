@@ -548,12 +548,13 @@
                   files = document.getElementById("upload_files").files
                   for (i = 0; i < files.length; i++){
 
+                  var xmlHttpRequest = new XMLHttpRequest();
                   var file = files[i]
                   var fileName = files[i].name
-                  var target = '/upload'
+                  var target = '/proxy'
                   var mimeType = files[i].type
 
-                  xmlHttpRequest.open('PUT', target, true);
+                  xmlHttpRequest.open('POSTT', target, true);
                   console.log(xmlHttpRequest);
                   xmlHttpRequest.setRequestHeader('Content-Type', mimeType);
                   xmlHttpRequest.setRequestHeader('Content-Disposition', 'attachment; filename="' + fileName + '"');
