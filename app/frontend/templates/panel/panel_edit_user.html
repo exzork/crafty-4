@@ -119,40 +119,8 @@
                           </div>
                         </div>
                       </div>
-                      
-                      <div class="card">
-                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                          <h4 class="card-title"><i class="fas fa-server"></i> Servers <small class="text-muted ml-1"> - servers this user is allowed to access </small></h4>
-                        </div>
-                        <div class="card-body">                          
-                          <div class="form-group">
-                            <div class="table-responsive">
-                              <table class="table table-hover">
-                                <thead>
-                                  <tr class="rounded">
-                                    <th>Server Name</th>
-                                    <th>Access?</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                {% for server in data['servers_all'] %}
-                                  <tr>
-                                    <td>{{ server['server_name'] }}</td>
-                                    <td>
-                                      {% if server['server_id'] in data['role-servers'] %}
-                                        <input type="checkbox" class="" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" value="" disabled>
-                                      {% else %}
-                                        <input type="checkbox" class="" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" value="1" disabled>
-                                      {% end %}
-                                    </td>
-                                  </tr>
-                                {% end %}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      </div>      
+
+                      <!-- Put Permissions Crafty part here -->  
 
                       <div class="form-check-flat">
                         <label for="enabled" class="form-check-label ml-4 mb-4">
