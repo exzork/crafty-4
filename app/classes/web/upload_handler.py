@@ -2,7 +2,7 @@ import tornado.options
 import tornado.web
 import tornado.httpserver
 from tornado.options import options
-from app.classes.shared.models import db_helper, Enum_Permissions
+from app.classes.shared.models import db_helper, Enum_Permissions_Server
 from app.classes.shared.helpers import helper
 from app.classes.web.websocket_helper import websocket_helper
 from app.classes.shared.console import console
@@ -36,7 +36,7 @@ class UploadHandler(tornado.web.RequestHandler):
             self.do_upload = False
 
         user_permissions = db_helper.get_user_permissions_list(user_id, server_id)
-        if Enum_Permissions.Files not in user_permissions:
+        if Enum_Permissions_Server.Files not in user_permissions:
             logger.warning(f'User {user_id} tried to upload a file to {server_id} without permissions!')
             console.warning(f'User {user_id} tried to upload a file to {server_id} without permissions!')
             self.do_upload = False
@@ -67,7 +67,7 @@ class UploadHandler(tornado.web.RequestHandler):
         if self.do_upload:
             time.sleep(5)
             websocket_helper.broadcast('close_upload_box', 'success')
-            self.finish('success') # Nope, I'm sending "success"
+            self.finish('TESTING SOMETHING') # Nope, I'm sending "success"
             self.f.close()
         else:
             time.sleep(5)
