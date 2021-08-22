@@ -187,9 +187,6 @@ class ServerHandler(BaseHandler):
                                            new_server_id,
                                            self.get_remote_ip())
 
-            #TODO: Remove the following line to remove User_Servers table
-            db_helper.add_user_server(new_server_id, exec_user_id, "11111111")
-
             #These lines create a new Role for the Server with full permissions and add the user to it
             role_id = db_helper.add_role("Creator of Server with id={}".format(new_server_id))
             db_helper.add_role_server(new_server_id, role_id, "11111111")

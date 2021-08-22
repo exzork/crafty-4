@@ -42,7 +42,7 @@ class PanelHandler(BaseHandler):
             for r in exec_user['roles']:
                 role = db_helper.get_role(r)
                 exec_user_role.add(role['role_name'])
-            defined_servers = db_helper.get_all_authorized_servers(exec_user_id)
+            defined_servers = db_helper.get_authorized_servers(exec_user_id)
 
         page_data = {
             # todo: make this actually pull and compare version data
@@ -278,7 +278,7 @@ class PanelHandler(BaseHandler):
             user_roles = {}
             for user in db_helper.get_all_users():
                 user_roles_list = db_helper.get_user_roles_names(user.user_id)
-                user_servers = db_helper.get_all_authorized_servers(user.user_id)
+                user_servers = db_helper.get_authorized_servers(user.user_id)
                 servers = []
                 for server in user_servers:
                     servers.append(server['server_name'])
@@ -338,7 +338,7 @@ class PanelHandler(BaseHandler):
 
         elif page == "edit_user":
             user_id = self.get_argument('id', None)
-            role_servers = db_helper.get_authorized_servers_from_roles(user_id)
+            role_servers = db_helper.get_authorized_servers(user_id)
             page_role_servers = []
             servers = set()
             for server in role_servers:
@@ -395,7 +395,7 @@ class PanelHandler(BaseHandler):
             user_roles = {}
             for user in db_helper.get_all_users():
                 user_roles_list = db_helper.get_user_roles_names(user.user_id)
-                user_servers = db_helper.get_all_authorized_servers(user.user_id)
+                user_servers = db_helper.get_authorized_servers(user.user_id)
                 data = {user.user_id: user_roles_list}
                 user_roles.update(data)
             page_data['new_role'] = True
@@ -423,7 +423,7 @@ class PanelHandler(BaseHandler):
             user_roles = {}
             for user in db_helper.get_all_users():
                 user_roles_list = db_helper.get_user_roles_names(user.user_id)
-                user_servers = db_helper.get_all_authorized_servers(user.user_id)
+                user_servers = db_helper.get_authorized_servers(user.user_id)
                 data = {user.user_id: user_roles_list}
                 user_roles.update(data)
             page_data['new_role'] = False

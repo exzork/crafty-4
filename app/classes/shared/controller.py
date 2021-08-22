@@ -136,7 +136,7 @@ class Controller:
         server_list = []
         for item in servers:
             server_list.append(item)
-        role_servers = db_helper.get_authorized_servers_from_roles(userId)
+        role_servers = db_helper.get_authorized_servers(userId)
         for item in role_servers:
             server_list.append(item)
         logger.debug("servers list = {}".format(servers))
