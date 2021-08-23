@@ -62,16 +62,18 @@ class UploadHandler(tornado.web.RequestHandler):
 
     def post(self):
         logger.info("Upload completed")
-        
+        files_left = int(self.request.headers.get('X-Files-Left', None))
         
         if self.do_upload:
             time.sleep(5)
-            websocket_helper.broadcast('close_upload_box', 'success')
+            if files_left == 0:
+                websocket_helper.broadcast('close_upload_box', 'success')
             self.finish('success') # Nope, I'm sending "success"
             self.f.close()
         else:
             time.sleep(5)
-            websocket_helper.broadcast('close_upload_box', 'error')
+            if files_left == 0:
+                websocket_helper.broadcast('close_upload_box', 'error')
             self.finish('error')
 
     def data_received(self, data):
