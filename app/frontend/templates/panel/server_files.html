@@ -525,7 +525,7 @@
       window.location.href = "/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files"
     }
 
-  function sendFile(file, path, server_id, onProgress){
+  function sendFile(file, path, server_id, left, onProgress){
     var xmlHttpRequest = new XMLHttpRequest();
     var token = getCookie("_xsrf")
     var fileName = file.name
@@ -537,6 +537,7 @@
     xmlHttpRequest.setRequestHeader('X-XSRFToken', token);
     xmlHttpRequest.setRequestHeader('X-Content-Disposition', 'attachment; filename="' + fileName + '"');
     xmlHttpRequest.setRequestHeader('X-Path', path);
+    xmlHttpRequest.setRequestHeader('X-Files-Left', left);
     xmlHttpRequest.setRequestHeader('X-FileName', fileName);
     xmlHttpRequest.setRequestHeader('X-ServerId', "{{ data['server_stats']['server_id']['server_id'] }}");
     xmlHttpRequest.upload.addEventListener('progress', (event) =>
@@ -583,17 +584,18 @@
                 label: "Upload",
                 className: "btn-default",
                 callback: async function () {
+                  var height = files.files.length*50;
+
+                  var waitMessage = '<p class="text-center mb-0">'+
+                    '<i class="fa fa-spin fa-cog"></i>'+
+                    'Please wait while we upload your files... This may take a while.<br>'+
+                    '<strong>DO NOT CLOSE THIS PAGE.</strong>'+
+                  '</p>'+
+                  '<div class="progress" id="upload-progress-bar-parent" style="height:'+height +'px; width:100%; display: block;">'+
+                  '</div>'
                     files = document.getElementById("files");
                     uploadWaitDialog = bootbox.dialog({
-                      message: `
-                        <p class="text-center mb-0">
-                          <i class="fa fa-spin fa-cog"></i>
-                          Please wait while we upload your files... This may take a while.<br>
-                          <strong>DO NOT CLOSE THIS PAGE.</strong>
-                        </p>
-                        <div class="progress" id="upload-progress-bar-parent">
-                        </div>
-                      `,
+                      message: waitMessage,
                       closeButton: false
                   });
                   let nFiles = files.files.length;
@@ -603,23 +605,24 @@
                       hideUploadBox();
                       break;
                     }
-                    console.log(files.files[i]);
+                    console.log(files.files[i].name);
                     const progressHtml = `
-                    <div>
-                      ${path + '/' + files.files[i]}:
-                      <div
+                    <div style="width: 100%; min-width: 100%;">
+                      ${files.files[i].name}:
+                      <br><div
                         id="upload-progress-bar-${i + 1}"
                         class="progress-bar progress-bar-striped progress-bar-animated"
                         role="progressbar"
-                        style="width: 0%"
+                        style="width: 100%; height: 10px;"
                         aria-valuenow="0"
                         aria-valuemin="0"
                         aria-valuemax="100"
                       ></div>
-                    </div>
+                    </div><br>
                     `;
                     $('#upload-progress-bar-parent').append(progressHtml);
-                    sendFile(files.files[i], path, server_id, (progress) => {
+                    console.log(files.files.length)
+                    sendFile(files.files[i], path, server_id, files.files.length - i - 1, (progress) => {
                       $(`#upload-progress-bar-${i + 1}`).attr('aria-valuenow', progress)
                       $(`#upload-progress-bar-${i + 1}`).css('width', progress + '%')
                     });
@@ -756,7 +759,6 @@
         hideUploadBox();
       });
     }
-
     function hideUploadBox(){
       if (!uploadWaitDialog) return;
       uploadWaitDialog.modal('hide');
