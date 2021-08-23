@@ -525,7 +525,7 @@
       window.location.href = "/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files"
     }
 
-  function sendFile(file, path, server_id, onProgress){
+  function sendFile(file, path, server_id, left, onProgress){
     var xmlHttpRequest = new XMLHttpRequest();
     var token = getCookie("_xsrf")
     var fileName = file.name
@@ -537,6 +537,7 @@
     xmlHttpRequest.setRequestHeader('X-XSRFToken', token);
     xmlHttpRequest.setRequestHeader('X-Content-Disposition', 'attachment; filename="' + fileName + '"');
     xmlHttpRequest.setRequestHeader('X-Path', path);
+    xmlHttpRequest.setRequestHeader('X-Files-Left', left);
     xmlHttpRequest.setRequestHeader('X-FileName', fileName);
     xmlHttpRequest.setRequestHeader('X-ServerId', "{{ data['server_stats']['server_id']['server_id'] }}");
     xmlHttpRequest.upload.addEventListener('progress', (event) =>
@@ -620,7 +621,8 @@
                     </div><br>
                     `;
                     $('#upload-progress-bar-parent').append(progressHtml);
-                    sendFile(files.files[i], path, server_id, (progress) => {
+                    console.log(files.files.length)
+                    sendFile(files.files[i], path, server_id, files.files.length - i - 1, (progress) => {
                       $(`#upload-progress-bar-${i + 1}`).attr('aria-valuenow', progress)
                       $(`#upload-progress-bar-${i + 1}`).css('width', progress + '%')
                     });
@@ -757,7 +759,6 @@
         hideUploadBox();
       });
     }
-
     function hideUploadBox(){
       if (!uploadWaitDialog) return;
       uploadWaitDialog.modal('hide');
