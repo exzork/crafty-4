@@ -419,7 +419,7 @@ class MigrationManager(object):
         """
         migrator = Migrator(self.database)
         for name in self.done:
-            self.up_one(name, migrator)
+            self.up_one(name, migrator, True)
         return migrator
 
     def compile(self, name, migrate='', rollback=''):
@@ -468,7 +468,7 @@ class MigrationManager(object):
 
         migrator = self.migrator
         for mname in diff:
-            done.append(self.up_one(mname, migrator))
+            done.append(self.up_one(mname, self.migrator))
             if name and name == mname:
                 break
 
@@ -490,12 +490,16 @@ class MigrationManager(object):
             return scope.get('migrate', VOID), scope.get('rollback', VOID)
 
     def up_one(self, name: str, migrator: Migrator,
-               rollback: bool = False) -> str:
+               fake: bool = False, rollback: bool = False) -> str:
         """
         Runs a migration with a given name.
         """
         try:
             migrate_fn, rollback_fn = self.read(name)
+            if fake:
+                migrate_fn(migrator, self.database)
+                migrator.clean()
+                return name
             with self.database.transaction():
                 if rollback:
                     logger.info('Rolling back "{}"'.format(name))
@@ -528,5 +532,5 @@ class MigrationManager(object):
         name = self.done[-1]
 
         migrator = self.migrator
-        self.up_one(name, migrator, True)
+        self.up_one(name, migrator, False, True)
         logger.warning('Rolled back migration: {}'.format(name))
