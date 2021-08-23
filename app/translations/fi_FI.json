@@ -38,6 +38,7 @@
         "serverName": "Palvelimen nimi",
         "serverPath": "Palvelimen polku",
         "serverType": "Palvelimen tyypi",
+        "serverVersion": "Palvelimen versio",
         "absoluteServerPath": "Absoluuttinen polku palvelimeesi",
         "serverJar": "Palvelimen Jar -tiedosto",
         "minMem": "Minimi Muisti",

@@ -38,6 +38,7 @@
         "serverName": "Server Name",
         "serverPath": "Server Path",
         "serverType": "Server Type",
+        "serverVersion": "Server Version",
         "absoluteServerPath": "Absolute path to your server",
         "serverJar": "Server Jarfile",
         "minMem": "Minimum Memory",

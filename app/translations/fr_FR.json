@@ -38,6 +38,7 @@
         "serverName": "Non du Serveur",
         "serverPath": "Chemin du Serveur",
         "serverType": "Type du Serveur",
+        "serverVersion": "Version du Serveur",
         "absoluteServerPath": "Chemin absolu de Votre Serveur",
         "serverJar": "Fichier Jar du Serveur",
         "minMem": "Mémoire Minimum",

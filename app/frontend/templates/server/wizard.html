@@ -19,16 +19,21 @@
                 <div class="row">
                   <div class="col-sm-12">
                     <div class="form-group">
-                      <h4 class="card-title" style="margin-bottom:20px;">{{ translate('serverWizard', 'serverType') }}</h4>
-
-                      <select class="form-control form-control-lg select-css" id="server" name="server">
+                      <label for="server_type">{{ translate('serverWizard', 'serverType') }}</label>
+                      <select class="form-control form-control-lg select-css" id="server_type" name="server_type" onchange="serverTypeChange(this)">
                         {% for s in data['server_types'] %}
-                          {% for v in data['server_types'][s] %}
-                            <option value="{{ s }}|{{ v }}">{{ s.capitalize() }} - {{ v }}</option>
-                          {% end %}
+                            <option value="{{ s }}">{{ s.capitalize() }}</option>
                         {% end %}
                       </select>
+                    </div>
+                  </div>
 
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <label for="server_version">{{ translate('serverWizard', 'serverVersion') }}</label>
+                      <select class="form-control form-control-lg select-css" id="server" name="server">
+                            <option value="0">Select a Version</option>
+                      </select>
                     </div>
                   </div>
 
@@ -266,4 +271,57 @@
   }
 
 </script>
+<script type="text/javascript">
+  //<![CDATA[ 
+  // array of possible countries in the same order as they appear in the country selection list 
+  
+  function decodeHtmlCharCodes(str) { 
+    return str.replace("&quot;", "\"");
+  }
+
+  function convertHtmlJsonToJavacriptArray(str) {
+    var result = []
+    str = decodeHtmlCharCodes(str)
+    for(var i in str)
+      result.push([i, str [i]]);
+    return result
+  }
+
+  var text = '{% raw data["js_server_types"] %}';
+  var serverTypesLists = JSON.parse(text);
+  //convertHtmlJsonToJavacriptArray('{{ data["js_server_types"] }}')
+  /* CountryChange() is called from the onchange event of a select element. 
+  * param selectObj - the select object which fired the on change event. 
+  */ 
+  function serverTypeChange(selectObj) { 
+    // get the index of the selected option 
+    var idx = selectObj.selectedIndex; 
+    // get the value of the selected option 
+    var which = selectObj.options[idx].value; 
+    // use the selected option value to retrieve the list of items from the serverTypesLists array 
+    cList = serverTypesLists[which]; 
+    // get the country select element via its known id 
+    var cSelect = document.getElementById("server"); 
+    // remove the current options from the country select 
+    var len=cSelect.options.length; 
+    while (cSelect.options.length > 0) { 
+      cSelect.remove(0); 
+    } 
+    var newOption; 
+    // create new options 
+    for (var i=0; i<cList.length; i++) { 
+      newOption = document.createElement("option"); 
+      newOption.value = which+"|"+cList[i];  // assumes option string and value are the same 
+      newOption.text=cList[i]; 
+      // add the new option 
+      try { 
+        cSelect.add(newOption);  // this will fail in DOM browsers but is needed for IE 
+      } 
+      catch (e) { 
+        cSelect.appendChild(newOption); 
+      } 
+    } 
+  } 
+ //]]>
+ </script>
 {% end %}

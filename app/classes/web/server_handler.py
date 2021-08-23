@@ -62,6 +62,7 @@ class ServerHandler(BaseHandler):
         if page == "step1":
 
             page_data['server_types'] = server_jar_obj.get_serverjar_data_sorted()
+            page_data['js_server_types'] = json.dumps(server_jar_obj.get_serverjar_data_sorted())
             template = "server/wizard.html"
 
         self.render(
