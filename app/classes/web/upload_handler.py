@@ -14,7 +14,7 @@ import time
 logger = logging.getLogger(__name__)
 
 # Class&Function Defination
-MAX_STREAMED_SIZE = 1024 * 1024 * 1024
+MAX_STREAMED_SIZE = 32000
 
 @tornado.web.stream_request_body
 class UploadHandler(tornado.web.RequestHandler):
