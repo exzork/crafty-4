@@ -147,9 +147,18 @@ class Controller:
         
     @staticmethod
     def can_create_server(user_id):
-        permissions_mask = db_helper.get_crafty_permissions_mask(user_id)
-        return crafty_permissions.has_permission(permissions_mask, Enum_Permissions_Crafty.Server_Creation)
+        return db_helper.can_add_in_crafty(user_id, Enum_Permissions_Crafty.Server_Creation)
         
+    @staticmethod
+    def can_add_user(user_id):
+        #TODO: Complete if we need a User Addition limit
+        return True
+
+    @staticmethod
+    def can_add_role(user_id):
+        #TODO: Complete if we need a User Addition limit
+        return True
+
     @staticmethod
     def list_all_crafty_permissions_quantity_limits():
         return db_helper.get_all_permission_quantity_list()

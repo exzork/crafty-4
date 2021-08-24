@@ -69,8 +69,8 @@ class ServerHandler(BaseHandler):
 
         if page == "step1":
 
-            if not self.controller.can_create_server(exec_user_id):
-                self.redirect("/panel/error?error=Unauthorized access: not at server creator")
+            if not exec_user['superuser'] and not self.controller.can_create_server(exec_user_id):
+                self.redirect("/panel/error?error=Unauthorized access: not a server creator or server limit reached")
                 return
 
             page_data['server_types'] = server_jar_obj.get_serverjar_data_sorted()
@@ -204,6 +204,8 @@ class ServerHandler(BaseHandler):
             role_id = db_helper.add_role("Creator of Server with id={}".format(new_server_id))
             db_helper.add_role_server(new_server_id, role_id, "11111111")
             db_helper.add_role_to_user(exec_user_id, role_id)
+            if not exec_user['superuser']:
+                db_helper.add_server_creation(exec_user_id)
 
             self.controller.stats.record_stats()
             self.redirect("/panel/dashboard")

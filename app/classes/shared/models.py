@@ -135,6 +135,9 @@ class User_Crafty(Model):
     limit_server_creation = IntegerField(default=-1)
     limit_user_creation = IntegerField(default=0)
     limit_role_creation = IntegerField(default=0)
+    created_server = IntegerField(default=0)
+    created_user = IntegerField(default=0)
+    created_role = IntegerField(default=0)
 
     class Meta:
         table_name = 'user_crafty'
@@ -468,7 +471,38 @@ class db_shortcuts:
             Enum_Permissions_Crafty.Roles_Config.name: user_crafty.limit_role_creation,            
         }
         return quantity_list
+        
+    @staticmethod
+    def get_created_quantity_list(user_id):
+        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+        quantity_list = {
+            Enum_Permissions_Crafty.Server_Creation.name: user_crafty.created_server,
+            Enum_Permissions_Crafty.User_Config.name: user_crafty.created_user,
+            Enum_Permissions_Crafty.Roles_Config.name: user_crafty.created_role,            
+        }
+        return quantity_list
+        
+    @staticmethod
+    def get_crafty_limit_value(user_id, permission):
+        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+        quantity_list = get_permission_quantity_list(user_id)
+        return quantity_list[permission]
+            
+    @staticmethod
+    def can_add_in_crafty(user_id, permission):
+        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+        can = crafty_permissions.has_permission(user_crafty.permissions, permission)
+        limit_list = db_helper.get_permission_quantity_list(user_id)
+        quantity_list = db_helper.get_created_quantity_list(user_id)
+        return can and quantity_list[permission.name] < limit_list[permission.name]
 
+    @staticmethod
+    def add_server_creation(user_id):        
+        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+        user_crafty.created_server += 1
+        User_Crafty.save(user_crafty)
+        return user_crafty.created_server
+        
     @staticmethod
     def get_latest_hosts_stats():
         query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()
