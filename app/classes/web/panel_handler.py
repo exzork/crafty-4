@@ -752,6 +752,9 @@ class PanelHandler(BaseHandler):
                 if q_argument:
                     server_quantity[permission.name] = q_argument
 
+                else:
+                    server_quantity[permission.name] = 0
+
             user_id = db_helper.add_user(username, password=password0, enabled=enabled)
             user_data = {
                 "roles": roles,
