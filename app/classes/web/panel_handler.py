@@ -678,6 +678,9 @@ class PanelHandler(BaseHandler):
                 if q_argument:
                     server_quantity[permission.name] = q_argument
 
+                else:
+                    server_quantity[permission.name] = 0
+
             user_data = {
                 "username": username,
                 "password": password0,
