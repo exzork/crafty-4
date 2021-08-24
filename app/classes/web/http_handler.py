@@ -23,63 +23,35 @@ except ModuleNotFoundError as e:
 
 class HTTPHandler(BaseHandler):
     def get(self):
-        url = str(self.request.full_url())
+        url = str(self.request.host)
         port = 443
-        db_port = helper.get_setting('https_port')
-        if url[len(url)-1] == '/':
-            url = url.strip(url[len(url)-1])
-
-        url_list = url.split('/')
-        new_url_list = url_list[2].split(':')
-
-        if new_url_list[0] != "":
-            url = 'https://' + new_url_list[0]
-        else:
-            url = 'https://' + url_list[2]
-
+        url_list = url.split(":")
         if url_list[0] != "":
-            primary_url = url + ":"+str(port)+"/"
-            backup_url = url + ":" +str(db_port) +"/"
+            url = 'https://' + url_list[0]
         else:
-            primary_url = url +":" +str(port)
-            backup_url = url + ":"+str(db_port)
-        
+            url = 'https://' + url
+        db_port = helper.get_setting('https_port')
         try:
-            resp = requests.get(primary_url)
+            resp = requests.get(url + ":" + str(port))
             resp.raise_for_status()
-            url = primary_url
         except Exception as err:
-            url = backup_url
-        self.redirect(url)
+            port = db_port
+        self.redirect(url+":"+str(port))
 
 
 class HTTPHandlerPage(BaseHandler):
     def get(self, page):
-        url = str(self.request.full_url())
+        url = str(self.request.host)
         port = 443
-        db_port = helper.get_setting('https_port')
-        if url[len(url)-1] == '/':
-            url = url.strip(url[len(url)-1])
-
-        url_list = url.split('/')
-        new_url_list = url_list[2].split(':')
-
-        if new_url_list[0] != "":
-            url = 'https://' + new_url_list[0]
-        else:
-            url = 'https://' + url_list[2]
-
+        url_list = url.split(":")
         if url_list[0] != "":
-            primary_url = url + ":"+str(port)+"/"
-            backup_url = url + ":" +str(db_port) +"/"
+            url = 'https://' + url_list[0]
         else:
-            primary_url = url +":" +str(port)
-            backup_url = url + ":"+str(db_port)
-        
+            url = 'https://' + url
+        db_port = helper.get_setting('https_port')
         try:
-            resp = requests.get(primary_url)
+            resp = requests.get(url + ":" + str(port))
             resp.raise_for_status()
-            url = primary_url
         except Exception as err:
-            url = backup_url
-        self.redirect(url)
+            port = db_port
+        self.redirect(url+":"+str(port))
