@@ -173,7 +173,14 @@
         "noDelete": "Non",
         "unsupportedLanguage": "Attention : Ce n'est pas un type de fichier supporté",
         "keybindings": "Raccourcis Clavier",
-        "fileReadError": "Erreur de Lecture du Fichier"
+        "fileReadError": "Erreur de Lecture du Fichier",
+        "upload": "Télécharger",
+        "unzip": "Décompressez",
+        "clickUpload": "Cliquez ici pour sélectionner vos fichiers",
+        "uploadTitle": "Télécharger des fichiers vers : ",
+        "waitUpload": "Veuillez patienter pendant que nous téléchargeons vos fichiers... Cela peut prendre un certain temps.",
+        "stayHere": "NE FERMEZ PAS CETTE PAGE!",
+        "close": "Proche"
     },
     "serverConfig": {
         "serverName": "Nom du Serveur",

@@ -173,7 +173,14 @@
         "noDelete": "No",
         "unsupportedLanguage": "Warning: This is not a supported file type",
         "keybindings": "Keybindings",
-        "fileReadError": "File read error"
+        "fileReadError": "File read error",
+        "upload": "Upload",
+        "unzip": "Unzip",
+        "clickUpload": "Click here to select your files",
+        "uploadTitle": "Upload Files to: ",
+        "waitUpload": "Please wait while we upload your files... This may take a while.",
+        "stayHere": "DO NOT LEAVE THIS PAGE!",
+        "close": "Close"
     },
     "serverConfig": {
         "serverName": "Server Name",

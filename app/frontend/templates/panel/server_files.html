@@ -50,9 +50,9 @@
                     <a onclick="renameItemE(event)" href="javascript:void(0)" id="renameItem" href="#">{{ translate('serverFiles', 'rename') }}</a>
                     <a onclick="deleteFileE(event)" href="javascript:void(0)" id="deleteFile" href="#">{{ translate('serverFiles', 'delete') }}</a>
                     <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#">{{ translate('serverFiles', 'delete') }}</a>
-                    <a onclick="uploadFilesE(event)" href="javascript:void(0)" id="upload" href="#">Upload Files</a>
-                    <a onclick="unzipFilesE(event)" href="javascript:void(0)" id="unzip" href="#">Unzip</a>
-                    <a href="javascript:void(0)" class="closebtn" style="color: red;" onclick="document.getElementById('files-tree-nav').style.display = 'none';">Close</a>
+                    <a onclick="uploadFilesE(event)" href="javascript:void(0)" id="upload" href="#">{{ translate('serverFiles', 'upload') }}</a>
+                    <a onclick="unzipFilesE(event)" href="javascript:void(0)" id="unzip" href="#">{{ translate('serverFiles', 'unzip') }}</a>
+                    <a href="javascript:void(0)" class="closebtn" style="color: red;" onclick="document.getElementById('files-tree-nav').style.display = 'none';">{{ translate('serverFiles', 'close') }}</a>
                   </div>
 
                 </div>
@@ -571,25 +571,25 @@
             "<input id='files' name='files' type='file' style='display:none;' multiple='true'>" +
             "<i class='fa fa-cloud-upload fa-3x'></i>" +
             "<br />" +
-            "Click Here To Select Files" +
+            "{{translate('serverFiles', 'clickUpload')}}" +
         "</label></form>" +
         "<br />" +
         "<ul style='margin-left:5px !important;' id='fileList'></ul>" +
     "</div><div class='clearfix'></div>";
     bootbox.dialog({
         message: uploadHtml,
-        title: "Upload Files to : "+path,
+        title: "{{ translate('serverFiles', 'uploadTitle')}}"+path,
         buttons: {
             success: {
-                label: "Upload",
+                label: "{{ translate('serverFiles', 'upload') }}",
                 className: "btn-default",
                 callback: async function () {
                   var height = files.files.length*50;
 
                   var waitMessage = '<p class="text-center mb-0">'+
                     '<i class="fa fa-spin fa-cog"></i>'+
-                    'Please wait while we upload your files... This may take a while.<br>'+
-                    '<strong>DO NOT CLOSE THIS PAGE.</strong>'+
+                    "{{ translate('serverFiles', 'waitUpload') }}"+'<br>'+
+                    '<strong>'+"{{ translate('serverFiles', 'stayHere') }}"+'</strong>'+
                   '</p>'+
                   '<div class="progress" id="upload-progress-bar-parent" style="height:'+height +'px; width:100%; display: block;">'+
                   '</div>'

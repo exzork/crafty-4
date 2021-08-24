@@ -172,7 +172,14 @@
         "noDelete": "En",
         "unsupportedLanguage": "Varoitus: Tätä tiedostotyyppiä ei tueta",
         "keybindings": "Pikanäppäimet",
-        "fileReadError": "Tiedoston lukuvirhe"
+        "fileReadError": "Tiedoston lukuvirhe",
+        "upload": "Lataa",
+        "unzip": "Pura",
+        "clickUpload": "Valitse tiedostosi napsauttamalla tätä",
+        "uploadTitle": "Lähetä tiedostot: ",
+        "waitUpload": "Odota, kunnes lataamme tiedostosi ... Tämä voi kestää hetken.",
+        "stayHere": "ÄLÄ JÄTÄ SIVUTA!",
+        "close": "Kiinni"
     },
     "serverConfig": {
         "serverName": "Palvelimen nimi",
