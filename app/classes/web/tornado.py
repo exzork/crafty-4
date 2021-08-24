@@ -28,6 +28,7 @@ try:
     from app.classes.web.static_handler import CustomStaticHandler
     from app.classes.shared.translation import translation
     from app.classes.web.upload_handler import UploadHandler
+    from app.classes.web.http_handler import HTTPHandler, HTTPHandlerPage
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e, e.name))
@@ -147,8 +148,30 @@ class Webserver:
             static_handler_class=CustomStaticHandler,
             serve_traceback=debug_errors,
         )
+        HTTPhanders = [(r'/', HTTPHandler, handler_args),
+            (r'/public/(.*)', HTTPHandlerPage, handler_args),
+            (r'/panel/(.*)', HTTPHandlerPage, handler_args),
+            (r'/server/(.*)', HTTPHandlerPage, handler_args),
+            (r'/ajax/(.*)', HTTPHandlerPage, handler_args),
+            (r'/api/stats/servers', HTTPHandlerPage, handler_args),
+            (r'/api/stats/node', HTTPHandlerPage, handler_args),
+            (r'/ws', HTTPHandlerPage, handler_args),
+            (r'/upload', HTTPHandlerPage, handler_args)]
+        HTTPapp = tornado.web.Application(
+            HTTPhanders,
+            template_path=os.path.join(helper.webroot, 'templates'),
+            static_path=os.path.join(helper.webroot, 'static'),
+            debug=debug_errors,
+            cookie_secret=cookie_secret,
+            xsrf_cookies=True,
+            autoreload=False,
+            log_function=self.log_function,
+            default_handler_class = HTTPHandler,
+            login_url="/login",
+            serve_traceback=debug_errors,
+        )
 
-        self.HTTP_Server = tornado.httpserver.HTTPServer(app)
+        self.HTTP_Server = tornado.httpserver.HTTPServer(HTTPapp)
         self.HTTP_Server.listen(http_port)
 
         self.HTTPS_Server = tornado.httpserver.HTTPServer(app, ssl_options=cert_objects)
