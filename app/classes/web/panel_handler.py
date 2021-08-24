@@ -12,7 +12,7 @@ from tornado import iostream
 from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.models import db_helper, server_permissions, Servers, Enum_Permissions_Server
+from app.classes.shared.models import db_helper, server_permissions, Servers, Enum_Permissions_Server, crafty_permissions, Enum_Permissions_Crafty
 from app.classes.shared.helpers import helper
 
 logger = logging.getLogger(__name__)
@@ -37,12 +37,14 @@ class PanelHandler(BaseHandler):
         if exec_user['superuser'] == 1:
             defined_servers = self.controller.list_defined_servers()
             exec_user_role.add("Super User")
+            exec_user_crafty_permissions = self.controller.list_defined_crafty_permissions()
         else:
+            exec_user_crafty_permissions = self.controller.get_crafty_permissions(exec_user_id)
             logger.debug(exec_user['roles'])
             for r in exec_user['roles']:
                 role = db_helper.get_role(r)
                 exec_user_role.add(role['role_name'])
-            defined_servers = db_helper.get_authorized_servers(exec_user_id)
+            defined_servers = self.controller.list_authorized_servers(exec_user_id)
 
         page_data = {
             # todo: make this actually pull and compare version data
@@ -50,6 +52,12 @@ class PanelHandler(BaseHandler):
             'version_data': helper.get_version_string(),
             'user_data': exec_user_data,
             'user_role' : exec_user_role,
+            'user_crafty_permissions' : exec_user_crafty_permissions,
+            'crafty_permissions': {
+                'Server_Creation': Enum_Permissions_Crafty.Server_Creation,
+                'User_Config': Enum_Permissions_Crafty.User_Config,
+                'Roles_Config': Enum_Permissions_Crafty.Roles_Config,
+            },
             'server_stats': {
                 'total': len(defined_servers),
                 'running': len(self.controller.list_running_servers()),
@@ -64,9 +72,13 @@ class PanelHandler(BaseHandler):
 
         # if no servers defined, let's go to the build server area
         if page_data['server_stats']['total'] == 0 and page != "error" and page != "credits" and page != "contribute":
-            self.set_status(301)
-            self.redirect("/server/step1")
-            return
+            
+            if Enum_Permissions_Crafty.Server_Creation not in exec_user_crafty_permissions and len(defined_servers) == 0:                
+                logger.warning("User '" + exec_user['username'] + "#" + str(exec_user_id) + "' has access to 0 servers and is not a server creator")       
+            else:
+                self.set_status(301)
+                self.redirect("/server/step1")
+                return
 
         if page == 'unauthorized':
             template = "panel/denied.html"
@@ -325,15 +337,18 @@ class PanelHandler(BaseHandler):
             page_data['user']['last_update'] = "N/A"
             page_data['user']['roles'] = set()
 
-            if not exec_user['superuser']:
-                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+            if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
+                self.redirect("/panel/error?error=Unauthorized access: not a user editor")
                 return
 
             page_data['roles_all'] = db_helper.get_all_roles()
             page_data['servers'] = []
             page_data['servers_all'] = self.controller.list_defined_servers()
-            page_data['permissions_all'] = self.controller.list_defined_permissions()
             page_data['role-servers'] = []
+            page_data['permissions_all'] = self.controller.list_defined_crafty_permissions()
+            page_data['permissions_list'] = set()
+            page_data['quantity_server'] = self.controller.list_all_crafty_permissions_quantity_limits()
+
             template = "panel/panel_edit_user.html"
 
         elif page == "edit_user":
@@ -349,12 +364,18 @@ class PanelHandler(BaseHandler):
             page_data['role-servers'] = page_role_servers
             page_data['roles_all'] = db_helper.get_all_roles()
             page_data['servers_all'] = self.controller.list_defined_servers()
-            page_data['permissions_all'] = self.controller.list_defined_permissions()
+            page_data['permissions_all'] = self.controller.list_defined_crafty_permissions()
+            page_data['permissions_list'] = self.controller.get_crafty_permissions(user_id)
+            page_data['quantity_server'] = self.controller.list_crafty_permissions_quantity_limits(user_id)
 
             if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
-            elif not exec_user['superuser']:
+            elif Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
+                if user_id != exec_user_id:
+                    self.redirect("/panel/error?error=Unauthorized access: not a user editor")
+                    return
+
                 page_data['servers'] = []
                 page_data['role-servers'] = []
                 page_data['roles_all'] = []
@@ -408,8 +429,8 @@ class PanelHandler(BaseHandler):
             page_data['user-roles'] = user_roles
             page_data['users'] = db_helper.get_all_users()
 
-            if not exec_user['superuser']:
-                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+            if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
+                self.redirect("/panel/error?error=Unauthorized access: not a role editor")
                 return
 
             page_data['servers_all'] = self.controller.list_defined_servers()
@@ -435,8 +456,8 @@ class PanelHandler(BaseHandler):
             page_data['user-roles'] = user_roles
             page_data['users'] = db_helper.get_all_users()
 
-            if not exec_user['superuser']:
-                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+            if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
+                self.redirect("/panel/error?error=Unauthorized access: not a role editor")
                 return
             elif role_id is None:
                 self.redirect("/panel/error?error=Invalid Role ID")
@@ -491,7 +512,9 @@ class PanelHandler(BaseHandler):
         if exec_user['superuser'] == 1:
             defined_servers = self.controller.list_defined_servers()
             exec_user_role.add("Super User")
+            exec_user_crafty_permissions = self.controller.list_defined_crafty_permissions()
         else:
+            exec_user_crafty_permissions = self.controller.get_crafty_permissions(exec_user_id)
             defined_servers = self.controller.list_authorized_servers(exec_user_id)
             for r in exec_user['roles']:
                 role = db_helper.get_role(r)
@@ -592,7 +615,11 @@ class PanelHandler(BaseHandler):
             enabled = int(float(self.get_argument('enabled', '0')))
             regen_api = int(float(self.get_argument('regen_api', '0')))
 
-            if not exec_user['superuser']:
+            if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
+                if user_id != exec_user_id:
+                    self.redirect("/panel/error?error=Unauthorized access: not a user editor")
+                    return
+
                 user_data = {
                     "username": username,
                     "password": password0,
@@ -632,15 +659,24 @@ class PanelHandler(BaseHandler):
                 if argument:
                     roles.add(role.role_id)
 
-            servers = set()
-            for server in self.controller.list_defined_servers():
+            permissions_mask = "00000000"
+            server_quantity = {}
+            for permission in self.controller.list_defined_crafty_permissions():
                 argument = int(float(
                     bleach.clean(
-                        self.get_argument('server_{}_access'.format(server['server_id']), '0')
+                        self.get_argument('permission_{}'.format(permission.name), '0')
                     )
                 ))
                 if argument:
-                    servers.add(server['server_id'])
+                    permissions_mask = crafty_permissions.set_permission(permissions_mask, permission, argument)
+
+                q_argument = int(float(
+                    bleach.clean(
+                        self.get_argument('quantity_{}'.format(permission.name), '0')
+                    )
+                ))
+                if q_argument:
+                    server_quantity[permission.name] = q_argument
 
             user_data = {
                 "username": username,
@@ -649,10 +685,14 @@ class PanelHandler(BaseHandler):
                 "regen_api": regen_api,
                 "roles": roles,
             }
-            db_helper.update_user(user_id, user_data=user_data)
+            user_crafty_data = {
+                "permissions_mask": permissions_mask,
+                "server_quantity": server_quantity
+            }
+            db_helper.update_user(user_id, user_data=user_data, user_crafty_data=user_crafty_data)
 
             db_helper.add_to_audit_log(exec_user['user_id'],
-                                       "Edited user {} (UID:{}) with roles {} and servers {}".format(username, user_id, roles, servers),
+                                       "Edited user {} (UID:{}) with roles {} and permissions {}".format(username, user_id, roles, permissions_mask),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
@@ -664,8 +704,8 @@ class PanelHandler(BaseHandler):
             password1 = bleach.clean(self.get_argument('password1', None))
             enabled = int(float(self.get_argument('enabled', '0')))
 
-            if not exec_user['superuser']:
-                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+            if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
+                self.redirect("/panel/error?error=Unauthorized access: not a user editor")
                 return
             elif username is None or username == "":
                 self.redirect("/panel/error?error=Invalid username")
@@ -689,22 +729,35 @@ class PanelHandler(BaseHandler):
                 ))
                 if argument:
                     roles.add(role.role_id)
-
-            servers = set()
-            for server in self.controller.list_defined_servers():
+ 
+            permissions_mask = "00000000"
+            server_quantity = {}
+            for permission in self.controller.list_defined_crafty_permissions():
                 argument = int(float(
                     bleach.clean(
-                        self.get_argument('server_{}_access'.format(server['server_id']), '0')
+                        self.get_argument('permission_{}'.format(permission.name), '0')
                     )
                 ))
                 if argument:
-                    servers.add(server['server_id'])
+                    permissions_mask = crafty_permissions.set_permission(permissions_mask, permission, argument)
+                    
+                q_argument = int(float(
+                    bleach.clean(
+                        self.get_argument('quantity_{}'.format(permission.name), '0')
+                    )
+                ))
+                if q_argument:
+                    server_quantity[permission.name] = q_argument
 
             user_id = db_helper.add_user(username, password=password0, enabled=enabled)
             user_data = {
                 "roles": roles,
             }
-            db_helper.update_user(user_id, user_data)
+            user_crafty_data = {
+                "permissions_mask": permissions_mask,
+                "server_quantity": server_quantity
+            }
+            db_helper.update_user(user_id, user_data=user_data, user_crafty_data=user_crafty_data)
 
             db_helper.add_to_audit_log(exec_user['user_id'],
                                        "Added user {} (UID:{})".format(username, user_id),
@@ -720,8 +773,8 @@ class PanelHandler(BaseHandler):
             role_id = bleach.clean(self.get_argument('id', None))
             role_name = bleach.clean(self.get_argument('role_name', None))
 
-            if not exec_user['superuser']:
-                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+            if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
+                self.redirect("/panel/error?error=Unauthorized access: not a role editor")
                 return
             elif role_name is None or role_name == "":
                 self.redirect("/panel/error?error=Invalid username")
@@ -771,8 +824,8 @@ class PanelHandler(BaseHandler):
         elif page == "add_role":
             role_name = bleach.clean(self.get_argument('role_name', None))
 
-            if not exec_user['superuser']:
-                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+            if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
+                self.redirect("/panel/error?error=Unauthorized access: not a role editor")
                 return
             elif role_name is None or role_name == "":
                 self.redirect("/panel/error?error=Invalid role name")

@@ -133,6 +133,8 @@ class User_Crafty(Model):
     user_id = ForeignKeyField(Users, backref='users_crafty')
     permissions = CharField(default="00000000")
     limit_server_creation = IntegerField(default=-1)
+    limit_user_creation = IntegerField(default=0)
+    limit_role_creation = IntegerField(default=0)
 
     class Meta:
         table_name = 'user_crafty'
@@ -432,6 +434,40 @@ class db_shortcuts:
         if authorized.count() == 0:
             return False
         return True
+        
+    @staticmethod
+    def get_crafty_permissions_mask(user_id):
+        permissions_mask = ''
+        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+        permissions_mask = user_crafty.permissions
+        return permissions_mask
+
+    @staticmethod
+    def get_crafty_permissions_list(user_id):
+        permissions_mask = ''
+        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+        permissions_mask = user_crafty.permissions
+        permissions_list = crafty_permissions.get_permissions(permissions_mask)
+        return permissions_list
+        
+    @staticmethod
+    def get_all_permission_quantity_list():
+        quantity_list = {
+            Enum_Permissions_Crafty.Server_Creation.name: -1,
+            Enum_Permissions_Crafty.User_Config.name: -1,
+            Enum_Permissions_Crafty.Roles_Config.name: -1,            
+        }
+        return quantity_list
+
+    @staticmethod
+    def get_permission_quantity_list(user_id):
+        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+        quantity_list = {
+            Enum_Permissions_Crafty.Server_Creation.name: user_crafty.limit_server_creation,
+            Enum_Permissions_Crafty.User_Config.name: user_crafty.limit_user_creation,
+            Enum_Permissions_Crafty.Roles_Config.name: user_crafty.limit_role_creation,            
+        }
+        return quantity_list
 
     @staticmethod
     def get_latest_hosts_stats():
@@ -555,7 +591,7 @@ class db_shortcuts:
             return {}
 
     @staticmethod
-    def update_user(user_id, user_data={}):
+    def update_user(user_id, user_data={}, user_crafty_data={}):
         base_data = db_helper.get_user(user_id)
         up_data = {}
         added_roles = set()
@@ -581,6 +617,31 @@ class db_shortcuts:
             for role in added_roles:
                 User_Roles.get_or_create(user_id=user_id, role_id=role)
                 # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
+
+            for key in user_crafty_data:
+                if key == "permissions_mask":
+                    permissions_mask = user_crafty_data['permissions_mask']
+                if key == "server_quantity":
+                    limit_server_creation = user_crafty_data['server_quantity'][Enum_Permissions_Crafty.Server_Creation.name]
+                    limit_user_creation = user_crafty_data['server_quantity'][Enum_Permissions_Crafty.User_Config.name]
+                    limit_role_creation = user_crafty_data['server_quantity'][Enum_Permissions_Crafty.Roles_Config.name]
+
+            try:
+                user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+                user_crafty.permissions = permissions_mask
+                user_crafty.limit_server_creation = limit_server_creation
+                user_crafty.limit_user_creation = limit_user_creation
+                user_crafty.limit_role_creation = limit_role_creation
+                User_Crafty.save(user_crafty)
+            except:
+                User_Crafty.insert({
+                    User_Crafty.user_id: user_id,
+                    User_Crafty.permissions: permissions_mask,
+                    User_Crafty.limit_server_creation: limit_server_creation,
+                    User_Crafty.limit_user_creation: limit_user_creation,
+                    User_Crafty.limit_role_creation: limit_role_creation
+                }).execute()
+
             User_Roles.delete().where(User_Roles.user_id == user_id).where(User_Roles.role_id.in_(removed_roles)).execute()
 
             if up_data:

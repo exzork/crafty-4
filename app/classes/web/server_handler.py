@@ -6,7 +6,7 @@ import shutil
 
 from app.classes.shared.console import console
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.models import db_helper
+from app.classes.shared.models import db_helper, Enum_Permissions_Crafty
 from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.shared.helpers import helper
 
@@ -37,7 +37,9 @@ class ServerHandler(BaseHandler):
         if exec_user['superuser'] == 1:
             defined_servers = self.controller.list_defined_servers()
             exec_user_role.add("Super User")
+            exec_user_crafty_permissions = self.controller.list_defined_crafty_permissions()
         else:
+            exec_user_crafty_permissions = self.controller.get_crafty_permissions(exec_user_id)
             defined_servers = self.controller.list_authorized_servers(exec_user_id)
             for r in exec_user['roles']:
                 role = db_helper.get_role(r)
@@ -49,6 +51,12 @@ class ServerHandler(BaseHandler):
             'version_data': helper.get_version_string(),
             'user_data': exec_user_data,
             'user_role' : exec_user_role,
+            'user_crafty_permissions' : exec_user_crafty_permissions,
+            'crafty_permissions': {
+                'Server_Creation': Enum_Permissions_Crafty.Server_Creation,
+                'User_Config': Enum_Permissions_Crafty.User_Config,
+                'Roles_Config': Enum_Permissions_Crafty.Roles_Config,
+            },
             'server_stats': {
                 'total': len(self.controller.list_defined_servers()),
                 'running': len(self.controller.list_running_servers()),
@@ -60,6 +68,10 @@ class ServerHandler(BaseHandler):
         }
 
         if page == "step1":
+
+            if not self.controller.can_create_server(exec_user_id):
+                self.redirect("/panel/error?error=Unauthorized access: not at server creator")
+                return
 
             page_data['server_types'] = server_jar_obj.get_serverjar_data_sorted()
             page_data['js_server_types'] = json.dumps(server_jar_obj.get_serverjar_data_sorted())

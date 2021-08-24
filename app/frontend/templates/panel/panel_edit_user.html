@@ -121,6 +121,42 @@
                       </div>
 
                       <!-- Put Permissions Crafty part here -->  
+                      
+                      <div class="card">
+                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                          <h4 class="card-title"><i class="fas fa-user-lock"></i> Crafty Permissions <small class="text-muted ml-1"> - permissions this user has on Crafty Controller </small></h4>
+                        </div>
+                        <div class="card-body">                          
+                          <div class="form-group">
+                            <div class="table-responsive">
+                              <table class="table table-hover">
+                                <thead>
+                                  <tr class="rounded">
+                                    <th>Permission Name</th>
+                                    <th>Authorized ?</th>
+                                    <th>Quantity</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                {% for permission in data['permissions_all'] %}
+                                  <tr>
+                                    <td>{{ permission.name }}</td>
+                                    <td>
+                                      {% if permission in data['permissions_list'] %}
+                                        <input type="checkbox" class="" id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" checked="" value="1">
+                                      {% else %}
+                                        <input type="checkbox" class="" id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" value="1">
+                                      {% end %}
+                                    </td>
+                                    <td><input type="text" class="form-control" name="quantity_{{ permission.name }}" id="quantity_{{ permission.name }}" value="{{ data['quantity_server'][permission.name] }}"></td>
+                                  </tr>
+                                {% end %}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
 
                       <div class="form-check-flat">
                         <label for="enabled" class="form-check-label ml-4 mb-4">

@@ -12,7 +12,7 @@ from distutils import dir_util
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 
-from app.classes.shared.models import db_helper, server_permissions
+from app.classes.shared.models import db_helper, server_permissions, Enum_Permissions_Server, crafty_permissions, Enum_Permissions_Crafty
 
 from app.classes.shared.server import Server
 from app.classes.minecraft.server_props import ServerProps
@@ -116,6 +116,11 @@ class Controller:
         return permissions_list
         
     @staticmethod
+    def list_defined_crafty_permissions():
+        permissions_list = crafty_permissions.get_permissions_list()
+        return permissions_list
+        
+    @staticmethod
     def get_mask_permissions(role_id, server_id):
         permissions_mask = db_helper.get_permissions_mask(role_id, server_id)
         return permissions_mask
@@ -128,18 +133,44 @@ class Controller:
     @staticmethod
     def get_server_permissions_foruser(user_id, server_id):
         permissions_list = db_helper.get_user_permissions_list(user_id, server_id)
+        return permissions_list        
+
+    @staticmethod
+    def get_mask_crafty_permissions(user_id):
+        permissions_mask = db_helper.get_crafty_permissions_mask(user_id)
+        return permissions_mask
+        
+    @staticmethod
+    def get_crafty_permissions(user_id):
+        permissions_list = db_helper.get_crafty_permissions_list(user_id)
         return permissions_list
         
     @staticmethod
+    def can_create_server(user_id):
+        permissions_mask = db_helper.get_crafty_permissions_mask(user_id)
+        return crafty_permissions.has_permission(permissions_mask, Enum_Permissions_Crafty.Server_Creation)
+        
+    @staticmethod
+    def list_all_crafty_permissions_quantity_limits():
+        return db_helper.get_all_permission_quantity_list()
+
+    @staticmethod
+    def list_crafty_permissions_quantity_limits(user_id):
+        return db_helper.get_permission_quantity_list(user_id)
+        
+    @staticmethod
+    def get_crafty_permissions(user_id):
+        permissions_list = db_helper.get_crafty_permissions_list(user_id)
+        return permissions_list
+        
+    @staticmethod
+    def get_crafty_permissions(user_id):
+        permissions_list = db_helper.get_crafty_permissions_list(user_id)
+        return permissions_list
+
+    @staticmethod
     def list_authorized_servers(userId):
-        servers = db_helper.get_authorized_servers(userId)
-        server_list = []
-        for item in servers:
-            server_list.append(item)
-        role_servers = db_helper.get_authorized_servers(userId)
-        for item in role_servers:
-            server_list.append(item)
-        logger.debug("servers list = {}".format(servers))
+        server_list = db_helper.get_authorized_servers(userId)
         return server_list
 
     def get_server_data(self, server_id):
