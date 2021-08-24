@@ -91,7 +91,7 @@
     },
     "accessDenied": {
         "accessDenied": "Accès Interdit",
-        "noAccess": "Vous n'avez pas accès à cette ressource",
+        "noAccess": "Tu n'as pas accès à cette ressource",
         "contactAdmin": "Contacte ton administrateur du serveur pour avoir accès à cette ressource, ou si tu penses que tu devrais avoir accès à cette ressource, contactes le support.",
         "contact": "Contacter le Support de Crafty Control via Discord"
     },
@@ -174,13 +174,13 @@
         "unsupportedLanguage": "Attention : Ce n'est pas un type de fichier supporté",
         "keybindings": "Raccourcis Clavier",
         "fileReadError": "Erreur de Lecture du Fichier",
-        "upload": "Télécharger",
-        "unzip": "Décompressez",
-        "clickUpload": "Cliquez ici pour sélectionner vos fichiers",
-        "uploadTitle": "Télécharger des fichiers vers : ",
-        "waitUpload": "Veuillez patienter pendant que nous téléchargeons vos fichiers... Cela peut prendre un certain temps.",
-        "stayHere": "NE FERMEZ PAS CETTE PAGE!",
-        "close": "Proche"
+        "upload": "Téléverser",
+        "unzip": "Décompresser",
+        "clickUpload": "Cliquez ici pour sélectionner tes fichiers",
+        "uploadTitle": "Téléverser les fichiers vers : ",
+        "waitUpload": "Merci de patienter pendant que nous téléversons tes fichiers... Cela peut prendre un certain temps.",
+        "stayHere": "NE FERME PAS CETTE PAGE!",
+        "close": "Presque"
     },
     "serverConfig": {
         "serverName": "Nom du Serveur",
