@@ -180,7 +180,8 @@
         "uploadTitle": "Upload Files to: ",
         "waitUpload": "Please wait while we upload your files... This may take a while.",
         "stayHere": "DO NOT LEAVE THIS PAGE!",
-        "close": "Close"
+        "close": "Close",
+        "download": "Download"
     },
     "serverConfig": {
         "serverName": "Server Name",
