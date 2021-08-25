@@ -50,10 +50,10 @@
                     <a onclick="renameItemE(event)" href="javascript:void(0)" id="renameItem" href="#">{{ translate('serverFiles', 'rename') }}</a>
                     <a onclick="uploadFilesE(event)" href="javascript:void(0)" id="upload" href="#">{{ translate('serverFiles', 'upload') }}</a>
                     <a onclick="unzipFilesE(event)" href="javascript:void(0)" id="unzip" href="#">{{ translate('serverFiles', 'unzip') }}</a>
-                    <a onclick="deleteFileE(event)" href="javascript:void(0)" id="deleteFile" href="#">{{ translate('serverFiles', 'delete') }}</a>
-                    <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#">{{ translate('serverFiles', 'delete') }}</a>
                     <a onclick="downloadFileE(event)" href="javascript:void(0)" id="downloadFile" href="#">{{ translate('serverFiles', 'download') }}</a>
-                    <a href="javascript:void(0)" class="closebtn" style="color: red;" onclick="document.getElementById('files-tree-nav').style.display = 'none';">{{ translate('serverFiles', 'close') }}</a>
+                    <a onclick="deleteFileE(event)" href="javascript:void(0)" id="deleteFile" href="#" style="color: red">{{ translate('serverFiles', 'delete') }}</a>
+                    <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#" style="color: red">{{ translate('serverFiles', 'delete') }}</a>
+                    <a href="javascript:void(0)" class="closebtn" style="color: #8862e0;" onclick="document.getElementById('files-tree-nav').style.display = 'none';">{{ translate('serverFiles', 'close') }}</a>
                   </div>
 
                 </div>
