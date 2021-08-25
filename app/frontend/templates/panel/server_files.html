@@ -800,16 +800,19 @@
     }
 
     function renameItemE(event) {
-      bootbox.prompt("{% raw translate('serverFiles', 'renameItemQuestion') %}", function(result) {
-        path = event.target.parentElement.getAttribute('data-path');
-        name = event.target.parentElement.getAttribute('data-name');
-        if (!result) return;
-
-        renameItem(path, result, function () {
-          getTreeView()
-          document.getElementById('files-tree-nav').style.display = 'none';
-        });
-      })
+      path = event.target.parentElement.getAttribute('data-path');
+      name = event.target.parentElement.getAttribute('data-name');
+      bootbox.prompt({
+          title: "{% raw translate('serverFiles', 'renameItemQuestion') %}",
+          value: name,
+          callback: function(result) {
+            if (!result) return;
+            renameItem(path, result, function () {
+              getTreeView()
+              document.getElementById('files-tree-nav').style.display = 'none';
+            });
+          }
+      });
     }
         function unzipFilesE(event) {
         path = event.target.parentElement.getAttribute('data-path');
