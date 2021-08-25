@@ -48,10 +48,11 @@
                     <a onclick="createFileE(event)" href="javascript:void(0)" id="createFile" href="#">{{ translate('serverFiles', 'createFile') }}</a>
                     <a onclick="createDirE(event)" href="javascript:void(0)" id="createDir" href="#">{{ translate('serverFiles', 'createDir') }}</a>
                     <a onclick="renameItemE(event)" href="javascript:void(0)" id="renameItem" href="#">{{ translate('serverFiles', 'rename') }}</a>
-                    <a onclick="deleteFileE(event)" href="javascript:void(0)" id="deleteFile" href="#">{{ translate('serverFiles', 'delete') }}</a>
-                    <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#">{{ translate('serverFiles', 'delete') }}</a>
                     <a onclick="uploadFilesE(event)" href="javascript:void(0)" id="upload" href="#">{{ translate('serverFiles', 'upload') }}</a>
                     <a onclick="unzipFilesE(event)" href="javascript:void(0)" id="unzip" href="#">{{ translate('serverFiles', 'unzip') }}</a>
+                    <a onclick="deleteFileE(event)" href="javascript:void(0)" id="deleteFile" href="#">{{ translate('serverFiles', 'delete') }}</a>
+                    <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#">{{ translate('serverFiles', 'delete') }}</a>
+                    <a onclick="downloadFileE(event)" href="javascript:void(0)" id="downloadFile" href="#">{{ translate('serverFiles', 'download') }}</a>
                     <a href="javascript:void(0)" class="closebtn" style="color: red;" onclick="document.getElementById('files-tree-nav').style.display = 'none';">{{ translate('serverFiles', 'close') }}</a>
                   </div>
 
@@ -704,6 +705,7 @@
 
           var isFile = event.target.classList.contains('tree-file');
           $('#deleteFile').toggle(isFile);
+          $('#downloadFile').toggle(isFile);
           console.log({ 'event.target': event.target, isDir, isFile });
 
           if(event.target.classList.contains('files-tree-title')) {
@@ -712,6 +714,7 @@
             $('#renameItem').hide();
             $('#deleteDir').hide();
             $('#deleteFile').hide();
+            $('#downloadFile').hide();
             $('#upload').show();
           }
                       if(event.target.textContent.endsWith('.zip')){
@@ -789,6 +792,11 @@
           document.getElementById('files-tree-nav').style.display = 'none';
         });
       })
+    }
+    function downloadFileE(event) {
+      path = event.target.parentElement.getAttribute('data-path');
+      name = event.target.parentElement.getAttribute('data-name');
+      window.location.href = '/panel/download_file?id={{ data['server_stats']['server_id']['server_id'] }}&path='+path+'&name='+name;
     }
 
     function renameItemE(event) {

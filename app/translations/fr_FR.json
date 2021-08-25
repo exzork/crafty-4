@@ -180,7 +180,8 @@
         "uploadTitle": "Téléverser les fichiers vers : ",
         "waitUpload": "Merci de patienter pendant que nous téléversons tes fichiers... Cela peut prendre un certain temps.",
         "stayHere": "NE FERME PAS CETTE PAGE!",
-        "close": "Presque"
+        "close": "Presque",
+        "download": "Télécharger"
     },
     "serverConfig": {
         "serverName": "Nom du Serveur",

@@ -179,7 +179,8 @@
         "uploadTitle": "Lähetä tiedostot: ",
         "waitUpload": "Odota, kunnes lataamme tiedostosi ... Tämä voi kestää hetken.",
         "stayHere": "ÄLÄ JÄTÄ SIVUTA!",
-        "close": "Kiinni"
+        "close": "Kiinni",
+        "download": "Ladata"
     },
     "serverConfig": {
         "serverName": "Palvelimen nimi",

@@ -494,6 +494,58 @@ class PanelHandler(BaseHandler):
 
             template = "panel/activity_logs.html"
 
+        elif page == 'download_file':
+            server_id = self.get_argument('id', None)
+            file = self.get_argument('path', "")
+            name = self.get_argument('name', "")
+
+            if server_id is None:
+                self.redirect("/panel/error?error=Invalid Server ID")
+                return
+            else:
+                # does this server id exist?
+                if not db_helper.server_id_exists(server_id):
+                    self.redirect("/panel/error?error=Invalid Server ID")
+                    return
+
+                if exec_user['superuser'] != 1:
+                    #if not db_helper.server_id_authorized(server_id, exec_user_id):
+                    if not db_helper.server_id_authorized(int(server_id), exec_user_id):
+                        self.redirect("/panel/error?error=Invalid Server ID")
+                        return
+
+            server_info = db_helper.get_server_data_by_id(server_id)
+
+            if not helper.in_path(server_info["path"], file) \
+                    or not os.path.isfile(file):
+                self.redirect("/panel/error?error=Invalid path detected")
+                return
+
+            self.set_header('Content-Type', 'application/octet-stream')
+            self.set_header('Content-Disposition', 'attachment; filename=' + name)
+            chunk_size = 1024 * 1024 * 4 # 4 MiB
+
+            with open(file, 'rb') as f:
+                while True:
+                    chunk = f.read(chunk_size)
+                    if not chunk:
+                        break
+                    try:
+                        self.write(chunk) # write the chunk to response
+                        self.flush() # send the chunk to client
+                    except iostream.StreamClosedError:
+                        # this means the client has closed the connection
+                        # so break the loop
+                        break
+                    finally:
+                        # deleting the chunk is very important because 
+                        # if many clients are downloading files at the 
+                        # same time, the chunks in memory will keep 
+                        # increasing and will eat up the RAM
+                        del chunk
+            self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
+
+
         self.render(
             template,
             data=page_data,
