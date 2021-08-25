@@ -494,7 +494,7 @@ class db_shortcuts:
         can = crafty_permissions.has_permission(user_crafty.permissions, permission)
         limit_list = db_helper.get_permission_quantity_list(user_id)
         quantity_list = db_helper.get_created_quantity_list(user_id)
-        return can and quantity_list[permission.name] < limit_list[permission.name]
+        return can and ((quantity_list[permission.name] < limit_list[permission.name]) or limit_list[permission.name] == -1 )
 
     @staticmethod
     def add_server_creation(user_id):        

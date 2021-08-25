@@ -711,7 +711,7 @@ class PanelHandler(BaseHandler):
                 if argument:
                     roles.add(role.role_id)
 
-            permissions_mask = "00000000"
+            permissions_mask = "000"
             server_quantity = {}
             for permission in self.controller.list_defined_crafty_permissions():
                 argument = int(float(
@@ -729,7 +729,6 @@ class PanelHandler(BaseHandler):
                 ))
                 if q_argument:
                     server_quantity[permission.name] = q_argument
-
                 else:
                     server_quantity[permission.name] = 0
 
@@ -785,7 +784,7 @@ class PanelHandler(BaseHandler):
                 if argument:
                     roles.add(role.role_id)
  
-            permissions_mask = "00000000"
+            permissions_mask = "000"
             server_quantity = {}
             for permission in self.controller.list_defined_crafty_permissions():
                 argument = int(float(
@@ -803,7 +802,6 @@ class PanelHandler(BaseHandler):
                 ))
                 if q_argument:
                     server_quantity[permission.name] = q_argument
-
                 else:
                     server_quantity[permission.name] = 0
 
