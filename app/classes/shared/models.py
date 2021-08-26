@@ -306,7 +306,7 @@ class db_shortcuts:
     def get_all_defined_servers():
         query = Servers.select()
         return db_helper.return_rows(query)
-        
+
     @staticmethod
     def get_authorized_servers(user_id):
         server_data = []
@@ -400,7 +400,7 @@ class db_shortcuts:
 
         for u in user_roles:
             roles_list.append(db_helper.get_role(u.role_id))
-            
+
         for r in roles_list:
             role_test = Role_Servers.select().where(Role_Servers.role_id == r.get('role_id'))
             for t in role_test:
@@ -424,7 +424,7 @@ class db_shortcuts:
         if not db_helper.get_server_data_by_id(server_id):
             return False
         return True
-        
+
     @staticmethod
     def server_id_authorized(serverId, user_id):
         authorized = 0
@@ -437,7 +437,7 @@ class db_shortcuts:
         if authorized.count() == 0:
             return False
         return True
-        
+
     @staticmethod
     def get_crafty_permissions_mask(user_id):
         permissions_mask = ''
@@ -447,16 +447,16 @@ class db_shortcuts:
 
     @staticmethod
     def get_crafty_permissions_list(user_id):
-        permissions_mask = db_helper.get_crafty_permissions_mask(user_id)        
+        permissions_mask = db_helper.get_crafty_permissions_mask(user_id)
         permissions_list = crafty_permissions.get_permissions(permissions_mask)
         return permissions_list
-        
+
     @staticmethod
     def get_all_permission_quantity_list():
         quantity_list = {
             Enum_Permissions_Crafty.Server_Creation.name: -1,
             Enum_Permissions_Crafty.User_Config.name: -1,
-            Enum_Permissions_Crafty.Roles_Config.name: -1,            
+            Enum_Permissions_Crafty.Roles_Config.name: -1,
         }
         return quantity_list
 
@@ -466,7 +466,7 @@ class db_shortcuts:
         quantity_list = {
             Enum_Permissions_Crafty.Server_Creation.name: user_crafty.limit_server_creation,
             Enum_Permissions_Crafty.User_Config.name: user_crafty.limit_user_creation,
-            Enum_Permissions_Crafty.Roles_Config.name: user_crafty.limit_role_creation,            
+            Enum_Permissions_Crafty.Roles_Config.name: user_crafty.limit_role_creation,
         }
         return quantity_list
 
@@ -475,7 +475,7 @@ class db_shortcuts:
         try:
             user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
         except User_Crafty.DoesNotExist:
-            user_crafty = User_Crafty.Insert({
+            user_crafty = User_Crafty.insert({
                 User_Crafty.user_id: user_id,
                 User_Crafty.permissions: "000",
                 User_Crafty.limit_server_creation: 0,
@@ -494,16 +494,16 @@ class db_shortcuts:
         quantity_list = {
             Enum_Permissions_Crafty.Server_Creation.name: user_crafty.created_server,
             Enum_Permissions_Crafty.User_Config.name: user_crafty.created_user,
-            Enum_Permissions_Crafty.Roles_Config.name: user_crafty.created_role,            
+            Enum_Permissions_Crafty.Roles_Config.name: user_crafty.created_role,
         }
         return quantity_list
-        
+
     @staticmethod
     def get_crafty_limit_value(user_id, permission):
         user_crafty = db_helper.get_User_Crafty(user_id)
         quantity_list = get_permission_quantity_list(user_id)
         return quantity_list[permission]
-            
+
     @staticmethod
     def can_add_in_crafty(user_id, permission):
         user_crafty = db_helper.get_User_Crafty(user_id)
@@ -513,12 +513,12 @@ class db_shortcuts:
         return can and ((quantity_list[permission.name] < limit_list[permission.name]) or limit_list[permission.name] == -1 )
 
     @staticmethod
-    def add_server_creation(user_id):        
+    def add_server_creation(user_id):
         user_crafty = db_helper.get_User_Crafty(user_id)
         user_crafty.created_server += 1
         User_Crafty.save(user_crafty)
         return user_crafty.created_server
-        
+
     @staticmethod
     def get_latest_hosts_stats():
         query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()
@@ -550,7 +550,7 @@ class db_shortcuts:
             return (Users.get(Users.username == username)).user_id
         except DoesNotExist:
             return None
-    
+
     @staticmethod
     def get_user_by_api_token(token: str):
         query = Users.select().where(Users.api_token == token)
@@ -562,7 +562,7 @@ class db_shortcuts:
             return user
         else:
             return {}
-    
+
     @staticmethod
     def add_role_to_user(user_id, role_id):
         User_Roles.insert({
@@ -578,7 +578,7 @@ class db_shortcuts:
             user_id = user.user_id
 
         # I just copied this code from get_user, it had those TODOs & comments made by mac - Lukas
-        
+
         roles_query = User_Roles.select().join(Roles, JOIN.INNER).where(User_Roles.user_id == user_id)
         # TODO: this query needs to be narrower
         roles = set()
@@ -866,7 +866,7 @@ class db_shortcuts:
             Audit_Log.log_msg: audit_msg,
             Audit_Log.source_ip: source_ip
         }).execute()
-    
+
     @staticmethod
     def add_to_audit_log_raw(user_name, user_id, server_id, log_msg, source_ip):
         Audit_Log.insert({
@@ -1010,7 +1010,7 @@ class Permissions_Servers:
         for member in Enum_Permissions_Server.__members__.items():
             permissions_list.append(member[1])
         return permissions_list
-        
+
     @staticmethod
     def get_permissions(permissions_mask):
         permissions_list = []
@@ -1025,23 +1025,23 @@ class Permissions_Servers:
         if permission_mask[permission_tested.value] == '1':
             result = True
         return result
-        
+
     @staticmethod
     def set_permission(permission_mask, permission_tested: Enum_Permissions_Server, value):
         l = list(permission_mask)
         l[permission_tested.value] = str(value)
         permission_mask = ''.join(l)
         return permission_mask
-        
+
     @staticmethod
     def get_permission(permission_mask, permission_tested: Enum_Permissions_Server):
-        return permission_mask[permission_tested.value]    
+        return permission_mask[permission_tested.value]
 
 class Enum_Permissions_Crafty(Enum):
     Server_Creation = 0
     User_Config = 1
     Roles_Config = 2
-    
+
 class Permissions_Crafty:
 
     @staticmethod
@@ -1050,7 +1050,7 @@ class Permissions_Crafty:
         for member in Enum_Permissions_Crafty.__members__.items():
             permissions_list.append(member[1])
         return permissions_list
-        
+
     @staticmethod
     def get_permissions(permissions_mask):
         permissions_list = []
@@ -1065,17 +1065,17 @@ class Permissions_Crafty:
         if permission_mask[permission_tested.value] == '1':
             result = True
         return result
-        
+
     @staticmethod
     def set_permission(permission_mask, permission_tested: Enum_Permissions_Crafty, value):
         l = list(permission_mask)
         l[permission_tested.value] = str(value)
         permission_mask = ''.join(l)
         return permission_mask
-        
+
     @staticmethod
     def get_permission(permission_mask, permission_tested: Enum_Permissions_Crafty):
-        return permission_mask[permission_tested.value]  
+        return permission_mask[permission_tested.value]
 
 installer = db_builder()
 db_helper = db_shortcuts()
