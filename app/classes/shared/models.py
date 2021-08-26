@@ -441,7 +441,7 @@ class db_shortcuts:
     @staticmethod
     def get_crafty_permissions_mask(user_id):
         permissions_mask = ''
-        user_crafty = get_User_Crafty(user_id)
+        user_crafty = db_helper.get_User_Crafty(user_id)
         permissions_mask = user_crafty.permissions
         return permissions_mask
 
@@ -462,7 +462,7 @@ class db_shortcuts:
 
     @staticmethod
     def get_permission_quantity_list(user_id):
-        user_crafty = get_User_Crafty(user_id)
+        user_crafty = db_helper.get_User_Crafty(user_id)
         quantity_list = {
             Enum_Permissions_Crafty.Server_Creation.name: user_crafty.limit_server_creation,
             Enum_Permissions_Crafty.User_Config.name: user_crafty.limit_user_creation,
@@ -480,14 +480,17 @@ class db_shortcuts:
                 User_Crafty.permissions: "000",
                 User_Crafty.limit_server_creation: 0,
                 User_Crafty.limit_user_creation: 0,
-                User_Crafty.limit_role_creation: 0
+                User_Crafty.limit_role_creation: 0,
+                User_Crafty.created_server: 0,
+                User_Crafty.created_user: 0,
+                User_Crafty.created_role: 0,
             }).execute()
-            user_crafty = get_User_Crafty(user_id)
+            user_crafty = db_helper.get_User_Crafty(user_id)
         return user_crafty
 
     @staticmethod
     def get_created_quantity_list(user_id):
-        user_crafty = get_User_Crafty(user_id)
+        user_crafty = db_helper.get_User_Crafty(user_id)
         quantity_list = {
             Enum_Permissions_Crafty.Server_Creation.name: user_crafty.created_server,
             Enum_Permissions_Crafty.User_Config.name: user_crafty.created_user,
@@ -497,13 +500,13 @@ class db_shortcuts:
         
     @staticmethod
     def get_crafty_limit_value(user_id, permission):
-        user_crafty = get_User_Crafty(user_id)
+        user_crafty = db_helper.get_User_Crafty(user_id)
         quantity_list = get_permission_quantity_list(user_id)
         return quantity_list[permission]
             
     @staticmethod
     def can_add_in_crafty(user_id, permission):
-        user_crafty = get_User_Crafty(user_id)
+        user_crafty = db_helper.get_User_Crafty(user_id)
         can = crafty_permissions.has_permission(user_crafty.permissions, permission)
         limit_list = db_helper.get_permission_quantity_list(user_id)
         quantity_list = db_helper.get_created_quantity_list(user_id)
@@ -511,7 +514,7 @@ class db_shortcuts:
 
     @staticmethod
     def add_server_creation(user_id):        
-        user_crafty = get_User_Crafty(user_id)
+        user_crafty = db_helper.get_User_Crafty(user_id)
         user_crafty.created_server += 1
         User_Crafty.save(user_crafty)
         return user_crafty.created_server
