@@ -441,15 +441,16 @@ class db_shortcuts:
     @staticmethod
     def get_crafty_permissions_mask(user_id):
         permissions_mask = ''
-        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
-        permissions_mask = user_crafty.permissions
+        try :
+            user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+            permissions_mask = user_crafty.permissions
+        except:
+            permissions_mask = "000"
         return permissions_mask
 
     @staticmethod
     def get_crafty_permissions_list(user_id):
-        permissions_mask = ''
-        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
-        permissions_mask = user_crafty.permissions
+        permissions_mask = db_helper.get_crafty_permissions_mask(user_id)        
         permissions_list = crafty_permissions.get_permissions(permissions_mask)
         return permissions_list
         
