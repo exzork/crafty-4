@@ -27,3 +27,5 @@ default.json
 .DS_STORE
 
 app/config/
+docker/*
+!docker/docker-compose.yml
