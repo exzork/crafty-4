@@ -441,11 +441,8 @@ class db_shortcuts:
     @staticmethod
     def get_crafty_permissions_mask(user_id):
         permissions_mask = ''
-        try :
-            user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
-            permissions_mask = user_crafty.permissions
-        except:
-            permissions_mask = "000"
+        user_crafty = get_User_Crafty(user_id)
+        permissions_mask = user_crafty.permissions
         return permissions_mask
 
     @staticmethod
@@ -465,24 +462,32 @@ class db_shortcuts:
 
     @staticmethod
     def get_permission_quantity_list(user_id):
-        try:
-            user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
-            quantity_list = {
-                Enum_Permissions_Crafty.Server_Creation.name: user_crafty.limit_server_creation,
-                Enum_Permissions_Crafty.User_Config.name: user_crafty.limit_user_creation,
-                Enum_Permissions_Crafty.Roles_Config.name: user_crafty.limit_role_creation,            
-            }
-        except:
-            quantity_list = {
-                Enum_Permissions_Crafty.Server_Creation.name: 0,
-                Enum_Permissions_Crafty.User_Config.name: 0,
-                Enum_Permissions_Crafty.Roles_Config.name: 0,            
-            }
+        user_crafty = get_User_Crafty(user_id)
+        quantity_list = {
+            Enum_Permissions_Crafty.Server_Creation.name: user_crafty.limit_server_creation,
+            Enum_Permissions_Crafty.User_Config.name: user_crafty.limit_user_creation,
+            Enum_Permissions_Crafty.Roles_Config.name: user_crafty.limit_role_creation,            
+        }
         return quantity_list
 
     @staticmethod
+    def get_User_Crafty(user_id):
+        try:
+            user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+        except User_Crafty.DoesNotExist:
+            user_crafty = User_Crafty.Insert({
+                User_Crafty.user_id: user_id,
+                User_Crafty.permissions: "000",
+                User_Crafty.limit_server_creation: 0,
+                User_Crafty.limit_user_creation: 0,
+                User_Crafty.limit_role_creation: 0
+            }).execute()
+            user_crafty = get_User_Crafty(user_id)
+        return user_crafty
+
+    @staticmethod
     def get_created_quantity_list(user_id):
-        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+        user_crafty = get_User_Crafty(user_id)
         quantity_list = {
             Enum_Permissions_Crafty.Server_Creation.name: user_crafty.created_server,
             Enum_Permissions_Crafty.User_Config.name: user_crafty.created_user,
@@ -492,13 +497,13 @@ class db_shortcuts:
         
     @staticmethod
     def get_crafty_limit_value(user_id, permission):
-        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+        user_crafty = get_User_Crafty(user_id)
         quantity_list = get_permission_quantity_list(user_id)
         return quantity_list[permission]
             
     @staticmethod
     def can_add_in_crafty(user_id, permission):
-        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+        user_crafty = get_User_Crafty(user_id)
         can = crafty_permissions.has_permission(user_crafty.permissions, permission)
         limit_list = db_helper.get_permission_quantity_list(user_id)
         quantity_list = db_helper.get_created_quantity_list(user_id)
@@ -506,7 +511,7 @@ class db_shortcuts:
 
     @staticmethod
     def add_server_creation(user_id):        
-        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+        user_crafty = get_User_Crafty(user_id)
         user_crafty.created_server += 1
         User_Crafty.save(user_crafty)
         return user_crafty.created_server
