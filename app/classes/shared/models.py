@@ -465,14 +465,21 @@ class db_shortcuts:
 
     @staticmethod
     def get_permission_quantity_list(user_id):
-        user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
-        quantity_list = {
-            Enum_Permissions_Crafty.Server_Creation.name: user_crafty.limit_server_creation,
-            Enum_Permissions_Crafty.User_Config.name: user_crafty.limit_user_creation,
-            Enum_Permissions_Crafty.Roles_Config.name: user_crafty.limit_role_creation,            
-        }
+        try:
+            user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+            quantity_list = {
+                Enum_Permissions_Crafty.Server_Creation.name: user_crafty.limit_server_creation,
+                Enum_Permissions_Crafty.User_Config.name: user_crafty.limit_user_creation,
+                Enum_Permissions_Crafty.Roles_Config.name: user_crafty.limit_role_creation,            
+            }
+        except:
+            quantity_list = {
+                Enum_Permissions_Crafty.Server_Creation.name: 0,
+                Enum_Permissions_Crafty.User_Config.name: 0,
+                Enum_Permissions_Crafty.Roles_Config.name: 0,            
+            }
         return quantity_list
-        
+
     @staticmethod
     def get_created_quantity_list(user_id):
         user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
