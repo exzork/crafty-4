@@ -4,6 +4,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    {% block meta %}{% end %}
     <title>{% block title %}{{ _('Default') }}{% end %}</title>
     <!-- plugins:css -->
     <link rel="stylesheet" href="/static/assets/vendors/mdi/css/materialdesignicons.min.css">
@@ -12,7 +13,6 @@
     <link rel="stylesheet" href="/static/assets/vendors/typicons/typicons.css">
     <link rel="stylesheet" href="/static/assets/vendors/css/vendor.bundle.base.css">
     <link rel="stylesheet" href="/static/assets/vendors/fontawesome5/css/all.css">
-    <link rel="stylesheet" href="/static/assest/css/crafty.css">
     <!-- endinject -->
     <!-- Plugin css for this page -->
     <!-- End Plugin css for this page -->
@@ -27,10 +27,10 @@
         <div class="content-wrapper d-flex align-items-center auth auth-bg-1 theme-one">
           <div class="row w-100">
             <div class="mx-auto">
-
-            {% block content %}
-            {% end %}
-
+              <div class="auto-form-wrapper">
+                {% block content %}
+                {% end %}
+              </div>
             </div>
           </div>
         </div>

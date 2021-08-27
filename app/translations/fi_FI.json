@@ -70,6 +70,8 @@
         "server": "Palvelin",
         "actions": "Toiminnot",
         "world": "Maailma",
+        "motd": "MOTD",
+        "version": "Versio",
         "status": "Tila",
         "online": "Päällä",
         "offline": "Pois päältä",

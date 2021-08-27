@@ -70,6 +70,8 @@
         "server": "Serveur",
         "actions": "Actions",
         "world": "Monde",
+        "motd": "MOTD",
+        "version": "Version",
         "status": "Statut",
         "online": "En Ligne",
         "offline": "Hors Ligne",
