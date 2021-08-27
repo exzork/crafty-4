@@ -1,0 +1,68 @@
+{% extends ../blank_base.html %}
+
+{% block meta %}
+  <meta http-equiv="refresh" content="30">
+{% end %}
+
+{% block title %}Crafty Controller - {{ translate('dashboard', 'dashboard') }}{% end %}
+
+{% block content %}
+<div class="content-wrapper col-md login-modal" style="background-color: #222437;">
+<img src="/static/assets/images/logo_long.png" style='width: 25%; margin-left: 38%;'></img>
+
+
+<div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr class="rounded">
+                  <th>{{ translate('dashboard', 'server') }}</th>
+                  <th>{{ translate('dashboard', 'players') }}</th>
+                  <th>{{ translate('dashboard', 'status') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for server in data['servers'] %}
+                <tr>
+                  <td>
+                    <i class="fas fa-server"></i>
+                      {{ server['server_data']['server_name'] }}
+                  </td>
+                  <td>
+                    {% if server['stats']['int_ping_results'] %}
+                      {{ server['stats']['online'] }} / {{ server['stats']['max'] }} {{ translate('dashboard', 'max') }}<br />
+
+                      {% if server['stats']['desc'] != 'False' %}
+                        {{ server['stats']['desc'] }} <br />
+                      {% end %}
+
+                      {% if server['stats']['version'] != 'False' %}
+                        {{ server['stats']['version'] }}
+                      {% end %}
+                    {% end %}
+
+                  </td>
+                  <td>
+                    {% if server['stats']['running'] %}
+                    <i class="fas fa-thumbs-up"></i> <span class="text-success">{{ translate('dashboard', 'online') }}</span>
+                    {% else %}
+                    <i class="fas fa-thumbs-down"></i> <span class="text-danger">{{ translate('dashboard', 'offline') }}</span>
+                    {% end %}
+                  </td>
+                </tr>
+                {% end %}
+
+              </tbody>
+            </table>
+
+
+
+</div>
+<!-- content-wrapper ends -->
+
+
+
+{% end %}
+
+{% block js %}
+
+{% end %}
