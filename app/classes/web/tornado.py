@@ -29,6 +29,7 @@ try:
     from app.classes.shared.translation import translation
     from app.classes.web.upload_handler import UploadHandler
     from app.classes.web.http_handler import HTTPHandler, HTTPHandlerPage
+    from app.classes.web.status_handler import StatusHandler
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e, e.name))
@@ -132,6 +133,7 @@ class Webserver:
             (r'/api/stats/node', NodeStats, handler_args),
             (r'/ws', SocketHandler, handler_args),
             (r'/upload', UploadHandler),
+            (r'/status', StatusHandler, handler_args)
             ]
 
         app = tornado.web.Application(
