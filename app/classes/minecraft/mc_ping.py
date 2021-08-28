@@ -1,9 +1,12 @@
+from app.classes.shared.helpers import Helpers
 import struct
 import socket
 import base64
 import json
 import sys
+import os
 import logging.config
+from app.classes.shared.console import console
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +28,26 @@ class Server:
                 description = self.description
                 if 'extra' in description.keys():
                     for e in description['extra']:
+                        #Conversion format code needed only for Java Version
+                        lines.append(get_code_format("reset"))
+                        if "bold" in e.keys():
+                            lines.append(get_code_format("bold"))
+                        if "italic" in e.keys():
+                            lines.append(get_code_format("italic"))
+                        if "underlined" in e.keys():
+                            lines.append(get_code_format("underlined"))
+                        if "strikethrough" in e.keys():
+                            lines.append(get_code_format("strikethrough"))
+                        if "obfuscated" in e.keys():
+                            lines.append(get_code_format("obfuscated"))
+                        if "color" in e.keys():
+                            lines.append(get_code_format(e['color']))                        
+                        #Then append the text
                         if "text" in e.keys():
-                            lines.append(e['text'])
+                            if e['text'] == '\n':
+                                lines.append("§§")
+                            else:
+                                lines.append(e['text'])
 
                 total_text = " ".join(lines)
                 self.description = total_text
@@ -69,6 +90,26 @@ class Player:
 
     def __str__(self):
         return self.name
+
+def get_code_format(format_name):
+    root_dir = os.path.abspath(os.path.curdir)
+    format_file = os.path.join(root_dir, 'app', 'config', 'motd_format.json')
+    try:
+        with open(format_file, "r", encoding='utf-8') as f:
+            data = json.load(f)
+
+        if format_name in data.keys():
+            return data.get(format_name)
+        else:
+            logger.error("Format MOTD Error: format name {} does not exist".format(format_name))
+            console.error("Format MOTD Error: format name {} does not exist".format(format_name))
+            return ""
+
+    except Exception as e:
+        logger.critical("Config File Error: Unable to read {} due to {}".format(format_file, e))
+        console.critical("Config File Error: Unable to read {} due to {}".format(format_file, e))
+
+    return ""
 
 
 # For the rest of requests see wiki.vg/Protocol

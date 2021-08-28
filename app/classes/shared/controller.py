@@ -97,10 +97,26 @@ class Controller:
         server_obj = self.get_server_obj(server_id)
         server_obj.reload_server_settings()
 
+    def get_server_settings(self, server_id):
+        for s in self.servers_list:
+            if int(s['server_id']) == int(server_id):
+                return s['server_settings']
+
+        logger.warning("Unable to find server object for server id {}".format(server_id))
+        return False
+
     def get_server_obj(self, server_id):
         for s in self.servers_list:
             if int(s['server_id']) == int(server_id):
                 return s['server_obj']
+
+        logger.warning("Unable to find server object for server id {}".format(server_id))
+        return False
+        
+    def get_server_data(self, server_id):
+        for s in self.servers_list:
+            if int(s['server_id']) == int(server_id):
+                return s['server_data_obj']
 
         logger.warning("Unable to find server object for server id {}".format(server_id))
         return False
@@ -183,14 +199,6 @@ class Controller:
     def list_authorized_servers(userId):
         server_list = db_helper.get_authorized_servers(userId)
         return server_list
-
-    def get_server_data(self, server_id):
-        for s in self.servers_list:
-            if int(s['server_id']) == int(server_id):
-                return s['server_data_obj']
-
-        logger.warning("Unable to find server object for server id {}".format(server_id))
-        return False
 
     def list_running_servers(self):
         running_servers = []

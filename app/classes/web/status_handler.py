@@ -26,6 +26,10 @@ class StatusHandler(BaseHandler):
     def get(self):
         page_data = {}
         page_data['servers'] = db_helper.get_all_servers_stats()
+        for srv in page_data['servers']:
+            server_data = srv.get('server_data', False)
+            server_id = server_data.get('server_id', False)
+            srv['raw_ping_result'] = self.controller.stats.get_raw_server_stats(server_id)
 
         template = 'public/status.html'
 
@@ -37,6 +41,10 @@ class StatusHandler(BaseHandler):
     def post(self):
         page_data = {}
         page_data['servers'] = db_helper.get_all_servers_stats()
+        for srv in page_data['servers']:
+            server_data = srv.get('server_data', False)
+            server_id = server_data.get('server_id', False)
+            srv['raw_ping_result'] = self.controller.stats.get_raw_server_stats(server_id)
 
         template = 'public/status.html'
 

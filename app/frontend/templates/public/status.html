@@ -32,9 +32,14 @@
           <td>
               {{ server['stats']['online'] }} / {{ server['stats']['max'] }} {{ translate('dashboard', 'max') }}<br />
           </td>
-          <td id="input_motd">
+          <td>
               {% if server['stats']['desc'] != 'False' %}
-                {{ server['stats']['desc'] }} <br />
+                {% if server['raw_ping_result']['icon'] %}
+                <img src="data:image/png;base64,{% raw server['raw_ping_result']['icon'] %}"  alt="icon"/>
+                {% else %}
+                <img src="/static/assets/images/pack.png" alt="icon" />
+                {% end %}
+                <span id="input_motd">{{ server['stats']['desc'] }}</span> <br />
               {% end %}
           </td>
           <td>
@@ -48,7 +53,7 @@
           </td>
             {% end %}
           <td>
-            {% if server['stats']['running'] %}
+            {% if server['stats']['int_ping_results'] %}
             <span class="text-success"><i class="fas fa-signal"></i>  {{ translate('dashboard', 'online') }}</span>
             {% else %}
             <span class="text-danger"><i class="fas fa-ban"></i>  {{ translate('dashboard', 'offline') }}</span>
@@ -67,11 +72,11 @@
 
 {% block js %}
 
-    <!-- <script src="/static/assets/js/motd.js"></script>
+    <script src="/static/assets/js/motd.js"></script>
     <script>      
-      //$(document).ready(function () {
-      //    initParser('input_motd', 'output_motd');
-      //}());
-    </script> -->
+      $(document).ready(function () {
+          initParser('input_motd', 'input_motd');
+      }());
+    </script>
 
 {% end %}
