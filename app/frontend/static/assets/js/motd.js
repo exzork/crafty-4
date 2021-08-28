@@ -118,8 +118,10 @@ function clearObfuscators() {
 function initParser(input, output) {
     clearObfuscators();
     var input = document.getElementById(input),
-        output = document.getElementById(output),
-        parsed = parseStyle( input.innerHTML );
-    output.innerHTML = '';
-    output.appendChild(parsed);
+        output = document.getElementById(output);
+    if (input != null && output != null) {
+        var parsed = parseStyle( input.innerHTML );
+        output.innerHTML = '';
+        output.appendChild(parsed);
+    }
 }
