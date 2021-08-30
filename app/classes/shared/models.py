@@ -458,6 +458,20 @@ class db_shortcuts:
             logger.error("Database entry not found. ".format(ex))
         with database.atomic():
             Server_Stats.update(updating=value).where(Server_Stats.server_id == server_id).execute()
+
+    @staticmethod
+    def get_TTL_without_player(server_id):
+        last_stat = Server_Stats.select().where(Server_Stats.server_id == server_id).order_by(Server_Stats.created.desc()).first()
+        last_stat_with_player = Server_Stats.select().where(Server_Stats.server_id == server_id).where(Server_Stats.online > 0).order_by(Server_Stats.created.desc()).first()
+        return last_stat.created - last_stat_with_player.created
+
+    @staticmethod
+    def can_stop_no_players(server_id, time_limit):
+        can = False
+        ttl_no_players = get_TTL_without_player(server_id)
+        if (time_limit == -1) or (ttl_no_players > time_limit):
+            can = True
+        return can
         
     #************************************************************************************************
     #                                  Crafty Permissions Methods
