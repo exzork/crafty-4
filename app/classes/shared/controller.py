@@ -157,7 +157,7 @@ class Controller:
 
     @staticmethod
     def can_add_role(user_id):
-        #TODO: Complete if we need a User Addition limit
+        #TODO: Complete if we need a Role Addition limit
         #return db_helper.can_add_in_crafty(user_id, Enum_Permissions_Crafty.Roles_Config)
         return True
 
