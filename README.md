@@ -19,7 +19,7 @@ Git Repository - https://gitlab.com/crafty-controller/crafty-web
 
 ## Basic Docker Usage
 
-A Docker image pipeline is still to be implimented but for example you can expect the image to be located: `crafty/cc-dashboard` and you would change the image in the below docker run to this image.
+A Docker image pipeline is still to be implimented but for example you can expect the image to be located: `crafty/cc-dashboard` and you would change the image in the below `docker run` to this image.
 
 If you are building from the `docker-compose` you can find it in `./docker/docker-compose.yml` just `cd` to the docker directory and `docker-compose up -d`
 
@@ -39,7 +39,7 @@ $ docker run \
 	-v "/$(pwd)/docker/logs:/commander/logs" \
 	-v "/$(pwd)/docker/servers:/commander/servers" \
 	-v "/$(pwd)/docker/config:/commander/app/config" \
-    cc-dashboard
+	cc-dashboard
 ```
 A fresh build will take several minutes depending on your system, but will be rapid there after.
 
