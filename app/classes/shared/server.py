@@ -115,7 +115,6 @@ class Server:
         self.settings = server_data_obj
 
         # build our server run command
-        self.setup_server_run_command()
 
         if server_data_obj['auto_start']:
             delay = int(self.settings['auto_start_delay'])

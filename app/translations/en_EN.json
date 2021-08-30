@@ -70,6 +70,8 @@
         "server": "Server",
         "actions": "Actions",
         "world": "World",
+        "motd": "MOTD",
+        "version": "Version",
         "status": "Status",
         "online": "Online",
         "offline": "Offline",
