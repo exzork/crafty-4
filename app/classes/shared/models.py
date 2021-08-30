@@ -564,15 +564,11 @@ class db_shortcuts:
         user_crafty.created_server += 1
         User_Crafty.save(user_crafty)
         return user_crafty.created_server
-<<<<<<< HEAD
         
         
     #************************************************************************************************
     #                                   Host_Stats Methods
     #************************************************************************************************
-=======
-
->>>>>>> 45739a2e5ffd23d2373c51a4e5122e73ea174359
     @staticmethod
     def get_latest_hosts_stats():
         query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()
@@ -615,48 +611,7 @@ class db_shortcuts:
             return user
         else:
             return {}
-<<<<<<< HEAD
             
-=======
-
-    @staticmethod
-    def add_role_to_user(user_id, role_id):
-        User_Roles.insert({
-            User_Roles.user_id: user_id,
-            User_Roles.role_id: role_id
-        }).execute()
-
-    @staticmethod
-    def add_user_roles(user):
-        if type(user) == dict:
-            user_id = user['user_id']
-        else:
-            user_id = user.user_id
-
-        # I just copied this code from get_user, it had those TODOs & comments made by mac - Lukas
-
-        roles_query = User_Roles.select().join(Roles, JOIN.INNER).where(User_Roles.user_id == user_id)
-        # TODO: this query needs to be narrower
-        roles = set()
-        for r in roles_query:
-            roles.add(r.role_id.role_id)
-
-        user['roles'] = roles
-        #logger.debug("user: ({}) {}".format(user_id, user))
-        return user
-
-    @staticmethod
-    def add_user_crafty(user_id, uc_permissions):
-        user_crafty = User_Crafty.insert({User_Crafty.user_id: user_id, User_Crafty.permissions: uc_permissions}).execute()
-        return user_crafty
-
-    @staticmethod
-    def add_role_server(server_id, role_id, rs_permissions="00000000"):
-        servers = Role_Servers.insert({Role_Servers.server_id: server_id, Role_Servers.role_id: role_id, Role_Servers.permissions: rs_permissions}).execute()
-        return servers
-
-
->>>>>>> 45739a2e5ffd23d2373c51a4e5122e73ea174359
     @staticmethod
     def user_query(user_id):
         user_query = Users.select().where(Users.user_id == user_id)
