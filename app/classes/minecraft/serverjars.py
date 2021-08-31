@@ -11,6 +11,7 @@ from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.shared.models import Servers
 from app.classes.minecraft.server_props import ServerProps
+from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
 
@@ -173,11 +174,11 @@ class ServerJars:
         response = self._get_api_result(url)
         return response
 
-    def download_jar(self, server, version, path):
-        update_thread = threading.Thread(target=self.a_download_jar, daemon=True, name="exe_download", args=(server, version, path))
+    def download_jar(self, server, version, path, name):
+        update_thread = threading.Thread(target=self.a_download_jar, daemon=True, name="exe_download", args=(server, version, path, name))
         update_thread.start()
 
-    def a_download_jar(self, server, version, path):
+    def a_download_jar(self, server, version, path, name):
         fetch_url = "{base}/api/fetchJar/{server}/{version}".format(base=self.base_url, server=server, version=version)
 
         # open a file stream
@@ -189,6 +190,8 @@ class ServerJars:
             except Exception as e:
                 logger.error("Unable to save jar to {path} due to error:{error}".format(path=path, error=e))
                 pass
+        websocket_helper.broadcast('notification', "Executable download finished for server named: " + name)
+        
 
         return False
 

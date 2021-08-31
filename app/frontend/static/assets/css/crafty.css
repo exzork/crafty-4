@@ -80,3 +80,8 @@ body { background-color: var(--dark) !important; /* Firefox */ }
 .actions_serverlist > a > i {
   cursor: pointer;
 }
+.corner {
+    position: absolute;
+    margin-top: 0;
+    margin-left: 0;
+}

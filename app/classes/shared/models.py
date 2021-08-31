@@ -242,7 +242,8 @@ class db_builder:
         #    Users.enabled: True,
         #    Users.superuser: True
         #}).execute()
-        db_shortcuts.add_user(username, password=password, superuser=True)
+        user_id = db_shortcuts.add_user(username, password=password, superuser=True)
+        #db_shortcuts.update_user(user_id, user_crafty_data={"permissions_mask":"111", "server_quantity":[-1,-1,-1]} )
 
         #console.info("API token is {}".format(api_token))
 
@@ -257,6 +258,9 @@ class db_builder:
 
 class db_shortcuts:
 
+    #************************************************************************************************
+    #                                  Generic Databse Methods
+    #************************************************************************************************
     @staticmethod
     def return_rows(query):
         rows = []
@@ -271,6 +275,14 @@ class db_shortcuts:
 
         return rows
 
+    @staticmethod
+    def return_db_rows(model):
+        data = [model_to_dict(row) for row in model]
+        return data
+
+    #************************************************************************************************
+    #                                   Generic Servers Methods
+    #************************************************************************************************
     @staticmethod
     def create_server(name: str, server_uuid: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port=25565):
         return Servers.insert({
@@ -302,6 +314,9 @@ class db_shortcuts:
         except IndexError:
             return {}
 
+    #************************************************************************************************
+    #                                     Servers Methods
+    #************************************************************************************************
     @staticmethod
     def get_all_defined_servers():
         query = Servers.select()
@@ -345,21 +360,14 @@ class db_shortcuts:
         return server_data
 
     @staticmethod
-    def get_user_roles_id(user_id):
-        roles_list = []
-        roles = User_Roles.select().where(User_Roles.user_id == user_id)
-        for r in roles:
-            roles_list.append(db_helper.get_role(r.role_id)['role_id'])
-        return roles_list
+    def get_server_friendly_name(server_id):
+        server_data = db_helper.get_server_data_by_id(server_id)
+        friendly_name = "{} with ID: {}".format(server_data.get('server_name', None), server_data.get('server_id', 0))
+        return friendly_name
 
-    @staticmethod
-    def get_user_roles_names(user_id):
-        roles_list = []
-        roles = User_Roles.select().where(User_Roles.user_id == user_id)
-        for r in roles:
-            roles_list.append(db_helper.get_role(r.role_id)['role_name'])
-        return roles_list
-
+    #************************************************************************************************
+    #                                   Servers Permissions Methods
+    #************************************************************************************************
     @staticmethod
     def get_permissions_mask(role_id, server_id):
         permissions_mask = ''
@@ -414,6 +422,10 @@ class db_shortcuts:
             server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0]})
         return server_data
 
+
+    #************************************************************************************************
+    #                                    Servers_Stats Methods
+    #************************************************************************************************
     @staticmethod
     def get_server_stats_by_id(server_id):
         stats = Server_Stats.select().where(Server_Stats.server_id == server_id).order_by(Server_Stats.created.desc()).limit(1)
@@ -438,6 +450,32 @@ class db_shortcuts:
             return False
         return True
 
+    @staticmethod
+    def set_update(server_id, value):
+        try:
+            row = Server_Stats.select().where(Server_Stats.server_id == server_id)
+        except Exception as ex:
+            logger.error("Database entry not found. ".format(ex))
+        with database.atomic():
+            Server_Stats.update(updating=value).where(Server_Stats.server_id == server_id).execute()
+
+    @staticmethod
+    def get_TTL_without_player(server_id):
+        last_stat = Server_Stats.select().where(Server_Stats.server_id == server_id).order_by(Server_Stats.created.desc()).first()
+        last_stat_with_player = Server_Stats.select().where(Server_Stats.server_id == server_id).where(Server_Stats.online > 0).order_by(Server_Stats.created.desc()).first()
+        return last_stat.created - last_stat_with_player.created
+
+    @staticmethod
+    def can_stop_no_players(server_id, time_limit):
+        can = False
+        ttl_no_players = get_TTL_without_player(server_id)
+        if (time_limit == -1) or (ttl_no_players > time_limit):
+            can = True
+        return can
+        
+    #************************************************************************************************
+    #                                  Crafty Permissions Methods
+    #************************************************************************************************
     @staticmethod
     def get_crafty_permissions_mask(user_id):
         permissions_mask = ''
@@ -470,6 +508,9 @@ class db_shortcuts:
         }
         return quantity_list
 
+    #************************************************************************************************
+    #                                   User_Crafty Methods
+    #************************************************************************************************
     @staticmethod
     def get_User_Crafty(user_id):
         try:
@@ -488,6 +529,11 @@ class db_shortcuts:
             user_crafty = db_helper.get_User_Crafty(user_id)
         return user_crafty
 
+    @staticmethod
+    def add_user_crafty(user_id, uc_permissions):
+        user_crafty = User_Crafty.insert({User_Crafty.user_id: user_id, User_Crafty.permissions: uc_permissions}).execute()
+        return user_crafty
+        
     @staticmethod
     def get_created_quantity_list(user_id):
         user_crafty = db_helper.get_User_Crafty(user_id)
@@ -518,7 +564,11 @@ class db_shortcuts:
         user_crafty.created_server += 1
         User_Crafty.save(user_crafty)
         return user_crafty.created_server
-
+        
+        
+    #************************************************************************************************
+    #                                   Host_Stats Methods
+    #************************************************************************************************
     @staticmethod
     def get_latest_hosts_stats():
         query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()
@@ -532,14 +582,13 @@ class db_shortcuts:
             if len(test) == 0:
                 return token
 
+
+    #************************************************************************************************
+    #                                   Users Methods
+    #************************************************************************************************
     @staticmethod
     def get_all_users():
         query = Users.select()
-        return query
-
-    @staticmethod
-    def get_all_roles():
-        query = Roles.select()
         return query
 
     @staticmethod
@@ -562,57 +611,12 @@ class db_shortcuts:
             return user
         else:
             return {}
-
-    @staticmethod
-    def add_role_to_user(user_id, role_id):
-        User_Roles.insert({
-            User_Roles.user_id: user_id,
-            User_Roles.role_id: role_id
-        }).execute()
-
-    @staticmethod
-    def add_user_roles(user):
-        if type(user) == dict:
-            user_id = user['user_id']
-        else:
-            user_id = user.user_id
-
-        # I just copied this code from get_user, it had those TODOs & comments made by mac - Lukas
-
-        roles_query = User_Roles.select().join(Roles, JOIN.INNER).where(User_Roles.user_id == user_id)
-        # TODO: this query needs to be narrower
-        roles = set()
-        for r in roles_query:
-            roles.add(r.role_id.role_id)
-
-        user['roles'] = roles
-        #logger.debug("user: ({}) {}".format(user_id, user))
-        return user
-
-    @staticmethod
-    def add_user_crafty(user_id, uc_permissions):
-        user_crafty = User_Crafty.insert({User_Crafty.user_id: user_id, User_Crafty.permissions: uc_permissions}).execute()
-        return user_crafty
-
-    @staticmethod
-    def add_role_server(server_id, role_id, rs_permissions="00000000"):
-        servers = Role_Servers.insert({Role_Servers.server_id: server_id, Role_Servers.role_id: role_id, Role_Servers.permissions: rs_permissions}).execute()
-        return servers
-
-
+            
     @staticmethod
     def user_query(user_id):
         user_query = Users.select().where(Users.user_id == user_id)
         return user_query
-
-    @staticmethod
-    def user_role_query(user_id):
-        user_query = User_Roles.select().where(User_Roles.user_id == user_id)
-        query = Roles.select().where(Roles.role_id == -1)
-        for u in user_query:
-            query = Roles.select().where(Roles.role_id == u.role_id)
-        return query
-
+        
     @staticmethod
     def get_user(user_id):
         if user_id == 0:
@@ -731,6 +735,14 @@ class db_shortcuts:
             return False
         return True
 
+    #************************************************************************************************
+    #                                   Roles Methods
+    #************************************************************************************************
+    @staticmethod
+    def get_all_roles():
+        query = Roles.select()
+        return query  
+
     @staticmethod
     def get_roleid_by_name(role_name):
         try:
@@ -805,17 +817,78 @@ class db_shortcuts:
         if not db_shortcuts.get_role(role_id):
             return False
         return True
+    
+    #************************************************************************************************
+    #                                   User_Roles Methods
+    #************************************************************************************************
+    @staticmethod
+    def get_user_roles_id(user_id):
+        roles_list = []
+        roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        for r in roles:
+            roles_list.append(db_helper.get_role(r.role_id)['role_id'])
+        return roles_list
 
+    @staticmethod
+    def get_user_roles_names(user_id):
+        roles_list = []
+        roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        for r in roles:
+            roles_list.append(db_helper.get_role(r.role_id)['role_name'])
+        return roles_list
+
+    @staticmethod
+    def add_role_to_user(user_id, role_id):
+        User_Roles.insert({
+            User_Roles.user_id: user_id,
+            User_Roles.role_id: role_id
+        }).execute()
+
+    @staticmethod
+    def add_user_roles(user):
+        if type(user) == dict:
+            user_id = user['user_id']
+        else:
+            user_id = user.user_id
+
+        # I just copied this code from get_user, it had those TODOs & comments made by mac - Lukas
+        
+        roles_query = User_Roles.select().join(Roles, JOIN.INNER).where(User_Roles.user_id == user_id)
+        # TODO: this query needs to be narrower
+        roles = set()
+        for r in roles_query:
+            roles.add(r.role_id.role_id)
+
+        user['roles'] = roles
+        #logger.debug("user: ({}) {}".format(user_id, user))
+        return user
+        
+
+    #************************************************************************************************
+    #                                   Role_Servers Methods
+    #************************************************************************************************
+    @staticmethod
+    def add_role_server(server_id, role_id, rs_permissions="00000000"):
+        servers = Role_Servers.insert({Role_Servers.server_id: server_id, Role_Servers.role_id: role_id, Role_Servers.permissions: rs_permissions}).execute()
+        return servers
+
+
+    @staticmethod
+    def user_role_query(user_id):
+        user_query = User_Roles.select().where(User_Roles.user_id == user_id)
+        query = Roles.select().where(Roles.role_id == -1)
+        for u in user_query:
+            query = Roles.select().where(Roles.role_id == u.role_id)
+        return query
+
+
+    #************************************************************************************************
+    #                                   Commands Methods
+    #************************************************************************************************
     @staticmethod
     def get_unactioned_commands():
         query = Commands.select().where(Commands.executed == 0)
         return db_helper.return_rows(query)
-
-    @staticmethod
-    def get_server_friendly_name(server_id):
-        server_data = db_helper.get_server_data_by_id(server_id)
-        friendly_name = "{} with ID: {}".format(server_data.get('server_name', None), server_data.get('server_id', 0))
-        return friendly_name
 
     @staticmethod
     def send_command(user_id, server_id, remote_ip, command):
@@ -834,22 +907,20 @@ class db_shortcuts:
         }).execute()
 
     @staticmethod
-    def get_actity_log():
-        q = Audit_Log.select()
-        return db_helper.return_db_rows(q)
-
-    @staticmethod
-    def return_db_rows(model):
-        data = [model_to_dict(row) for row in model]
-        return data
-
-    @staticmethod
     def mark_command_complete(command_id=None):
         if command_id is not None:
             logger.debug("Marking Command {} completed".format(command_id))
             Commands.update({
                 Commands.executed: True
             }).where(Commands.command_id == command_id).execute()
+            
+    #************************************************************************************************
+    #                                   Audit_Log Methods
+    #************************************************************************************************
+    @staticmethod
+    def get_actity_log():
+        q = Audit_Log.select()
+        return db_helper.return_db_rows(q)
 
     def add_to_audit_log(self, user_id, log_msg, server_id=None, source_ip=None):
         logger.debug("Adding to audit log User:{} - Message: {} ".format(user_id, log_msg))
@@ -877,6 +948,9 @@ class db_shortcuts:
             Audit_Log.source_ip: source_ip
         }).execute()
 
+    #************************************************************************************************
+    #                                  Schedules Methods
+    #************************************************************************************************
     @staticmethod
     def create_scheduled_task(server_id, action, interval, interval_type, start_time, command, comment=None, enabled=True):
         sch_id = Schedules.insert({
@@ -916,6 +990,9 @@ class db_shortcuts:
     def get_schedules_enabled():
         return Schedules.select().where(Schedules.enabled == True).execute()
 
+    #************************************************************************************************
+    #                                   Backups Methods
+    #************************************************************************************************
     @staticmethod
     def get_backup_config(server_id):
         try:
@@ -936,15 +1013,6 @@ class db_shortcuts:
                 "server_id": server_id
             }
         return conf
-
-    @staticmethod
-    def set_update(server_id, value):
-        try:
-            row = Server_Stats.select().where(Server_Stats.server_id == server_id)
-        except Exception as ex:
-            logger.error("Database entry not found. ".format(ex))
-        with database.atomic():
-            Server_Stats.update(updating=value).where(Server_Stats.server_id == server_id).execute()
 
     @staticmethod
     def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, auto_enabled: bool = True):
@@ -992,6 +1060,10 @@ class db_shortcuts:
                 b = Backups.create(**conf)
             logger.debug("Creating new backup record.")
 
+
+#************************************************************************************************
+#                                  Servers Permissions Class
+#************************************************************************************************
 class Enum_Permissions_Server(Enum):
     Commands = 0
     Terminal = 1
@@ -1037,6 +1109,9 @@ class Permissions_Servers:
     def get_permission(permission_mask, permission_tested: Enum_Permissions_Server):
         return permission_mask[permission_tested.value]
 
+#************************************************************************************************
+#                                  Crafty Permissions Class
+#************************************************************************************************
 class Enum_Permissions_Crafty(Enum):
     Server_Creation = 0
     User_Config = 1
@@ -1077,6 +1152,10 @@ class Permissions_Crafty:
     def get_permission(permission_mask, permission_tested: Enum_Permissions_Crafty):
         return permission_mask[permission_tested.value]
 
+
+#************************************************************************************************
+#                                  Static Accessors 
+#************************************************************************************************
 installer = db_builder()
 db_helper = db_shortcuts()
 server_permissions = Permissions_Servers()

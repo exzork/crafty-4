@@ -97,10 +97,26 @@ class Controller:
         server_obj = self.get_server_obj(server_id)
         server_obj.reload_server_settings()
 
+    def get_server_settings(self, server_id):
+        for s in self.servers_list:
+            if int(s['server_id']) == int(server_id):
+                return s['server_settings']
+
+        logger.warning("Unable to find server object for server id {}".format(server_id))
+        return False
+
     def get_server_obj(self, server_id):
         for s in self.servers_list:
             if int(s['server_id']) == int(server_id):
                 return s['server_obj']
+
+        logger.warning("Unable to find server object for server id {}".format(server_id))
+        return False
+        
+    def get_server_data(self, server_id):
+        for s in self.servers_list:
+            if int(s['server_id']) == int(server_id):
+                return s['server_data_obj']
 
         logger.warning("Unable to find server object for server id {}".format(server_id))
         return False
@@ -157,7 +173,7 @@ class Controller:
 
     @staticmethod
     def can_add_role(user_id):
-        #TODO: Complete if we need a User Addition limit
+        #TODO: Complete if we need a Role Addition limit
         #return db_helper.can_add_in_crafty(user_id, Enum_Permissions_Crafty.Roles_Config)
         return True
 
@@ -183,14 +199,6 @@ class Controller:
     def list_authorized_servers(userId):
         server_list = db_helper.get_authorized_servers(userId)
         return server_list
-
-    def get_server_data(self, server_id):
-        for s in self.servers_list:
-            if int(s['server_id']) == int(server_id):
-                return s['server_data_obj']
-
-        logger.warning("Unable to find server object for server id {}".format(server_id))
-        return False
 
     def list_running_servers(self):
         running_servers = []
@@ -297,7 +305,7 @@ class Controller:
         server_stop = "stop"
 
         # download the jar
-        server_jar_obj.download_jar(server, version, full_jar_path)
+        server_jar_obj.download_jar(server, version, full_jar_path, name)
 
         new_id = self.register_server(name, server_id, server_dir, backup_path, server_command, server_file, server_log_file, server_stop)
         return new_id

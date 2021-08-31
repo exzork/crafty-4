@@ -4,6 +4,7 @@ import time
 import psutil
 import logging
 import datetime
+import base64
 
 
 from app.classes.shared.helpers import helper
@@ -145,12 +146,19 @@ class Stats:
             logger.info("Unable to read json from ping_obj: {}".format(e))
             pass
 
+        try:
+            server_icon = base64.encodebytes(ping_obj.icon)
+        except  Exception as e:
+            server_icon = False
+            logger.info("Unable to read the server icon : {}".format(e))
+
         ping_data = {
             'online': online_stats.get("online", 0),
             'max': online_stats.get('max', 0),
             'players': online_stats.get('players', 0),
             'server_description': ping_obj.description,
-            'server_version': ping_obj.version
+            'server_version': ping_obj.version,
+            'server_icon': server_icon
         }
 
         return ping_data
@@ -167,7 +175,7 @@ class Stats:
 
 
         # TODO: search server properties file for possible override of 127.0.0.1
-        internal_ip = server_data.get('server-ip', "127.0.0.1")
+        internal_ip = server_data.get('server_ip', "127.0.0.1")
         server_port = server_settings.get('server-port', "25565")
 
         logger.debug("Pinging {} on port {}".format(internal_ip, server_port))
@@ -210,7 +218,7 @@ class Stats:
             p_stats = self._get_process_stats(server_obj.PID)
 
             # TODO: search server properties file for possible override of 127.0.0.1
-            internal_ip = server_data.get('server-ip', "127.0.0.1")
+            internal_ip = server_data.get('server_ip', "127.0.0.1")
             server_port = server_settings.get('server-port', "25565")
 
             logger.debug("Pinging server '{}' on {}:{}".format(s.get('server_name', "ID#{}".format(server_id)), internal_ip, server_port))
@@ -246,6 +254,62 @@ class Stats:
             server_stats_list.append(server_stats)
 
         return server_stats_list
+        
+    def get_raw_server_stats(self, server_id):
+
+        server_stats = {}
+        server = self.controller.get_server_obj(server_id)
+
+        logger.debug('Getting stats for server: {}'.format(server_id))
+
+        # get our server object, settings and data dictionaries
+        server_obj = self.controller.get_server_obj(server_id)
+        server_obj.reload_server_settings()
+        server_settings = self.controller.get_server_settings(server_id)
+        server_data = self.controller.get_server_data(server_id)
+
+        # world data
+        world_name = server_settings.get('level-name', 'Unknown')
+        world_path = os.path.join(server_data.get('path', None), world_name)
+
+        # process stats
+        p_stats = self._get_process_stats(server_obj.PID)
+
+        # TODO: search server properties file for possible override of 127.0.0.1
+        internal_ip = server_data.get('server_ip', "127.0.0.1")
+        server_port = server_settings.get('server-port', "25565")
+
+        logger.debug("Pinging server '{}' on {}:{}".format(server.name, internal_ip, server_port))
+        int_mc_ping = ping(internal_ip, int(server_port))
+
+        int_data = False
+        ping_data = {}
+
+        # if we got a good ping return, let's parse it
+        if int_mc_ping:
+            int_data = True
+            ping_data = self.parse_server_ping(int_mc_ping)
+
+        server_stats = {
+            'id': server_id,
+            'started': server_obj.get_start_time(),
+            'running': server_obj.check_running(),
+            'cpu': p_stats.get('cpu_usage', 0),
+            'mem': p_stats.get('memory_usage', 0),
+            "mem_percent": p_stats.get('mem_percentage', 0),
+            'world_name': world_name,
+            'world_size': self.get_world_size(world_path),
+            'server_port': server_port,
+            'int_ping_results': int_data,
+            'online': ping_data.get("online", False),
+            "max": ping_data.get("max", False),
+            'players': ping_data.get("players", False),
+            'desc': ping_data.get("server_description", False),
+            'version': ping_data.get("server_version", False),
+            'icon': ping_data.get("server_icon", False)
+        }
+
+        return server_stats
 
     def record_stats(self):
         stats_to_send = self.get_node_stats()
