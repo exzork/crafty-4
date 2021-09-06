@@ -6,7 +6,8 @@ import shutil
 
 from app.classes.shared.console import console
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.models import db_helper, Enum_Permissions_Crafty
+from app.classes.shared.models import db_helper
+from app.classes.shared.models_folder.crafty_permissions import Enum_Permissions_Crafty
 from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.shared.helpers import helper
 
@@ -39,7 +40,7 @@ class ServerHandler(BaseHandler):
             exec_user_role.add("Super User")
             exec_user_crafty_permissions = self.controller.list_defined_crafty_permissions()
         else:
-            exec_user_crafty_permissions = self.controller.get_crafty_permissions(exec_user_id)
+            exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user_id)
             defined_servers = self.controller.list_authorized_servers(exec_user_id)
             for r in exec_user['roles']:
                 role = db_helper.get_role(r)

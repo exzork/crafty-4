@@ -12,7 +12,8 @@ from tornado import iostream
 from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.models import db_helper, server_permissions, Servers, Enum_Permissions_Server, crafty_permissions, Enum_Permissions_Crafty
+from app.classes.shared.models import db_helper, server_permissions, Servers, Enum_Permissions_Server
+from app.classes.shared.models_folder.crafty_permissions import crafty_permissions, Enum_Permissions_Crafty
 from app.classes.shared.helpers import helper
 
 logger = logging.getLogger(__name__)
@@ -37,9 +38,9 @@ class PanelHandler(BaseHandler):
         if exec_user['superuser'] == 1:
             defined_servers = self.controller.list_defined_servers()
             exec_user_role.add("Super User")
-            exec_user_crafty_permissions = self.controller.list_defined_crafty_permissions()
+            exec_user_crafty_permissions = self.controller.crafty_perms.list_defined_crafty_permissions()
         else:
-            exec_user_crafty_permissions = self.controller.get_crafty_permissions(exec_user_id)
+            exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user_id)
             logger.debug(exec_user['roles'])
             for r in exec_user['roles']:
                 role = db_helper.get_role(r)
@@ -365,7 +366,7 @@ class PanelHandler(BaseHandler):
             page_data['roles_all'] = db_helper.get_all_roles()
             page_data['servers_all'] = self.controller.list_defined_servers()
             page_data['permissions_all'] = self.controller.list_defined_crafty_permissions()
-            page_data['permissions_list'] = self.controller.get_crafty_permissions(user_id)
+            page_data['permissions_list'] = self.controller.crafty_perms.get_crafty_permissions_list(user_id)
             page_data['quantity_server'] = self.controller.list_crafty_permissions_quantity_limits(user_id)
 
             if user_id is None:
@@ -566,7 +567,7 @@ class PanelHandler(BaseHandler):
             exec_user_role.add("Super User")
             exec_user_crafty_permissions = self.controller.list_defined_crafty_permissions()
         else:
-            exec_user_crafty_permissions = self.controller.get_crafty_permissions(exec_user_id)
+            exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user_id)
             defined_servers = self.controller.list_authorized_servers(exec_user_id)
             for r in exec_user['roles']:
                 role = db_helper.get_role(r)
