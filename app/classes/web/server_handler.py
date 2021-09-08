@@ -37,7 +37,7 @@ class ServerHandler(BaseHandler):
         if exec_user['superuser'] == 1:
             defined_servers = self.controller.list_defined_servers()
             exec_user_role.add("Super User")
-            exec_user_crafty_permissions = self.controller.list_defined_crafty_permissions()
+            exec_user_crafty_permissions = self.controller.crafty_perms.list_defined_crafty_permissions()
         else:
             exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user_id)
             defined_servers = self.controller.servers.get_authorized_servers(exec_user_id)
@@ -193,7 +193,7 @@ class ServerHandler(BaseHandler):
                     return
                 server_type, server_version = server_parts
                 # TODO: add server type check here and call the correct server add functions if not a jar
-                role_ids = self.controller.roles.get_user_roles_id(exec_user_id)
+                role_ids = self.controller.users.get_user_roles_id(exec_user_id)
                 new_server_id = self.controller.create_jar_server(server_type, server_version, server_name, min_mem, max_mem, port)
                 self.controller.management.add_to_audit_log(exec_user_data['user_id'],
                                            "created a {} {} server named \"{}\"".format(server_version, str(server_type).capitalize(), server_name), # Example: Admin created a 1.16.5 Bukkit server named "survival"
@@ -202,10 +202,10 @@ class ServerHandler(BaseHandler):
 
             #These lines create a new Role for the Server with full permissions and add the user to it
             role_id = self.controller.roles.add_role("Creator of Server with id={}".format(new_server_id))
-            self.controller.server_permissions.add_role_server(new_server_id, role_id, "11111111")
+            self.controller.server_perms.add_role_server(new_server_id, role_id, "11111111")
             self.controller.users.add_role_to_user(exec_user_id, role_id)
             if not exec_user['superuser']:
-                self.controller.server_permissions.add_server_creation(exec_user_id)
+                self.controller.server_perms.add_server_creation(exec_user_id)
 
             self.controller.stats.record_stats()
             self.redirect("/panel/dashboard")

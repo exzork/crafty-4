@@ -47,6 +47,10 @@ class Server_Perms_Controller:
         permissions_list = server_permissions.get_user_permissions_list(user_id, server_id)
         return permissions_list        
 
+    @staticmethod
+    def add_role_server(server_id, role_id, rs_permissions="00000000"):
+        return server_permissions.add_role_server(server_id, role_id, rs_permissions)
+
     #************************************************************************************************
     #                                   Servers Permissions Methods
     #************************************************************************************************
