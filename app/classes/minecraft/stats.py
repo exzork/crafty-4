@@ -9,8 +9,8 @@ import base64
 
 from app.classes.shared.helpers import helper
 from app.classes.minecraft.mc_ping import ping
-from app.classes.shared.models import db_helper
-from app.classes.shared.models import Host_Stats, Server_Stats
+from app.classes.models.management import Host_Stats
+from app.classes.models.servers import Server_Stats, servers_helper
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +165,7 @@ class Stats:
     
     def get_server_players(self, server_id):
 
-        server = db_helper.get_server_data_by_id(server_id)
+        server = servers_helper.get_server_data_by_id(server_id)
 
         logger.info("Getting players for server {}".format(server))
 

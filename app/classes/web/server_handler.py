@@ -6,8 +6,7 @@ import shutil
 
 from app.classes.shared.console import console
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.models import db_helper
-from app.classes.shared.models_folder.crafty_permissions import Enum_Permissions_Crafty
+from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
 from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.shared.helpers import helper
 
@@ -32,7 +31,7 @@ class ServerHandler(BaseHandler):
         # name = tornado.escape.json_decode(self.current_user)
         exec_user_data = json.loads(self.get_secure_cookie("user_data"))
         exec_user_id = exec_user_data['user_id']
-        exec_user = db_helper.get_user(exec_user_id)
+        exec_user = self.controller.users.get_user_by_id(exec_user_id)
         
         exec_user_role = set()
         if exec_user['superuser'] == 1:
@@ -41,9 +40,9 @@ class ServerHandler(BaseHandler):
             exec_user_crafty_permissions = self.controller.list_defined_crafty_permissions()
         else:
             exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user_id)
-            defined_servers = self.controller.list_authorized_servers(exec_user_id)
+            defined_servers = self.controller.servers.get_authorized_servers(exec_user_id)
             for r in exec_user['roles']:
-                role = db_helper.get_role(r)
+                role = self.controller.roles.get_role(r)
                 exec_user_role.add(role['role_name'])
 
         template = "public/404.html"
@@ -63,14 +62,14 @@ class ServerHandler(BaseHandler):
                 'running': len(self.controller.list_running_servers()),
                 'stopped': (len(self.controller.list_defined_servers()) - len(self.controller.list_running_servers()))
             },
-            'hosts_data': db_helper.get_latest_hosts_stats(),
+            'hosts_data': self.controller.management.get_latest_hosts_stats(),
             'menu_servers': defined_servers,
             'show_contribute': helper.get_setting("show_contribute_link", True)
         }
 
         if page == "step1":
 
-            if not exec_user['superuser'] and not self.controller.can_create_server(exec_user_id):
+            if not exec_user['superuser'] and not self.controller.crafty_perms.can_create_server(exec_user_id):
                 self.redirect("/panel/error?error=Unauthorized access: not a server creator or server limit reached")
                 return
 
@@ -89,7 +88,7 @@ class ServerHandler(BaseHandler):
 
         exec_user_data = json.loads(self.get_secure_cookie("user_data"))
         exec_user_id = exec_user_data['user_id']
-        exec_user = db_helper.get_user(exec_user_id)
+        exec_user = self.controller.users.get_user_by_id(exec_user_id)
 
         template = "public/404.html"
         page_data = {
@@ -105,12 +104,12 @@ class ServerHandler(BaseHandler):
             if server_id is not None:
                 if command == "clone_server":
                     def is_name_used(name):
-                        for server in db_helper.get_all_defined_servers():
+                        for server in self.controller.servers.get_all_defined_servers():
                             if server['server_name'] == name:
                                 return True
                         return
                     
-                    server_data = db_helper.get_server_data_by_id(server_id)
+                    server_data = self.controller.servers.get_server_data_by_id(server_id)
                     server_uuid = server_data.get('server_uuid')
                     new_server_name = server_data.get('server_name') + " (Copy)"
 
@@ -137,13 +136,13 @@ class ServerHandler(BaseHandler):
                     crash_detection = server_data.get('crash_detection')
                     server_port = server_data.get('server_port')
 
-                    db_helper.create_server(new_server_name, new_server_uuid, new_server_path, "", new_server_command, new_executable, new_server_log_file, stop_command, server_port)
+                    self.controller.servers.create_server(new_server_name, new_server_uuid, new_server_path, "", new_server_command, new_executable, new_server_log_file, stop_command, server_port)
 
                     self.controller.init_all_servers()
 
                     return
                 
-                db_helper.send_command(exec_user_data['user_id'], server_id, self.get_remote_ip(), command)
+                self.controller.management.send_command(exec_user_data['user_id'], server_id, self.get_remote_ip(), command)
 
         if page == "step1":
 
@@ -169,7 +168,7 @@ class ServerHandler(BaseHandler):
                     return
 
                 new_server_id = self.controller.import_jar_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
-                db_helper.add_to_audit_log(exec_user_data['user_id'],
+                self.controller.management.add_to_audit_log(exec_user_data['user_id'],
                                            "imported a jar server named \"{}\"".format(server_name), # Example: Admin imported a server named "old creative"
                                            new_server_id,
                                            self.get_remote_ip())
@@ -184,7 +183,7 @@ class ServerHandler(BaseHandler):
                 if new_server_id == "false":
                     self.redirect("/panel/error?error=Zip file not accessible! You can fix this permissions issue with sudo chown -R crafty:crafty {} And sudo chmod 2775 -R {}".format(import_server_path, import_server_path))
                     return
-                db_helper.add_to_audit_log(exec_user_data['user_id'],
+                self.controller.management.add_to_audit_log(exec_user_data['user_id'],
                                            "imported a zip server named \"{}\"".format(server_name), # Example: Admin imported a server named "old creative"
                                            new_server_id,
                                            self.get_remote_ip())
@@ -194,19 +193,19 @@ class ServerHandler(BaseHandler):
                     return
                 server_type, server_version = server_parts
                 # TODO: add server type check here and call the correct server add functions if not a jar
-                role_ids = db_helper.get_user_roles_id(exec_user_id)
+                role_ids = self.controller.roles.get_user_roles_id(exec_user_id)
                 new_server_id = self.controller.create_jar_server(server_type, server_version, server_name, min_mem, max_mem, port)
-                db_helper.add_to_audit_log(exec_user_data['user_id'],
+                self.controller.management.add_to_audit_log(exec_user_data['user_id'],
                                            "created a {} {} server named \"{}\"".format(server_version, str(server_type).capitalize(), server_name), # Example: Admin created a 1.16.5 Bukkit server named "survival"
                                            new_server_id,
                                            self.get_remote_ip())
 
             #These lines create a new Role for the Server with full permissions and add the user to it
-            role_id = db_helper.add_role("Creator of Server with id={}".format(new_server_id))
-            db_helper.add_role_server(new_server_id, role_id, "11111111")
-            db_helper.add_role_to_user(exec_user_id, role_id)
+            role_id = self.controller.roles.add_role("Creator of Server with id={}".format(new_server_id))
+            self.controller.server_permissions.add_role_server(new_server_id, role_id, "11111111")
+            self.controller.users.add_role_to_user(exec_user_id, role_id)
             if not exec_user['superuser']:
-                db_helper.add_server_creation(exec_user_id)
+                self.controller.server_permissions.add_server_creation(exec_user_id)
 
             self.controller.stats.record_stats()
             self.redirect("/panel/dashboard")

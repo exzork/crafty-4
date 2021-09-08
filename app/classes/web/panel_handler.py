@@ -10,10 +10,14 @@ import os
 from tornado import iostream
 
 from app.classes.shared.console import console
-from app.classes.shared.models import Users, installer
+from app.classes.shared.main_models import Users, installer
+
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.models import db_helper, server_permissions, Servers, Enum_Permissions_Server
-from app.classes.shared.models_folder.crafty_permissions import crafty_permissions, Enum_Permissions_Crafty
+
+from app.classes.models.servers import Servers
+from app.classes.models.server_permissions import Enum_Permissions_Server
+from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
+
 from app.classes.shared.helpers import helper
 
 logger = logging.getLogger(__name__)
@@ -32,7 +36,7 @@ class PanelHandler(BaseHandler):
 
         exec_user_data = json.loads(self.get_secure_cookie("user_data"))
         exec_user_id = exec_user_data['user_id']
-        exec_user = db_helper.get_user(exec_user_id)
+        exec_user = self.controller.users.get_user_by_id(exec_user_id)
         
         exec_user_role = set()
         if exec_user['superuser'] == 1:
@@ -43,9 +47,9 @@ class PanelHandler(BaseHandler):
             exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user_id)
             logger.debug(exec_user['roles'])
             for r in exec_user['roles']:
-                role = db_helper.get_role(r)
+                role = self.controller.roles.get_role(r)
                 exec_user_role.add(role['role_name'])
-            defined_servers = self.controller.list_authorized_servers(exec_user_id)
+            defined_servers = self.controller.servers.get_authorized_servers(exec_user_id)
 
         page_data = {
             # todo: make this actually pull and compare version data
@@ -65,7 +69,7 @@ class PanelHandler(BaseHandler):
                 'stopped': (len(self.controller.list_defined_servers()) - len(self.controller.list_running_servers()))
             },
             'menu_servers': defined_servers,
-            'hosts_data': db_helper.get_latest_hosts_stats(),
+            'hosts_data': self.controller.management.get_latest_hosts_stats(),
             'show_contribute': helper.get_setting("show_contribute_link", True),
             'error': error,
             'time': formatted_time
@@ -111,7 +115,7 @@ class PanelHandler(BaseHandler):
             server_data = self.controller.get_server_data(server_id)
             server_name = server_data['server_name']
 
-            db_helper.add_to_audit_log(exec_user_data['user_id'],
+            self.controller.management.add_to_audit_log(exec_user_data['user_id'],
                                        "Deleted server {} named {}".format(server_id, server_name),
                                        server_id,
                                        self.get_remote_ip())
@@ -122,9 +126,9 @@ class PanelHandler(BaseHandler):
 
         elif page == 'dashboard':
             if exec_user['superuser'] == 1:
-                page_data['servers'] = db_helper.get_all_servers_stats()
+                page_data['servers'] = self.controller.servers.get_all_servers_stats()
             else:
-                user_auth = db_helper.get_authorized_servers_stats(exec_user_id)
+                user_auth = self.controller.servers.get_authorized_servers_stats(exec_user_id)
                 logger.debug("ASFR: {}".format(user_auth))
                 page_data['servers'] = user_auth
                 
@@ -146,13 +150,13 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this server id exist?
-                if not db_helper.server_id_exists(server_id):
+                if not self.controller.servers.server_id_exists(server_id):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
 
                 if exec_user['superuser'] != 1:
-                    if not db_helper.server_id_authorized(server_id, exec_user_id):
-                        if not db_helper.server_id_authorized(int(server_id), exec_user_id):
+                    if not self.controller.servers.server_id_authorized(server_id, exec_user_id):
+                        if not self.controller.servers.server_id_authorized(int(server_id), exec_user_id):
                             self.redirect("/panel/error?error=Invalid Server ID")
                             return False
 
@@ -165,8 +169,8 @@ class PanelHandler(BaseHandler):
 
             server = self.controller.get_server_obj(server_id)
             # server_data isn't needed since the server_stats also pulls server data
-            page_data['server_data'] = db_helper.get_server_data_by_id(server_id)
-            page_data['server_stats'] = db_helper.get_server_stats_by_id(server_id)
+            page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
+            page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
             page_data['active_link'] = subpage
             page_data['permissions'] = {
@@ -179,14 +183,14 @@ class PanelHandler(BaseHandler):
                 'Config': Enum_Permissions_Server.Config,
                 'Players': Enum_Permissions_Server.Players,
             }
-            page_data['user_permissions'] = self.controller.get_server_permissions_foruser(exec_user_id, server_id)
+            page_data['user_permissions'] = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
 
             if subpage == "backup":
-                page_data['backup_config'] = db_helper.get_backup_config(server_id)
+                page_data['backup_config'] = self.controller.management.get_backup_config(server_id)
                 page_data['backup_list'] = server.list_backups()
 
             def get_banned_players_html():
-                banned_players = helper.get_banned_players(server_id, db_helper)
+                banned_players = self.controller.servers.get_banned_players(server_id)
                 if banned_players is None:
                     return """
                     <li class="playerItem banned">
@@ -219,17 +223,17 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this server id exist?
-                if not db_helper.server_id_exists(server_id):
+                if not self.controller.servers.server_id_exists(server_id):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
 
                 if exec_user['superuser'] != 1:
-                    #if not db_helper.server_id_authorized(server_id, exec_user_id):
-                    if not db_helper.server_id_authorized(int(server_id), exec_user_id):
+                    #if not self.controller.servers.server_id_authorized(server_id, exec_user_id):
+                    if not self.controller.servers.server_id_authorized(int(server_id), exec_user_id):
                         self.redirect("/panel/error?error=Invalid Server ID")
                         return
 
-            server_info = db_helper.get_server_data_by_id(server_id)
+            server_info = self.controller.servers.get_server_data_by_id(server_id)
             backup_file = os.path.abspath(os.path.join(server_info["backup_path"], file))
             if not helper.in_path(server_info["backup_path"], backup_file) \
                     or not os.path.isfile(backup_file):
@@ -268,13 +272,13 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this server id exist?
-                if not db_helper.server_id_exists(server_id):
+                if not self.controller.servers.server_id_exists(server_id):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
 
                 if exec_user['superuser'] != 1:
-                    #if not db_helper.server_id_authorized(server_id, exec_user_id):
-                    if not db_helper.server_id_authorized(int(server_id), exec_user_id):
+                    #if not self.controller.servers.server_id_authorized(server_id, exec_user_id):
+                    if not self.controller.servers.server_id_authorized(int(server_id), exec_user_id):
                         self.redirect("/panel/error?error=Invalid Server ID")
                         return
 
@@ -286,12 +290,12 @@ class PanelHandler(BaseHandler):
             auth_role_servers = {}
             users_list = []
             role_users = {}
-            roles = db_helper.get_all_roles()
+            roles = self.controller.roles.get_all_roles()
             role_servers = []
             user_roles = {}
-            for user in db_helper.get_all_users():
-                user_roles_list = db_helper.get_user_roles_names(user.user_id)
-                user_servers = db_helper.get_authorized_servers(user.user_id)
+            for user in self.controller.users.get_all_users():
+                user_roles_list = self.controller.users.get_user_roles_names(user.user_id)
+                user_servers = self.controller.servers.get_authorized_servers(user.user_id)
                 servers = []
                 for server in user_servers:
                     servers.append(server['server_name'])
@@ -301,9 +305,9 @@ class PanelHandler(BaseHandler):
                 user_roles.update(data)
             for role in roles:
                 role_servers = []
-                role = db_helper.get_role(role.role_id)
+                role = self.controller.roles.get_role_with_servers(role.role_id)
                 for serv_id in role['servers']:
-                    role_servers.append(db_helper.get_server_data_by_id(serv_id)['server_name'])
+                    role_servers.append(self.controller.servers.get_server_data_by_id(serv_id)['server_name'])
                 data = {role['role_id']: role_servers}
                 auth_role_servers.update(data)
 
@@ -313,11 +317,11 @@ class PanelHandler(BaseHandler):
             page_data['user-roles'] = user_roles
 
             if exec_user['superuser'] == 1:
-                page_data['users'] = db_helper.get_all_users()
-                page_data['roles'] = db_helper.get_all_roles()
+                page_data['users'] = self.controller.users.get_all_users()
+                page_data['roles'] = self.controller.roles.get_all_roles()
             else:
-                page_data['users'] = db_helper.user_query(exec_user['user_id'])
-                page_data['roles'] = db_helper.user_role_query(exec_user['user_id'])
+                page_data['users'] = self.controller.users.user_query(exec_user['user_id'])
+                page_data['roles'] = self.controller.users.user_role_query(exec_user['user_id'])
 
             for user in page_data['users']:
                 if user.user_id != exec_user['user_id']:
@@ -342,32 +346,32 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Unauthorized access: not a user editor")
                 return
 
-            page_data['roles_all'] = db_helper.get_all_roles()
+            page_data['roles_all'] = self.controller.roles.get_all_roles()
             page_data['servers'] = []
             page_data['servers_all'] = self.controller.list_defined_servers()
             page_data['role-servers'] = []
-            page_data['permissions_all'] = self.controller.list_defined_crafty_permissions()
+            page_data['permissions_all'] = self.controller.crafty_perms.list_defined_crafty_permissions()
             page_data['permissions_list'] = set()
-            page_data['quantity_server'] = self.controller.list_all_crafty_permissions_quantity_limits()
+            page_data['quantity_server'] = self.controller.crafty_perms.list_all_crafty_permissions_quantity_limits()
 
             template = "panel/panel_edit_user.html"
 
         elif page == "edit_user":
             user_id = self.get_argument('id', None)
-            role_servers = db_helper.get_authorized_servers(user_id)
+            role_servers = self.controller.servers.get_authorized_servers(user_id)
             page_role_servers = []
             servers = set()
             for server in role_servers:
                 page_role_servers.append(server['server_id'])
             page_data['new_user'] = False
-            page_data['user'] = db_helper.get_user(user_id)
+            page_data['user'] = self.controller.users.get_user_by_id(user_id)
             page_data['servers'] = servers
             page_data['role-servers'] = page_role_servers
-            page_data['roles_all'] = db_helper.get_all_roles()
+            page_data['roles_all'] = self.controller.roles.get_all_roles()
             page_data['servers_all'] = self.controller.list_defined_servers()
-            page_data['permissions_all'] = self.controller.list_defined_crafty_permissions()
+            page_data['permissions_all'] = self.controller.crafty_perms.list_defined_crafty_permissions()
             page_data['permissions_list'] = self.controller.crafty_perms.get_crafty_permissions_list(user_id)
-            page_data['quantity_server'] = self.controller.list_crafty_permissions_quantity_limits(user_id)
+            page_data['quantity_server'] = self.controller.crafty_perms.list_crafty_permissions_quantity_limits(user_id)
 
             if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
@@ -397,7 +401,7 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this user id exist?
-                target_user = db_helper.get_user(user_id)
+                target_user = self.controller.users.get_user_by_id(user_id)
                 if not target_user:
                     self.redirect("/panel/error?error=Invalid User ID")
                     return
@@ -405,9 +409,9 @@ class PanelHandler(BaseHandler):
                     self.redirect("/panel/error?error=Cannot remove a superuser")
                     return
 
-            db_helper.remove_user(user_id)
+            self.controller.users.remove_user(user_id)
 
-            db_helper.add_to_audit_log(exec_user['user_id'],
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Removed user {} (UID:{})".format(target_user['username'], user_id),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
@@ -415,9 +419,9 @@ class PanelHandler(BaseHandler):
 
         elif page == "add_role":
             user_roles = {}
-            for user in db_helper.get_all_users():
-                user_roles_list = db_helper.get_user_roles_names(user.user_id)
-                user_servers = db_helper.get_authorized_servers(user.user_id)
+            for user in self.controller.users.get_all_users():
+                user_roles_list = self.controller.users.get_user_roles_names(user.user_id)
+                user_servers = self.controller.servers.get_authorized_servers(user.user_id)
                 data = {user.user_id: user_roles_list}
                 user_roles.update(data)
             page_data['new_role'] = True
@@ -428,14 +432,14 @@ class PanelHandler(BaseHandler):
             page_data['role']['last_update'] = "N/A"
             page_data['role']['servers'] = set()
             page_data['user-roles'] = user_roles
-            page_data['users'] = db_helper.get_all_users()
+            page_data['users'] = self.controller.users.get_all_users()
 
             if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
                 self.redirect("/panel/error?error=Unauthorized access: not a role editor")
                 return
 
             page_data['servers_all'] = self.controller.list_defined_servers()
-            page_data['permissions_all'] = self.controller.list_defined_permissions()
+            page_data['permissions_all'] = self.controller.server_perms.list_defined_permissions()
             page_data['permissions_list'] = set()
             template = "panel/panel_edit_role.html"
 
@@ -443,19 +447,19 @@ class PanelHandler(BaseHandler):
             auth_servers = {}
 
             user_roles = {}
-            for user in db_helper.get_all_users():
-                user_roles_list = db_helper.get_user_roles_names(user.user_id)
-                user_servers = db_helper.get_authorized_servers(user.user_id)
+            for user in self.controller.users.get_all_users():
+                user_roles_list = self.controller.users.get_user_roles_names(user.user_id)
+                user_servers = self.controller.servers.get_authorized_servers(user.user_id)
                 data = {user.user_id: user_roles_list}
                 user_roles.update(data)
             page_data['new_role'] = False
             role_id = self.get_argument('id', None)
-            page_data['role'] = db_helper.get_role(role_id)
+            page_data['role'] = self.controller.roles.get_role_with_servers(role_id)
             page_data['servers_all'] = self.controller.list_defined_servers()
-            page_data['permissions_all'] = self.controller.list_defined_permissions()
-            page_data['permissions_list'] = self.controller.get_role_permissions(role_id)
+            page_data['permissions_all'] = self.controller.server_perms.list_defined_permissions()
+            page_data['permissions_list'] = self.controller.server_perms.get_role_permissions(role_id)
             page_data['user-roles'] = user_roles
-            page_data['users'] = db_helper.get_all_users()
+            page_data['users'] = self.controller.users.get_all_users()
 
             if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
                 self.redirect("/panel/error?error=Unauthorized access: not a role editor")
@@ -477,21 +481,21 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this user id exist?
-                target_role = db_helper.get_role(role_id)
+                target_role = self.controller.roles.get_role(role_id)
                 if not target_role:
                     self.redirect("/panel/error?error=Invalid Role ID")
                     return
 
-            db_helper.remove_role(role_id)
+            self.controller.roles.remove_role(role_id)
 
-            db_helper.add_to_audit_log(exec_user['user_id'],
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Removed role {} (RID:{})".format(target_role['role_name'], role_id),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
 
         elif page == "activity_logs":
-            page_data['audit_logs'] = db_helper.get_actity_log()
+            page_data['audit_logs'] = self.controller.management.get_actity_log()
 
             template = "panel/activity_logs.html"
 
@@ -505,17 +509,16 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this server id exist?
-                if not db_helper.server_id_exists(server_id):
+                if not self.controller.servers.server_id_exists(server_id):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
 
                 if exec_user['superuser'] != 1:
-                    #if not db_helper.server_id_authorized(server_id, exec_user_id):
-                    if not db_helper.server_id_authorized(int(server_id), exec_user_id):
+                    if not self.controller.servers.server_id_authorized(int(server_id), exec_user_id):
                         self.redirect("/panel/error?error=Invalid Server ID")
                         return
 
-            server_info = db_helper.get_server_data_by_id(server_id)
+            server_info = self.controller.servers.get_server_data_by_id(server_id)
 
             if not helper.in_path(server_info["path"], file) \
                     or not os.path.isfile(file):
@@ -559,18 +562,18 @@ class PanelHandler(BaseHandler):
     def post(self, page):
         exec_user_data = json.loads(self.get_secure_cookie("user_data"))
         exec_user_id = exec_user_data['user_id']
-        exec_user = db_helper.get_user(exec_user_id)
+        exec_user = self.controller.users.get_user_by_id(exec_user_id)
 
         exec_user_role = set()
         if exec_user['superuser'] == 1:
             defined_servers = self.controller.list_defined_servers()
             exec_user_role.add("Super User")
-            exec_user_crafty_permissions = self.controller.list_defined_crafty_permissions()
+            exec_user_crafty_permissions = self.controller.crafty_perms.list_defined_crafty_permissions()
         else:
             exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user_id)
-            defined_servers = self.controller.list_authorized_servers(exec_user_id)
+            defined_servers = self.controller.servers.get_authorized_servers(exec_user_id)
             for r in exec_user['roles']:
-                role = db_helper.get_role(r)
+                role = self.controller.roles.get_role(r)
                 exec_user_role.add(role['role_name'])
 
         if page == 'server_detail':
@@ -591,7 +594,7 @@ class PanelHandler(BaseHandler):
             subpage = self.get_argument('subpage', None)
 
             if not exec_user['superuser']:
-                if not db_helper.server_id_authorized(server_id, exec_user_id):
+                if not self.controller.servers.server_id_authorized(server_id, exec_user_id):
                     self.redirect("/panel/error?error=Unauthorized access: invalid server id")
                     return
             elif server_id is None:
@@ -599,10 +602,11 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this server id exist?
-                if not db_helper.server_id_exists(server_id):
+                if not self.controller.servers.server_id_exists(server_id):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
 
+            #TODO use controller method
             Servers.update({
                 Servers.server_name: server_name,
                 Servers.path: server_path,
@@ -621,7 +625,7 @@ class PanelHandler(BaseHandler):
 
             self.controller.refresh_server_settings(server_id)
 
-            db_helper.add_to_audit_log(exec_user['user_id'],
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Edited server {} named {}".format(server_id, server_name),
                                        server_id,
                                        self.get_remote_ip())
@@ -643,7 +647,7 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this server id exist?
-                if not db_helper.server_id_exists(server_id):
+                if not self.controller.servers.server_id_exists(server_id):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
 
@@ -651,9 +655,9 @@ class PanelHandler(BaseHandler):
                 Servers.update({
                     Servers.backup_path: backup_path
                 }).where(Servers.server_id == server_id).execute()
-                db_helper.set_backup_config(server_id, max_backups=max_backups)
+                self.controller.management.set_backup_config(server_id, max_backups=max_backups)
 
-            db_helper.add_to_audit_log(exec_user['user_id'],
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Edited server {}: updated backups".format(server_id),
                                        server_id,
                                        self.get_remote_ip())
@@ -677,9 +681,9 @@ class PanelHandler(BaseHandler):
                     "username": username,
                     "password": password0,
                 }
-                db_helper.update_user(user_id, user_data=user_data)
+                self.controller.users.update_user(user_id, user_data=user_data)
 
-                db_helper.add_to_audit_log(exec_user['user_id'],
+                self.controller.management.add_to_audit_log(exec_user['user_id'],
                                            "Edited user {} (UID:{}) password".format(username,
                                                                                                          user_id),
                                            server_id=0,
@@ -694,7 +698,7 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this user id exist?
-                if not db_helper.user_id_exists(user_id):
+                if not self.controller.users.user_id_exists(user_id):
                     self.redirect("/panel/error?error=Invalid User ID")
                     return
 
@@ -703,7 +707,7 @@ class PanelHandler(BaseHandler):
                 return
 
             roles = set()
-            for role in db_helper.get_all_roles():
+            for role in self.controller.roles.get_all_roles():
                 argument = int(float(
                     bleach.clean(
                         self.get_argument('role_{}_membership'.format(role.role_id), '0')
@@ -714,14 +718,14 @@ class PanelHandler(BaseHandler):
 
             permissions_mask = "000"
             server_quantity = {}
-            for permission in self.controller.list_defined_crafty_permissions():
+            for permission in self.controller.crafty_perms.list_defined_crafty_permissions():
                 argument = int(float(
                     bleach.clean(
                         self.get_argument('permission_{}'.format(permission.name), '0')
                     )
                 ))
                 if argument:
-                    permissions_mask = crafty_permissions.set_permission(permissions_mask, permission, argument)
+                    permissions_mask = self.controller.crafty_perms.set_permission(permissions_mask, permission, argument)
 
                 q_argument = int(float(
                     bleach.clean(
@@ -744,9 +748,9 @@ class PanelHandler(BaseHandler):
                 "permissions_mask": permissions_mask,
                 "server_quantity": server_quantity
             }
-            db_helper.update_user(user_id, user_data=user_data, user_crafty_data=user_crafty_data)
+            self.controller.users.update_user(user_id, user_data=user_data, user_crafty_data=user_crafty_data)
 
-            db_helper.add_to_audit_log(exec_user['user_id'],
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Edited user {} (UID:{}) with roles {} and permissions {}".format(username, user_id, roles, permissions_mask),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
@@ -767,7 +771,7 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this user id exist?
-                if db_helper.get_user_id_by_name(username) is not None:
+                if self.controller.users.get_id_by_name(username) is not None:
                     self.redirect("/panel/error?error=User exists")
                     return
 
@@ -776,7 +780,7 @@ class PanelHandler(BaseHandler):
                 return
 
             roles = set()
-            for role in db_helper.get_all_roles():
+            for role in self.controller.roles.get_all_roles():
                 argument = int(float(
                     bleach.clean(
                         self.get_argument('role_{}_membership'.format(role.role_id), '0')
@@ -794,7 +798,7 @@ class PanelHandler(BaseHandler):
                     )
                 ))
                 if argument:
-                    permissions_mask = crafty_permissions.set_permission(permissions_mask, permission, argument)
+                    permissions_mask = self.controller.crafty_perms.set_permission(permissions_mask, permission, argument)
                     
                 q_argument = int(float(
                     bleach.clean(
@@ -806,7 +810,7 @@ class PanelHandler(BaseHandler):
                 else:
                     server_quantity[permission.name] = 0
 
-            user_id = db_helper.add_user(username, password=password0, enabled=enabled)
+            user_id = self.controller.users.add_user(username, password=password0, enabled=enabled)
             user_data = {
                 "roles": roles,
             }
@@ -814,13 +818,13 @@ class PanelHandler(BaseHandler):
                 "permissions_mask": permissions_mask,
                 "server_quantity": server_quantity
             }
-            db_helper.update_user(user_id, user_data=user_data, user_crafty_data=user_crafty_data)
+            self.controller.users.update_user(user_id, user_data=user_data, user_crafty_data=user_crafty_data)
 
-            db_helper.add_to_audit_log(exec_user['user_id'],
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Added user {} (UID:{})".format(username, user_id),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
-            db_helper.add_to_audit_log(exec_user['user_id'],
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Edited user {} (UID:{}) with roles {}".format(username, user_id, roles),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
@@ -841,7 +845,7 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this user id exist?
-                if not db_helper.role_id_exists(role_id):
+                if not self.controller.roles.role_id_exists(role_id):
                     self.redirect("/panel/error?error=Invalid Role ID")
                     return
 
@@ -856,22 +860,22 @@ class PanelHandler(BaseHandler):
                     servers.add(server['server_id'])
                     
             permissions_mask = "00000000"
-            for permission in self.controller.list_defined_permissions():
+            for permission in self.controller.server_perms.list_defined_permissions():
                 argument = int(float(
                     bleach.clean(
                         self.get_argument('permission_{}'.format(permission.name), '0')
                     )
                 ))
                 if argument:
-                    permissions_mask = server_permissions.set_permission(permissions_mask, permission, argument)
+                    permissions_mask = self.controller.server_perms.set_permission(permissions_mask, permission, argument)
 
             role_data = {
                 "role_name": role_name,
                 "servers": servers
             }
-            db_helper.update_role(role_id, role_data=role_data, permissions_mask=permissions_mask)
+            self.controller.roles.update_role(role_id, role_data=role_data, permissions_mask=permissions_mask)
 
-            db_helper.add_to_audit_log(exec_user['user_id'],
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Edited role {} (RID:{}) with servers {}".format(role_name, role_id, servers),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
@@ -889,7 +893,7 @@ class PanelHandler(BaseHandler):
                 return
             else:
                 # does this user id exist?
-                if db_helper.get_roleid_by_name(role_name) is not None:
+                if self.controller.roles.get_roleid_by_name(role_name) is not None:
                     self.redirect("/panel/error?error=Role exists")
                     return
 
@@ -904,23 +908,23 @@ class PanelHandler(BaseHandler):
                     servers.add(server['server_id'])
                     
             permissions_mask = "00000000"
-            for permission in self.controller.list_defined_permissions():
+            for permission in self.controller.server_perms.list_defined_permissions():
                 argument = int(float(
                     bleach.clean(
                         self.get_argument('permission_{}'.format(permission.name), '0')
                     )
                 ))
                 if argument:
-                    permissions_mask = server_permissions.set_permission(permissions_mask, permission, argument)
+                    permissions_mask = self.controller.server_perms.set_permission(permissions_mask, permission, argument)
 
-            role_id = db_helper.add_role(role_name)
-            db_helper.update_role(role_id, {"servers": servers}, permissions_mask)
+            role_id = self.controller.roles.add_role(role_name)
+            self.controller.roles.update_role(role_id, {"servers": servers}, permissions_mask)
 
-            db_helper.add_to_audit_log(exec_user['user_id'],
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Added role {} (RID:{})".format(role_name, role_id),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
-            db_helper.add_to_audit_log(exec_user['user_id'],
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Edited role {} (RID:{}) with servers {}".format(role_name, role_id, servers),
                                        server_id=0,
                                        source_ip=self.get_remote_ip())

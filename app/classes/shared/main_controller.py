@@ -12,9 +12,17 @@ from distutils import dir_util
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 
-from app.classes.shared.models import db_helper, server_permissions, Enum_Permissions_Server
-from app.classes.shared.models_folder.crafty_permissions import crafty_permissions, Enum_Permissions_Crafty
-from app.classes.shared.controllers.crafty_perms_controller import Crafty_Perms_Controller
+#Importing Models
+from app.classes.models.crafty_permissions import crafty_permissions, Enum_Permissions_Crafty
+from app.classes.models.servers import servers_helper
+#Importing Controllers
+from app.classes.controllers.crafty_perms_controller import Crafty_Perms_Controller
+from app.classes.controllers.management_controller import Management_Controller
+from app.classes.controllers.users_controller import Users_Controller
+from app.classes.controllers.roles_controller import Roles_Controller
+from app.classes.controllers.server_perms_controller import Server_Perms_Controller
+from app.classes.controllers.servers_controller import Servers_Controller
+
 from app.classes.shared.server import Server
 from app.classes.minecraft.server_props import ServerProps
 from app.classes.minecraft.serverjars import server_jar_obj
@@ -22,13 +30,17 @@ from app.classes.minecraft.stats import Stats
 
 logger = logging.getLogger(__name__)
 
-
 class Controller:
 
     def __init__(self):
         self.servers_list = []
         self.stats = Stats(self)
         self.crafty_perms = Crafty_Perms_Controller()
+        self.management = Management_Controller()
+        self.roles = Roles_Controller()
+        self.server_perms = Server_Perms_Controller()
+        self.servers = Servers_Controller()
+        self.users = Users_Controller()
 
     def check_server_loaded(self, server_id_to_check: int):
 
@@ -47,7 +59,7 @@ class Controller:
 
     def init_all_servers(self):
 
-        servers = db_helper.get_all_defined_servers()
+        servers = self.servers.get_all_defined_servers()
 
         for s in servers:
             server_id = s.get('server_id')
@@ -125,33 +137,8 @@ class Controller:
 
     @staticmethod
     def list_defined_servers():
-        servers = db_helper.get_all_defined_servers()
+        servers = servers_helper.get_all_defined_servers()
         return servers
-        
-    @staticmethod
-    def list_defined_permissions():
-        permissions_list = server_permissions.get_permissions_list()
-        return permissions_list
-        
-    @staticmethod
-    def get_mask_permissions(role_id, server_id):
-        permissions_mask = db_helper.get_permissions_mask(role_id, server_id)
-        return permissions_mask
-        
-    @staticmethod
-    def get_role_permissions(role_id):
-        permissions_list = db_helper.get_role_permissions_list(role_id)
-        return permissions_list
-
-    @staticmethod
-    def get_server_permissions_foruser(user_id, server_id):
-        permissions_list = db_helper.get_user_permissions_list(user_id, server_id)
-        return permissions_list        
-
-    @staticmethod
-    def list_authorized_servers(userId):
-        server_list = db_helper.get_authorized_servers(userId)
-        return server_list
 
     def list_running_servers(self):
         running_servers = []
@@ -352,7 +339,7 @@ class Controller:
 
     def register_server(self, name: str, server_uuid: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port=25565):
         # put data in the db
-        new_id = db_helper.create_server(name, server_uuid, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, server_port)
+        new_id = self.servers.create_server(name, server_uuid, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, server_port)
 
         try:
             # place a file in the dir saying it's owned by crafty
@@ -388,9 +375,9 @@ class Controller:
                 if running:
                     self.stop_server(server_id)
                 if files:
-                    shutil.rmtree(db_helper.get_server_data_by_id(server_id)['path'])
+                    shutil.rmtree(self.servers.get_server_data_by_id(server_id)['path'])
                 # remove the server from the DB
-                db_helper.remove_server(server_id)
+                self.servers.remove_server(server_id)
 
                 # remove the server from servers list
                 self.servers_list.pop(counter)

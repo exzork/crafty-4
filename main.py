@@ -9,10 +9,10 @@ import signal
 """ Our custom classes / pip packages """
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
-from app.classes.shared.models import installer, database
+from app.classes.shared.main_models import installer, database
 
 from app.classes.shared.tasks import TasksManager
-from app.classes.shared.controller import Controller
+from app.classes.shared.main_controller import Controller
 from app.classes.shared.migration import MigrationManager
 
 from app.classes.shared.cmd import MainPrompt

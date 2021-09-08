@@ -2,7 +2,7 @@ import tornado.options
 import tornado.web
 import tornado.httpserver
 from tornado.options import options
-from app.classes.shared.models import db_helper, Enum_Permissions_Server
+from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.shared.helpers import helper
 from app.classes.web.websocket_helper import websocket_helper
 from app.classes.shared.console import console
@@ -35,7 +35,7 @@ class UploadHandler(tornado.web.RequestHandler):
             console.warning('Server ID not found in upload handler call')
             self.do_upload = False
 
-        user_permissions = db_helper.get_user_permissions_list(user_id, server_id)
+        user_permissions = self.controller.server_permissions.get_user_permissions_list(user_id, server_id)
         if Enum_Permissions_Server.Files not in user_permissions:
             logger.warning(f'User {user_id} tried to upload a file to {server_id} without permissions!')
             console.warning(f'User {user_id} tried to upload a file to {server_id} without permissions!')
@@ -45,8 +45,8 @@ class UploadHandler(tornado.web.RequestHandler):
         filename = self.request.headers.get('X-FileName', None)
         full_path = os.path.join(path, filename)
 
-        if not helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], full_path):
-            print(user_id, server_id, db_helper.get_server_data_by_id(server_id)['path'], full_path)
+        if not helper.in_path(self.controller.servers.get_server_data_by_id(server_id)['path'], full_path):
+            print(user_id, server_id, self.controller.servers.get_server_data_by_id(server_id)['path'], full_path)
             logger.warning(f'User {user_id} tried to upload a file to {server_id} but the path is not inside of the server!')
             console.warning(f'User {user_id} tried to upload a file to {server_id} but the path is not inside of the server!')
             self.do_upload = False
