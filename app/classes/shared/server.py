@@ -183,7 +183,7 @@ class Server:
 
         logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
         try:
-            self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
+            self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
         except Exception as ex:
             msg = "Server {} failed to start with error code: {}".format(self.name, ex)
             logger.error(msg)
@@ -194,7 +194,6 @@ class Server:
         websocket_helper.broadcast('send_start_reload', {
         })
 
-        self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
         out_buf = ServerOutBuf(self.process, self.server_id)
 
         logger.debug('Starting virtual terminal listener for server {}'.format(self.name))
