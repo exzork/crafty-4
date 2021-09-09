@@ -18,7 +18,8 @@ RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing open
 COPY ./ /commander
 WORKDIR /commander
 RUN mv ./app/config ./app/config_original \
-&& mv ./app/config_original/default.json.example ./app/config_original/default.json
+&& mv ./app/config_original/default.json.example ./app/config_original/default.json \
+&& chmod +x ./docker_launcher.sh
 
 # Expose Web Interface port & Server port range
 EXPOSE 8000
