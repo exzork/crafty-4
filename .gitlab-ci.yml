@@ -1,0 +1,81 @@
+stages:
+- buildx
+- build-dev
+- build-prod
+
+buildx:
+  image: docker:git
+  services:
+  - docker:dind
+  stage: buildx
+  rules:
+  - if: $CI_COMMIT_BRANCH == 'dev'
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  variables:
+    GIT_STRATEGY: none
+  artifacts:
+    paths:
+      - buildx
+    expire_in: 1 hour
+  script:
+    - export DOCKER_BUILDKIT=1
+    - git clone git://github.com/docker/buildx ./docker-buildx
+    - docker build --platform=local -o . ./docker-buildx
+
+docker-build-dev:
+  image: docker:latest
+  services:
+    - name: docker:dind
+      command: ["--experimental"]
+  stage: build-dev
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'dev'
+  environment:
+    name: development
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - echo $CI_BUILD_TOKEN | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - |
+      tag=":$CI_COMMIT_REF_SLUG"
+      echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
+    - docker buildx create --use
+    - docker buildx build
+      --cache-from type=registry,ref="$CI_REGISTRY_IMAGE${tag}"
+      --build-arg BUILDKIT_INLINE_CACHE=1
+      --tag "$CI_REGISTRY_IMAGE${tag}"
+      --platform linux/arm64/v8,linux/amd64
+      --push .
+  after_script:
+    - docker buildx imagetools inspect "$CI_REGISTRY_IMAGE${tag}"
+
+docker-build-prod:
+  image: docker:latest
+  services:
+    - name: docker:dind
+      command: ["--experimental"]
+  stage: build-prod
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  environment:
+    name: production
+  before_script:
+    - mkdir -p ~/.docker/cli-plugins
+    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - echo $CI_BUILD_TOKEN | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - |
+      tag=""
+      echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
+    - docker buildx create --use
+    - docker buildx build
+      --cache-from type=registry,ref="$CI_REGISTRY_IMAGE${tag}"
+      --build-arg BUILDKIT_INLINE_CACHE=1
+      --tag "$CI_REGISTRY_IMAGE${tag}"
+      --platform linux/arm64/v8,linux/amd64
+      --push .
+  after_script:
+    - docker buildx imagetools inspect "$CI_REGISTRY_IMAGE${tag}"
