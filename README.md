@@ -25,14 +25,13 @@ This is done by using `docker-compose` or `docker run`(You don't need to clone t
 If you have a config folder already from previous local installation or docker setup, the image should mount this volume, if none is present then it will populate its own config folder for you.
 
 ### Using the registry image:
+The provided image supports both `arm64` and `amd64` out the box, if you have issues though you can build it yourself.
+
+The image is located at: `registry.gitlab.com/crafty-controller/crafty-commander:latest`
 | Branch             | Status                                                                |
 | ----------------- | ------------------------------------------------------------------ |
 | :latest | [![pipeline status](https://gitlab.com/crafty-controller/crafty-commander/badges/master/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-commander/-/commits/master) |
 | :dev | [![pipeline status](https://gitlab.com/crafty-controller/crafty-commander/badges/dev/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-commander/-/commits/dev) |
-
-The provided image supports both `arm64` and `amd64` out the box, if you have issues though you can build it yourself.
-
-The image is located at: `registry.gitlab.com/crafty-controller/crafty-commander:latest`
 
 While the repository is still **private / pre-release**,
 Before you can pull the image you must authenticate docker with the Container Registry.
