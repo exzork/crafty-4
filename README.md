@@ -19,15 +19,57 @@ Git Repository - https://gitlab.com/crafty-controller/crafty-web
 
 ## Basic Docker Usage
 
-A Docker image pipeline is still to be implimented but for example you can expect the image to be located: `crafty/cc-dashboard` and you would change the image in the below `docker run` to this image.
+**To get started with docker**, all you need to do is pull the image from this git repository's registry.
+This is done by using `docker-compose` or `docker run`(You don't need to clone the Repository and build, like in 3.x ).
 
-If you are building from the `docker-compose` you can find it in `./docker/docker-compose.yml` just `cd` to the docker directory and `docker-compose up -d`
+If you have a config folder already from previous local installation or docker setup, the image should mount this volume, if none is present then it will populate its own config folder for you.
 
-If you'd rather not use `docker-compose` you can use the following `docker run`:
+### Using the registry image:
+The provided image supports both `arm64` and `amd64` out the box, if you have issues though you can build it yourself.
 
+The image is located at: `registry.gitlab.com/crafty-controller/crafty-commander:latest`
+| Branch             | Status                                                                |
+| ----------------- | ------------------------------------------------------------------ |
+| :latest | [![pipeline status](https://gitlab.com/crafty-controller/crafty-commander/badges/master/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-commander/-/commits/master) |
+| :dev | [![pipeline status](https://gitlab.com/crafty-controller/crafty-commander/badges/dev/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-commander/-/commits/dev) |
+
+While the repository is still **private / pre-release**,
+Before you can pull the image you must authenticate docker with the Container Registry.
+
+To authenticate you will need a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
+with the minimum scope:
+
+- For read (*pull*) access, `read_registry`.
+- For write (*push*) access, `write_registry`.
+
+When you have this just run:
+```bash
+$ docker login registry.gitlab.com -u <username> -p <token>
 ```
-$ docker build . -t cc-dashboard
-# REMEMBER, Build your image!
+Then use one of the following methods:
+#### docker-compose.yml
+```yml
+version: '3'
+
+services:
+  crafty:
+    container_name: crafty_commander
+    image: registry.gitlab.com/crafty-controller/crafty-commander:latest
+    ports:
+      - "8000:8000" # HTTP
+      - "8443:8443" # HTTPS
+      - "8123:8123" # DYNMAP
+      - "19132:19132/udp" # BEDROCK
+      - "24000-25600:24000-25600" # MC SERV PORT RANGE
+    volumes:
+      - ./docker/backups:/commander/backups
+      - ./docker/logs:/commander/logs
+      - ./docker/servers:/commander/servers
+      - ./docker/config:/commander/app/config
+```
+
+#### docker run
+```sh
 $ docker run \
 	--name crafty_commander \
 	-p 8000:8000 \
@@ -39,8 +81,29 @@ $ docker run \
 	-v "/$(pwd)/docker/logs:/commander/logs" \
 	-v "/$(pwd)/docker/servers:/commander/servers" \
 	-v "/$(pwd)/docker/config:/commander/app/config" \
-	cc-dashboard
+	registry.gitlab.com/crafty-controller/crafty-commander:latest
+```
+
+### Building from the cloned repository:
+
+If you are building from `docker-compose` you can find the compose file in `./docker/docker-compose.yml` just `cd` to the docker directory and `docker-compose up -d`
+
+If you'd rather not use `docker-compose` you can use the following `docker run`in the directory where the *Dockerfile* is:
+```sh
+# REMEMBER, Build your image first!
+$ docker build . -t crafty
+
+$ docker run \
+	--name crafty_commander \
+	-p 8000:8000 \
+	-p 8443:8443 \
+	-p 8123:8123 \
+	-p 19132:19132/udp \
+	-p 24000-25600:24000-25600 \
+	-v "/$(pwd)/docker/backups:/commander/backups" \
+	-v "/$(pwd)/docker/logs:/commander/logs" \
+	-v "/$(pwd)/docker/servers:/commander/servers" \
+	-v "/$(pwd)/docker/config:/commander/app/config" \
+	crafty
 ```
 A fresh build will take several minutes depending on your system, but will be rapid there after.
-
-If you have a config folder already from previous local installation or docker setup, the image should mount this volume, if none is present then it will populate its own config folder for you.
