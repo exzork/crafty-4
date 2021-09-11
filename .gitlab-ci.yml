@@ -49,7 +49,7 @@ docker-build-dev:
       --platform linux/arm64/v8,linux/amd64
       --push .
   after_script:
-    - docker buildx imagetools inspect "$CI_REGISTRY_IMAGE${tag}"
+    - docker buildx imagetools inspect "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
 
 docker-build-prod:
   image: docker:latest
