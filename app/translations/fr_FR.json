@@ -10,7 +10,10 @@
         "contact": "Contacter le Support de Crafty Control via Discord",
         "terribleFailure": "C'est une Terrible Erreur !",
         "embarassing": "Oulà, c'est embarrassant.",
-        "error": "Erreur !"
+        "error": "Erreur !",
+        "start-error": "Server {} failed to start with error code: {}",
+        "closedPort": "We have detected port {} may not be open on the host network or a firewall is blocking it. Remote client connections to the server may be limited.",
+        "internet": "We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited."
     },
     "404": {
         "contact": "Contacter le Support de Crafty Control via Discord",

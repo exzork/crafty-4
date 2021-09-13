@@ -20,6 +20,7 @@ from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.shared.models import db_helper, Servers
 from app.classes.web.websocket_helper import websocket_helper
+from app.classes.shared.translation import translation
 
 logger = logging.getLogger(__name__)
 
@@ -188,7 +189,7 @@ class Server:
             msg = "Server {} failed to start with error code: {}".format(self.name, ex)
             logger.error(msg)
             websocket_helper.broadcast('send_start_error', {
-                'error': msg
+                'error': translation.translate('error', 'start-error').format(self.name, ex)
             })
             return False
         if helper.check_internet():
@@ -198,11 +199,11 @@ class Server:
                 })
             else:
                 websocket_helper.broadcast('send_start_error', {
-                'error': "We have detected port {} may not be open on the host network or a firewall is blocking it. Remote client connections to the server may be limited.".format(loc_server_port)
+                'error': translation.translate('error', 'closedPort').format(loc_server_port)
             })
         else:
             websocket_helper.broadcast('send_start_error', {
-                'error': "We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited."
+                'error': translation.translate('error', 'internet')
             })
 
 

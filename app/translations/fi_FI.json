@@ -10,7 +10,10 @@
         "contact": "Ota yhteyttä Crafty Control -tukeen Discordin kautta",
         "terribleFailure": "Mikä kauhea epäonnistuminen!",
         "embarassing": "No, tämähän on noloa.",
-        "error": "Virhe!"
+        "error": "Virhe!",
+        "start-error": "Server {} failed to start with error code: {}",
+        "closedPort": "We have detected port {} may not be open on the host network or a firewall is blocking it. Remote client connections to the server may be limited.",
+        "internet": "We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited."
     },
     "404": {
         "contact": "Ota yhteyttä Crafty Control -tukeen Discordin kautta",
