@@ -131,6 +131,11 @@ if __name__ == '__main__':
     # this should always be last
     tasks_manager.start_main_kill_switch_watcher()
 
+    if not helper.check_internet():
+            console.error("We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited.")
+    elif not helper.check_port(helper.get_setting('https_port')):
+        console.error("We have detected Crafty's port, {} may not be open on the host network or a firewall is blocking it. Remote client connections to Crafty may be limited.".format(helper.get_setting('https_port')))
+
     Crafty = MainPrompt(tasks_manager, migration_manager)
 
     def sigterm_handler(signum, current_stack_frame):

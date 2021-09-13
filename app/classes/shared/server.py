@@ -191,8 +191,20 @@ class Server:
                 'error': msg
             })
             return False
-        websocket_helper.broadcast('send_start_reload', {
-        })
+        if helper.check_internet():
+            loc_server_port = db_helper.get_server_stats_by_id(self.server_id)['server_port']
+            if helper.check_port(loc_server_port):
+                websocket_helper.broadcast('send_start_reload', {
+                })
+            else:
+                websocket_helper.broadcast('send_start_error', {
+                'error': "We have detected port {} may not be open on the host network or a firewall is blocking it. Remote client connections to the server may be limited.".format(loc_server_port)
+            })
+        else:
+            websocket_helper.broadcast('send_start_error', {
+                'error': "We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited."
+            })
+
 
         self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
         out_buf = ServerOutBuf(self.process, self.server_id)
@@ -350,6 +362,9 @@ class Server:
         else:
             return False
 
+    def get_pid(self):
+        return self.PID
+        
     def detect_crash(self):
 
         logger.info("Detecting possible crash for server: {} ".format(self.name))
