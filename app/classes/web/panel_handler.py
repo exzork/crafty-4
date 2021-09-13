@@ -622,19 +622,12 @@ class PanelHandler(BaseHandler):
                 Servers.logs_delete_after: logs_delete_after,
             }).where(Servers.server_id == server_id).execute()
 
-            Server_Stats.update({
-                Server_Stats.server_port: server_port,
-            }).where(Server_Stats.server_id == server_id).execute()
-
             self.controller.refresh_server_settings(server_id)
 
             db_helper.add_to_audit_log(exec_user['user_id'],
                                        "Edited server {} named {}".format(server_id, server_name),
                                        server_id,
                                        self.get_remote_ip())
-            
-            svr = self.controller.get_server_obj(server_id)
-            svr.reload_server_settings()
 
             self.redirect("/panel/server_detail?id={}&subpage=config".format(server_id))
 

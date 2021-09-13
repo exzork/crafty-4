@@ -219,7 +219,8 @@ class Stats:
 
             # TODO: search server properties file for possible override of 127.0.0.1
             internal_ip = server_data.get('server_ip', "127.0.0.1")
-            server_port = server_settings.get('server-port', "25565")
+            server_port = server_data.get('server_port', "25565")
+            print('PORT', server_port)
 
             logger.debug("Pinging server '{}' on {}:{}".format(s.get('server_name', "ID#{}".format(server_id)), internal_ip, server_port))
             int_mc_ping = ping(internal_ip, int(server_port))
@@ -277,7 +278,9 @@ class Stats:
 
         # TODO: search server properties file for possible override of 127.0.0.1
         internal_ip = server_data.get('server_ip', "127.0.0.1")
-        server_port = server_settings.get('server-port', "25565")
+        server_port = server_data.get('server_port', "25565")
+        print(internal_ip)
+        print(server_port)
 
         logger.debug("Pinging server '{}' on {}:{}".format(server.name, internal_ip, server_port))
         int_mc_ping = ping(internal_ip, int(server_port))
