@@ -11,9 +11,9 @@
         "terribleFailure": "C'est une Terrible Erreur !",
         "embarassing": "Oulà, c'est embarrassant.",
         "error": "Erreur !",
-        "start-error": "Server {} failed to start with error code: {}",
-        "closedPort": "We have detected port {} may not be open on the host network or a firewall is blocking it. Remote client connections to the server may be limited.",
-        "internet": "We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited."
+        "start-error": "Le serveur {} n'a pas pu démarrer avec le code d'erreur : {}",
+        "closedPort": "Nous avons détecté que le port {} n'est peut-être pas ouvert sur le réseau hôte ou qu'un pare-feu le bloque. Les connexions des clients distants au serveur peuvent être limitées.",
+        "internet": "Nous avons détecté que la machine exécutant Crafty n'a pas de connexion à Internet. Les connexions client au serveur peuvent être limitées."
     },
     "404": {
         "contact": "Contacter le Support de Crafty Control via Discord",
@@ -93,12 +93,12 @@
         "cpuCurFreq": "Fréquence CPU actuelle",
         "cpuMaxFreq": "Fréquence CPU Maximum",
         "cpuCores": "Coeurs CPU",
-        "start": "Start",
-        "stop": "Stop",
-        "clone": "Clone",
-        "kill": "Kill Process",
-        "restart": "Restart",
-        "killing": "Killing process..."
+        "start": "Début",
+        "stop": "Arrêter",
+        "clone": "Cloner",
+        "kill": "Tuer le processus",
+        "restart": "Redémarrage",
+        "killing": "Processus de mise à mort..."
     },
     "accessDenied": {
         "accessDenied": "Accès Interdit",
