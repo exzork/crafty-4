@@ -89,7 +89,13 @@
         "sendingCommand": "Sending your command",
         "cpuCurFreq": "CPU Current Clock",
         "cpuMaxFreq": "CPU Maximum Clock",
-        "cpuCores": "CPU Cores"
+        "cpuCores": "CPU Cores",
+        "start": "Start",
+        "stop": "Stop",
+        "clone": "Clone",
+        "kill": "Kill Process",
+        "restart": "Restart",
+        "killing": "Killing process..."
     },
     "accessDenied": {
         "accessDenied": "Access Denied",

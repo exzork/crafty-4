@@ -362,6 +362,9 @@ class Server:
         else:
             return False
 
+    def get_pid(self):
+        return self.PID
+        
     def detect_crash(self):
 
         logger.info("Detecting possible crash for server: {} ".format(self.name))

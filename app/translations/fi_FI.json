@@ -89,7 +89,13 @@
         "sendingCommand": "Lähetämme komentoasi",
         "cpuCurFreq": "Nykyinen kellotaajuus",
         "cpuMaxFreq": "Maksimi kellotaajuus",
-        "cpuCores": "Suorittimen ytimet"
+        "cpuCores": "Suorittimen ytimet",
+        "start": "Start",
+        "stop": "Stop",
+        "clone": "Clone",
+        "kill": "Kill Process",
+        "restart": "Restart",
+        "killing": "Killing process..."
     },
     "accessDenied": {
         "accessDenied": "Käyttö estetty",

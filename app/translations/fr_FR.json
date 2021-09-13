@@ -89,7 +89,13 @@
         "sendingCommand": "Envoi de votre commande",
         "cpuCurFreq": "Fréquence CPU actuelle",
         "cpuMaxFreq": "Fréquence CPU Maximum",
-        "cpuCores": "Coeurs CPU"
+        "cpuCores": "Coeurs CPU",
+        "start": "Start",
+        "stop": "Stop",
+        "clone": "Clone",
+        "kill": "Kill Process",
+        "restart": "Restart",
+        "killing": "Killing process..."
     },
     "accessDenied": {
         "accessDenied": "Accès Interdit",

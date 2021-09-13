@@ -126,13 +126,15 @@
                   <td id="controls{{server['server_data']['server_id']}}" class="actions_serverlist">
                     {% if server['user_command_permission'] %}
                       {% if server['stats']['running'] %}
-                        <a class="stop_button" data-id="{{server['server_data']['server_id']}}"> <i class="fas fa-stop"></i></a> &nbsp;
-                        <a class="restart_button" data-id="{{server['server_data']['server_id']}}"> <i class="fas fa-sync"></i></a> &nbsp;
+                        <a class="stop_button" data-id="{{server['server_data']['server_id']}}" data-toggle="tooltip" title={{ translate('dashboard', 'stop') }}> <i class="fas fa-stop"></i></a> &nbsp;
+                        <a class="restart_button" data-id="{{server['server_data']['server_id']}}" data-toggle="tooltip" title={{ translate('dashboard', 'restart') }}> <i class="fas fa-sync"></i></a> &nbsp;
+                        <a class="kill_button" data-id="{{server['server_data']['server_id']}}" class="kill_button" data-toggle="tooltip" title={{ translate('dashboard', 'kill') }}> <i class="fas fa-skull"></i></a> &nbsp;
                       {% elif server['stats']['updating']%}
                         <a data-id="{{server['server_data']['server_id']}}" class=""> UPDATING...</i></a>
                       {% else %}
-                      <a data-id="{{server['server_data']['server_id']}}" class="play_button"><i class="fas fa-play"></i></a> &nbsp;
-                        <a data-id="{{server['server_data']['server_id']}}" class="clone_button"> <i class="fas fa-clone"></i></a>&nbsp;
+                      <a data-id="{{server['server_data']['server_id']}}" class="play_button"><i class="fas fa-play" data-toggle="tooltip" title={{ translate('dashboard', 'start') }}></i></a> &nbsp;
+                        <a data-id="{{server['server_data']['server_id']}}" class="clone_button"> <i class="fas fa-clone" data-toggle="tooltip" title={{ translate('dashboard', 'clone') }}></i></a>&nbsp;
+                        <a class="kill_button" data-id="{{server['server_data']['server_id']}}" class="kill_button" data-toggle="tooltip" title={{ translate('dashboard', 'kill') }}> <i class="fas fa-skull"></i></a> &nbsp;
                       {% end %}
                     {% end %}
                   </td>
@@ -240,6 +242,25 @@ function send_command (server_id, command){
   });
 }
 
+function send_kill (server_id){
+  /* this getCookie function is in base.html */
+  var token = getCookie("_xsrf");
+
+  $.ajax({
+    type: "POST",
+    headers: {'X-XSRFToken': token},
+    url: '/ajax/kill?id=' + server_id,
+    success: function(data){
+      console.log("got response:");
+      console.log(data);
+      setTimeout(function(){
+            location.reload();
+      }, 10000);
+
+    }
+  });
+}
+
 $( document ).ready(function() {
   console.log('ready for JS!')
 
@@ -272,6 +293,37 @@ $( document ).ready(function() {
       title: '{% raw translate("dashboard", "sendingCommand") %}',
       message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientRestart") %} </div>'
     });
+  });
+    $( ".kill_button" ).click(function() {
+      server_id = $(this).attr("data-id");
+      bootbox.confirm({
+    message: "This will kill the server process and all it's subprocesses. Killing a process can potentially corrupt files. Only do this in extreme circumstances. Are you sure you would like to continue?",
+    buttons: {
+        confirm: {
+            label: '{% raw translate("dashboard", "kill") %}',
+            className: 'btn-danger'
+        },
+        cancel: {
+            label: '{% raw translate("panelConfig", "cancel") %}',
+            className: 'btn-secondary'
+        }
+    },
+    callback: function (result) {
+      if(result){
+          send_kill(server_id);
+          var dialog = bootbox.dialog({
+    title: '{% raw translate("dashboard", "killing") %}',
+    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>'
+});
+            
+dialog.init(function(){
+    setTimeout(function(){
+        location.reload();
+    }, 15000);
+});
+      }
+    }
+});
   });
   if (webSocket) {
     cpu_data = document.getElementById('cpu_data');
