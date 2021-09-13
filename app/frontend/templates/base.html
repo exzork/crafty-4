@@ -228,7 +228,12 @@ if (webSocket) {
             var x = document.querySelector('.modal-backdrop');
             if(x){
             x.remove()}
-            bootbox.alert(start_error.error);
+            bootbox.alert({
+              message: start_error.error,
+              callback: function () {
+              location.reload();
+    }
+})
     });
   }
 
