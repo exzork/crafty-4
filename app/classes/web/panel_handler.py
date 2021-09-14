@@ -69,6 +69,7 @@ class PanelHandler(BaseHandler):
             'error': error,
             'time': formatted_time
         }
+        page_data['super_user'] = exec_user['superuser']
 
         # if no servers defined, let's go to the build server area
         if page_data['server_stats']['total'] == 0 and page != "error" and page != "credits" and page != "contribute":
@@ -122,14 +123,15 @@ class PanelHandler(BaseHandler):
         elif page == 'dashboard':
             if exec_user['superuser'] == 1:
                 page_data['servers'] = db_helper.get_all_servers_stats()
-                total_players = 0
-                for server in db_helper.get_all_defined_servers():
-                    total_players += len(self.controller.stats.get_server_players(server['server_id']))
-                page_data['num_players'] = total_players
             else:
                 user_auth = db_helper.get_authorized_servers_stats(exec_user_id)
                 logger.debug("ASFR: {}".format(user_auth))
                 page_data['servers'] = user_auth
+            
+            total_players = 0
+            for server in db_helper.get_all_defined_servers():
+                total_players += len(self.controller.stats.get_server_players(server['server_id']))
+            page_data['num_players'] = total_players
                 
             for s in page_data['servers']:
                 try:
