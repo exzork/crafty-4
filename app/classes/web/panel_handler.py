@@ -12,7 +12,7 @@ from tornado import iostream
 from app.classes.shared.console import console
 from app.classes.shared.models import Users, installer
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.models import db_helper, server_permissions, Servers, Enum_Permissions_Server, crafty_permissions, Enum_Permissions_Crafty
+from app.classes.shared.models import db_helper, server_permissions, Servers, Enum_Permissions_Server, crafty_permissions, Enum_Permissions_Crafty, Server_Stats
 from app.classes.shared.helpers import helper
 
 logger = logging.getLogger(__name__)
@@ -122,6 +122,10 @@ class PanelHandler(BaseHandler):
         elif page == 'dashboard':
             if exec_user['superuser'] == 1:
                 page_data['servers'] = db_helper.get_all_servers_stats()
+                total_players = 0
+                for server in db_helper.get_all_defined_servers():
+                    total_players += len(self.controller.stats.get_server_players(server['server_id']))
+                page_data['num_players'] = total_players
             else:
                 user_auth = db_helper.get_authorized_servers_stats(exec_user_id)
                 logger.debug("ASFR: {}".format(user_auth))

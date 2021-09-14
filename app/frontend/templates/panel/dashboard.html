@@ -60,7 +60,7 @@
               <div class="d-flex">
                 <div class="wrapper">
                   <h5 class="mb-1 font-weight-medium text-primary">{{ translate('dashboard', 'players') }}</h5>
-                  <h3 class="mb-0 font-weight-semibold">18</h3>
+                  <h3 class="mb-0 font-weight-semibold">{{ data['num_players'] }}</h3>
 
                 </div>
                 <div class="wrapper my-auto ml-auto ml-lg-4">
@@ -130,7 +130,7 @@
                         <a class="restart_button" data-id="{{server['server_data']['server_id']}}" data-toggle="tooltip" title={{ translate('dashboard', 'restart') }}> <i class="fas fa-sync"></i></a> &nbsp;
                         <a class="kill_button" data-id="{{server['server_data']['server_id']}}" class="kill_button" data-toggle="tooltip" title={{ translate('dashboard', 'kill') }}> <i class="fas fa-skull"></i></a> &nbsp;
                       {% elif server['stats']['updating']%}
-                        <a data-id="{{server['server_data']['server_id']}}" class=""> UPDATING...</i></a>
+                        <a data-id="{{server['server_data']['server_id']}}" class="">{{ translate('serverTerm', 'updating') }}</i></a>
                       {% else %}
                       <a data-id="{{server['server_data']['server_id']}}" class="play_button"><i class="fas fa-play" data-toggle="tooltip" title={{ translate('dashboard', 'start') }}></i></a> &nbsp;
                         <a data-id="{{server['server_data']['server_id']}}" class="clone_button"> <i class="fas fa-clone" data-toggle="tooltip" title={{ translate('dashboard', 'clone') }}></i></a>&nbsp;

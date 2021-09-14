@@ -10,7 +10,10 @@
         "contact": "Ota yhteyttä Crafty Control -tukeen Discordin kautta",
         "terribleFailure": "Mikä kauhea epäonnistuminen!",
         "embarassing": "No, tämähän on noloa.",
-        "error": "Virhe!"
+        "error": "Virhe!",
+        "start-error": "Palvelin {} ei käynnistynyt virhekoodilla: {}",
+        "closedPort": "Olemme havainneet, että portti {} ei ehkä ole auki isäntäverkossa tai palomuuri estää sen. Etäasiakkaan yhteydet palvelimeen voivat olla rajallisia.",
+        "internet": "Olemme havainneet, että Crafty -koneella ei ole Internet -yhteyttä. Asiakasyhteydet palvelimelle voivat olla rajalliset."
     },
     "404": {
         "contact": "Ota yhteyttä Crafty Control -tukeen Discordin kautta",
@@ -90,12 +93,12 @@
         "cpuCurFreq": "Nykyinen kellotaajuus",
         "cpuMaxFreq": "Maksimi kellotaajuus",
         "cpuCores": "Suorittimen ytimet",
-        "start": "Start",
-        "stop": "Stop",
-        "clone": "Clone",
-        "kill": "Kill Process",
-        "restart": "Restart",
-        "killing": "Killing process..."
+        "start": "Alkaa",
+        "stop": "Lopettaa",
+        "clone": "Klooni",
+        "kill": "Tapa prosessi",
+        "restart": "Uudelleenkäynnistää",
+        "killing": "Tappamisprosessi ..."
     },
     "accessDenied": {
         "accessDenied": "Käyttö estetty",

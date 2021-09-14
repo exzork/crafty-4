@@ -131,6 +131,9 @@ if __name__ == '__main__':
     # this should always be last
     tasks_manager.start_main_kill_switch_watcher()
 
+    logger.info("Checking Internet/Port Service. This may take a minute.")
+    console.info("Checking Internet/Port Service. This may take a minute.")
+
     if not helper.check_internet():
             console.error("We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited.")
     elif not helper.check_port(helper.get_setting('https_port')):
