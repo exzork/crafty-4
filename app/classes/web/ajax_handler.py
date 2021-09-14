@@ -155,7 +155,7 @@ class AjaxHandler(BaseHandler):
                 if srv_obj.check_running():
                     srv_obj.send_command(command)
 
-            db_helper.add_to_audit_log(user_data['user_id'], "Sent command: {}".format(command), server_id, self.get_remote_ip())
+            db_helper.add_to_audit_log(user_data['user_id'], "Sent command to {} terminal: {}".format(db_helper.get_server_friendly_name(server_id), command), server_id, self.get_remote_ip())
 
         elif page == "create_file":
             file_parent = self.get_body_argument('file_parent', default=None, strip=True)
