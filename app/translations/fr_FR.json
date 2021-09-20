@@ -98,7 +98,9 @@
         "clone": "Cloner",
         "kill": "Tuer le processus",
         "restart": "Redémarrage",
-        "killing": "Processus de mise à mort..."
+        "killing": "Processus de mise à mort...",
+        "starting": "Démarrage retardé",
+        "delay-explained": "Le service/agent a récemment démarré et retarde le démarrage de l'instance du serveur minecraft"
     },
     "accessDenied": {
         "accessDenied": "Accès Interdit",
@@ -138,7 +140,9 @@
         "start": "Démarrer",
         "restart": "Redémarrer",
         "stop": "Arrêter",
-        "updating": "Mise à Jour ..."
+        "updating": "Mise à Jour ...",
+        "starting": "Démarrage retardé",
+        "delay-explained": "Le service/agent a récemment démarré et retarde le démarrage de l'instance du serveur minecraft"
         },
     "serverPlayerManagement": {
         "players": "Joueurs",

@@ -131,6 +131,8 @@
                         <a class="kill_button" data-id="{{server['server_data']['server_id']}}" class="kill_button" data-toggle="tooltip" title={{ translate('dashboard', 'kill') }}> <i class="fas fa-skull"></i></a> &nbsp;
                       {% elif server['stats']['updating']%}
                         <a data-id="{{server['server_data']['server_id']}}" class="">{{ translate('serverTerm', 'updating') }}</i></a>
+                      {% elif server['stats']['waiting_start']%}
+                        <a data-id="{{server['server_data']['server_id']}}" class="" title={{ translate('dashboard', 'delay-explained')}}>{{ translate('dashboard', 'starting') }}</i></a>
                       {% else %}
                       <a data-id="{{server['server_data']['server_id']}}" class="play_button"><i class="fas fa-play" data-toggle="tooltip" title={{ translate('dashboard', 'start') }}></i></a> &nbsp;
                         <a data-id="{{server['server_data']['server_id']}}" class="clone_button"> <i class="fas fa-clone" data-toggle="tooltip" title={{ translate('dashboard', 'clone') }}></i></a>&nbsp;

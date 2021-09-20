@@ -98,7 +98,9 @@
         "clone": "Klooni",
         "kill": "Tapa prosessi",
         "restart": "Uudelleenkäynnistää",
-        "killing": "Tappamisprosessi ..."
+        "killing": "Tappamisprosessi ...",
+        "starting": "Myöhästynyt lähtö",
+        "delay-explained": "Palvelu/agentti on äskettäin aloittanut ja viivästyttää minecraft -palvelimen ilmentymän alkua"
     },
     "accessDenied": {
         "accessDenied": "Käyttö estetty",
@@ -137,7 +139,10 @@
         "sendCommand": "Lähetä komento",
         "start": "Käynnistä",
         "restart": "Uudelleen&shy;käynnistä",
-        "stop": "Sammuta"
+        "stop": "Sammuta",
+        "updating": "Updating",
+        "starting": "Myöhästynyt lähtö",
+        "delay-explained": "Palvelu/agentti on äskettäin aloittanut ja viivästyttää minecraft -palvelimen ilmentymän alkua"
     },
     "serverPlayerManagement": {
         "players": "Pelaajat",
