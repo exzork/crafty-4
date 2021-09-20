@@ -98,7 +98,8 @@
         "clone": "Clone",
         "kill": "Kill Process",
         "restart": "Restart",
-        "killing": "Killing process..."
+        "killing": "Killing process...",
+        "starting": "Delayed Start"
     },
     "accessDenied": {
         "accessDenied": "Access Denied",
@@ -138,7 +139,8 @@
         "start": "Start",
         "restart": "Restart",
         "stop": "Stop",
-        "updating": "Updating..."
+        "updating": "Updating...",
+        "starting": "Delayed Start"
         },
     "serverPlayerManagement": {
         "players": "Players",

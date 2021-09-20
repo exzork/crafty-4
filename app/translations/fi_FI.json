@@ -98,7 +98,8 @@
         "clone": "Klooni",
         "kill": "Tapa prosessi",
         "restart": "Uudelleenkäynnistää",
-        "killing": "Tappamisprosessi ..."
+        "killing": "Tappamisprosessi ...",
+        "starting": "Delayed Start"
     },
     "accessDenied": {
         "accessDenied": "Käyttö estetty",
@@ -137,7 +138,9 @@
         "sendCommand": "Lähetä komento",
         "start": "Käynnistä",
         "restart": "Uudelleen&shy;käynnistä",
-        "stop": "Sammuta"
+        "stop": "Sammuta",
+        "updating": "Updating",
+        "starting": "Delayed Start"
     },
     "serverPlayerManagement": {
         "players": "Pelaajat",
