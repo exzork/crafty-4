@@ -638,7 +638,10 @@ class PanelHandler(BaseHandler):
             server_id = self.get_argument('id', None)
             backup_path = bleach.clean(self.get_argument('backup_path', None))
             max_backups = bleach.clean(self.get_argument('max_backups', None))
-            enabled = int(float(bleach.clean(self.get_argument('auto_enabled'), '0')))
+            try:
+                enabled = int(float(bleach.clean(self.get_argument('auto_enabled'), '0')))
+            except Exception as e:
+                enabled = '0'
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
@@ -653,10 +656,16 @@ class PanelHandler(BaseHandler):
                     return
 
             if backup_path is not None:
-                Servers.update({
-                    Servers.backup_path: backup_path
-                }).where(Servers.server_id == server_id).execute()
-                db_helper.set_backup_config(server_id, max_backups=max_backups)
+                if enabled == '0':
+                    Servers.update({
+                        Servers.backup_path: backup_path
+                    }).where(Servers.server_id == server_id).execute()
+                    db_helper.set_backup_config(server_id, max_backups=max_backups, auto_enabled=False)
+                else:
+                    Servers.update({
+                        Servers.backup_path: backup_path
+                    }).where(Servers.server_id == server_id).execute()
+                    db_helper.set_backup_config(server_id, max_backups=max_backups, auto_enabled=True)
 
             db_helper.add_to_audit_log(exec_user['user_id'],
                                        "Edited server {}: updated backups".format(server_id),
