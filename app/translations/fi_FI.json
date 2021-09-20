@@ -99,7 +99,8 @@
         "kill": "Tapa prosessi",
         "restart": "Uudelleenkäynnistää",
         "killing": "Tappamisprosessi ...",
-        "starting": "Delayed Start"
+        "starting": "Myöhästynyt lähtö",
+        "delay-explained": "Palvelu/agentti on äskettäin aloittanut ja viivästyttää minecraft -palvelimen ilmentymän alkua"
     },
     "accessDenied": {
         "accessDenied": "Käyttö estetty",
@@ -140,7 +141,8 @@
         "restart": "Uudelleen&shy;käynnistä",
         "stop": "Sammuta",
         "updating": "Updating",
-        "starting": "Delayed Start"
+        "starting": "Myöhästynyt lähtö",
+        "delay-explained": "Palvelu/agentti on äskettäin aloittanut ja viivästyttää minecraft -palvelimen ilmentymän alkua"
     },
     "serverPlayerManagement": {
         "players": "Pelaajat",

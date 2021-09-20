@@ -54,6 +54,12 @@
                 <button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1 disabled">{% raw translate('serverTerm', 'restart') %}</button>
                 <button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate('serverTerm', 'stop') }}</button>
               </div>
+              {% elif data['waiting_start'] %}
+              <div id="control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
+                <button onclick="" id="start-btn" style="max-width: 7rem; white-space: nowrap;" class="btn btn-secondary m-1 flex-grow-1 disabled" data-toggle="tooltip" title="{{ translate('serverTerm', 'delay-explained')}}">{{ translate('serverTerm', 'starting') }}</button>
+                <button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1 disabled">{% raw translate('serverTerm', 'restart') %}</button>
+                <button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate('serverTerm', 'stop') }}</button>
+                </div>
               {% else %}
               <div id="control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
                 <button onclick="send_command(server_id, 'start_server');" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate('serverTerm', 'start') }}</button>

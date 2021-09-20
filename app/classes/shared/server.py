@@ -195,7 +195,6 @@ class Server:
         if helper.check_internet():
             loc_server_port = db_helper.get_server_stats_by_id(self.server_id)['server_port']
             if helper.check_port(loc_server_port):
-                db_helper.set_waiting_start(self.server_id, False)
                 websocket_helper.broadcast('send_start_reload', {
                 })
             else:
@@ -207,7 +206,7 @@ class Server:
                 'error': translation.translate('error', 'internet')
             })
 
-
+        db_helper.set_waiting_start(self.server_id, False)
         self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
         out_buf = ServerOutBuf(self.process, self.server_id)
 

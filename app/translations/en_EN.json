@@ -99,7 +99,8 @@
         "kill": "Kill Process",
         "restart": "Restart",
         "killing": "Killing process...",
-        "starting": "Delayed Start"
+        "starting": "Delayed-Start",
+        "delay-explained": "The service/agent has recently started and is delaying the start of the minecraft server instance"
     },
     "accessDenied": {
         "accessDenied": "Access Denied",
@@ -140,7 +141,8 @@
         "restart": "Restart",
         "stop": "Stop",
         "updating": "Updating...",
-        "starting": "Delayed Start"
+        "starting": "Delayed-Start",
+        "delay-explained": "The service/agent has recently started and is delaying the start of the minecraft server instance"
         },
     "serverPlayerManagement": {
         "players": "Players",

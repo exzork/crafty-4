@@ -99,7 +99,8 @@
         "kill": "Tuer le processus",
         "restart": "Redémarrage",
         "killing": "Processus de mise à mort...",
-        "starting": "Delayed Start"
+        "starting": "Démarrage retardé",
+        "delay-explained": "Le service/agent a récemment démarré et retarde le démarrage de l'instance du serveur minecraft"
     },
     "accessDenied": {
         "accessDenied": "Accès Interdit",
@@ -140,7 +141,8 @@
         "restart": "Redémarrer",
         "stop": "Arrêter",
         "updating": "Mise à Jour ...",
-        "starting": "Delayed Start"
+        "starting": "Démarrage retardé",
+        "delay-explained": "Le service/agent a récemment démarré et retarde le démarrage de l'instance du serveur minecraft"
         },
     "serverPlayerManagement": {
         "players": "Joueurs",
