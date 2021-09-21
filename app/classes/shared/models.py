@@ -162,6 +162,7 @@ class Server_Stats(Model):
     desc = CharField(default="Unable to Connect")
     version = CharField(default="")
     updating = BooleanField(default=False)
+    waiting_start = BooleanField(default=False)
 
 
     class Meta:
@@ -458,6 +459,20 @@ class db_shortcuts:
             logger.error("Database entry not found. ".format(ex))
         with database.atomic():
             Server_Stats.update(updating=value).where(Server_Stats.server_id == server_id).execute()
+
+    @staticmethod
+    def set_waiting_start(server_id, value):
+        try:
+            row = Server_Stats.select().where(Server_Stats.server_id == server_id)
+        except Exception as ex:
+            logger.error("Database entry not found. ".format(ex))
+        with database.atomic():
+            Server_Stats.update(waiting_start=value).where(Server_Stats.server_id == server_id).execute()
+
+    @staticmethod
+    def get_waiting_start(server_id):
+        waiting_start = Server_Stats.select().where(Server_Stats.server_id == server_id).get()
+        return waiting_start.waiting_start
 
     @staticmethod
     def get_TTL_without_player(server_id):

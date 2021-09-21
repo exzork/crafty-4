@@ -10,7 +10,10 @@
         "contact": "Contact Crafty Control Support via Discord",
         "terribleFailure": "What a Terrible Failure!",
         "embarassing": "Oh my, well, this is embarrassing.",
-        "error": "Error!"
+        "error": "Error!",
+        "start-error": "Server {} failed to start with error code: {}",
+        "closedPort": "We have detected port {} may not be open on the host network or a firewall is blocking it. Remote client connections to the server may be limited.",
+        "internet": "We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited."
     },
     "404": {
         "contact": "Contact Crafty Control Support via Discord",
@@ -89,7 +92,15 @@
         "sendingCommand": "Sending your command",
         "cpuCurFreq": "CPU Current Clock",
         "cpuMaxFreq": "CPU Maximum Clock",
-        "cpuCores": "CPU Cores"
+        "cpuCores": "CPU Cores",
+        "start": "Start",
+        "stop": "Stop",
+        "clone": "Clone",
+        "kill": "Kill Process",
+        "restart": "Restart",
+        "killing": "Killing process...",
+        "starting": "Delayed-Start",
+        "delay-explained": "The service/agent has recently started and is delaying the start of the minecraft server instance"
     },
     "accessDenied": {
         "accessDenied": "Access Denied",
@@ -129,7 +140,9 @@
         "start": "Start",
         "restart": "Restart",
         "stop": "Stop",
-        "updating": "Updating..."
+        "updating": "Updating...",
+        "starting": "Delayed-Start",
+        "delay-explained": "The service/agent has recently started and is delaying the start of the minecraft server instance"
         },
     "serverPlayerManagement": {
         "players": "Players",
