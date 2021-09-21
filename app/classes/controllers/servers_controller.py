@@ -118,6 +118,12 @@ class Servers_Controller:
     def can_stop_no_players(server_id, time_limit):
         return servers_helper.can_stop_no_players(server_id, time_limit)
 
+    def set_waiting_start(server_id, value):
+        servers_helper.set_waiting_start(server_id, value)
+
+    @staticmethod
+    def get_waiting_start(server_id):
+        return servers_helper.get_waiting_start(server_id)
         
     #************************************************************************************************
     #                                    Servers Helpers Methods

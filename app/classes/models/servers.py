@@ -76,6 +76,7 @@ class Server_Stats(Model):
     desc = CharField(default="Unable to Connect")
     version = CharField(default="")
     updating = BooleanField(default=False)
+    waiting_start = BooleanField(default=False)
 
 
     class Meta:
@@ -186,6 +187,20 @@ class helper_servers:
         if (time_limit == -1) or (ttl_no_players > time_limit):
             can = True
         return can
+        
+    @staticmethod
+    def set_waiting_start(server_id, value):
+        try:
+            row = Server_Stats.select().where(Server_Stats.server_id == server_id)
+        except Exception as ex:
+            logger.error("Database entry not found. ".format(ex))
+        with database.atomic():
+            Server_Stats.update(waiting_start=value).where(Server_Stats.server_id == server_id).execute()
+
+    @staticmethod
+    def get_waiting_start(server_id):
+        waiting_start = Server_Stats.select().where(Server_Stats.server_id == server_id).get()
+        return waiting_start.waiting_start
 
 
 servers_helper = helper_servers()
