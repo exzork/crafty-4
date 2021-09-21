@@ -13,6 +13,8 @@ buildx:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   variables:
     GIT_STRATEGY: none
+  tags:
+  - docker
   artifacts:
     paths:
       - buildx
@@ -28,6 +30,8 @@ docker-build-dev:
     - name: docker:dind
       command: ["--experimental"]
   stage: build-dev
+  tags:
+  - docker
   rules:
     - if: $CI_COMMIT_BRANCH == 'dev'
   environment:
@@ -57,6 +61,8 @@ docker-build-prod:
     - name: docker:dind
       command: ["--experimental"]
   stage: build-prod
+  tags:
+  - docker
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   environment:
