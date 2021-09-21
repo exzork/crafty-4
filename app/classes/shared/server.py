@@ -21,6 +21,7 @@ from app.classes.shared.console import console
 from app.classes.models.servers import Servers, servers_helper
 from app.classes.models.management import management_helper
 from app.classes.web.websocket_helper import websocket_helper
+from app.classes.shared.translation import translation
 
 logger = logging.getLogger(__name__)
 
@@ -183,19 +184,31 @@ class Server:
             logger.info("Linux Detected")
 
         logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
+        
+        db_helper.set_waiting_start(self.server_id, False)
         try:
-            self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
+            self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
         except Exception as ex:
             msg = "Server {} failed to start with error code: {}".format(self.name, ex)
             logger.error(msg)
             websocket_helper.broadcast('send_start_error', {
-                'error': msg
+                'error': translation.translate('error', 'start-error').format(self.name, ex)
             })
             return False
-        websocket_helper.broadcast('send_start_reload', {
-        })
+        if helper.check_internet():
+            loc_server_port = db_helper.get_server_stats_by_id(self.server_id)['server_port']
+            if helper.check_port(loc_server_port):
+                websocket_helper.broadcast('send_start_reload', {
+                })
+            else:
+                websocket_helper.broadcast('send_start_error', {
+                'error': translation.translate('error', 'closedPort').format(loc_server_port)
+            })
+        else:
+            websocket_helper.broadcast('send_start_error', {
+                'error': translation.translate('error', 'internet')
+            })
 
-        self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
         out_buf = ServerOutBuf(self.process, self.server_id)
 
         logger.debug('Starting virtual terminal listener for server {}'.format(self.name))
@@ -351,6 +364,9 @@ class Server:
         else:
             return False
 
+    def get_pid(self):
+        return self.PID
+        
     def detect_crash(self):
 
         logger.info("Detecting possible crash for server: {} ".format(self.name))

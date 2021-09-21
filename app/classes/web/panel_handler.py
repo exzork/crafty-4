@@ -74,6 +74,7 @@ class PanelHandler(BaseHandler):
             'error': error,
             'time': formatted_time
         }
+        page_data['super_user'] = exec_user['superuser']
 
         # if no servers defined, let's go to the build server area
         if page_data['server_stats']['total'] == 0 and page != "error" and page != "credits" and page != "contribute":
@@ -127,10 +128,17 @@ class PanelHandler(BaseHandler):
         elif page == 'dashboard':
             if exec_user['superuser'] == 1:
                 page_data['servers'] = self.controller.servers.get_all_servers_stats()
+                for data in page_data['servers']:
+                    data['stats']['waiting_start'] = db_helper.get_waiting_start(int(data['stats']['server_id']['server_id']))
             else:
                 user_auth = self.controller.servers.get_authorized_servers_stats(exec_user_id)
                 logger.debug("ASFR: {}".format(user_auth))
                 page_data['servers'] = user_auth
+            
+            total_players = 0
+            for server in db_helper.get_all_defined_servers():
+                total_players += len(self.controller.stats.get_server_players(server['server_id']))
+            page_data['num_players'] = total_players
                 
             for s in page_data['servers']:
                 try:
@@ -171,6 +179,7 @@ class PanelHandler(BaseHandler):
             # server_data isn't needed since the server_stats also pulls server data
             page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
+            page_data['waiting_start'] = self.controller.servers.get_waiting_start(server_id)
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
             page_data['active_link'] = subpage
             page_data['permissions'] = {
@@ -637,7 +646,10 @@ class PanelHandler(BaseHandler):
             server_id = self.get_argument('id', None)
             backup_path = bleach.clean(self.get_argument('backup_path', None))
             max_backups = bleach.clean(self.get_argument('max_backups', None))
-            enabled = int(float(bleach.clean(self.get_argument('auto_enabled'), '0')))
+            try:
+                enabled = int(float(bleach.clean(self.get_argument('auto_enabled'), '0')))
+            except Exception as e:
+                enabled = '0'
 
             if not exec_user['superuser']:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
@@ -652,10 +664,16 @@ class PanelHandler(BaseHandler):
                     return
 
             if backup_path is not None:
-                Servers.update({
-                    Servers.backup_path: backup_path
-                }).where(Servers.server_id == server_id).execute()
-                self.controller.management.set_backup_config(server_id, max_backups=max_backups)
+                if enabled == '0':
+                    Servers.update({
+                        Servers.backup_path: backup_path
+                    }).where(Servers.server_id == server_id).execute()
+                    self.controller.management.set_backup_config(server_id, max_backups=max_backups, auto_enabled=False)
+                else:
+                    Servers.update({
+                        Servers.backup_path: backup_path
+                    }).where(Servers.server_id == server_id).execute()
+                    self.controller.management.set_backup_config(server_id, max_backups=max_backups, auto_enabled=True)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Edited server {}: updated backups".format(server_id),

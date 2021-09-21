@@ -2,6 +2,7 @@ import json
 import logging
 import tempfile
 import threading
+from typing import Container
 import zipfile
 
 import tornado.web
@@ -153,6 +154,8 @@ class AjaxHandler(BaseHandler):
                 if srv_obj.check_running():
                     srv_obj.send_command(command)
 
+            db_helper.add_to_audit_log(user_data['user_id'], "Sent command to {} terminal: {}".format(db_helper.get_server_friendly_name(server_id), command), server_id, self.get_remote_ip())
+
         elif page == "create_file":
             file_parent = self.get_body_argument('file_parent', default=None, strip=True)
             file_name = self.get_body_argument('file_name', default=None, strip=True)
@@ -194,6 +197,18 @@ class AjaxHandler(BaseHandler):
             path = self.get_argument('path', None)
             helper.unzipFile(path)
             self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
+            return
+
+        elif page == "kill":
+            server_id = self.get_argument('id', None)
+            svr = self.controller.get_server_obj(server_id)
+            if svr.get_pid():
+                try:
+                    svr.killpid(svr.get_pid())
+                except Exception as e:
+                    logger.error("Could not find PID for requested termsig. Full error: {}".format(e))
+            else:
+                logger.error("Could not find PID for requested termsig. Full error: {}".format(e))
             return
 
     @tornado.web.authenticated

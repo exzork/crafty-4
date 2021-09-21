@@ -175,8 +175,8 @@ class Stats:
 
 
         # TODO: search server properties file for possible override of 127.0.0.1
-        internal_ip = server_data.get('server_ip', "127.0.0.1")
-        server_port = server_settings.get('server-port', "25565")
+        internal_ip = server['server_ip']
+        server_port = server['server_port']
 
         logger.debug("Pinging {} on port {}".format(internal_ip, server_port))
         int_mc_ping = ping(internal_ip, int(server_port))
@@ -201,6 +201,8 @@ class Stats:
         for s in servers:
 
             server_id = s.get('server_id', None)
+            server = db_helper.get_server_data_by_id(server_id)
+
 
             logger.debug('Getting stats for server: {}'.format(server_id))
 
@@ -208,7 +210,7 @@ class Stats:
             server_obj = s.get('server_obj', None)
             server_obj.reload_server_settings()
             server_settings = s.get('server_settings', {})
-            server_data = s.get('server_data_obj', {})
+            server_data = self.controller.get_server_data(server_id)
 
             # world data
             world_name = server_settings.get('level-name', 'Unknown')
@@ -218,8 +220,8 @@ class Stats:
             p_stats = self._get_process_stats(server_obj.PID)
 
             # TODO: search server properties file for possible override of 127.0.0.1
-            internal_ip = server_data.get('server_ip', "127.0.0.1")
-            server_port = server_settings.get('server-port', "25565")
+            internal_ip = server['server_ip']
+            server_port = server['server_port']
 
             logger.debug("Pinging server '{}' on {}:{}".format(s.get('server_name', "ID#{}".format(server_id)), internal_ip, server_port))
             int_mc_ping = ping(internal_ip, int(server_port))
@@ -276,8 +278,8 @@ class Stats:
         p_stats = self._get_process_stats(server_obj.PID)
 
         # TODO: search server properties file for possible override of 127.0.0.1
-        internal_ip = server_data.get('server_ip', "127.0.0.1")
-        server_port = server_settings.get('server-port', "25565")
+        internal_ip = server['server_ip']
+        server_port = server['server_port']
 
         logger.debug("Pinging server '{}' on {}:{}".format(server.name, internal_ip, server_port))
         int_mc_ping = ping(internal_ip, int(server_port))

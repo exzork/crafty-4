@@ -14,6 +14,7 @@ import html
 import zipfile
 import pathlib
 import shutil
+from requests import get
 
 from datetime import datetime
 from socket import gethostname
@@ -74,6 +75,25 @@ class Helpers:
                 return False
         logger.error("{} does not exist".format(file))
         return True
+
+    @staticmethod
+    def check_internet():
+        try:
+            requests.get('https://google.com', timeout=1)
+            return True
+        except Exception as err: 
+            return False
+
+    @staticmethod
+    def check_port(server_port):
+        host_public = get('https://api.ipify.org').text
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = sock.connect_ex((host_public ,server_port))
+        sock.close()
+        if result == 0:
+            return True
+        else:
+            return False
 
     def get_setting(self, key, default_return=False):
 

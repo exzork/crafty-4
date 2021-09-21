@@ -100,6 +100,14 @@ class Controller:
             # add this temp object to the list of init servers
             self.servers_list.append(temp_server_dict)
 
+            if s['auto_start']:
+                db_helper.set_waiting_start(s['server_id'], True)
+
+            db_helper.get_waiting_start(s['server_id'])
+            
+            server_stats = db_helper.get_all_servers_stats()
+            self.refresh_server_settings(s['server_id'])
+
             console.info("Loaded Server: ID {} | Name: {} | Autostart: {} | Delay: {} ".format(
                 s['server_id'],
                 s['server_name'],

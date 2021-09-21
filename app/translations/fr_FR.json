@@ -10,7 +10,10 @@
         "contact": "Contacter le Support de Crafty Control via Discord",
         "terribleFailure": "C'est une Terrible Erreur !",
         "embarassing": "Oulà, c'est embarrassant.",
-        "error": "Erreur !"
+        "error": "Erreur !",
+        "start-error": "Le serveur {} n'a pas pu démarrer avec le code d'erreur : {}",
+        "closedPort": "Nous avons détecté que le port {} n'est peut-être pas ouvert sur le réseau hôte ou qu'un pare-feu le bloque. Les connexions des clients distants au serveur peuvent être limitées.",
+        "internet": "Nous avons détecté que la machine exécutant Crafty n'a pas de connexion à Internet. Les connexions client au serveur peuvent être limitées."
     },
     "404": {
         "contact": "Contacter le Support de Crafty Control via Discord",
@@ -89,7 +92,15 @@
         "sendingCommand": "Envoi de votre commande",
         "cpuCurFreq": "Fréquence CPU actuelle",
         "cpuMaxFreq": "Fréquence CPU Maximum",
-        "cpuCores": "Coeurs CPU"
+        "cpuCores": "Coeurs CPU",
+        "start": "Début",
+        "stop": "Arrêter",
+        "clone": "Cloner",
+        "kill": "Tuer le processus",
+        "restart": "Redémarrage",
+        "killing": "Processus de mise à mort...",
+        "starting": "Démarrage retardé",
+        "delay-explained": "Le service/agent a récemment démarré et retarde le démarrage de l'instance du serveur minecraft"
     },
     "accessDenied": {
         "accessDenied": "Accès Interdit",
@@ -129,7 +140,9 @@
         "start": "Démarrer",
         "restart": "Redémarrer",
         "stop": "Arrêter",
-        "updating": "Mise à Jour ..."
+        "updating": "Mise à Jour ...",
+        "starting": "Démarrage retardé",
+        "delay-explained": "Le service/agent a récemment démarré et retarde le démarrage de l'instance du serveur minecraft"
         },
     "serverPlayerManagement": {
         "players": "Joueurs",

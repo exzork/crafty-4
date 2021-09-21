@@ -10,7 +10,10 @@
         "contact": "Ota yhteyttä Crafty Control -tukeen Discordin kautta",
         "terribleFailure": "Mikä kauhea epäonnistuminen!",
         "embarassing": "No, tämähän on noloa.",
-        "error": "Virhe!"
+        "error": "Virhe!",
+        "start-error": "Palvelin {} ei käynnistynyt virhekoodilla: {}",
+        "closedPort": "Olemme havainneet, että portti {} ei ehkä ole auki isäntäverkossa tai palomuuri estää sen. Etäasiakkaan yhteydet palvelimeen voivat olla rajallisia.",
+        "internet": "Olemme havainneet, että Crafty -koneella ei ole Internet -yhteyttä. Asiakasyhteydet palvelimelle voivat olla rajalliset."
     },
     "404": {
         "contact": "Ota yhteyttä Crafty Control -tukeen Discordin kautta",
@@ -89,7 +92,15 @@
         "sendingCommand": "Lähetämme komentoasi",
         "cpuCurFreq": "Nykyinen kellotaajuus",
         "cpuMaxFreq": "Maksimi kellotaajuus",
-        "cpuCores": "Suorittimen ytimet"
+        "cpuCores": "Suorittimen ytimet",
+        "start": "Alkaa",
+        "stop": "Lopettaa",
+        "clone": "Klooni",
+        "kill": "Tapa prosessi",
+        "restart": "Uudelleenkäynnistää",
+        "killing": "Tappamisprosessi ...",
+        "starting": "Myöhästynyt lähtö",
+        "delay-explained": "Palvelu/agentti on äskettäin aloittanut ja viivästyttää minecraft -palvelimen ilmentymän alkua"
     },
     "accessDenied": {
         "accessDenied": "Käyttö estetty",
@@ -128,7 +139,10 @@
         "sendCommand": "Lähetä komento",
         "start": "Käynnistä",
         "restart": "Uudelleen&shy;käynnistä",
-        "stop": "Sammuta"
+        "stop": "Sammuta",
+        "updating": "Updating",
+        "starting": "Myöhästynyt lähtö",
+        "delay-explained": "Palvelu/agentti on äskettäin aloittanut ja viivästyttää minecraft -palvelimen ilmentymän alkua"
     },
     "serverPlayerManagement": {
         "players": "Pelaajat",
