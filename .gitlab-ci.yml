@@ -45,7 +45,7 @@ docker-build-dev:
     - |
       tag=":$CI_COMMIT_REF_SLUG"
       echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
-    - docker buildx create --use
+    - docker buildx create --use --name zedBuilder
     - docker buildx build
       --cache-from type=registry,ref="$CI_REGISTRY_IMAGE${tag}"
       --build-arg BUILDKIT_INLINE_CACHE=1
@@ -53,6 +53,9 @@ docker-build-dev:
       --platform linux/arm64/v8,linux/amd64
       --push .
   after_script:
+    - |
+      docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
+      echo "Please review multi-arch manifests are present:"
     - docker buildx imagetools inspect "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
 
 docker-build-prod:
@@ -76,7 +79,7 @@ docker-build-prod:
     - |
       tag=""
       echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
-    - docker buildx create --use
+    - docker buildx create --use --name zedBuilder
     - docker buildx build
       --cache-from type=registry,ref="$CI_REGISTRY_IMAGE${tag}"
       --build-arg BUILDKIT_INLINE_CACHE=1
@@ -84,4 +87,7 @@ docker-build-prod:
       --platform linux/arm64/v8,linux/amd64
       --push .
   after_script:
+    - |
+      docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
+      echo "Please review multi-arch manifests are present:"
     - docker buildx imagetools inspect "$CI_REGISTRY_IMAGE${tag}"
