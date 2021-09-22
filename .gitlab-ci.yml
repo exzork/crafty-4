@@ -41,7 +41,7 @@ docker-build-dev:
     - |
       docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
       echo "Please review multi-arch manifests are present:"
-    - docker buildx imagetools inspect "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+      docker buildx imagetools inspect "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
 
 docker-build-prod:
   image: docker:latest
@@ -82,4 +82,4 @@ docker-build-prod:
     - |
       docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
       echo "Please review multi-arch manifests are present:"
-    - docker buildx imagetools inspect "$CI_REGISTRY_IMAGE${tag}"
+      docker buildx imagetools inspect "$CI_REGISTRY_IMAGE${tag}"
