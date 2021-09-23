@@ -100,7 +100,7 @@ win-dev-build:
   script:
   - |
     $ErrorActionPreference = "Stop"
-    python -m venv .venv
+    py -m venv .venv
     .venv\Scripts\activate.ps1
     pip install pyinstaller
     pip install -r requirements.txt
@@ -130,7 +130,7 @@ win-prod-build:
   script:
   - |
     $ErrorActionPreference = "Stop"
-    python -m venv .venv
+    py -m venv .venv
     .venv\Scripts\activate.ps1
     pip install pyinstaller
     pip install -r requirements.txt
