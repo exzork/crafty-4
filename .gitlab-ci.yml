@@ -1,13 +1,15 @@
 stages:
-- build-dev
-- build-prod
+- win-dev
+- win-prod
+- docker-dev
+- docker-prod
 
 docker-build-dev:
   image: docker:latest
   services:
     - name: docker:dind
       command: ["--experimental"]
-  stage: build-dev
+  stage: docker-dev
   tags:
     - docker
   rules:
@@ -48,7 +50,7 @@ docker-build-prod:
   services:
     - name: docker:dind
       command: ["--experimental"]
-  stage: build-prod
+  stage: docker-prod
   tags:
     - docker
   rules:
@@ -83,3 +85,63 @@ docker-build-prod:
       docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
       echo "Please review multi-arch manifests are present:"
       docker buildx imagetools inspect "$CI_REGISTRY_IMAGE${tag}"
+
+win-dev-build:
+  stage: win-dev
+  tags:
+  - win64
+  cache:
+    paths:
+      - .venv/
+  rules:
+  - if: "$CI_COMMIT_BRANCH == 'dev'"
+  environment:
+    name: development
+  script:
+  - |
+    $ErrorActionPreference = "Stop"
+    python -m venv .venv
+    .venv\Scripts\activate.ps1
+    pip install pyinstaller
+    pip install -r requirements.txt
+  - pyinstaller -F main.py
+    --distpath .
+    --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
+    --name "crafty_commander"
+    --paths .venv\Lib\site-packages
+    --hidden-import cryptography
+    --hidden-import cffi
+  artifacts:
+    paths:
+    - app\
+    - .\crafty_commander.exe
+
+win-prod-build:
+  stage: win-prod
+  tags:
+  - win64
+  cache:
+    paths:
+      - .venv/
+  rules:
+  - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+  environment:
+    name: production
+  script:
+  - |
+    $ErrorActionPreference = "Stop"
+    python -m venv .venv
+    .venv\Scripts\activate.ps1
+    pip install pyinstaller
+    pip install -r requirements.txt
+  - pyinstaller -F main.py
+    --distpath .
+    --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
+    --name "crafty_commander"
+    --paths .venv\Lib\site-packages
+    --hidden-import cryptography
+    --hidden-import cffi
+  artifacts:
+    paths:
+    - app\
+    - .\crafty_commander.exe
