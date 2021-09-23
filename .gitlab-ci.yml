@@ -108,7 +108,7 @@ win-dev-build:
     --distpath .
     --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
     --name "crafty_commander"
-    --paths .venv\Lib\site-packages:C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x86
+    --paths ".venv\Lib\site-packages:C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x64"
     --hidden-import cryptography
     --hidden-import cffi
   artifacts:
@@ -138,7 +138,7 @@ win-prod-build:
     --distpath .
     --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
     --name "crafty_commander"
-    --paths .venv\Lib\site-packages:C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x64
+    --paths ".venv\Lib\site-packages:C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x64"
     --hidden-import cryptography
     --hidden-import cffi
   artifacts:
