@@ -115,6 +115,8 @@ win-dev-build:
     paths:
     - app\
     - .\crafty_commander.exe
+    exclude:
+    - app\classes
   # Download latest:
   # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/dev/download?job=win-dev-build
   
@@ -147,5 +149,7 @@ win-prod-build:
     paths:
     - app\
     - .\crafty_commander.exe
+    exclude:
+    - app\classes
   # Download latest:
   # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/master/download?job=win-prod-build
