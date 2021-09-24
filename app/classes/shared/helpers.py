@@ -82,18 +82,21 @@ class Helpers:
         try:
             requests.get('https://google.com', timeout=1)
             return True
-        except Exception as err: 
+        except Exception as err:
             return False
 
     @staticmethod
     def check_port(server_port):
-        host_public = get('https://api.ipify.org').text
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        result = sock.connect_ex((host_public ,server_port))
-        sock.close()
-        if result == 0:
-            return True
-        else:
+        try:
+            host_public = get('https://api.ipify.org').text
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            result = sock.connect_ex((host_public ,server_port))
+            sock.close()
+            if result == 0:
+                return True
+            else:
+                return False
+        except Exception as err:
             return False
 
 
@@ -451,7 +454,7 @@ class Helpers:
         sizes = []
         for p in paths:
             sizes.append({
-                "path": p, 
+                "path": p,
                 "size": self.human_readable_file_size(os.stat(p).st_size)
             })
         return sizes
@@ -610,7 +613,7 @@ class Helpers:
     @staticmethod
     def in_path_old(x, y):
         return os.path.abspath(y).__contains__(os.path.abspath(x))
-    
+
     @staticmethod
     def get_banned_players(server_id, db_helper):
         stats = db_helper.get_server_stats_by_id(server_id)
@@ -624,7 +627,7 @@ class Helpers:
         except Exception as ex:
             print (ex)
             return None
-        
+
         return json.loads(content)
 
     @staticmethod
