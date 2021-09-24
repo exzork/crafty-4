@@ -108,14 +108,16 @@ win-dev-build:
     --distpath .
     --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
     --name "crafty_commander"
-    --paths ".venv\Lib\site-packages:C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x64"
+    --paths .venv\Lib\site-packages
     --hidden-import cryptography
     --hidden-import cffi
   artifacts:
     paths:
     - app\
     - .\crafty_commander.exe
-
+  # Download latest:
+  # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/dev/download?job=win-dev-build
+  
 win-prod-build:
   stage: win-prod
   tags:
@@ -138,10 +140,12 @@ win-prod-build:
     --distpath .
     --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
     --name "crafty_commander"
-    --paths ".venv\Lib\site-packages:C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x64"
+    --paths .venv\Lib\site-packages
     --hidden-import cryptography
     --hidden-import cffi
   artifacts:
     paths:
     - app\
     - .\crafty_commander.exe
+  # Download latest:
+  # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/master/download?job=win-prod-build
