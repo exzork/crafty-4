@@ -71,16 +71,6 @@ class PanelHandler(BaseHandler):
         }
         page_data['super_user'] = exec_user['superuser']
 
-        # if no servers defined, let's go to the build server area
-        if page_data['server_stats']['total'] == 0 and page != "error" and page != "credits" and page != "contribute":
-            
-            if Enum_Permissions_Crafty.Server_Creation not in exec_user_crafty_permissions and len(defined_servers) == 0:                
-                logger.warning("User '" + exec_user['username'] + "#" + str(exec_user_id) + "' has access to 0 servers and is not a server creator")       
-            else:
-                self.set_status(301)
-                self.redirect("/server/step1")
-                return
-
         if page == 'unauthorized':
             template = "panel/denied.html"
 

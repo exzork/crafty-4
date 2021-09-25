@@ -100,7 +100,9 @@
         "restart": "Restart",
         "killing": "Killing process...",
         "starting": "Delayed-Start",
-        "delay-explained": "The service/agent has recently started and is delaying the start of the minecraft server instance"
+        "delay-explained": "The service/agent has recently started and is delaying the start of the minecraft server instance",
+        "no-servers": "There are currently no servers. To get started, click",
+        "welcome": "Welcome to Crafty Controller"
     },
     "accessDenied": {
         "accessDenied": "Access Denied",

@@ -100,7 +100,9 @@
         "restart": "Redémarrage",
         "killing": "Processus de mise à mort...",
         "starting": "Démarrage retardé",
-        "delay-explained": "Le service/agent a récemment démarré et retarde le démarrage de l'instance du serveur minecraft"
+        "delay-explained": "Le service/agent a récemment démarré et retarde le démarrage de l'instance du serveur minecraft",
+        "no-servers": "Il n'y a actuellement aucun serveur. Pour commencer, cliquez sur",
+        "welcome": "Bienvenue à Crafty Controller"
     },
     "accessDenied": {
         "accessDenied": "Accès Interdit",
