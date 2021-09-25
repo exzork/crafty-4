@@ -58,7 +58,7 @@ class AjaxHandler(BaseHandler):
 
             server_id = bleach.clean(server_id)
 
-            server_data = ser.get_server_data_by_id(server_id)
+            server_data = self.controller.servers.get_server_data_by_id(server_id)
             if not server_data:
                 logger.warning("Server Data not found in server_log ajax call")
                 self.redirect("/panel/error?error=Server ID Not Found")
@@ -154,7 +154,7 @@ class AjaxHandler(BaseHandler):
                 if srv_obj.check_running():
                     srv_obj.send_command(command)
 
-            db_helper.add_to_audit_log(user_data['user_id'], "Sent command to {} terminal: {}".format(db_helper.get_server_friendly_name(server_id), command), server_id, self.get_remote_ip())
+            self.controller.management.add_to_audit_log(user_data['user_id'], "Sent command to {} terminal: {}".format(self.controller.servers.get_server_friendly_name(server_id), command), server_id, self.get_remote_ip())
 
         elif page == "create_file":
             file_parent = self.get_body_argument('file_parent', default=None, strip=True)
@@ -208,7 +208,7 @@ class AjaxHandler(BaseHandler):
                 except Exception as e:
                     logger.error("Could not find PID for requested termsig. Full error: {}".format(e))
             else:
-                logger.error("Could not find PID for requested termsig. Full error: {}".format(e))
+                logger.error("Could not find PID for requested termsig. Full error: svr.get_pid() = FALSE")
             return
 
     @tornado.web.authenticated

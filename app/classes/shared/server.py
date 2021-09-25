@@ -185,7 +185,7 @@ class Server:
 
         logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
         
-        db_helper.set_waiting_start(self.server_id, False)
+        servers_helper.set_waiting_start(self.server_id, False)
         try:
             self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
         except Exception as ex:
@@ -196,7 +196,7 @@ class Server:
             })
             return False
         if helper.check_internet():
-            loc_server_port = db_helper.get_server_stats_by_id(self.server_id)['server_port']
+            loc_server_port = servers_helper.get_server_stats_by_id(self.server_id)['server_port']
             if helper.check_port(loc_server_port):
                 websocket_helper.broadcast('send_start_reload', {
                 })

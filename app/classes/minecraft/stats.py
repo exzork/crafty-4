@@ -201,7 +201,7 @@ class Stats:
         for s in servers:
 
             server_id = s.get('server_id', None)
-            server = db_helper.get_server_data_by_id(server_id)
+            server = servers_helper.get_server_data_by_id(server_id)
 
 
             logger.debug('Getting stats for server: {}'.format(server_id))

@@ -101,7 +101,7 @@ class Controller:
             self.servers_list.append(temp_server_dict)
 
             if s['auto_start']:
-                db_helper.set_waiting_start(s['server_id'], True)
+                self.servers.set_waiting_start(s['server_id'], True)
 
             self.refresh_server_settings(s['server_id'])
 
