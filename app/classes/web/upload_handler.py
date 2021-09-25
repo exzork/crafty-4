@@ -1,3 +1,4 @@
+from app.classes.shared.main_controller import Controller
 import tornado.options
 import tornado.web
 import tornado.httpserver
@@ -18,6 +19,10 @@ MAX_STREAMED_SIZE = 1024 * 1024 * 1024
 
 @tornado.web.stream_request_body
 class UploadHandler(tornado.web.RequestHandler):
+    
+    def initialize(self, controller : Controller = None):
+        self.controller = controller
+
     def prepare(self):
         self.do_upload = True
         user_data = json.loads(self.get_secure_cookie('user_data'))

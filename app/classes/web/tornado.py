@@ -132,7 +132,7 @@ class Webserver:
             (r'/api/stats/servers', ServersStats, handler_args),
             (r'/api/stats/node', NodeStats, handler_args),
             (r'/ws', SocketHandler, handler_args),
-            (r'/upload', UploadHandler),
+            (r'/upload', UploadHandler, handler_args),
             (r'/status', StatusHandler, handler_args)
             ]
 
