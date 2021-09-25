@@ -112,7 +112,6 @@ class helper_servers:
     @staticmethod
     def remove_server(server_id):
         with database.atomic():
-            Role_Servers.delete().where(Role_Servers.server_id == server_id).execute()
             Servers.delete().where(Servers.server_id == server_id).execute()
 
     @staticmethod
@@ -183,7 +182,7 @@ class helper_servers:
     @staticmethod
     def can_stop_no_players(server_id, time_limit):
         can = False
-        ttl_no_players = get_TTL_without_player(server_id)
+        ttl_no_players = servers_helper.get_TTL_without_player(server_id)
         if (time_limit == -1) or (ttl_no_players > time_limit):
             can = True
         return can

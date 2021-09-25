@@ -36,7 +36,8 @@ class Servers_Controller:
 
     @staticmethod
     def remove_server(server_id):
-        return servers_helper.remove_server(server_id)
+        server_permissions.remove_roles_of_server(server_id)
+        servers_helper.remove_server(server_id)
 
     @staticmethod
     def get_server_data_by_id(server_id):
@@ -119,6 +120,7 @@ class Servers_Controller:
     def can_stop_no_players(server_id, time_limit):
         return servers_helper.can_stop_no_players(server_id, time_limit)
 
+    @staticmethod
     def set_waiting_start(server_id, value):
         servers_helper.set_waiting_start(server_id, value)
 
@@ -144,7 +146,7 @@ class Servers_Controller:
             return None
         
         return json.loads(content)
-        
+    
     def check_for_old_logs(self):
         servers = servers_helper.get_all_defined_servers()
         for server in servers:

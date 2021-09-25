@@ -137,6 +137,11 @@ class Permissions_Servers:
         return Role_Servers.delete().where(Role_Servers.role_id == role_id).where(Role_Servers.server_id.in_(removed_servers)).execute()
 
     @staticmethod
+    def remove_roles_of_server(server_id):
+        with database.atomic():
+            return Role_Servers.delete().where(Role_Servers.server_id == server_id).execute()
+
+    @staticmethod
     def get_user_permissions_list(user_id, server_id):
         permissions_mask = ''
         permissions_list = []
