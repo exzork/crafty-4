@@ -101,6 +101,15 @@
         <div class="card-body">
 
           <div class="table-responsive">
+                {% if len(data['servers']) == 0%}
+                <div style="text-align: center; color: grey;">
+                <h1>{{ translate('dashboard', 'welcome') }}</h1>
+                <br>
+                <h7>{{ translate('dashboard', 'no-servers') }} {{ translate('dashboard', 'newServer') }}.</h7>
+                </div>
+                
+              {% end %}
+          {% if len(data['servers']) > 0 %}
             <table class="table table-hover">
               <thead>
                 <tr class="rounded">
@@ -205,12 +214,12 @@
 
               </tbody>
             </table>
+            {% end %}
           </div>
         </div>
       </div>
     </div>
   </div>
-
 
 
 </div>

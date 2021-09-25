@@ -1,51 +1,38 @@
 stages:
-- buildx
-- build-dev
-- build-prod
-
-buildx:
-  image: docker:git
-  services:
-  - docker:dind
-  stage: buildx
-  rules:
-  - if: $CI_COMMIT_BRANCH == 'dev'
-  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  variables:
-    GIT_STRATEGY: none
-  tags:
-  - docker
-  artifacts:
-    paths:
-      - buildx
-    expire_in: 1 hour
-  script:
-    - export DOCKER_BUILDKIT=1
-    - git clone git://github.com/docker/buildx ./docker-buildx
-    - docker build --platform=local -o . ./docker-buildx
+- win-dev
+- win-prod
+- docker-dev
+- docker-prod
 
 docker-build-dev:
   image: docker:latest
   services:
     - name: docker:dind
       command: ["--experimental"]
-  stage: build-dev
+  stage: docker-dev
   tags:
-  - docker
+    - docker
   rules:
     - if: $CI_COMMIT_BRANCH == 'dev'
   environment:
     name: development
   before_script:
-    - mkdir -p ~/.docker/cli-plugins
-    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - |
+      apk --no-cache add curl
+      latest_tag=$(curl -s https://api.github.com/repos/docker/buildx/releases/latest | sed -Ene '/^ *"tag_name": *"(v.+)",$/s//\1/p')
+      echo "Using buildx version $latest_tag"
+      curl -sSLo docker-buildx "https://github.com/docker/buildx/releases/download/$latest_tag/buildx-$latest_tag.linux-amd64"
+      chmod a+x docker-buildx
+      mkdir -p ~/.docker/cli-plugins
+      mv docker-buildx ~/.docker/cli-plugins/docker-buildx
+      docker version
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - echo $CI_BUILD_TOKEN | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
   script:
     - |
       tag=":$CI_COMMIT_REF_SLUG"
       echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
-    - docker buildx create --use
+    - docker buildx create --use --name zedBuilder
     - docker buildx build
       --cache-from type=registry,ref="$CI_REGISTRY_IMAGE${tag}"
       --build-arg BUILDKIT_INLINE_CACHE=1
@@ -53,30 +40,40 @@ docker-build-dev:
       --platform linux/arm64/v8,linux/amd64
       --push .
   after_script:
-    - docker buildx imagetools inspect "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - |
+      docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
+      echo "Please review multi-arch manifests are present:"
+      docker buildx imagetools inspect "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
 
 docker-build-prod:
   image: docker:latest
   services:
     - name: docker:dind
       command: ["--experimental"]
-  stage: build-prod
+  stage: docker-prod
   tags:
-  - docker
+    - docker
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   environment:
     name: production
   before_script:
-    - mkdir -p ~/.docker/cli-plugins
-    - mv buildx ~/.docker/cli-plugins/docker-buildx
+    - |
+      apk --no-cache add curl
+      latest_tag=$(curl -s https://api.github.com/repos/docker/buildx/releases/latest | sed -Ene '/^ *"tag_name": *"(v.+)",$/s//\1/p')
+      echo "Using buildx version $latest_tag"
+      curl -sSLo docker-buildx "https://github.com/docker/buildx/releases/download/$latest_tag/buildx-$latest_tag.linux-amd64"
+      chmod a+x docker-buildx
+      mkdir -p ~/.docker/cli-plugins
+      mv docker-buildx ~/.docker/cli-plugins/docker-buildx
+      docker version
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - echo $CI_BUILD_TOKEN | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
   script:
     - |
       tag=""
       echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
-    - docker buildx create --use
+    - docker buildx create --use --name zedBuilder
     - docker buildx build
       --cache-from type=registry,ref="$CI_REGISTRY_IMAGE${tag}"
       --build-arg BUILDKIT_INLINE_CACHE=1
@@ -84,4 +81,75 @@ docker-build-prod:
       --platform linux/arm64/v8,linux/amd64
       --push .
   after_script:
-    - docker buildx imagetools inspect "$CI_REGISTRY_IMAGE${tag}"
+    - |
+      docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
+      echo "Please review multi-arch manifests are present:"
+      docker buildx imagetools inspect "$CI_REGISTRY_IMAGE${tag}"
+
+win-dev-build:
+  stage: win-dev
+  tags:
+  - win64
+  cache:
+    paths:
+      - .venv/
+  rules:
+  - if: "$CI_COMMIT_BRANCH == 'dev'"
+  environment:
+    name: development
+  script:
+  - |
+    $ErrorActionPreference = "Stop"
+    py -m venv .venv
+    .venv\Scripts\activate.ps1
+    pip install pyinstaller
+    pip install -r requirements.txt
+  - pyinstaller -F main.py
+    --distpath .
+    --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
+    --name "crafty_commander"
+    --paths .venv\Lib\site-packages
+    --hidden-import cryptography
+    --hidden-import cffi
+  artifacts:
+    paths:
+    - app\
+    - .\crafty_commander.exe
+    exclude:
+    - app\classes\**\*
+  # Download latest:
+  # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/dev/download?job=win-dev-build
+  
+win-prod-build:
+  stage: win-prod
+  tags:
+  - win64
+  cache:
+    paths:
+      - .venv/
+  rules:
+  - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+  environment:
+    name: production
+  script:
+  - |
+    $ErrorActionPreference = "Stop"
+    py -m venv .venv
+    .venv\Scripts\activate.ps1
+    pip install pyinstaller
+    pip install -r requirements.txt
+  - pyinstaller -F main.py
+    --distpath .
+    --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
+    --name "crafty_commander"
+    --paths .venv\Lib\site-packages
+    --hidden-import cryptography
+    --hidden-import cffi
+  artifacts:
+    paths:
+    - app\
+    - .\crafty_commander.exe
+    exclude:
+    - app\classes\**\*
+  # Download latest:
+  # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/master/download?job=win-prod-build

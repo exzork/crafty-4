@@ -157,6 +157,7 @@
                           </div>
                         </div>
                       </div>
+                      {% end %}
 
                       <div class="form-check-flat">
                         <label for="enabled" class="form-check-label ml-4 mb-4">
@@ -184,7 +185,7 @@
                         </label>
 
                       </div>
-                      {% end %}
+                      
                       <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('panelConfig', 'save') }}</button>
                       <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light"><i class="fas fa-undo-alt"></i> {{ translate('panelConfig', 'cancel') }}</button>
                     </form>
