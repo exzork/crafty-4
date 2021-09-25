@@ -45,15 +45,16 @@ class Stats:
         return data
 
     @staticmethod
-    def _get_process_stats(process_pid: int):
-        if process_pid is None:
+    def _get_process_stats(process):
+        if process is None:
             process_stats = {
                 'cpu_usage': 0,
                 'memory_usage': 0,
                 'mem_percentage': 0
             }
             return process_stats
-
+        else:
+            process_pid = process.pid
         try:
             p = psutil.Process(process_pid)
             dummy = p.cpu_percent()
@@ -217,7 +218,7 @@ class Stats:
             world_path = os.path.join(server_data.get('path', None), world_name)
 
             # process stats
-            p_stats = self._get_process_stats(server_obj.PID)
+            p_stats = self._get_process_stats(server_obj.process)
 
             # TODO: search server properties file for possible override of 127.0.0.1
             internal_ip = server['server_ip']
@@ -275,7 +276,7 @@ class Stats:
         world_path = os.path.join(server_data.get('path', None), world_name)
 
         # process stats
-        p_stats = self._get_process_stats(server_obj.PID)
+        p_stats = self._get_process_stats(server_obj.process)
 
         # TODO: search server properties file for possible override of 127.0.0.1
         internal_ip = server['server_ip']

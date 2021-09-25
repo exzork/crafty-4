@@ -203,12 +203,9 @@ class AjaxHandler(BaseHandler):
         elif page == "kill":
             server_id = self.get_argument('id', None)
             svr = self.controller.get_server_obj(server_id)
-            if svr.get_pid():
-                try:
-                    svr.killpid(svr.get_pid())
-                except Exception as e:
-                    logger.error("Could not find PID for requested termsig. Full error: {}".format(e))
-            else:
+            try:
+                svr.kill()
+            except Exception as e:
                 logger.error("Could not find PID for requested termsig. Full error: {}".format(e))
             return
 

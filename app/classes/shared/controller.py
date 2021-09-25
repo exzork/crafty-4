@@ -247,37 +247,8 @@ class Controller:
         console.info("All Servers Stopped")
 
     def stop_server(self, server_id):
-        # get object
-        svr_obj = self.get_server_obj(server_id)
-        svr_data = self.get_server_data(server_id)
-        server_name = svr_data['server_name']
-
-        running = svr_obj.check_running()
-
         # issue the stop command
         svr_obj.stop_threaded_server()
-
-        # while it's running, we wait
-        x = 0
-        while running:
-            logger.info("Server {} is still running - waiting 2s to see if it stops".format(server_name))
-            console.info("Server {} is still running - waiting 2s to see if it stops".format(server_name))
-            running = svr_obj.check_running()
-
-            # let's keep track of how long this is going on...
-            x = x + 1
-
-            # if we have been waiting more than 120 seconds. let's just kill the pid
-            if x >= 60:
-                logger.error("Server {} is taking way too long to stop. Killing this process".format(server_name))
-                console.error("Server {} is taking way too long to stop. Killing this process".format(server_name))
-
-                svr_obj.killpid(svr_obj.PID)
-                running = False
-
-            # if we killed the server, let's clean up the object
-            if not running:
-                svr_obj.cleanup_server_object()
 
     def create_jar_server(self, server: str, version: str, name: str, min_mem: int, max_mem: int, port: int):
         server_id = helper.create_uuid()
