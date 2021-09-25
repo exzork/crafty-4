@@ -124,11 +124,19 @@ class PanelHandler(BaseHandler):
             if exec_user['superuser'] == 1:
                 page_data['servers'] = db_helper.get_all_servers_stats()
                 for data in page_data['servers']:
-                    data['stats']['waiting_start'] = db_helper.get_waiting_start(int(data['stats']['server_id']['server_id']))
+                    try:
+                        data['stats']['waiting_start'] = db_helper.get_waiting_start(int(data['stats']['server_id']['server_id']))
+                    except:
+                        data['stats']['waiting_start'] = False
             else:
                 user_auth = db_helper.get_authorized_servers_stats(exec_user_id)
                 logger.debug("ASFR: {}".format(user_auth))
                 page_data['servers'] = user_auth
+                for data in page_data['servers']:
+                    try:
+                        data['stats']['waiting_start'] = db_helper.get_waiting_start(int(data['stats']['server_id']['server_id']))
+                    except:
+                        data['stats']['waiting_start'] = False
             
             total_players = 0
             for server in db_helper.get_all_defined_servers():
@@ -174,7 +182,10 @@ class PanelHandler(BaseHandler):
             # server_data isn't needed since the server_stats also pulls server data
             page_data['server_data'] = db_helper.get_server_data_by_id(server_id)
             page_data['server_stats'] = db_helper.get_server_stats_by_id(server_id)
-            page_data['waiting_start'] = db_helper.get_waiting_start(server_id)
+            try:
+                page_data['waiting_start'] = db_helper.get_waiting_start(server_id)
+            except:
+                page_data['waiting_start'] = False
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
             page_data['active_link'] = subpage
             page_data['permissions'] = {
