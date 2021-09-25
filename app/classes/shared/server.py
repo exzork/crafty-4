@@ -188,6 +188,7 @@ class Server:
         servers_helper.set_waiting_start(self.server_id, False)
         try:
             self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
+            out_buf = ServerOutBuf(self.process, self.server_id)
         except Exception as ex:
             msg = "Server {} failed to start with error code: {}".format(self.name, ex)
             logger.error(msg)
@@ -208,8 +209,6 @@ class Server:
             websocket_helper.broadcast('send_start_error', {
                 'error': translation.translate('error', 'internet')
             })
-
-        out_buf = ServerOutBuf(self.process, self.server_id)
 
         logger.debug('Starting virtual terminal listener for server {}'.format(self.name))
         threading.Thread(target=out_buf.check, daemon=True, name='{}_virtual_terminal'.format(self.server_id)).start()
