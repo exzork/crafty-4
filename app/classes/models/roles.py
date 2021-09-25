@@ -73,8 +73,6 @@ class helper_roles:
     @staticmethod
     def remove_role(role_id):
         with database.atomic():
-            Role_Servers.delete().where(Role_Servers.role_id == role_id).execute()
-            User_Roles.delete().where(User_Roles.role_id == role_id).execute()
             role = Roles.get(Roles.role_id == role_id)
             return role.delete_instance()
 

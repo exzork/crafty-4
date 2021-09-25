@@ -15,6 +15,7 @@ from app.classes.shared.console import console
 
 from app.classes.shared.main_models import db_helper
 from app.classes.models.servers import servers_helper
+from app.classes.models.roles import roles_helper
 from app.classes.models.users import users_helper
 from app.classes.models.server_permissions import server_permissions, Enum_Permissions_Server
 
@@ -36,6 +37,11 @@ class Servers_Controller:
 
     @staticmethod
     def remove_server(server_id):
+        roles_list = server_permissions.get_roles_from_server(server_id)
+        for role_id in roles_list:
+            server_permissions.delete_roles_permissions(role_id)
+            users_helper.remove_roles_from_role_id(role_id)
+            roles_helper.remove_role(role_id)
         server_permissions.remove_roles_of_server(server_id)
         servers_helper.remove_server(server_id)
 

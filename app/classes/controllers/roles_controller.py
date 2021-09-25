@@ -14,6 +14,7 @@ from app.classes.shared.console import console
 
 from app.classes.models.roles import roles_helper
 from app.classes.models.server_permissions import server_permissions
+from app.classes.models.users import users_helper
 
 from app.classes.shared.server import Server
 from app.classes.minecraft.server_props import ServerProps
@@ -69,6 +70,8 @@ class Roles_Controller:
 
     @staticmethod
     def remove_role(role_id):
+        server_permissions.delete_roles_permissions(role_id)
+        users_helper.remove_roles_from_role_id(role_id)
         return roles_helper.remove_role(role_id)
 
     @staticmethod

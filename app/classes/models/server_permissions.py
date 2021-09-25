@@ -107,6 +107,10 @@ class Permissions_Servers:
         return Role_Servers.select().join(Servers, JOIN.INNER).where(Role_Servers.role_id == role_id)
 
     @staticmethod
+    def get_roles_from_server(server_id):
+        return Role_Servers.select().join(Roles, JOIN.INNER).where(Role_Servers.server_id == server_id)
+
+    @staticmethod
     def add_role_server(server_id, role_id, rs_permissions="00000000"):
         servers = Role_Servers.insert({Role_Servers.server_id: server_id, Role_Servers.role_id: role_id, Role_Servers.permissions: rs_permissions}).execute()
         return servers

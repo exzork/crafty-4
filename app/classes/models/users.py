@@ -234,4 +234,9 @@ class helper_users:
     def delete_user_roles(user_id, removed_roles):
         User_Roles.delete().where(User_Roles.user_id == user_id).where(User_Roles.role_id.in_(removed_roles)).execute()
 
+    @staticmethod
+    def remove_roles_from_role_id(role_id):
+        User_Roles.delete().where(User_Roles.role_id == role_id).execute()
+
+
 users_helper = helper_users()
