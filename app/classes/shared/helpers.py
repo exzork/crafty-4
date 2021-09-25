@@ -90,6 +90,7 @@ class Helpers:
         try:
             host_public = get('https://api.ipify.org').text
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(10.0)
             result = sock.connect_ex((host_public ,server_port))
             sock.close()
             if result == 0:
