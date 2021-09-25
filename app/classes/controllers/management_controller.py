@@ -13,6 +13,7 @@ from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 
 from app.classes.models.management import management_helper
+from app.classes.models.servers import servers_helper
 
 from app.classes.shared.server import Server
 from app.classes.minecraft.server_props import ServerProps
@@ -50,11 +51,11 @@ class Management_Controller:
         management_helper.add_to_audit_log(user_id, "issued command {} for server {}".format(command, server_name),
                               server_id, remote_ip)
                               
-        add_command(server_id, user_id, remote_ip, command)
+        management_helper.add_command(server_id, user_id, remote_ip, command)
 
     @staticmethod
     def mark_command_complete(command_id=None):
-        return mark_command_complete(command_id)
+        return management_helper.mark_command_complete(command_id)
             
     #************************************************************************************************
     #                                   Audit_Log Methods
@@ -111,4 +112,4 @@ class Management_Controller:
 
     @staticmethod
     def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, auto_enabled: bool = True):
-        return set_backup_config(server_id, backup_path, max_backups, auto_enabled)
+        return management_helper.set_backup_config(server_id, backup_path, max_backups, auto_enabled)
