@@ -201,7 +201,8 @@ class ServerHandler(BaseHandler):
                                            self.get_remote_ip())
 
             #These lines create a new Role for the Server with full permissions and add the user to it
-            role_id = self.controller.roles.add_role("Creator of Server with id={}".format(new_server_id))
+            new_server_uuid = self.controller.servers.get_server_data_by_id(new_server_id).get("server_uuid")
+            role_id = self.controller.roles.add_role("Creator of Server with uuid={}".format(new_server_uuid))
             self.controller.server_perms.add_role_server(new_server_id, role_id, "11111111")
             self.controller.users.add_role_to_user(exec_user_id, role_id)
             if not exec_user['superuser']:
