@@ -31,12 +31,12 @@ class Server_Perms_Controller:
     def list_defined_permissions():
         permissions_list = server_permissions.get_permissions_list()
         return permissions_list
-        
+
     @staticmethod
     def get_mask_permissions(role_id, server_id):
         permissions_mask = server_permissions.get_permissions_mask(role_id, server_id)
         return permissions_mask
-        
+
     @staticmethod
     def get_role_permissions(role_id):
         permissions_list = server_permissions.get_role_permissions_list(role_id)
@@ -45,7 +45,7 @@ class Server_Perms_Controller:
     @staticmethod
     def get_server_permissions_foruser(user_id, server_id):
         permissions_list = server_permissions.get_user_permissions_list(user_id, server_id)
-        return permissions_list        
+        return permissions_list
 
     @staticmethod
     def add_role_server(server_id, role_id, rs_permissions="00000000"):
@@ -57,7 +57,7 @@ class Server_Perms_Controller:
     @staticmethod
     def get_permissions_mask(role_id, server_id):
         return server_permissions.get_permissions_mask(role_id, server_id)
-        
+
     @staticmethod
     def set_permission(permission_mask, permission_tested: Enum_Permissions_Server, value):
         return server_permissions.set_permission(permission_mask, permission_tested, value)
@@ -68,7 +68,7 @@ class Server_Perms_Controller:
 
     @staticmethod
     def get_user_permissions_list(user_id, server_id):
-        return get_user_permissions_list(user_id, server_id)
+        return server_permissions.get_user_permissions_list(user_id, server_id)
 
     @staticmethod
     def get_authorized_servers_stats_from_roles(user_id):

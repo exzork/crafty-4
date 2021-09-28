@@ -20,8 +20,10 @@ MAX_STREAMED_SIZE = 1024 * 1024 * 1024
 @tornado.web.stream_request_body
 class UploadHandler(tornado.web.RequestHandler):
 
-    def initialize(self, controller : Controller = None):
+    def initialize(self, controller: Controller=None, tasks_manager=None, translator=None):
         self.controller = controller
+        self.tasks_manager = tasks_manager
+        self.translator = translator
 
     def prepare(self):
         self.do_upload = True
