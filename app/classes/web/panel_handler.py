@@ -37,7 +37,7 @@ class PanelHandler(BaseHandler):
         exec_user_data = json.loads(self.get_secure_cookie("user_data"))
         exec_user_id = exec_user_data['user_id']
         exec_user = self.controller.users.get_user_by_id(exec_user_id)
-        
+
         exec_user_role = set()
         if exec_user['superuser'] == 1:
             defined_servers = self.controller.list_defined_servers()
@@ -132,12 +132,12 @@ class PanelHandler(BaseHandler):
                         data['stats']['waiting_start'] = self.controller.servers.get_waiting_start(int(data['stats']['server_id']['server_id']))
                     except:
                         data['stats']['waiting_start'] = False
-            
+
             total_players = 0
             for server in self.controller.servers.get_all_defined_servers():
                 total_players += len(self.controller.stats.get_server_players(server['server_id']))
             page_data['num_players'] = total_players
-                
+
             for s in page_data['servers']:
                 try:
                     data = json.loads(s['int_ping_results'])
@@ -216,7 +216,7 @@ class PanelHandler(BaseHandler):
                         <button onclick="send_command_to_server('pardon {}')" type="button" class="btn btn-danger">Unban</button>
                     </li>
                     """.format(player['name'], player['source'], player['reason'], player['name'])
-                
+
                 return html
             if subpage == "admin_controls":
                 page_data['banned_players'] = get_banned_players_html()
@@ -267,9 +267,9 @@ class PanelHandler(BaseHandler):
                         # so break the loop
                         break
                     finally:
-                        # deleting the chunk is very important because 
-                        # if many clients are downloading files at the 
-                        # same time, the chunks in memory will keep 
+                        # deleting the chunk is very important because
+                        # if many clients are downloading files at the
+                        # same time, the chunks in memory will keep
                         # increasing and will eat up the RAM
                         del chunk
             self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
@@ -552,9 +552,9 @@ class PanelHandler(BaseHandler):
                         # so break the loop
                         break
                     finally:
-                        # deleting the chunk is very important because 
-                        # if many clients are downloading files at the 
-                        # same time, the chunks in memory will keep 
+                        # deleting the chunk is very important because
+                        # if many clients are downloading files at the
+                        # same time, the chunks in memory will keep
                         # increasing and will eat up the RAM
                         del chunk
             self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
@@ -807,10 +807,10 @@ class PanelHandler(BaseHandler):
                 ))
                 if argument:
                     roles.add(role.role_id)
- 
+
             permissions_mask = "000"
             server_quantity = {}
-            for permission in self.controller.list_defined_crafty_permissions():
+            for permission in self.controller.crafty_perms.list_defined_crafty_permissions():
                 argument = int(float(
                     bleach.clean(
                         self.get_argument('permission_{}'.format(permission.name), '0')
@@ -818,7 +818,7 @@ class PanelHandler(BaseHandler):
                 ))
                 if argument:
                     permissions_mask = self.controller.crafty_perms.set_permission(permissions_mask, permission, argument)
-                    
+
                 q_argument = int(float(
                     bleach.clean(
                         self.get_argument('quantity_{}'.format(permission.name), '0')
@@ -877,7 +877,7 @@ class PanelHandler(BaseHandler):
                 ))
                 if argument:
                     servers.add(server['server_id'])
-                    
+
             permissions_mask = "00000000"
             for permission in self.controller.server_perms.list_defined_permissions():
                 argument = int(float(
@@ -925,7 +925,7 @@ class PanelHandler(BaseHandler):
                 ))
                 if argument:
                     servers.add(server['server_id'])
-                    
+
             permissions_mask = "00000000"
             for permission in self.controller.server_perms.list_defined_permissions():
                 argument = int(float(
