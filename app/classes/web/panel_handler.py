@@ -391,7 +391,7 @@ class PanelHandler(BaseHandler):
             page_data['permissions_list'] = self.controller.crafty_perms.get_crafty_permissions_list(user_id)
             page_data['quantity_server'] = self.controller.crafty_perms.list_crafty_permissions_quantity_limits(user_id)
             page_data['languages'] = []
-            page_data['languages'].append(self.controller.users.get_user_lang_by_id(exec_user_id))
+            page_data['languages'].append(self.controller.users.get_user_lang_by_id(user_id))
             for file in os.listdir(os.path.join(helper.root_dir, 'app', 'translations')):
                 if file.endswith('.json'):
                     if file != str(page_data['languages'][0] + '.json'):
@@ -401,7 +401,9 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
             elif Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
-                if user_id != exec_user_id:
+                if str(user_id) != str(exec_user_id):
+                    print("USER ID ", user_id)
+                    print("EXEC ID ", exec_user_id)
                     self.redirect("/panel/error?error=Unauthorized access: not a user editor")
                     return
 
@@ -707,13 +709,14 @@ class PanelHandler(BaseHandler):
             lang = bleach.clean(self.get_argument('language'), 'en_EN')
 
             if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
-                if user_id != exec_user_id:
+                if str(user_id) != str(exec_user_id):
                     self.redirect("/panel/error?error=Unauthorized access: not a user editor")
                     return
 
                 user_data = {
                     "username": username,
                     "password": password0,
+                    "lang": lang,
                 }
                 self.controller.users.update_user(user_id, user_data=user_data)
 
@@ -777,7 +780,7 @@ class PanelHandler(BaseHandler):
                 "enabled": enabled,
                 "regen_api": regen_api,
                 "roles": roles,
-                "lang": lang
+                "lang": lang,
             }
             user_crafty_data = {
                 "permissions_mask": permissions_mask,
