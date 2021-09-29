@@ -4,7 +4,7 @@
   <meta http-equiv="refresh" content="30">
 {% end %}
 
-{% block title %}Crafty Controller - {{ translate('dashboard', 'dashboard') }}{% end %}
+{% block title %}Crafty Controller - {{ translate('dashboard', 'dashboard', data['lang']) }}{% end %}
 
 {% block content %}
 <div class="content-wrapper col-md login-modal" style="background-color: #222437;">
@@ -14,11 +14,11 @@
     <table class="table table-hover">
       <thead>
         <tr class="rounded">
-          <th>{{ translate('dashboard', 'server') }}</th>
-          <th>{{ translate('dashboard', 'players') }}</th>
-          <th>{{ translate('dashboard', 'motd') }}</th>
-          <th>{{ translate('dashboard', 'version') }}</th>
-          <th>{{ translate('dashboard', 'status') }}</th>
+          <th>{{ translate('dashboard', 'server', data['lang']) }}</th>
+          <th>{{ translate('dashboard', 'players', data['lang']) }}</th>
+          <th>{{ translate('dashboard', 'motd', data['lang']) }}</th>
+          <th>{{ translate('dashboard', 'version', data['lang']) }}</th>
+          <th>{{ translate('dashboard', 'status', data['lang']) }}</th>
         </tr>
       </thead>
       <tbody>
@@ -30,7 +30,7 @@
           </td>
             {% if server['stats']['int_ping_results'] != 'False' %}
           <td>
-              {{ server['stats']['online'] }} / {{ server['stats']['max'] }} {{ translate('dashboard', 'max') }}<br />
+              {{ server['stats']['online'] }} / {{ server['stats']['max'] }} {{ translate('dashboard', 'max', data['lang']) }}<br />
           </td>
           <td>
               {% if server['stats']['desc'] != 'False' %}
@@ -54,9 +54,9 @@
             {% end %}
           <td>
             {% if server['stats']['int_ping_results'] %}
-            <span class="text-success"><i class="fas fa-signal"></i>  {{ translate('dashboard', 'online') }}</span>
+            <span class="text-success"><i class="fas fa-signal"></i>  {{ translate('dashboard', 'online', data['lang']) }}</span>
             {% else %}
-            <span class="text-danger"><i class="fas fa-ban"></i>  {{ translate('dashboard', 'offline') }}</span>
+            <span class="text-danger"><i class="fas fa-ban"></i>  {{ translate('dashboard', 'offline', data['lang']) }}</span>
             {% end %}
           </td>
         </tr>

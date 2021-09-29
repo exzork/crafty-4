@@ -60,7 +60,7 @@
 
           <div class="warnings">
             <noscript class="noscript-warning" style="padding: 20px; background-color: rgb(247, 151, 15);">
-              <div>{% raw translate('base', 'doesNotWorkWithoutJavascript') %}</div>
+              <div>{% raw translate('base', 'doesNotWorkWithoutJavascript', data['lang']) %}</div>
             </noscript>
           </div>
 
@@ -139,7 +139,7 @@
     <script>
 
       $.extend($.fn.dataTable.defaults, {
-        language: {% raw translate('datatables', 'i18n') %}
+        language: {% raw translate('datatables', 'i18n', data['lang']) %}
       })
 
       //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security

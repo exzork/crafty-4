@@ -57,25 +57,25 @@
                 <form action="/public/login" method="post">
                   {% raw xsrf_form_html() %}
                   <div class="form-group">
-                    <label class="label">{{ translate('login', 'username') }}</label>
+                    <label class="label">{{ translate('login', 'username', data['lang']) }}</label>
                     <div class="input-group">
-                      <input type="text" class="form-control login-text-input login-input" placeholder="{{ translate('login', 'username') }}" name="username" id="username" required="true">
+                      <input type="text" class="form-control login-text-input login-input" placeholder="{{ translate('login', 'username', data['lang']) }}" name="username" id="username" required="true">
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="label">{{ translate('login', 'password') }}</label>
+                    <label class="label">{{ translate('login', 'password', data['lang']) }}</label>
                     <div class="input-group">
-                      <input type="password" class="form-control login-text-input login-input" placeholder="{{ translate('login', 'password') }}" name="password" id="password" required="true">
+                      <input type="password" class="form-control login-text-input login-input" placeholder="{{ translate('login', 'password', data['lang']) }}" name="password" id="password" required="true">
                     </div>
                   </div>
                   <div class="form-group">
-                    <button class="login-input btn btn-primary submit-btn btn-block">{{ translate('login', 'login') }}</button>
+                    <button class="login-input btn btn-primary submit-btn btn-block">{{ translate('login', 'login', data['lang']) }}</button>
                   </div>
                   <div class="form-group d-flex justify-content-between">
                     <div class="form-check form-check-flat mt-0">
                       &nbsp;
                     </div>
-                    <a href="#" class="text-small forgot-password ">{{ translate('login', 'forgotPassword') }}</a>
+                    <a href="#" class="text-small forgot-password ">{{ translate('login', 'forgotPassword', data['lang']) }}</a>
                   </div>
 
                   <div class="text-block text-center my-3">

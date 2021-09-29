@@ -5,33 +5,33 @@
             <div class="row">
               <div class="col-sm-3 mr-2">
                 {% if data['server_stats']['running'] %}
-                  <b>{{ translate('serverStats', 'serverStatus') }}:</b> <span class="text-success">{{ translate('serverStats', 'online') }}</span><br />
-                  <b>{{ translate('serverStats', 'serverStarted') }}:</b> <span id="started">{{ data['server_stats']['started'] }} ({{ translate('serverStats', 'serverTime') }})</span><br />
-                  <b>{{ translate('serverStats', 'serverUptime') }}:</b> <span id="uptime">{{ translate('serverStats', 'errorCalculatingUptime') }}</span>
+                  <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span class="text-success">{{ translate('serverStats', 'online', data['lang']) }}</span><br />
+                  <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started">{{ data['server_stats']['started'] }} ({{ translate('serverStats', 'serverTime', data['lang']) }})</span><br />
+                  <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime">{{ translate('serverStats', 'errorCalculatingUptime', data['lang']) }}</span>
                 {% else %}
-                  <b>{{ translate('serverStats', 'serverStatus') }}:</b> <span class="text-danger">{{ translate('serverStats', 'offline') }}</span><br />
-                  <b>{{ translate('serverStats', 'serverStarted') }}:</b> <span class="text-danger">{{ translate('serverStats', 'offline') }}</span><br />
-                  <b>{{ translate('serverStats', 'serverUptime') }}:</b> <span class="text-danger">{{ translate('serverStats', 'offline') }}</span>
+                  <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span class="text-danger">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
+                  <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span class="text-danger">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
+                  <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span class="text-danger">{{ translate('serverStats', 'offline', data['lang']) }}</span>
                 {% end %}
               </div>
 
               <div class="col-sm-3 mr-2">
-                <b>{{ translate('serverStats', 'cpuUsage') }}:</b> {{ data['server_stats']['cpu'] }}% <br />
-                <b>{{ translate('serverStats', 'memUsage') }}:</b> {{ data['server_stats']['mem'] }} <br />
+                <b>{{ translate('serverStats', 'cpuUsage', data['lang']) }}:</b> {{ data['server_stats']['cpu'] }}% <br />
+                <b>{{ translate('serverStats', 'memUsage', data['lang']) }}:</b> {{ data['server_stats']['mem'] }} <br />
                 {% if data['server_stats']['int_ping_results'] %}
-                <b>{{ translate('serverStats', 'players') }}:</b> {{ data['server_stats']['online'] }} / {{ data['server_stats']['max'] }}<br />
+                <b>{{ translate('serverStats', 'players', data['lang']) }}:</b> {{ data['server_stats']['online'] }} / {{ data['server_stats']['max'] }}<br />
                 {% else %}
-                <b>{{ translate('serverStats', 'players') }}:</b> 0/0<br />
+                <b>{{ translate('serverStats', 'players', data['lang']) }}:</b> 0/0<br />
                 {% end %}
               </div>
 
               <div class="col-sm-3 mr-2">
                 {% if data['server_stats']['version'] != 'False' %}
-                  <b>{{ translate('serverStats', 'version') }}:</b> {{ data['server_stats']['version'] }} <br />
-                  <b>{{ translate('serverStats', 'description') }}:</b> {{ data['server_stats']['desc'] }} <br />
+                  <b>{{ translate('serverStats', 'version', data['lang']) }}:</b> {{ data['server_stats']['version'] }} <br />
+                  <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> {{ data['server_stats']['desc'] }} <br />
                 {% else %}
-                  <b>{{ translate('serverStats', 'version') }}:</b> {{ translate('serverStats', 'unableToConnect') }} <br />
-                  <b>{{ translate('serverStats', 'description') }}:</b> {{ translate('serverStats', 'unableToConnect') }} <br />
+                  <b>{{ translate('serverStats', 'version', data['lang']) }}:</b> {{ translate('serverStats', 'unableToConnect', data['lang']) }} <br />
+                  <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> {{ translate('serverStats', 'unableToConnect', data['lang']) }} <br />
                 {% end %}
               </div>
 

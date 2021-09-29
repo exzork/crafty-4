@@ -14,15 +14,13 @@ class Translation():
         self.cached_translation = None
         self.cached_translation_lang = None
         self.lang_file_exists = []
-    def translate(self, page, word):
+    def translate(self, page, word, lang):
         translated_word = None
-        lang = helper.get_setting('language')
         fallback_lang = 'en_EN'
 
         if lang not in self.lang_file_exists and \
             helper.check_file_exists(os.path.join(self.translations_path, lang + '.json')):
-            self.lang_file_exists.append(lang)
-
+                self.lang_file_exists.append(lang)
 
         translated_word = self.translate_inner(page, word, lang) \
             if lang in self.lang_file_exists else self.translate_inner(page, word, fallback_lang)

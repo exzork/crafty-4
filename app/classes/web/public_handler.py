@@ -43,6 +43,7 @@ class PublicHandler(BaseHandler):
             'version': helper.get_version_string(),
             'error': error
             }
+        page_data['lang'] = helper.get_setting('language')
 
         # sensible defaults
         template = "public/404.html"

@@ -4,26 +4,26 @@
         <nav class="sidebar sidebar-offcanvas" id="sidebar">
           <ul class="nav">
 
-            <li class="nav-item nav-category" style="margin-top:10px;">{{ translate('sidebar', 'navigation') }}</li>
+            <li class="nav-item nav-category" style="margin-top:10px;">{{ translate('sidebar', 'navigation', data['lang']) }}</li>
 
             <li class="nav-item">
               <a class="nav-link" href="/panel/dashboard">
                 <i class="fas fa-chart-network"></i>&nbsp;
-                <span class="menu-title">{{ translate('sidebar', 'dashboard') }}</span>
+                <span class="menu-title">{{ translate('sidebar', 'dashboard', data['lang']) }}</span>
               </a>
             </li>
 
             <li class="nav-item">
               <a class="nav-link" data-toggle="collapse" href="#page-layouts" aria-expanded="false" aria-controls="page-layouts">
                 <i class="fas fa-server"></i> &nbsp;
-                <span class="menu-title">{{ translate('sidebar', 'servers') }}</span>
+                <span class="menu-title">{{ translate('sidebar', 'servers', data['lang']) }}</span>
                 <i class="menu-arrow"></i>
               </a>
               <div class="collapse" id="page-layouts">
                 <ul class="nav flex-column sub-menu">
                   {% if data['crafty_permissions']['Server_Creation'] in data['user_crafty_permissions'] %}
                     <li class="nav-item">
-                      <a class="nav-link" href="/server/step1"><i class="fas fa-plus-circle"></i> &nbsp; {{ translate('sidebar', 'newServer') }}</a>
+                      <a class="nav-link" href="/server/step1"><i class="fas fa-plus-circle"></i> &nbsp; {{ translate('sidebar', 'newServer', data['lang']) }}</a>
                     </li>
                   {% end %}
                   {% for s in data['menu_servers'] %}
@@ -39,7 +39,7 @@
             <li class="nav-item">
               <a class="nav-link" href="https://gitlab.com/crafty-controller/crafty-web/-/wikis/home" target="_blank">
                 <i class="fas fa-book"></i> &nbsp;
-                <span class="menu-title">{{ translate('sidebar', 'documentation') }}</span>
+                <span class="menu-title">{{ translate('sidebar', 'documentation', data['lang']) }}</span>
               </a>
             </li>
 
@@ -53,7 +53,7 @@
             <li class="nav-item">
               <a class="nav-link" href="/panel/credits">
                 <i class="fas fa-heart"></i> &nbsp;
-                <span class="menu-title">{{ translate('sidebar', 'credits') }}</span>
+                <span class="menu-title">{{ translate('sidebar', 'credits', data['lang']) }}</span>
               </a>
             </li>
 
@@ -61,7 +61,7 @@
             <li class="nav-item">
               <a class="nav-link" href="/panel/contribute">
                 <i class="fas fa-donate"></i> &nbsp;
-                <span class="menu-title">{{ translate('sidebar', 'contribute') }}</span>
+                <span class="menu-title">{{ translate('sidebar', 'contribute', data['lang']) }}</span>
               </a>
             </li>
             {% end %}

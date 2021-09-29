@@ -69,6 +69,7 @@ class PanelHandler(BaseHandler):
             'error': error,
             'time': formatted_time
         }
+        page_data['lang'] = 'en_EN'
         page_data['super_user'] = exec_user['superuser']
 
         if page == 'unauthorized':

@@ -4,7 +4,7 @@
 <!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
-{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails') }}{% end %}
+{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails', data['lang']) }}{% end %}
 
 {% block content %}
 
@@ -15,7 +15,7 @@
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
-          {{ translate('serverDetails', 'serverDetails') }} - {{ data['server_stats']['server_id']['server_name'] }}
+          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{ data['server_stats']['server_id']['server_name'] }}
             <br />
             <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
         </h4>
@@ -65,7 +65,7 @@
                     font-size: 1.1rem;
                   }
                 </style>
-                <h2>{{ translate('serverPlayerManagement', 'players') }}:</h2>
+                <h2>{{ translate('serverPlayerManagement', 'players', data['lang']) }}:</h2>
                 <ul style="list-style: none;padding: 0px;margin: 0px; margin-bottom: 1rem;gap: 1rem;">
                   {% for player in data['get_players']() %}
                     <li class="playerItem">
@@ -81,10 +81,10 @@
                 </ul>
               </div>
               <div class="col-md-6 col-sm-12">
-                <h2>{{ translate('serverPlayerManagement', 'bannedPlayers') }}:</h2>
+                <h2>{{ translate('serverPlayerManagement', 'bannedPlayers', data['lang']) }}:</h2>
                 <ul id="bannedPlayers" style="list-style: none;padding: 0px;margin: 0px; margin-bottom: 1rem;gap: 1rem;">
                   <li class="playerItem banned">
-                    <h3>{{ translate('serverPlayerManagement', 'loadingBannedPlayers') }}</h3>
+                    <h3>{{ translate('serverPlayerManagement', 'loadingBannedPlayers', data['lang']) }}</h3>
                   </li>
                   
                 </ul>
