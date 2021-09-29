@@ -366,10 +366,11 @@ class PanelHandler(BaseHandler):
             page_data['permissions_list'] = set()
             page_data['quantity_server'] = self.controller.crafty_perms.list_all_crafty_permissions_quantity_limits()
             page_data['languages'] = []
+            page_data['languages'].append(self.controller.users.get_user_lang_by_id(exec_user_id))
             for file in os.listdir(os.path.join(helper.root_dir, 'app', 'translations')):
                 if file.endswith('.json'):
-                    page_data['languages'].append(file.split('.')[0])
-                    print(page_data['languages'])
+                    if file != str(page_data['languages'][0] + '.json'):
+                        page_data['languages'].append(file.split('.')[0])
 
             template = "panel/panel_edit_user.html"
 
@@ -390,9 +391,11 @@ class PanelHandler(BaseHandler):
             page_data['permissions_list'] = self.controller.crafty_perms.get_crafty_permissions_list(user_id)
             page_data['quantity_server'] = self.controller.crafty_perms.list_crafty_permissions_quantity_limits(user_id)
             page_data['languages'] = []
+            page_data['languages'].append(self.controller.users.get_user_lang_by_id(exec_user_id))
             for file in os.listdir(os.path.join(helper.root_dir, 'app', 'translations')):
                 if file.endswith('.json'):
-                    page_data['languages'].append(file.split('.')[0])
+                    if file != str(page_data['languages'][0] + '.json'):
+                        page_data['languages'].append(file.split('.')[0])
 
             if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
@@ -701,7 +704,7 @@ class PanelHandler(BaseHandler):
             password1 = bleach.clean(self.get_argument('password1', None))
             enabled = int(float(self.get_argument('enabled', '0')))
             regen_api = int(float(self.get_argument('regen_api', '0')))
-            lang = bleach.clean(self.get_argument('lang'), 'en_EN')
+            lang = bleach.clean(self.get_argument('language'), 'en_EN')
 
             if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
                 if user_id != exec_user_id:
