@@ -3,7 +3,7 @@ import logging
 import asyncio
 
 from urllib.parse import parse_qsl
-from app.classes.shared.models import Users, db_helper
+from app.classes.models.users import Users
 from app.classes.shared.helpers import helper
 from app.classes.web.websocket_helper import websocket_helper
 
@@ -50,7 +50,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         else:
             websocket_helper.send_message(self, 'notification', 'Not authenticated for WebSocket connection')
             self.close()
-            db_helper.add_to_audit_log_raw('unknown', 0, 0, 'Someone tried to connect via WebSocket without proper authentication', self.get_remote_ip())
+            self.controller.management.add_to_audit_log_raw('unknown', 0, 0, 'Someone tried to connect via WebSocket without proper authentication', self.get_remote_ip())
             websocket_helper.broadcast('notification', 'Someone tried to connect via WebSocket without proper authentication')
             logger.warning('Someone tried to connect via WebSocket without proper authentication')
 

@@ -18,7 +18,8 @@ import html
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
-from app.classes.shared.models import db_helper, Servers
+from app.classes.models.servers import Servers, servers_helper
+from app.classes.models.management import management_helper
 from app.classes.web.websocket_helper import websocket_helper
 from app.classes.shared.translation import translation
 
@@ -102,7 +103,7 @@ class Server:
         self.is_backingup = False
 
     def reload_server_settings(self):
-        server_data = db_helper.get_server_data_by_id(self.server_id)
+        server_data = servers_helper.get_server_data_by_id(self.server_id)
         self.settings = server_data
 
     def do_server_setup(self, server_data_obj):
@@ -183,8 +184,11 @@ class Server:
             logger.info("Linux Detected")
 
         logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
+        
+        servers_helper.set_waiting_start(self.server_id, False)
         try:
-            self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding=None)
+            self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
+            out_buf = ServerOutBuf(self.process, self.server_id)
         except Exception as ex:
             msg = "Server {} failed to start with error code: {}".format(self.name, ex)
             logger.error(msg)
@@ -193,7 +197,7 @@ class Server:
             })
             return False
         if helper.check_internet():
-            loc_server_port = db_helper.get_server_stats_by_id(self.server_id)['server_port']
+            loc_server_port = servers_helper.get_server_stats_by_id(self.server_id)['server_port']
             if helper.check_port(loc_server_port):
                 websocket_helper.broadcast('send_start_reload', {
                 })
@@ -205,10 +209,6 @@ class Server:
             websocket_helper.broadcast('send_start_error', {
                 'error': translation.translate('error', 'internet', 'en_EN')
             })
-
-        db_helper.set_waiting_start(self.server_id, False)
-        self.process = pexpect.spawn(self.server_command, cwd=self.server_path, timeout=None, encoding='utf-8')
-        out_buf = ServerOutBuf(self.process, self.server_id)
 
         logger.debug('Starting virtual terminal listener for server {}'.format(self.name))
         threading.Thread(target=out_buf.check, daemon=True, name='{}_virtual_terminal'.format(self.server_id)).start()
@@ -430,7 +430,7 @@ class Server:
     def a_backup_server(self):
         logger.info("Starting server {} (ID {}) backup".format(self.name, self.server_id))
         self.is_backingup = True
-        conf = db_helper.get_backup_config(self.server_id)
+        conf = management_helper.get_backup_config(self.server_id)
         try:
             backup_filename = "{}/{}".format(self.settings['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
             logger.info("Creating backup of server '{}' (ID#{}) at '{}'".format(self.settings['server_name'], self.server_id, backup_filename))
@@ -450,7 +450,7 @@ class Server:
             return
 
     def list_backups(self):
-        conf = db_helper.get_backup_config(self.server_id)
+        conf = management_helper.get_backup_config(self.server_id)
         if helper.check_path_exists(self.settings['backup_path']):
             files = helper.get_human_readable_files_sizes(helper.list_dir_by_date(self.settings['backup_path']))
             return [{"path": os.path.relpath(f['path'], start=conf['backup_path']), "size": f["size"]} for f in files]
@@ -458,12 +458,12 @@ class Server:
             return []
 
     def jar_update(self):
-        db_helper.set_update(self.server_id, True)
+        servers_helper.set_update(self.server_id, True)
         update_thread = threading.Thread(target=self.a_jar_update, daemon=True, name="exe_update")
         update_thread.start()
 
     def check_update(self):
-        server_stats = db_helper.get_server_stats_by_id(self.server_id)
+        server_stats = servers_helper.get_server_stats_by_id(self.server_id)
         if server_stats['updating']:
             return True
         else:
@@ -515,12 +515,12 @@ class Server:
     #boolean returns true for false for success
         downloaded = helper.download_file(self.settings['executable_update_url'], current_executable)
 
-        while db_helper.get_server_stats_by_id(self.server_id)['updating']:
+        while servers_helper.get_server_stats_by_id(self.server_id)['updating']:
             if downloaded and not self.is_backingup:
                 print("Backup Status: " + str(self.is_backingup))
                 logger.info("Executable updated successfully. Starting Server")
 
-                db_helper.set_update(self.server_id, False)
+                servers_helper.set_update(self.server_id, False)
                 if len(websocket_helper.clients) > 0:
                     # There are clients
                     self.check_update()
@@ -533,12 +533,12 @@ class Server:
                     })
                 websocket_helper.broadcast('notification', "Executable update finished for "+self.name)
 
-                db_helper.add_to_audit_log_raw('Alert', '-1', self.server_id, "Executable update finished for "+self.name, self.settings['server_ip'])
+                management_helper.add_to_audit_log_raw('Alert', '-1', self.server_id, "Executable update finished for "+self.name, self.settings['server_ip'])
                 if wasStarted:
                     self.start_server()
             elif not downloaded and not self.is_backingup:
                 time.sleep(5)
-                db_helper.set_update(self.server_id, False)
+                servers_helper.set_update(self.server_id, False)
                 websocket_helper.broadcast('notification',
                                            "Executable update failed for " + self.name + ". Check log file for details.")
                 logger.error("Executable download failed.")

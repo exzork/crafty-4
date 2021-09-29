@@ -7,6 +7,8 @@ from typing import (
     Optional
 )
 
+from app.classes.shared.main_controller import Controller
+
 logger = logging.getLogger(__name__)
 
 
@@ -15,7 +17,7 @@ class BaseHandler(tornado.web.RequestHandler):
     nobleach = {bool, type(None)}
     redactables = ("pass", "api")
 
-    def initialize(self, controller=None, tasks_manager=None, translator=None):
+    def initialize(self, controller : Controller = None, tasks_manager=None, translator=None):
         self.controller = controller
         self.tasks_manager = tasks_manager
         self.translator = translator

@@ -8,7 +8,7 @@ import requests
 from app.classes.shared.helpers import helper
 from app.classes.web.base_handler import BaseHandler
 from app.classes.shared.console import console
-from app.classes.shared.models import Users, fn, db_helper
+from app.classes.shared.main_models import Users, fn
 
 logger = logging.getLogger(__name__)
 

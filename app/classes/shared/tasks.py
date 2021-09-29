@@ -13,7 +13,8 @@ from app.classes.web.tornado import Webserver
 from app.classes.web.websocket_helper import websocket_helper
 
 from app.classes.minecraft.serverjars import server_jar_obj
-from app.classes.shared.models import db_helper
+from app.classes.models.servers import servers_helper
+from app.classes.models.management import management_helper
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ class TasksManager:
             time.sleep(5)
 
     def reload_schedule_from_db(self):
-        jobs = db_helper.get_schedules_enabled()
+        jobs = management_helper.get_schedules_enabled()
         schedule.clear(tag='backup')
         schedule.clear(tag='db')
         for j in jobs:
@@ -84,7 +85,7 @@ class TasksManager:
                     i=j.schedule_id, a=j.action, n=j.interval, t=j.interval_type, s=j.start_time))
                 try:
                     getattr(schedule.every(j.interval), j.interval_type).at(j.start_time).do(
-                        db_helper.send_command, 0, j.server_id, "127.27.23.89", j.action)
+                        management_helper.send_command, 0, j.server_id, "127.27.23.89", j.action)
                 except schedule.ScheduleValueError as e:
                     logger.critical("Scheduler value error occurred: {} on ID#{}".format(e, j.schedule_id))
             else:
@@ -93,7 +94,7 @@ class TasksManager:
     def command_watcher(self):
         while True:
             # select any commands waiting to be processed
-            commands = db_helper.get_unactioned_commands()
+            commands = management_helper.get_unactioned_commands()
             for c in commands:
 
                 svr = self.controller.get_server_obj(c['server_id']['server_id'])
@@ -113,7 +114,7 @@ class TasksManager:
 
                 elif command == "update_executable":
                     svr.jar_update()
-                db_helper.mark_command_complete(c.get('command_id', None))
+                management_helper.mark_command_complete(c.get('command_id', None))
 
             time.sleep(1)
 
@@ -187,17 +188,17 @@ class TasksManager:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
-        host_stats = db_helper.get_latest_hosts_stats()
+        host_stats = management_helper.get_latest_hosts_stats()
 
         while True:
 
             if host_stats.get('cpu_usage') != \
-                    db_helper.get_latest_hosts_stats().get('cpu_usage') or \
+                    management_helper.get_latest_hosts_stats().get('cpu_usage') or \
                     host_stats.get('mem_percent') != \
-                    db_helper.get_latest_hosts_stats().get('mem_percent'):
+                    management_helper.get_latest_hosts_stats().get('mem_percent'):
                 # Stats are different
 
-                host_stats = db_helper.get_latest_hosts_stats()
+                host_stats = management_helper.get_latest_hosts_stats()
                 if len(websocket_helper.clients) > 0:
                     # There are clients
                     websocket_helper.broadcast_page('/panel/dashboard', 'update_host_stats', {
@@ -211,6 +212,6 @@ class TasksManager:
             time.sleep(4)
 
     def log_watcher(self):
-        helper.check_for_old_logs(db_helper)
-        schedule.every(6).hours.do(lambda: helper.check_for_old_logs(db_helper)).tag('log-mgmt')
+        self.controller.servers.check_for_old_logs()
+        schedule.every(6).hours.do(lambda: self.controller.servers.check_for_old_logs()).tag('log-mgmt')
 
