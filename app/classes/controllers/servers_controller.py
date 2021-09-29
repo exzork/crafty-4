@@ -43,8 +43,6 @@ class Servers_Controller:
             role_id = role.role_id
             role_data = Roles_Controller.get_role_with_servers(role_id)
             server_permissions.delete_roles_permissions(role_id, role_data['servers'])
-            users_helper.remove_roles_from_role_id(role_id)
-            roles_helper.remove_role(role_id)
         server_permissions.remove_roles_of_server(server_id)
         servers_helper.remove_server(server_id)
 
