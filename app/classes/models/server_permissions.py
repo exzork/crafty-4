@@ -125,9 +125,9 @@ class Permissions_Servers:
     @staticmethod
     def get_role_permissions_list(role_id):
         permissions_mask = '00000000'
-        role_server = Role_Servers.get_or_none(role_id)# select().where(Role_Servers.role_id == role_id).execute()
+        role_server = Role_Servers.get_or_none(role_id)
         if role_server is not None:
-            permissions_mask = role_server[0].permissions
+            permissions_mask = role_server.permissions
         permissions_list = server_permissions.get_permissions(permissions_mask)
         return permissions_list
 
