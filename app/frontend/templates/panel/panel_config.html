@@ -92,7 +92,7 @@
               <div class="card">
                 <div class="card-header header-sm d-flex justify-content-between align-items-center">
                   <h4 class="card-title"><i class="fas fa-user-tag"></i> Roles</h4>
-                    <span class="too_small" title="{{ translate('dashboard', 'cannotSee') }}", data-content="{{ translate('dashboard', 'cannotSeeOnMobile2') }}", data-placement="top"></span>
+                    <span class="too_small2" title="{{ translate('dashboard', 'cannotSee') }}", data-content="{{ translate('dashboard', 'cannotSeeOnMobile2') }}", data-placement="top"></span>
                   <div><a class="nav-link" href="/panel/add_role"><i class="fas fa-plus-circle"></i> &nbsp; Add New Role</a></div>
                 </div>
                 <div class="card-body">
@@ -157,14 +157,32 @@
 <script>
 $(document).ready(function(){ 
   $('[data-toggle="popover"]').popover();
+    if($(window).width() < 1000){
     $('.too_small').popover("show");
-  
+    $('.too_small2').popover("show");
+  }
   
 });
  $(window).ready(function(){
         $('body').click(function(){
             $('.too_small').popover("hide");
+            $('.too_small2').popover("hide");
     });
+});
+$(window).resize(function() {
+  // This will execute whenever the window is resized
+  if($(window).width() < 1000){
+    $('.too_small').popover("show");
+  }
+  else{
+    $('.too_small').popover("hide");
+  } // New width
+    if($(window).width() < 1000){
+    $('.too_small2').popover("show");
+  }
+  else{
+    $('.too_small2').popover("hide");
+  } // New width
 });
 </script>
 <script>

@@ -81,9 +81,7 @@
         <div class="card-header header-sm d-flex justify-content-between align-items-center">
           <h4 class="card-title"><i class="fas fa-server"></i> &nbsp;{{ translate('dashboard', 'allServers') }}</h4>
           {% if len(data['servers']) > 0 %}
-          <div class="d-md-none">
           <span class="too_small" title="{{ translate('dashboard', 'cannotSeeOnMobile') }}", data-content="{{ translate('dashboard', 'cannotSeeOnMobile2') }}", data-placement="top"></span>
-          </div>
           {% end %}
           <div><a class="nav-link" href="/server/step1"><i class="fas fa-plus-circle"></i> &nbsp; {{ translate('dashboard', 'newServer') }}</a></div>
         </div>
@@ -226,13 +224,24 @@
 <script>
 $(document).ready(function(){ 
   $('[data-toggle="popover"]').popover();
-  $('.too_small').popover("show");
+    if($(window).width() < 1000){
+    $('.too_small').popover("show");
+  }
   
 });
  $(window).ready(function(){
         $('body').click(function(){
             $('.too_small').popover("hide");
     });
+});
+$(window).resize(function() {
+  // This will execute whenever the window is resized
+  if($(window).width() < 1000){
+    $('.too_small').popover("show");
+  }
+  else{
+    $('.too_small').popover("hide");
+  } // New width
 });
 </script>
 <script>
