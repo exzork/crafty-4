@@ -1,3 +1,4 @@
+from app.classes.shared.translation import Translation
 import json
 import logging
 import tornado.web
@@ -363,6 +364,11 @@ class PanelHandler(BaseHandler):
             page_data['permissions_all'] = self.controller.crafty_perms.list_defined_crafty_permissions()
             page_data['permissions_list'] = set()
             page_data['quantity_server'] = self.controller.crafty_perms.list_all_crafty_permissions_quantity_limits()
+            page_data['languages'] = []
+            for file in os.listdir(os.path.join(helper.root_dir, 'app', 'translations')):
+                if file.endswith('.json'):
+                    page_data['languages'].append(file.split('.')[0])
+                    print(page_data['languages'])
 
             template = "panel/panel_edit_user.html"
 
@@ -382,6 +388,10 @@ class PanelHandler(BaseHandler):
             page_data['permissions_all'] = self.controller.crafty_perms.list_defined_crafty_permissions()
             page_data['permissions_list'] = self.controller.crafty_perms.get_crafty_permissions_list(user_id)
             page_data['quantity_server'] = self.controller.crafty_perms.list_crafty_permissions_quantity_limits(user_id)
+            page_data['languages'] = []
+            for file in os.listdir(os.path.join(helper.root_dir, 'app', 'translations')):
+                if file.endswith('.json'):
+                    page_data['languages'].append(file.split('.')[0])
 
             if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
@@ -690,6 +700,7 @@ class PanelHandler(BaseHandler):
             password1 = bleach.clean(self.get_argument('password1', None))
             enabled = int(float(self.get_argument('enabled', '0')))
             regen_api = int(float(self.get_argument('regen_api', '0')))
+            lang = bleach.clean(self.get_argument('lang'), 'en_EN')
 
             if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
                 if user_id != exec_user_id:
@@ -762,6 +773,7 @@ class PanelHandler(BaseHandler):
                 "enabled": enabled,
                 "regen_api": regen_api,
                 "roles": roles,
+                "lang": lang
             }
             user_crafty_data = {
                 "permissions_mask": permissions_mask,
@@ -780,7 +792,8 @@ class PanelHandler(BaseHandler):
             username = bleach.clean(self.get_argument('username', None))
             password0 = bleach.clean(self.get_argument('password0', None))
             password1 = bleach.clean(self.get_argument('password1', None))
-            enabled = int(float(self.get_argument('enabled', '0')))
+            enabled = int(float(self.get_argument('enabled', '0'))),
+            lang = bleach.clean(self.get_argument('lang', 'en_EN'))
 
             if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
                 self.redirect("/panel/error?error=Unauthorized access: not a user editor")
@@ -832,6 +845,7 @@ class PanelHandler(BaseHandler):
             user_id = self.controller.users.add_user(username, password=password0, enabled=enabled)
             user_data = {
                 "roles": roles,
+                'lang': lang
             }
             user_crafty_data = {
                 "permissions_mask": permissions_mask,

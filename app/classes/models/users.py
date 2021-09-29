@@ -40,7 +40,8 @@ class Users(Model):
     password = CharField(default="")
     enabled = BooleanField(default=True)
     superuser = BooleanField(default=False)
-    api_token = CharField(default="", unique=True, index=True) # we may need to revisit this
+    api_token = CharField(default="", unique=True, index=True), # we may need to revisit this
+    lang = CharField(default='en_EN')
 
     class Meta:
         table_name = "users"
@@ -82,6 +83,10 @@ class helper_users:
             return None
 
     @staticmethod
+    def get_user_lang_by_id(user_id):
+        return Users.get(Users.user_id == user_id).lang
+
+    @staticmethod
     def get_user_by_api_token(token: str):
         query = Users.select().where(Users.api_token == token)
 
@@ -114,6 +119,7 @@ class helper_users:
                 'api_token': None,
                 'roles': [],
                 'servers': [],
+                'lang': 'en_EN'
             }
         user = model_to_dict(Users.get(Users.user_id == user_id))
 
