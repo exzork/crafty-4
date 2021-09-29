@@ -75,7 +75,7 @@ class PanelHandler(BaseHandler):
             'error': error,
             'time': formatted_time
         }
-        page_data['lang'] = 'en_EN'
+        page_data['lang'] = self.controller.users.get_user_lang_by_id(exec_user_id)
         page_data['super_user'] = exec_user['superuser']
 
         if page == 'unauthorized':

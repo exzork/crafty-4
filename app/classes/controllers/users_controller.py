@@ -36,6 +36,10 @@ class Users_Controller:
         return users_helper.get_user_by_api_token(token)
 
     @staticmethod
+    def get_user_lang_by_id(user_id):
+        return users_helper.get_user_lang_by_id(user_id)
+
+    @staticmethod
     def get_user_by_id(user_id):
         return users_helper.get_user(user_id)
 
