@@ -24,7 +24,7 @@ from app.classes.minecraft.stats import Stats
 logger = logging.getLogger(__name__)
 
 class Roles_Controller:
-    
+
     @staticmethod
     def get_all_roles():
         return  roles_helper.get_all_roles()
@@ -70,14 +70,15 @@ class Roles_Controller:
 
     @staticmethod
     def remove_role(role_id):
-        server_permissions.delete_roles_permissions(role_id)
+        role_data = Roles_Controller.get_role_with_servers(role_id)
+        server_permissions.delete_roles_permissions(role_id, role_data['servers'])
         users_helper.remove_roles_from_role_id(role_id)
         return roles_helper.remove_role(role_id)
 
     @staticmethod
     def role_id_exists(role_id):
         return roles_helper.role_id_exists(role_id)
-        
+
     @staticmethod
     def get_role_with_servers(role_id):
         role = roles_helper.get_role(role_id)

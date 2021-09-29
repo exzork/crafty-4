@@ -56,7 +56,7 @@ class Enum_Permissions_Server(Enum):
     Players = 7
 
 class Permissions_Servers:
-    
+
     @staticmethod
     def get_or_create(role_id, server, permissions_mask):
         return Role_Servers.get_or_create(role_id=role_id, server_id=server, permissions=permissions_mask)
@@ -94,7 +94,7 @@ class Permissions_Servers:
     def get_permission(permission_mask, permission_tested: Enum_Permissions_Server):
         return permission_mask[permission_tested.value]
 
-        
+
     #************************************************************************************************
     #                                   Role_Servers Methods
     #************************************************************************************************
@@ -114,7 +114,7 @@ class Permissions_Servers:
     def add_role_server(server_id, role_id, rs_permissions="00000000"):
         servers = Role_Servers.insert({Role_Servers.server_id: server_id, Role_Servers.role_id: role_id, Role_Servers.permissions: rs_permissions}).execute()
         return servers
-        
+
     @staticmethod
     def get_permissions_mask(role_id, server_id):
         permissions_mask = ''
@@ -124,9 +124,10 @@ class Permissions_Servers:
 
     @staticmethod
     def get_role_permissions_list(role_id):
-        permissions_mask = ''
-        role_server = Role_Servers.select().where(Role_Servers.role_id == role_id).execute()
-        permissions_mask = role_server[0].permissions
+        permissions_mask = '00000000'
+        role_server = Role_Servers.get_or_none(role_id)# select().where(Role_Servers.role_id == role_id).execute()
+        if role_server is not None:
+            permissions_mask = role_server[0].permissions
         permissions_list = server_permissions.get_permissions(permissions_mask)
         return permissions_list
 
@@ -159,5 +160,5 @@ class Permissions_Servers:
             permissions_mask = role_server[0].permissions
             permissions_list = server_permissions.get_permissions(permissions_mask)
         return permissions_list
-        
+
 server_permissions = Permissions_Servers()
