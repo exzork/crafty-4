@@ -82,6 +82,7 @@
         "nextBackup": "Next:",
         "servers": "Servers",
         "cannotSeeOnMobile": "Not seeing everything on mobile?",
+        "cannotSee": "Not seeing everything?",
         "cannotSeeOnMobile2": "Try scrolling the table sideways.",
         "max": "Max",
         "avg": "Avg",

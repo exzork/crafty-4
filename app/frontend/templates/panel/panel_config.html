@@ -30,10 +30,9 @@
             <div class="col-md-12 col-lg-12 grid-margin stretch-card">
               <div class="card">
                 <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                  <h4 class="card-title"><i class="fas fa-users"></i> Users</h4>
-                  <div class="d-md-none">
-                    <small>Can't see everything on mobile?<br /> Try scrolling the table sideways.</small>
-                  </div>
+                      <h4 class="card-title"><i class="fas fa-users"></i> Users</h4>
+                      <span class="too_small" title="{{ translate('dashboard', 'cannotSee') }}", data-content="{{ translate('dashboard', 'cannotSeeOnMobile2') }}", data-placement="top"></span>
+                  
                   <div><a class="nav-link" href="/panel/add_user"><i class="fas fa-plus-circle"></i> &nbsp; Add New User</a></div>
                 </div>
                 <div class="card-body">
@@ -53,7 +52,7 @@
                       {% for user in data['users'] %}
                         <tr>
                           <td><i class="fas fa-user"></i> {{ user.username }}</td>
-                          <td>
+                          <td style="max-width: 30px;">
                             {% if user.enabled %}
                               <span class="text-success">
                                 <i class="fas fa-check-square"></i> Yes
@@ -66,15 +65,15 @@
                             {% end %}
 
                           </td>
-                          <td>{{ user.api_token }}</td>
+                          <td style="max-width: 30px;"><button data-toggle="tooltip" title="Show API Key" data-id="{{ user.api_token }}" type="button" class="btn btn-info show_button">Show</button></td>
                           <td class="server_list_{{user.user_id}}"><ul id="{{user.user_id}}">
                             {% for item in data['auth-servers'][user.user_id] %}
                             <li>{{item}}</li>
                             {% end %}
                           </ul></td>
-                          <td class="role_list_{{user.user_id}}"><ul>
+                          <td class="role_list_{{user.user_id}}" style="max-width: 100px; overflow: scroll;"><ul>
                             {% for item in data['user-roles'][user.user_id] %}
-                            <li>{{item}}</li>
+                            <li data-toggle="tooltip" title="{{ item }}">{{item}}</li>
                             {% end %}
 
                           <td><a href="/panel/edit_user?id={{user.user_id}}"><i class="fas fa-pencil-alt"></i></a></td>
@@ -93,9 +92,7 @@
               <div class="card">
                 <div class="card-header header-sm d-flex justify-content-between align-items-center">
                   <h4 class="card-title"><i class="fas fa-user-tag"></i> Roles</h4>
-                  <div class="d-md-none">
-                    <small>Can't see everything on mobile?<br /> Try scrolling the table sideways.</small>
-                  </div>
+                    <span class="too_small2" title="{{ translate('dashboard', 'cannotSee') }}", data-content="{{ translate('dashboard', 'cannotSeeOnMobile2') }}", data-placement="top"></span>
                   <div><a class="nav-link" href="/panel/add_role"><i class="fas fa-plus-circle"></i> &nbsp; Add New Role</a></div>
                 </div>
                 <div class="card-body">
@@ -146,17 +143,64 @@
 
 
 </div>
+
+<style>
+  .popover-body{
+    color: white !important;;
+}
+</style>
 <!-- content-wrapper ends -->
 
 {% end %}
 
 {% block js %}
 <script>
+$(document).ready(function(){ 
+  $('[data-toggle="popover"]').popover();
+    if($(window).width() < 1000){
+    $('.too_small').popover("show");
+    $('.too_small2').popover("show");
+  }
+  
+});
+ $(window).ready(function(){
+        $('body').click(function(){
+            $('.too_small').popover("hide");
+            $('.too_small2').popover("hide");
+    });
+});
+$(window).resize(function() {
+  // This will execute whenever the window is resized
+  if($(window).width() < 1000){
+    $('.too_small').popover("show");
+  }
+  else{
+    $('.too_small').popover("hide");
+  } // New width
+    if($(window).width() < 1000){
+    $('.too_small2').popover("show");
+  }
+  else{
+    $('.too_small2').popover("hide");
+  } // New width
+});
+</script>
+<script>
 
 $( document ).ready(function() {
   console.log('ready for JS!')
 
 });
+
+  $( ".show_button" ).click(function() {
+    console.log("showing key");
+   api_key = $(this).attr("data-id");
+    bootbox.alert({
+      backdrop: true,
+      title: '',
+      message: api_key,
+    });
+  });
 </script>
 
 {% end %}
