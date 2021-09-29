@@ -1,3 +1,4 @@
+from app.classes.controllers.roles_controller import Roles_Controller
 import os
 import time
 import logging
@@ -27,7 +28,7 @@ from app.classes.minecraft.stats import Stats
 logger = logging.getLogger(__name__)
 
 class Servers_Controller:
-    
+
     #************************************************************************************************
     #                                   Generic Servers Methods
     #************************************************************************************************
@@ -38,8 +39,10 @@ class Servers_Controller:
     @staticmethod
     def remove_server(server_id):
         roles_list = server_permissions.get_roles_from_server(server_id)
-        for role_id in roles_list:
-            server_permissions.delete_roles_permissions(role_id)
+        for role in roles_list:
+            role_id = role.role_id
+            role_data = Roles_Controller.get_role_with_servers(role_id)
+            server_permissions.delete_roles_permissions(role_id, role_data['servers'])
             users_helper.remove_roles_from_role_id(role_id)
             roles_helper.remove_role(role_id)
         server_permissions.remove_roles_of_server(server_id)
@@ -133,7 +136,7 @@ class Servers_Controller:
     @staticmethod
     def get_waiting_start(server_id):
         return servers_helper.get_waiting_start(server_id)
-        
+
     #************************************************************************************************
     #                                    Servers Helpers Methods
     #************************************************************************************************
@@ -150,9 +153,9 @@ class Servers_Controller:
         except Exception as ex:
             print (ex)
             return None
-        
+
         return json.loads(content)
-    
+
     def check_for_old_logs(self):
         servers = servers_helper.get_all_defined_servers()
         for server in servers:
