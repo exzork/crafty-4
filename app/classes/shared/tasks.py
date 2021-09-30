@@ -98,22 +98,23 @@ class TasksManager:
             for c in commands:
 
                 svr = self.controller.get_server_obj(c['server_id']['server_id'])
+                user_lang = c.get('user')['lang']
                 command = c.get('command', None)
 
                 if command == 'start_server':
-                    svr.run_threaded_server()
+                    svr.run_threaded_server(user_lang)
 
                 elif command == 'stop_server':
                     svr.stop_threaded_server()
 
                 elif command == "restart_server":
-                    svr.restart_threaded_server()
+                    svr.restart_threaded_server(user_lang)
 
                 elif command == "backup_server":
                     svr.backup_server()
 
                 elif command == "update_executable":
-                    svr.jar_update()
+                    svr.jar_update(user_lang)
                 management_helper.mark_command_complete(c.get('command_id', None))
 
             time.sleep(1)
