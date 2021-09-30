@@ -4,7 +4,7 @@
 <!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
-{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails') }}{% end %}
+{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails', data['lang']) }}{% end %}
 
 {% block content %}
 
@@ -15,7 +15,7 @@
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
-          {{ translate('serverDetails', 'serverDetails') }} - {{ data['server_stats']['server_id']['server_name'] }}
+          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{ data['server_stats']['server_id']['server_name'] }}
             <br />
             <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
         </h4>
@@ -42,104 +42,104 @@
                       <input type="hidden" name="subpage" value="config">
 
                       <div class="form-group">
-                        <label for="server_name">{{ translate('serverConfig', 'serverName') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverNameDesc') }}</small> </label>
-                        <input type="text" class="form-control" name="server_name" id="server_name" value="{{ data['server_stats']['server_id']['server_name']  }}" placeholder="{{ translate('serverConfig', 'serverName') }}" >
+                        <label for="server_name">{{ translate('serverConfig', 'serverName', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverNameDesc', data['lang']) }}</small> </label>
+                        <input type="text" class="form-control" name="server_name" id="server_name" value="{{ data['server_stats']['server_id']['server_name']  }}" placeholder="{{ translate('serverConfig', 'serverName', data['lang']) }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="server_path">{{ translate('serverConfig', 'serverPath') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPathDesc') }}</small> </label>
-                        <input type="text" class="form-control" name="server_path" id="server_path" value="{{ data['server_stats']['server_id']['path']  }}" placeholder="{{ translate('serverConfig', 'serverPath') }}" >
+                        <label for="server_path">{{ translate('serverConfig', 'serverPath', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPathDesc', data['lang']) }}</small> </label>
+                        <input type="text" class="form-control" name="server_path" id="server_path" value="{{ data['server_stats']['server_id']['path']  }}" placeholder="{{ translate('serverConfig', 'serverPath', data['lang']) }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="log_path">{{ translate('serverConfig', 'serverLogLocation') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverLogLocationDesc') }}</small> </label>
-                        <input type="text" class="form-control" name="log_path" id="log_path" value="{{ data['server_stats']['server_id']['log_path']  }}" placeholder="{{ translate('serverConfig', 'serverLogLocation') }}" >
+                        <label for="log_path">{{ translate('serverConfig', 'serverLogLocation', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverLogLocationDesc', data['lang']) }}</small> </label>
+                        <input type="text" class="form-control" name="log_path" id="log_path" value="{{ data['server_stats']['server_id']['log_path']  }}" placeholder="{{ translate('serverConfig', 'serverLogLocation', data['lang']) }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="executable">{{ translate('serverConfig', 'serverExecutable') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverExecutableDesc') }}</small> </label>
-                        <input type="text" class="form-control" name="executable" id="executable" value="{{ data['server_stats']['server_id']['executable']  }}" placeholder="{{ translate('serverConfig', 'serverExecutable') }}" >
+                        <label for="executable">{{ translate('serverConfig', 'serverExecutable', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverExecutableDesc', data['lang']) }}</small> </label>
+                        <input type="text" class="form-control" name="executable" id="executable" value="{{ data['server_stats']['server_id']['executable']  }}" placeholder="{{ translate('serverConfig', 'serverExecutable', data['lang']) }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="execution_command">{{ translate('serverConfig', 'serverExecutionCommand') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverExecutionCommandDesc') }}</small> </label>
-                        <input type="text" class="form-control" name="execution_command" id="execution_command" value="{{ data['server_stats']['server_id']['execution_command']  }}" placeholder="{{ translate('serverConfig', 'serverExecutionCommand') }}" >
+                        <label for="execution_command">{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverExecutionCommandDesc', data['lang']) }}</small> </label>
+                        <input type="text" class="form-control" name="execution_command" id="execution_command" value="{{ data['server_stats']['server_id']['execution_command']  }}" placeholder="{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="stop_command">{{ translate('serverConfig', 'serverStopCommand') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverStopCommandDesc') }}</small> </label>
-                        <input type="text" class="form-control" name="stop_command" id="stop_command" value="{{ data['server_stats']['server_id']['stop_command']  }}" placeholder="{{ translate('serverConfig', 'serverStopCommand') }}" >
+                        <label for="stop_command">{{ translate('serverConfig', 'serverStopCommand', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverStopCommandDesc', data['lang']) }}</small> </label>
+                        <input type="text" class="form-control" name="stop_command" id="stop_command" value="{{ data['server_stats']['server_id']['stop_command']  }}" placeholder="{{ translate('serverConfig', 'serverStopCommand', data['lang']) }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="auto_start_delay">{{ translate('serverConfig', 'serverAutostartDelay') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverAutostartDelayDesc') }}</small> </label>
+                        <label for="auto_start_delay">{{ translate('serverConfig', 'serverAutostartDelay', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverAutostartDelayDesc', data['lang']) }}</small> </label>
                         <input type="number" class="form-control" name="auto_start_delay" id="auto_start_delay" value="{{ data['server_stats']['server_id']['auto_start_delay']  }}" step="1" max="999" min="10" >
                       </div>
 
                         <div class="form-group">
-                        <label for="executable_update_url">{{ translate('serverConfig', 'exeUpdateURL') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'exeUpdateURLDesc') }}</small> </label>
-                        <input type="text" class="form-control" name="executable_update_url" id="executable_update_url" value="{{ data['server_stats']['server_id']['executable_update_url']  }}" placeholder="{{ translate('serverConfig', 'exeUpdateURL') }}" >
+                        <label for="executable_update_url">{{ translate('serverConfig', 'exeUpdateURL', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'exeUpdateURLDesc', data['lang']) }}</small> </label>
+                        <input type="text" class="form-control" name="executable_update_url" id="executable_update_url" value="{{ data['server_stats']['server_id']['executable_update_url']  }}" placeholder="{{ translate('serverConfig', 'exeUpdateURL', data['lang']) }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="server_ip">{{ translate('serverConfig', 'serverIP') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPortDesc') }}</small> </label>
+                        <label for="server_ip">{{ translate('serverConfig', 'serverIP', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPortDesc', data['lang']) }}</small> </label>
                         <input type="text" class="form-control" name="server_ip" id="server_ip" value="{{ data['server_stats']['server_id']['server_ip']  }}">
                       </div>
 
                       <div class="form-group">
-                        <label for="server_port">{{ translate('serverConfig', 'serverPort') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverIPDesc') }}</small> </label>
+                        <label for="server_port">{{ translate('serverConfig', 'serverPort', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverIPDesc', data['lang']) }}</small> </label>
                         <input type="number" class="form-control" name="server_port" id="server_port" value="{{ data['server_stats']['server_id']['server_port']  }}" step="1" max="65566" min="1" >
                       </div>
 
                       <div class="form-group">
-                        <label for="logs_delete_after">{{ translate('serverConfig', 'removeOldLogsAfter') }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'removeOldLogsAfterDesc') }}</small> </label>
+                        <label for="logs_delete_after">{{ translate('serverConfig', 'removeOldLogsAfter', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'removeOldLogsAfterDesc', data['lang']) }}</small> </label>
                         <input type="number" class="form-control" name="logs_delete_after" id="logs_delete_after" value="{{ data['server_stats']['server_id']['logs_delete_after']  }}" step="1" max="365" min="0" >
                       </div>
 
                       <div class="form-check-flat">
                         <label for="auto_start" class="form-check-label ml-4 mb-4">
                             {% if data['server_stats']['server_id']['auto_start'] %}
-                                <input type="checkbox" class="form-check-input" id="auto_start" name="auto_start" checked="" value="1">{{ translate('serverConfig', 'serverAutoStart') }}
+                                <input type="checkbox" class="form-check-input" id="auto_start" name="auto_start" checked="" value="1">{{ translate('serverConfig', 'serverAutoStart', data['lang']) }}
                             {% else %}
-                                <input type="checkbox" class="form-check-input" id="auto_start" name="auto_start" value="1">{{ translate('serverConfig', 'serverAutoStart') }}
+                                <input type="checkbox" class="form-check-input" id="auto_start" name="auto_start" value="1">{{ translate('serverConfig', 'serverAutoStart', data['lang']) }}
                             {% end %}
                         </label>
 
                         <label for="crash_detection" class="form-check-label ml-4 mb-4">
                             {% if data['server_stats']['server_id']['crash_detection'] %}
-                                <input type="checkbox" class="form-check-input" id="crash_detection" name="crash_detection" checked="" value="1">{{ translate('serverConfig', 'serverCrashDetection') }}
+                                <input type="checkbox" class="form-check-input" id="crash_detection" name="crash_detection" checked="" value="1">{{ translate('serverConfig', 'serverCrashDetection', data['lang']) }}
                             {% else %}
-                                <input type="checkbox" class="form-check-input" id="crash_detection" name="crash_detection" value="1" >{{ translate('serverConfig', 'serverCrashDetection') }}
+                                <input type="checkbox" class="form-check-input" id="crash_detection" name="crash_detection" value="1" >{{ translate('serverConfig', 'serverCrashDetection', data['lang']) }}
                             {% end %}
                         </label>
 
                       </div>
 
-                      <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('serverConfig', 'save') }}</button>
-                      <button type="reset" class="btn btn-light"><i class="fas fa-times"></i> {{ translate('serverConfig', 'cancel') }}</button>
+                      <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('serverConfig', 'save', data['lang']) }}</button>
+                      <button type="reset" class="btn btn-light"><i class="fas fa-times"></i> {{ translate('serverConfig', 'cancel', data['lang']) }}</button>
                     </form>
                 </div>
 
                 <div class="col-md-6 col-sm-12">
                     <div class="card">
                       <div class="card-body">
-                        <h4 class="card-title">{{ translate('serverConfigHelp', 'title') }}</h4>
-                        <p class="card-description"> {{ translate('serverConfigHelp', 'desc') }}</p>
+                        <h4 class="card-title">{{ translate('serverConfigHelp', 'title', data['lang']) }}</h4>
+                        <p class="card-description"> {{ translate('serverConfigHelp', 'desc', data['lang']) }}</p>
                         <blockquote class="blockquote">
                           <p class="mb-0">
-                            {% raw translate('serverConfigHelp', 'perms') %}
+                            {% raw translate('serverConfigHelp', 'perms', data['lang']) %}
                           </p>
                         </blockquote>
                       </div>
                     </div>
                     <div class="text-center">
                         {% if data['server_stats']['running'] %}
-                            <button onclick="send_command(server_id, 'update_executable');" id="update_executable" style="max-width: 7rem;" class="btn btn-warning m-1 flex-grow-1 disabled">{{ translate('serverConfig', 'update') }}</button>
-                            <a class="btn btn-sm btn-danger disabled">{{ translate('serverConfig', 'deleteServer') }}</a><br />
-                            <small>{{ translate('serverConfig', 'stopBeforeDeleting') }}</small>
+                            <button onclick="send_command(server_id, 'update_executable');" id="update_executable" style="max-width: 7rem;" class="btn btn-warning m-1 flex-grow-1 disabled">{{ translate('serverConfig', 'update', data['lang']) }}</button>
+                            <a class="btn btn-sm btn-danger disabled">{{ translate('serverConfig', 'deleteServer', data['lang']) }}</a><br />
+                            <small>{{ translate('serverConfig', 'stopBeforeDeleting', data['lang']) }}</small>
                         {% else %}
-                            <button onclick="send_command(server_id, 'update_executable');" id="update_executable" style="max-width: 7rem;" class="btn btn-warning m-1 flex-grow-1">{{ translate('serverConfig', 'update') }}</button>
-                            <button onclick="deleteConfirm()" class="btn btn-sm btn-danger">{{ translate('serverConfig', 'deleteServer') }}</button>
+                            <button onclick="send_command(server_id, 'update_executable');" id="update_executable" style="max-width: 7rem;" class="btn btn-warning m-1 flex-grow-1">{{ translate('serverConfig', 'update', data['lang']) }}</button>
+                            <button onclick="deleteConfirm()" class="btn btn-sm btn-danger">{{ translate('serverConfig', 'deleteServer', data['lang']) }}</button>
                         {% end %}
 
                     </div>
@@ -222,8 +222,8 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
       if(command != "delete_server" && command != "delete_server_files"){
        bootbox.alert({
       backdrop: true,
-      title: '{% raw translate("serverConfig", "sendingRequest") %}',
-      message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientUpdate") %} </div>'
+      title: '{% raw translate("serverConfig", "sendingRequest", data['lang']) %}',
+      message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientUpdate", data['lang']) %} </div>'
     });
       }
     }
@@ -233,16 +233,16 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
       name = "{{data['server_stats']['server_id']['server_name']}}";
       bootbox.confirm({
           size: "",
-          title: "{% raw translate('serverConfig', 'deleteFilesQuestion') %}",
+          title: "{% raw translate('serverConfig', 'deleteFilesQuestion', data['lang']) %}",
           closeButton: false,
-          message: "{% raw translate('serverConfig', 'deleteFilesQuestionMessage') %}",
+          message: "{% raw translate('serverConfig', 'deleteFilesQuestionMessage', data['lang']) %}",
           buttons: {
             confirm: {
-              label: "{{ translate('serverConfig', 'yesDeleteFiles') }}",
+              label: "{{ translate('serverConfig', 'yesDeleteFiles', data['lang']) }}",
               className: 'btn-danger',
             },
             cancel: {
-              label: "{{ translate('serverConfig', 'noDeleteFiles') }}",
+              label: "{{ translate('serverConfig', 'noDeleteFiles', data['lang']) }}",
               className: 'btn-link',
             }
           },
@@ -252,8 +252,8 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
                 setTimeout(function(){ window.location = '/panel/dashboard'; }, 5000);
                 bootbox.dialog({
                 backdrop: true,
-                title: '{% raw translate("serverConfig", "sendingDelete") %}',
-                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDelete") %} </div>',
+                title: '{% raw translate("serverConfig", "sendingDelete", data['lang']) %}',
+                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDelete", data['lang']) %} </div>',
                 closeButton: false
     })
 
@@ -263,8 +263,8 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
                                  setTimeout(function(){ window.location = '/panel/dashboard'; }, 5000);
                 bootbox.dialog({
                 backdrop: true,
-                title: '{% raw translate("serverConfig", "sendingDelete") %}',
-                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDeleteFiles") %} </div>',
+                title: '{% raw translate("serverConfig", "sendingDelete", data['lang']) %}',
+                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDeleteFiles", data['lang']) %} </div>',
                 closeButton: false
     })
              }
@@ -277,16 +277,16 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
       name = "{{data['server_stats']['server_id']['server_name']}}";
       bootbox.confirm({
           size: "",
-          title: "{% raw translate('serverConfig', 'deleteServerQuestion') %}",
+          title: "{% raw translate('serverConfig', 'deleteServerQuestion', data['lang']) %}",
           closeButton: false,
-          message: "{% raw translate('serverConfig', 'deleteServerQuestionMessage') %}",
+          message: "{% raw translate('serverConfig', 'deleteServerQuestionMessage', data['lang']) %}",
           buttons: {
             confirm: {
-              label: "{{ translate('serverConfig', 'yesDelete') }}",
+              label: "{{ translate('serverConfig', 'yesDelete', data['lang']) }}",
               className: 'btn-danger',
             },
             cancel: {
-              label: "{{ translate('serverConfig', 'noDelete') }}",
+              label: "{{ translate('serverConfig', 'noDelete', data['lang']) }}",
               className: 'btn-link',
             }
           },

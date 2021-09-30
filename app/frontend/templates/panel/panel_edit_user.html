@@ -54,9 +54,9 @@
             <div class="row">
                 <div class="col-md-6 col-sm-12">
                   {% if data['new_user'] %}
-                    <form class="forms-sample" method="post" action="/panel/add_user">
+                    <form id="user_form" class="forms-sample" method="post" action="/panel/add_user">
                   {% else %}
-                    <form class="forms-sample" method="post" action="/panel/edit_user">
+                    <form id="user_form" class="forms-sample" method="post" action="/panel/edit_user">
                   {% end %}
                       {% raw xsrf_form_html() %}
                       <input type="hidden" name="id" value="{{ data['user']['user_id'] }}">
@@ -79,6 +79,14 @@
                           <div class="form-group">
                             <label for="password1">Repeat Password <small class="text-muted ml-1"> - leave blank to don't change</small> </label>
                             <input type="password" class="form-control" name="password1" id="password1" value="" placeholder="Repeat Password" >
+                          </div>
+                          <div class="form-group">
+                          <label for="language">User Language:</label>
+                            <select id="language" name="language" form="user_form">
+                            {% for lang in data['languages'] %}
+                              <option value="{{lang}}">{{lang}}</option>
+                            {% end %}
+                            </select>
                           </div>
                         </div>
                       </div>
@@ -186,8 +194,8 @@
 
                       </div>
                       
-                      <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('panelConfig', 'save') }}</button>
-                      <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light"><i class="fas fa-undo-alt"></i> {{ translate('panelConfig', 'cancel') }}</button>
+                      <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('panelConfig', 'save', data['lang']) }}</button>
+                      <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light"><i class="fas fa-undo-alt"></i> {{ translate('panelConfig', 'cancel', data['lang']) }}</button>
                     </form>
                 </div>
 

@@ -193,7 +193,7 @@ class Server:
             msg = "Server {} failed to start with error code: {}".format(self.name, ex)
             logger.error(msg)
             websocket_helper.broadcast('send_start_error', {
-                'error': translation.translate('error', 'start-error').format(self.name, ex)
+                'error': translation.translate('error', 'start-error', 'en_EN').format(self.name, ex)
             })
             return False
         if helper.check_internet():
@@ -203,11 +203,11 @@ class Server:
                 })
             else:
                 websocket_helper.broadcast('send_start_error', {
-                'error': translation.translate('error', 'closedPort').format(loc_server_port)
+                'error': translation.translate('error', 'closedPort', 'en_EN').format(loc_server_port)
             })
         else:
             websocket_helper.broadcast('send_start_error', {
-                'error': translation.translate('error', 'internet')
+                'error': translation.translate('error', 'internet', 'en_EN')
             })
 
         logger.debug('Starting virtual terminal listener for server {}'.format(self.name))

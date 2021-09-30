@@ -36,6 +36,10 @@ class Users_Controller:
         return users_helper.get_user_by_api_token(token)
 
     @staticmethod
+    def get_user_lang_by_id(user_id):
+        return users_helper.get_user_lang_by_id(user_id)
+
+    @staticmethod
     def get_user_by_id(user_id):
         return users_helper.get_user(user_id)
 
@@ -65,6 +69,7 @@ class Users_Controller:
             elif base_data[key] != user_data[key]:
                 up_data[key] = user_data[key]
         up_data['last_update'] = helper.get_time_as_string()
+        up_data['lang'] = user_data['lang']
         logger.debug("user: {} +role:{} -role:{}".format(user_data, added_roles, removed_roles))
         for role in added_roles:
             users_helper.get_or_create(user_id=user_id, role_id=role)
@@ -86,7 +91,7 @@ class Users_Controller:
 
             users_helper.delete_user_roles(user_id, removed_roles)
 
-            users_helper.update_user(user_id, up_data)
+        users_helper.update_user(user_id, up_data)
 
     @staticmethod
     def add_user(username, password=None, api_token=None, enabled=True, superuser=False):

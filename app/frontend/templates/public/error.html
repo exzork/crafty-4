@@ -32,15 +32,15 @@
                   <div class="col-sm-12 grid-margin stretch-card">
                 <div class="card card-statistics social-card google-card card-colored">
                   <div class="card-body">
-                    <h4 class="platform-name mb-3 mt-4 font-weight-semibold user-name">{{ translate('error', 'error') }}</h4>
-                    <h5 class="headline font-weight-medium">{{ translate('error', 'terribleFailure') }}</h5>
+                    <h4 class="platform-name mb-3 mt-4 font-weight-semibold user-name">{{ translate('error', 'error', data['lang']) }}</h4>
+                    <h5 class="headline font-weight-medium">{{ translate('error', 'terribleFailure', data['lang']) }}</h5>
                     <p class="mb-2 comment font-weight-light">
-                      {{ translate('error', 'embarassing') }}<br />
+                      {{ translate('error', 'embarassing', data['lang']) }}<br />
                       <br />
-                      <b>{{ translate('error', 'hereIsTheError') }}: {{data['error']}}</b><br /><br />
+                      <b>{{ translate('error', 'hereIsTheError', data['lang']) }}: {{data['error']}}</b><br /><br />
                       That's all the help I can give you - Godspeed
                       <br /><br />
-                      <a class="d-inline font-weight-medium" href="https://discord.gg/9VJPhCE"> {{ translate('error', 'contact') }}</a>
+                      <a class="d-inline font-weight-medium" href="https://discord.gg/9VJPhCE"> {{ translate('error', 'contact', data['lang']) }}</a>
                     </p>
                   </div>
                 </div>

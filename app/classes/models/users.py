@@ -41,6 +41,7 @@ class Users(Model):
     enabled = BooleanField(default=True)
     superuser = BooleanField(default=False)
     api_token = CharField(default="", unique=True, index=True) # we may need to revisit this
+    lang = CharField(default="en_EN")
 
     class Meta:
         table_name = "users"
@@ -71,6 +72,10 @@ class helper_users:
     def get_all_users():
         query = Users.select()
         return query
+
+    @staticmethod
+    def get_user_lang_by_id(user_id):
+        return Users.get(Users.user_id == user_id).lang
 
     @staticmethod
     def get_user_id_by_name(username):
