@@ -91,7 +91,7 @@ class Users_Controller:
 
             users_helper.delete_user_roles(user_id, removed_roles)
 
-            users_helper.update_user(user_id, up_data)
+        users_helper.update_user(user_id, up_data)
 
     @staticmethod
     def add_user(username, password=None, api_token=None, enabled=True, superuser=False):
