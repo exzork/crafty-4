@@ -134,9 +134,9 @@ class Server:
         # remove the scheduled job since it's ran
         return schedule.CancelJob
 
-    def run_threaded_server(self):
+    def run_threaded_server(self, lang):
         # start the server
-        self.server_thread = threading.Thread(target=self.start_server, daemon=True, name='{}_server_thread'.format(self.server_id))
+        self.server_thread = threading.Thread(target=self.start_server, daemon=True, args=(lang,), name='{}_server_thread'.format(self.server_id))
         self.server_thread.start()
 
     def setup_server_run_command(self):
@@ -161,7 +161,7 @@ class Server:
             console.warning("Unable to write/access {}".format(self.server_path))
             helper.do_exit()
 
-    def start_server(self):
+    def start_server(self, user_lang):
 
         logger.info("Start command detected. Reloading settings from DB for server {}".format(self.name))
         self.setup_server_run_command()
@@ -193,7 +193,7 @@ class Server:
             msg = "Server {} failed to start with error code: {}".format(self.name, ex)
             logger.error(msg)
             websocket_helper.broadcast('send_start_error', {
-                'error': translation.translate('error', 'start-error', 'en_EN').format(self.name, ex)
+                'error': translation.translate('error', 'start-error', user_lang).format(self.name, ex)
             })
             return False
         if helper.check_internet():
@@ -203,11 +203,11 @@ class Server:
                 })
             else:
                 websocket_helper.broadcast('send_start_error', {
-                'error': translation.translate('error', 'closedPort', 'en_EN').format(loc_server_port)
+                'error': translation.translate('error', 'closedPort', user_lang).format(loc_server_port)
             })
         else:
             websocket_helper.broadcast('send_start_error', {
-                'error': translation.translate('error', 'internet', 'en_EN')
+                'error': translation.translate('error', 'internet', user_lang)
             })
 
         logger.debug('Starting virtual terminal listener for server {}'.format(self.name))
@@ -275,15 +275,15 @@ class Server:
 
         self.stats.record_stats()
 
-    def restart_threaded_server(self):
+    def restart_threaded_server(self, lang):
 
         # if not already running, let's just start
         if not self.check_running():
-            self.run_threaded_server()
+            self.run_threaded_server(lang)
         else:
             self.stop_threaded_server()
             time.sleep(2)
-            self.run_threaded_server()
+            self.run_threaded_server(lang)
 
     def cleanup_server_object(self):
         self.PID = None
