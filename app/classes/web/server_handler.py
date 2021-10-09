@@ -64,9 +64,9 @@ class ServerHandler(BaseHandler):
             },
             'hosts_data': self.controller.management.get_latest_hosts_stats(),
             'menu_servers': defined_servers,
-            'show_contribute': helper.get_setting("show_contribute_link", True)
+            'show_contribute': helper.get_setting("show_contribute_link", True),
+            'lang': self.controller.users.get_user_lang_by_id(exec_user_id)
         }
-        page_data['lang'] = self.controller.users.get_user_lang_by_id(exec_user_id)
 
         if page == "step1":
             if not exec_user['superuser'] and not self.controller.crafty_perms.can_create_server(exec_user_id):
@@ -94,7 +94,8 @@ class ServerHandler(BaseHandler):
         page_data = {
             'version_data': "version_data_here",
             'user_data': exec_user_data,
-            'show_contribute': helper.get_setting("show_contribute_link", True)
+            'show_contribute': helper.get_setting("show_contribute_link", True),
+            'lang': self.controller.users.get_user_lang_by_id(exec_user_id)
         }
 
         if page == "command":
@@ -206,7 +207,7 @@ class ServerHandler(BaseHandler):
                 role_id = self.controller.roles.add_role("Creator of Server with uuid={}".format(new_server_uuid))
                 self.controller.server_perms.add_role_server(new_server_id, role_id, "11111111")
                 self.controller.users.add_role_to_user(exec_user_id, role_id)
-                self.controller.server_perms.add_server_creation(exec_user_id)
+                self.controller.crafty_perms.add_server_creation(exec_user_id)
 
             self.controller.stats.record_stats()
             self.redirect("/panel/dashboard")
