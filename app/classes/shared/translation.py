@@ -37,24 +37,24 @@ class Translation():
         )
         try:
             if not self.cached_translation:
-                with open(lang_file, 'r') as f:
+                with open(lang_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     self.cached_translation = data
             elif self.cached_translation_lang != lang:
-                with open(lang_file, 'r') as f:
+                with open(lang_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     self.cached_translation = data
                     self.cached_translation_lang = lang
             else:
                 data = self.cached_translation
-            
+
             try:
                 translated_page = data[page]
             except KeyError:
                 logger.error('Translation File Error: page {} does not exist for lang {}'.format(page, lang))
                 console.error('Translation File Error: page {} does not exist for lang {}'.format(page, lang))
                 return None
-            
+
             try:
                 translated_word = translated_page[word]
                 return translated_word
