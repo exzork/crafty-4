@@ -32,7 +32,7 @@ class ServerHandler(BaseHandler):
         exec_user_data = json.loads(self.get_secure_cookie("user_data"))
         exec_user_id = exec_user_data['user_id']
         exec_user = self.controller.users.get_user_by_id(exec_user_id)
-        
+
         exec_user_role = set()
         if exec_user['superuser'] == 1:
             defined_servers = self.controller.list_defined_servers()
@@ -64,17 +64,12 @@ class ServerHandler(BaseHandler):
             },
             'hosts_data': self.controller.management.get_latest_hosts_stats(),
             'menu_servers': defined_servers,
-            'show_contribute': helper.get_setting("show_contribute_link", True)
+            'show_contribute': helper.get_setting("show_contribute_link", True),
+            'lang': self.controller.users.get_user_lang_by_id(exec_user_id)
         }
-        page_data['lang'] = self.controller.users.get_user_lang_by_id(exec_user_id)
 
         if page == "step1":
-
-            if len(self.controller.users.get_user_roles_id(exec_user_id)) <= 0:
-                self.redirect("/panel/error?error=Unauthorized access: you must have a role to create a server.")
-                return
-
-            elif not exec_user['superuser'] and not self.controller.crafty_perms.can_create_server(exec_user_id):
+            if not exec_user['superuser'] and not self.controller.crafty_perms.can_create_server(exec_user_id):
                 self.redirect("/panel/error?error=Unauthorized access: not a server creator or server limit reached")
                 return
 
@@ -99,7 +94,8 @@ class ServerHandler(BaseHandler):
         page_data = {
             'version_data': "version_data_here",
             'user_data': exec_user_data,
-            'show_contribute': helper.get_setting("show_contribute_link", True)
+            'show_contribute': helper.get_setting("show_contribute_link", True),
+            'lang': self.controller.users.get_user_lang_by_id(exec_user_id)
         }
 
         if page == "command":
@@ -113,7 +109,7 @@ class ServerHandler(BaseHandler):
                             if server['server_name'] == name:
                                 return True
                         return
-                    
+
                     server_data = self.controller.servers.get_server_data_by_id(server_id)
                     server_uuid = server_data.get('server_uuid')
                     new_server_name = server_data.get('server_name') + " (Copy)"
@@ -146,7 +142,7 @@ class ServerHandler(BaseHandler):
                     self.controller.init_all_servers()
 
                     return
-                
+
                 self.controller.management.send_command(exec_user_data['user_id'], server_id, self.get_remote_ip(), command)
 
         if page == "step1":
@@ -205,12 +201,13 @@ class ServerHandler(BaseHandler):
                                            new_server_id,
                                            self.get_remote_ip())
 
-            #These lines add the server to all the user's existing roles with full permissions
-            new_server_uuid = self.controller.servers.get_server_data_by_id(new_server_id).get("server_uuid")
-            for role_id in self.controller.users.get_user_roles_id(exec_user_id):
-                self.controller.server_perms.add_role_server(new_server_id, role_id, "11111111")
+            # These lines create a new Role for the Server with full permissions and add the user to it if he's not a superuser
             if not exec_user['superuser']:
-                self.controller.server_perms.add_server_creation(exec_user_id)
+                new_server_uuid = self.controller.servers.get_server_data_by_id(new_server_id).get("server_uuid")
+                role_id = self.controller.roles.add_role("Creator of Server with uuid={}".format(new_server_uuid))
+                self.controller.server_perms.add_role_server(new_server_id, role_id, "11111111")
+                self.controller.users.add_role_to_user(exec_user_id, role_id)
+                self.controller.crafty_perms.add_server_creation(exec_user_id)
 
             self.controller.stats.record_stats()
             self.redirect("/panel/dashboard")

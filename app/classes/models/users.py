@@ -46,7 +46,7 @@ class Users(Model):
     class Meta:
         table_name = "users"
         database = database
-        
+
 #************************************************************************************************
 #                                   User Roles Class
 #************************************************************************************************
@@ -63,7 +63,7 @@ class User_Roles(Model):
 #                                   Users Helpers
 #************************************************************************************************
 class helper_users:
-        
+
     @staticmethod
     def get_by_id(user_id):
         return Users.get_by_id(user_id)
@@ -97,12 +97,12 @@ class helper_users:
             return user
         else:
             return {}
-            
+
     @staticmethod
     def user_query(user_id):
         user_query = Users.select().where(Users.user_id == user_id)
         return user_query
-        
+
     @staticmethod
     def get_user(user_id):
         if user_id == 0:
@@ -168,7 +168,7 @@ class helper_users:
         if not users_helper.get_user(user_id):
             return False
         return True
-        
+
     @staticmethod
     def new_api_token():
         while True:
@@ -176,7 +176,7 @@ class helper_users:
             test = list(Users.select(Users.user_id).where(Users.api_token == token))
             if len(test) == 0:
                 return token
-                
+
 #************************************************************************************************
 #                                   User_Roles Methods
 #************************************************************************************************
@@ -216,7 +216,7 @@ class helper_users:
             user_id = user.user_id
 
         # I just copied this code from get_user, it had those TODOs & comments made by mac - Lukas
-        
+
         roles_query = User_Roles.select().join(Roles, JOIN.INNER).where(User_Roles.user_id == user_id)
         # TODO: this query needs to be narrower
         roles = set()
@@ -226,13 +226,13 @@ class helper_users:
         user['roles'] = roles
         #logger.debug("user: ({}) {}".format(user_id, user))
         return user
-        
+
     @staticmethod
     def user_role_query(user_id):
         user_query = User_Roles.select().where(User_Roles.user_id == user_id)
         query = Roles.select().where(Roles.role_id == -1)
         for u in user_query:
-            query = Roles.select().where(Roles.role_id == u.role_id)
+            query = query + Roles.select().where(Roles.role_id == u.role_id)
         return query
 
     @staticmethod
