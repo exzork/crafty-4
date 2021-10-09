@@ -303,7 +303,6 @@ class PanelHandler(BaseHandler):
             users_list = []
             role_users = {}
             roles = self.controller.roles.get_all_roles()
-            role_servers = []
             user_roles = {}
             for user in self.controller.users.get_all_users():
                 user_roles_list = self.controller.users.get_user_roles_names(user.user_id)
