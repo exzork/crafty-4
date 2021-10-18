@@ -45,7 +45,8 @@ class PublicHandler(BaseHandler):
             'version': helper.get_version_string(),
             'error': error
             }
-        page_data['lang'] = helper.get_setting('language')
+            
+        page_data['lang'] = tornado.locale.get("en_EN")
 
         # sensible defaults
         template = "public/404.html"
