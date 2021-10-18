@@ -129,9 +129,15 @@ class PanelHandler(BaseHandler):
                 user_auth = self.controller.servers.get_authorized_servers_stats(exec_user_id)
                 logger.debug("ASFR: {}".format(user_auth))
                 page_data['servers'] = user_auth
+                page_data['server_stats']['running'] = 0
+                page_data['server_stats']['stopped'] = 0
                 for data in page_data['servers']:
+                    if data['stats']['running']:
+                        page_data['server_stats']['running'] += 1
+                    else:
+                        page_data['server_stats']['stopped'] += 1
                     try:
-                        data['stats']['waiting_start'] = self.controller.servers.get_waiting_start(int(data['stats']['server_id']['server_id']))
+                        page_data['stats']['waiting_start'] = self.controller.servers.get_waiting_start(int(data['stats']['server_id']['server_id']))
                     except:
                         data['stats']['waiting_start'] = False
 
