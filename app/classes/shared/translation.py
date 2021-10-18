@@ -19,7 +19,7 @@ class Translation():
         fallback_lang = 'en_EN'
 
         if lang not in self.lang_file_exists and \
-            helper.check_file_exists(os.path.join(self.translations_path, lang + '.json')):
+            helper.check_file_exists(os.path.join(self.translations_path, str(lang) + '.json')):
                 self.lang_file_exists.append(lang)
 
         translated_word = self.translate_inner(page, word, lang) \
