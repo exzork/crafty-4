@@ -142,8 +142,8 @@ class PanelHandler(BaseHandler):
                         data['stats']['waiting_start'] = False
 
             total_players = 0
-            for server in self.controller.servers.get_all_defined_servers():
-                total_players += len(self.controller.stats.get_server_players(server['server_id']))
+            for server in page_data['servers']:
+                total_players += len(self.controller.stats.get_server_players(server['server_data']['server_id']))
             page_data['num_players'] = total_players
 
             for s in page_data['servers']:
