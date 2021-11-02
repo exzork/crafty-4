@@ -53,7 +53,7 @@
           </td>
             {% end %}
           <td>
-            {% if server['stats']['int_ping_results'] %}
+            {% if server['stats']['running'] %}
             <span class="text-success"><i class="fas fa-signal"></i>  {{ translate('dashboard', 'online', data['lang']) }}</span>
             {% else %}
             <span class="text-danger"><i class="fas fa-ban"></i>  {{ translate('dashboard', 'offline', data['lang']) }}</span>

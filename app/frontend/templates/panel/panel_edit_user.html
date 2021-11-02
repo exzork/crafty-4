@@ -62,27 +62,27 @@
                       <input type="hidden" name="id" value="{{ data['user']['user_id'] }}">
                       <input type="hidden" name="subpage" value="config">
 
-                      
+
                       <div class="card">
                         <div class="card-header header-sm d-flex justify-content-between align-items-center">
                           <h4 class="card-title"><i class="fas fa-user"></i> User Settings</h4>
                         </div>
-                        <div class="card-body">                          
+                        <div class="card-body">
                           <div class="form-group">
-                            <label for="username">User Name <small class="text-muted ml-1"> - What you wish to call this user</small> </label>
+                            <label class="form-label" for="username">User Name <small class="text-muted ml-1"> - What you wish to call this user</small> </label>
                             <input type="text" class="form-control" name="username" id="username" value="{{ data['user']['username']  }}" placeholder="User Name" >
                           </div>
                           <div class="form-group">
-                            <label for="password0">Password <small class="text-muted ml-1"> - leave blank to don't change</small> </label>
+                            <label class="form-label" for="password0">Password <small class="text-muted ml-1"> - leave blank to don't change</small> </label>
                             <input type="password" class="form-control" name="password0" id="password0" value="" placeholder="Password" >
                           </div>
                           <div class="form-group">
-                            <label for="password1">Repeat Password <small class="text-muted ml-1"> - leave blank to don't change</small> </label>
+                            <label class="form-label" for="password1">Repeat Password <small class="text-muted ml-1"> - leave blank to don't change</small> </label>
                             <input type="password" class="form-control" name="password1" id="password1" value="" placeholder="Repeat Password" >
                           </div>
                           <div class="form-group">
-                          <label for="language">User Language:</label>
-                            <select id="language" name="language" form="user_form">
+                            <label class="form-label" for="language">User Language:</label>
+                            <select class="form-select" id="language" name="language" form="user_form">
                             {% for lang in data['languages'] %}
                               <option value="{{lang}}">{{lang}}</option>
                             {% end %}
@@ -90,9 +90,7 @@
                           </div>
                         </div>
                       </div>
-                      
-                      
-                      {% if len(data['servers_all']) > 0 %}
+
                       <div class="card">
                         <div class="card-header header-sm d-flex justify-content-between align-items-center">
                           <h4 class="card-title"><i class="fas fa-user-tag"></i> Roles <small class="text-muted ml-1"> - the roles this user is a member of</small></h4>
@@ -113,9 +111,9 @@
                                     <td>{{ role.role_name }}</td>
                                     <td>
                                       {% if role.role_id in data['user']['roles'] %}
-                                        <input type="checkbox" class="" id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership" checked="" value="1">
+                                        <input type="checkbox" class="form-check-input"  id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership" checked="" value="1">
                                       {% else %}
-                                        <input type="checkbox" class="" id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership" value="1">
+                                        <input type="checkbox" class="form-check-input"  id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership" value="1">
                                       {% end %}
 
                                     </td>
@@ -128,13 +126,13 @@
                         </div>
                       </div>
 
-                      <!-- Put Permissions Crafty part here -->  
-                      
+                      <!-- Put Permissions Crafty part here -->
+
                       <div class="card">
                         <div class="card-header header-sm d-flex justify-content-between align-items-center">
                           <h4 class="card-title"><i class="fas fa-user-lock"></i> Crafty Permissions <small class="text-muted ml-1"> - permissions this user has on Crafty Controller </small></h4>
                         </div>
-                        <div class="card-body">                          
+                        <div class="card-body">
                           <div class="form-group">
                             <div class="table-responsive">
                               <table class="table table-hover">
@@ -151,9 +149,9 @@
                                     <td>{{ permission.name }}</td>
                                     <td>
                                       {% if permission in data['permissions_list'] %}
-                                        <input type="checkbox" class="" id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" checked="" value="1">
+                                        <input type="checkbox" class="form-check-input"  id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" checked="" value="1">
                                       {% else %}
-                                        <input type="checkbox" class="" id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" value="1">
+                                        <input type="checkbox" class="form-check-input"  id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" value="1">
                                       {% end %}
                                     </td>
                                     <td><input type="text" class="form-control" name="quantity_{{ permission.name }}" id="quantity_{{ permission.name }}" value="{{ data['quantity_server'][permission.name] }}"></td>
@@ -165,7 +163,6 @@
                           </div>
                         </div>
                       </div>
-                      {% end %}
 
                       <div class="form-check-flat">
                         <label for="enabled" class="form-check-label ml-4 mb-4">
@@ -193,7 +190,7 @@
                         </label>
 
                       </div>
-                      
+
                       <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('panelConfig', 'save', data['lang']) }}</button>
                       <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light"><i class="fas fa-undo-alt"></i> {{ translate('panelConfig', 'cancel', data['lang']) }}</button>
                     </form>

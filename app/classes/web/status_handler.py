@@ -25,6 +25,7 @@ except ModuleNotFoundError as e:
 class StatusHandler(BaseHandler):
     def get(self):
         page_data = {}
+        page_data['lang'] = tornado.locale.get("en_EN")
         page_data['servers'] = self.controller.servers.get_all_servers_stats()
         for srv in page_data['servers']:
             server_data = srv.get('server_data', False)

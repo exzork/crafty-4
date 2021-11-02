@@ -26,7 +26,7 @@ database = SqliteDatabase(helper.db_path, pragmas={
     'journal_mode': 'wal',
     'cache_size': -1024 * 10})
 
-        
+
 #************************************************************************************************
 #                                  User_Crafty Class
 #************************************************************************************************
@@ -89,7 +89,7 @@ class Permissions_Crafty:
     @staticmethod
     def get_permission(permission_mask, permission_tested: Enum_Permissions_Crafty):
         return permission_mask[permission_tested.value]
-            
+
     @staticmethod
     def get_crafty_permissions_mask(user_id):
         permissions_mask = ''
@@ -115,7 +115,7 @@ class Permissions_Crafty:
             Enum_Permissions_Crafty.Roles_Config.name: user_crafty.limit_role_creation,
         }
         return quantity_list
-        
+
     #************************************************************************************************
     #                                   User_Crafty Methods
     #************************************************************************************************
@@ -141,7 +141,7 @@ class Permissions_Crafty:
     def add_user_crafty(user_id, uc_permissions):
         user_crafty = User_Crafty.insert({User_Crafty.user_id: user_id, User_Crafty.permissions: uc_permissions}).execute()
         return user_crafty
-        
+
     @staticmethod
     def add_or_update_user(user_id, permissions_mask, limit_server_creation, limit_user_creation, limit_role_creation):
         try:
@@ -159,7 +159,7 @@ class Permissions_Crafty:
                 User_Crafty.limit_user_creation: limit_user_creation,
                 User_Crafty.limit_role_creation: limit_role_creation
             }).execute()
-        
+
     @staticmethod
     def get_created_quantity_list(user_id):
         user_crafty = crafty_permissions.get_User_Crafty(user_id)
@@ -173,7 +173,7 @@ class Permissions_Crafty:
     @staticmethod
     def get_crafty_limit_value(user_id, permission):
         user_crafty = crafty_permissions.get_User_Crafty(user_id)
-        quantity_list = get_permission_quantity_list(user_id)
+        quantity_list = crafty_permissions.get_permission_quantity_list(user_id)
         return quantity_list[permission]
 
     @staticmethod
@@ -189,6 +189,6 @@ class Permissions_Crafty:
         user_crafty = crafty_permissions.get_User_Crafty(user_id)
         user_crafty.created_server += 1
         User_Crafty.save(user_crafty)
-        return user_crafty.created_server        
+        return user_crafty.created_server
 
 crafty_permissions = Permissions_Crafty()
