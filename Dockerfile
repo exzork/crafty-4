@@ -7,7 +7,7 @@ LABEL maintainer="Dockerfile created by Zedifus <https://gitlab.com/zedifus>"
 COPY requirements.txt /commander/requirements.txt
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/community llvm11-libs openssl-dev rust cargo gcc musl-dev libffi-dev make openjdk8-jre-base openjdk11-jre-headless openjdk16-jre-headless mariadb-dev \
 && pip3 install --no-cache-dir -r /commander/requirements.txt \
-&& apk del --no-cache gcc musl-dev libffi-dev make rust cargo openssl-dev \
+&& apk del --no-cache gcc musl-dev libffi-dev make rust cargo openssl-dev llvm11-libs \
 && rm -rf /sbin/apk \
 && rm -rf /etc/apk \
 && rm -rf /lib/apk \
