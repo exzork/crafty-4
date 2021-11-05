@@ -272,10 +272,10 @@
 
 </script>
 <script type="text/javascript">
-  //<![CDATA[ 
-  // array of possible countries in the same order as they appear in the country selection list 
-  
-  function decodeHtmlCharCodes(str) { 
+  //<![CDATA[
+  // array of possible countries in the same order as they appear in the country selection list
+
+  function decodeHtmlCharCodes(str) {
     return str.replace("&quot;", "\"");
   }
 
@@ -290,38 +290,38 @@
   var text = '{% raw data["js_server_types"] %}';
   var serverTypesLists = JSON.parse(text);
   //convertHtmlJsonToJavacriptArray('{{ data["js_server_types"] }}')
-  /* CountryChange() is called from the onchange event of a select element. 
-  * param selectObj - the select object which fired the on change event. 
-  */ 
-  function serverTypeChange(selectObj) { 
-    // get the index of the selected option 
-    var idx = selectObj.selectedIndex; 
-    // get the value of the selected option 
-    var which = selectObj.options[idx].value; 
-    // use the selected option value to retrieve the list of items from the serverTypesLists array 
-    cList = serverTypesLists[which]; 
-    // get the country select element via its known id 
-    var cSelect = document.getElementById("server"); 
-    // remove the current options from the country select 
-    var len=cSelect.options.length; 
-    while (cSelect.options.length > 0) { 
-      cSelect.remove(0); 
-    } 
-    var newOption; 
-    // create new options 
-    for (var i=0; i<cList.length; i++) { 
-      newOption = document.createElement("option"); 
-      newOption.value = which+"|"+cList[i];  // assumes option string and value are the same 
-      newOption.text=cList[i]; 
-      // add the new option 
-      try { 
-        cSelect.add(newOption);  // this will fail in DOM browsers but is needed for IE 
-      } 
-      catch (e) { 
-        cSelect.appendChild(newOption); 
-      } 
-    } 
-  } 
+  /* CountryChange() is called from the onchange event of a select element.
+  * param selectObj - the select object which fired the on change event.
+  */
+  function serverTypeChange(selectObj) {
+    // get the index of the selected option
+    var idx = selectObj.selectedIndex;
+    // get the value of the selected option
+    var which = selectObj.options[idx].value;
+    // use the selected option value to retrieve the list of items from the serverTypesLists array
+    cList = serverTypesLists[which];
+    // get the country select element via its known id
+    var cSelect = document.getElementById("server");
+    // remove the current options from the country select
+    var len=cSelect.options.length;
+    while (cSelect.options.length > 0) {
+      cSelect.remove(0);
+    }
+    var newOption;
+    // create new options ordered by descending
+    for (var i=(cList.length)-1; i>=0; i--) {
+      newOption = document.createElement("option");
+      newOption.value = which+"|"+cList[i];  // assumes option string and value are the same
+      newOption.text=cList[i];
+      // add the new option
+      try {
+        cSelect.add(newOption);  // this will fail in DOM browsers but is needed for IE
+      }
+      catch (e) {
+        cSelect.appendChild(newOption);
+      }
+    }
+  }
  //]]>
  </script>
 {% end %}
