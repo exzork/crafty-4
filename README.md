@@ -1,4 +1,4 @@
-# Crafty Controller 4.0.0-alpha.2
+# Crafty Controller 4.0.0-alpha.3
 > Python based Control Panel for your Minecraft Server
 
 ## What is Crafty Controller?

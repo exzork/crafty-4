@@ -23,14 +23,14 @@ def do_intro():
 
     version = helper.get_version_string()
 
-    intro = """
-    {lines}
-    #\t\tWelcome to Crafty Controller - v.{version}\t\t      #
-    {lines}
-    #   \tServer Manager / Web Portal for your Minecraft server \t      #
-    #   \t\tHomepage: www.craftycontrol.com\t\t\t      #
-    {lines}
-    """.format(lines="/" * 75, version=version)
+    intro = f"""
+    {'/' * 75}
+    #{("Welcome to Crafty Controller - v." + version).center(73, " ")}#
+    {'/' * 75}
+    #{"Server Manager / Web Portal for your Minecraft server".center(73, " ")}#
+    #{"Homepage: www.craftycontrol.com".center(73, " ")}#
+    {'/' * 75}
+    """
 
     console.magenta(intro)
 
