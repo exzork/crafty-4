@@ -46,20 +46,28 @@ class ServerOutBuf:
         self.line_buffer = ''
         ServerOutBuf.lines[self.server_id] = []
 
-    def check(self):
-        while self.proc.poll() is None:
-            char = self.proc.stdout.read(1).decode('utf-8')
-            # TODO: we may want to benchmark reading in blocks and userspace processing it later, reads are kind of expensive as a syscall
-            if char == os.linesep:
-                ServerOutBuf.lines[self.server_id].append(self.line_buffer)
+    def process_byte(self, char):
+        if char == os.linesep:
+            ServerOutBuf.lines[self.server_id].append(self.line_buffer)
 
-                self.new_line_handler(self.line_buffer)
-                self.line_buffer = ''
-                # Limit list length to self.max_lines:
-                if len(ServerOutBuf.lines[self.server_id]) > self.max_lines:
-                    ServerOutBuf.lines[self.server_id].pop(0)
+            self.new_line_handler(self.line_buffer)
+            self.line_buffer = ''
+            # Limit list length to self.max_lines:
+            if len(ServerOutBuf.lines[self.server_id]) > self.max_lines:
+                ServerOutBuf.lines[self.server_id].pop(0)
+        else:
+            self.line_buffer += char
+
+    def check(self):
+        while True:
+            if self.proc.poll() is None:
+                char = self.proc.stdout.read(1).decode('utf-8')
+                # TODO: we may want to benchmark reading in blocks and userspace processing it later, reads are kind of expensive as a syscall
+                self.process_byte(char)
             else:
-                self.line_buffer += char
+                flush = self.proc.stdout.read().decode('utf-8')
+                for char in flush:
+                    self.process_byte(char)
 
     def new_line_handler(self, new_line):
         new_line = re.sub('(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)|(> )', '', new_line)
