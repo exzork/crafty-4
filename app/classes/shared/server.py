@@ -211,7 +211,7 @@ class Server:
             websocket_helper.broadcast('send_start_error', {
                 'error': translation.translate('error', 'internet', user_lang)
             })
-        db_helper.set_waiting_start(self.server_id, False)
+        servers_helper.set_waiting_start(self.server_id, False)
         out_buf = ServerOutBuf(self.process, self.server_id)
 
         logger.debug('Starting virtual terminal listener for server {}'.format(self.name))
