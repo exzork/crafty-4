@@ -6,7 +6,6 @@ import tornado.escape
 import logging
 
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.models import db_shortcuts
 
 log = logging.getLogger(__name__)
 
@@ -30,7 +29,7 @@ class ApiHandler(BaseHandler):
         try:
             log.debug("Searching for specified token")
             # TODO: YEET THIS
-            user_data = db_shortcuts.get_user_by_api_token(self.get_argument('token'))
+            user_data = self.controller.users.get_user_by_api_token(self.get_argument('token'))
             log.debug("Checking results")
             if user_data:
                 # Login successful! Check perms

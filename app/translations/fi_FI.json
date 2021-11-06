@@ -82,6 +82,7 @@
         "nextBackup": "Seuraava:",
         "servers": "Palvelimet",
         "cannotSeeOnMobile": "Etkö näe kaikkea mobiililaitteella?",
+        "cannotSee": "Etkö näe kaikkea?",
         "cannotSeeOnMobile2": "Yritä vierittää taulukkoa sivuttain.",
         "max": "maks.",
         "avg": "ka.",
@@ -100,7 +101,9 @@
         "restart": "Uudelleenkäynnistää",
         "killing": "Tappamisprosessi ...",
         "starting": "Myöhästynyt lähtö",
-        "delay-explained": "Palvelu/agentti on äskettäin aloittanut ja viivästyttää minecraft -palvelimen ilmentymän alkua"
+        "delay-explained": "Palvelu/agentti on äskettäin aloittanut ja viivästyttää minecraft -palvelimen ilmentymän alkua",
+        "no-servers": "Palvelimia ei tällä hetkellä ole. Aloita napsauttamalla",
+        "welcome": "Tervetuloa Crafty Controller"
     },
     "accessDenied": {
         "accessDenied": "Käyttö estetty",

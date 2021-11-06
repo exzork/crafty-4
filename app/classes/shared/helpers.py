@@ -19,7 +19,6 @@ from requests import get
 from datetime import datetime
 from socket import gethostname
 
-
 from app.classes.shared.console import console
 
 logger = logging.getLogger(__name__)
@@ -341,11 +340,12 @@ class Helpers:
                         break
                 path_list = test.split('/')
                 root_path = path_list[0]
+                '''
                 if len(path_list) > 1:
                     for i in range(len(path_list) - 2):
                         root_path = os.path.join(root_path, path_list[i + 1])
-
-                full_root_path = os.path.join(tempDir, root_path)
+'''
+                full_root_path = tempDir
 
                 for item in os.listdir(full_root_path):
                     try:
@@ -650,22 +650,6 @@ class Helpers:
     @staticmethod
     def in_path_old(x, y):
         return os.path.abspath(y).__contains__(os.path.abspath(x))
-
-    @staticmethod
-    def get_banned_players(server_id, db_helper):
-        stats = db_helper.get_server_stats_by_id(server_id)
-        server_path = stats['server_id']['path']
-        path = os.path.join(server_path, 'banned-players.json')
-
-        try:
-            with open(path) as file:
-                content = file.read()
-                file.close()
-        except Exception as ex:
-            print (ex)
-            return None
-
-        return json.loads(content)
 
     @staticmethod
     def copy_files(source, dest):

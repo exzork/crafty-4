@@ -7,7 +7,9 @@ import tornado.escape
 from app.classes.shared.helpers import helper
 from app.classes.web.base_handler import BaseHandler
 from app.classes.shared.console import console
-from app.classes.shared.models import Users, fn, db_helper
+from app.classes.shared.main_models import fn
+
+from app.classes.models.users import Users
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +45,8 @@ class PublicHandler(BaseHandler):
             'version': helper.get_version_string(),
             'error': error
             }
+            
+        page_data['lang'] = tornado.locale.get("en_EN")
 
         # sensible defaults
         template = "public/404.html"
@@ -113,7 +117,7 @@ class PublicHandler(BaseHandler):
                 q.save()
 
                 # log this login
-                db_helper.add_to_audit_log(user_data.user_id, "Logged in", 0, self.get_remote_ip())
+                self.controller.management.add_to_audit_log(user_data.user_id, "Logged in", 0, self.get_remote_ip())
 
                 cookie_data = {
                     "username": user_data.username,
@@ -129,7 +133,7 @@ class PublicHandler(BaseHandler):
                 self.clear_cookie("user")
                 self.clear_cookie("user_data")
                 # log this failed login attempt
-                db_helper.add_to_audit_log(user_data.user_id, "Tried to log in", 0, self.get_remote_ip())
+                self.controller.management.add_to_audit_log(user_data.user_id, "Tried to log in", 0, self.get_remote_ip())
                 self.redirect('/public/error?error=Login Failed')
         else:
             self.redirect("/public/login")

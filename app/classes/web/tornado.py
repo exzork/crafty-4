@@ -92,16 +92,12 @@ class Webserver:
 
         http_port = helper.get_setting('http_port')
         https_port = helper.get_setting('https_port')
-
-        lang = helper.get_setting('language')
+        
         debug_errors = helper.get_setting('show_errors')
         cookie_secret = helper.get_setting('cookie_secret')
 
         if cookie_secret is False:
             cookie_secret = helper.random_string_generator(32)
-
-        if not lang:
-            lang = "en_EN"
 
         if not http_port:
             http_port = 8000
@@ -120,7 +116,7 @@ class Webserver:
 
         tornado.template.Loader('.')
 
-        tornado.locale.set_default_locale(lang)
+        tornado.locale.set_default_locale('en_EN')
 
         handler_args = {"controller": self.controller, "tasks_manager": self.tasks_manager, "translator": translation}
         handlers = [
@@ -132,7 +128,7 @@ class Webserver:
             (r'/api/stats/servers', ServersStats, handler_args),
             (r'/api/stats/node', NodeStats, handler_args),
             (r'/ws', SocketHandler, handler_args),
-            (r'/upload', UploadHandler),
+            (r'/upload', UploadHandler, handler_args),
             (r'/status', StatusHandler, handler_args)
             ]
 

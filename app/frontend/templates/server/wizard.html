@@ -1,6 +1,6 @@
 {% extends ../base.html %}
 
-{% block title %}Crafty Controller - {{ translate('serverWizard', 'newServer') }}{% end %}
+{% block title %}Crafty Controller - {{ translate('serverWizard', 'newServer', data['lang']) }}{% end %}
 
 {% block content %}
 
@@ -10,7 +10,7 @@
         <div class="card">
           <div class="card-body">
 
-            <h4>{{ translate('serverWizard', 'newServer') }}</h4>
+            <h4>{{ translate('serverWizard', 'newServer', data['lang']) }}</h4>
             <br />
             <p class="card-description">
 
@@ -19,7 +19,7 @@
                 <div class="row">
                   <div class="col-sm-12">
                     <div class="form-group">
-                      <label for="server_type">{{ translate('serverWizard', 'serverType') }}</label>
+                      <label for="server_type">{{ translate('serverWizard', 'serverType', data['lang']) }}</label>
                       <select class="form-control form-control-lg select-css" id="server_type" name="server_type" onchange="serverTypeChange(this)">
                         {% for s in data['server_types'] %}
                             <option value="{{ s }}">{{ s.capitalize() }}</option>
@@ -30,7 +30,7 @@
 
                   <div class="col-sm-12">
                     <div class="form-group">
-                      <label for="server_version">{{ translate('serverWizard', 'serverVersion') }}</label>
+                      <label for="server_version">{{ translate('serverWizard', 'serverVersion', data['lang']) }}</label>
                       <select class="form-control form-control-lg select-css" id="server" name="server">
                             <option value="0">Select a Version</option>
                       </select>
@@ -39,41 +39,41 @@
 
                   <div class="col-sm-12">
                     <div class="form-group">
-                      <label for="server_name">{{ translate('serverWizard', 'serverName') }}</label>
-                      <input type="text" class="form-control" id="server_name" name="server_name" placeholder="{{ translate('serverWizard', 'myNewServer') }}">
+                      <label for="server_name">{{ translate('serverWizard', 'serverName', data['lang']) }}</label>
+                      <input type="text" class="form-control" id="server_name" name="server_name" placeholder="{{ translate('serverWizard', 'myNewServer', data['lang']) }}">
                     </div>
                   </div>
 
                 </div>
                 <br />
-                <h4 class="card-title">{{ translate('serverWizard', 'quickSettings') }} <small style="text-transform: none;"> - {{ translate('serverWizard', 'quickSettingsDescription') }}</small></h4>
+                <h4 class="card-title">{{ translate('serverWizard', 'quickSettings', data['lang']) }} <small style="text-transform: none;"> - {{ translate('serverWizard', 'quickSettingsDescription', data['lang']) }}</small></h4>
                 <hr>
                 <div class="row">
 
                   <div class="col-sm-3">
                     <div class="form-group">
-                      <label for="min_memory1">{{ translate('serverWizard', 'minMem') }} <small> - {{ translate('serverWizard', 'sizeInGB') }}</small></label>
+                      <label for="min_memory1">{{ translate('serverWizard', 'minMem', data['lang']) }} <small> - {{ translate('serverWizard', 'sizeInGB', data['lang']) }}</small></label>
                       <input type="number" class="form-control" id="min_memory1"  name="min_memory" value="1" step="0.5" min="0.5">
                     </div>
                   </div>
 
                   <div class="col-sm-3 offset-1">
                     <div class="form-group">
-                      <label for="max_memory1">{{ translate('serverWizard', 'maxMem') }} <small> - {{ translate('serverWizard', 'sizeInGB') }}</small></label>
+                      <label for="max_memory1">{{ translate('serverWizard', 'maxMem', data['lang']) }} <small> - {{ translate('serverWizard', 'sizeInGB', data['lang']) }}</small></label>
                       <input type="number" class="form-control" id="max_memory1"  name="max_memory" value="2" step="0.5" min="0.5">
                     </div>
                   </div>
 
                   <div class="col-sm-3 offset-1">
                     <div class="form-group">
-                      <label for="port1">{{ translate('serverWizard', 'serverPort') }} <small> - {{ translate('serverWizard', 'defaultPort') }}</small></label>
+                      <label for="port1">{{ translate('serverWizard', 'serverPort', data['lang']) }} <small> - {{ translate('serverWizard', 'defaultPort', data['lang']) }}</small></label>
                       <input type="number" class="form-control" id="port1" name="port" value="25565" step="1" min="1">
                     </div>
                   </div>
 
                 </div>
-                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg()">{{ translate('serverWizard', 'buildServer') }}</button>
-                <button type="reset" class="btn btn-danger mr-2">{{ translate('serverWizard', 'resetForm') }}</button>
+                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg()">{{ translate('serverWizard', 'buildServer', data['lang']) }}</button>
+                <button type="reset" class="btn btn-danger mr-2">{{ translate('serverWizard', 'resetForm', data['lang']) }}</button>
 
               </form>
             </p>
@@ -85,7 +85,7 @@
         <div class="card">
           <div class="card-body">
 
-            <h4>{{ translate('serverWizard', 'importServer') }}</h4>
+            <h4>{{ translate('serverWizard', 'importServer', data['lang']) }}</h4>
             <br />
             <p class="card-description">
 
@@ -96,21 +96,21 @@
 
                   <div class="col-sm-12">
                     <div class="form-group">
-                      <label for="server_name">{{ translate('serverWizard', 'serverName') }}</label>
-                      <input type="text" class="form-control" id="server_name" name="server_name" value="" placeholder="{{ translate('serverWizard', 'myNewServer') }}">
+                      <label for="server_name">{{ translate('serverWizard', 'serverName', data['lang']) }}</label>
+                      <input type="text" class="form-control" id="server_name" name="server_name" value="" placeholder="{{ translate('serverWizard', 'myNewServer', data['lang']) }}">
                     </div>
                   </div>
 
                   <div class="col-sm-12">
                     <div class="form-group">
-                      <label for="server">{{ translate('serverWizard', 'serverPath') }} <small>{{ translate('serverWizard', 'absoluteServerPath') }}</small></label>
+                      <label for="server">{{ translate('serverWizard', 'serverPath', data['lang']) }} <small>{{ translate('serverWizard', 'absoluteServerPath', data['lang']) }}</small></label>
                       <input type="text" class="form-control" id="server_path" name="server_path" placeholder="/var/opt/server">
                     </div>
                   </div>
 
                   <div class="col-sm-12">
                     <div class="form-group">
-                      <label for="server_jar">{{ translate('serverWizard', 'serverJar') }}</label>
+                      <label for="server_jar">{{ translate('serverWizard', 'serverJar', data['lang']) }}</label>
                       <input type="text" class="form-control" id="server_jar" name="server_jar" value="" placeholder="paper.jar">
                     </div>
                   </div>
@@ -119,34 +119,34 @@
 
                 </div>
                 <br />
-                <h4 class="card-title">{{ translate('serverWizard', 'quickSettings') }} <small style="text-transform: none;"> - {{ translate('serverWizard', 'quickSettingsDescription') }}</small></h4>
+                <h4 class="card-title">{{ translate('serverWizard', 'quickSettings', data['lang']) }} <small style="text-transform: none;"> - {{ translate('serverWizard', 'quickSettingsDescription', data['lang']) }}</small></h4>
                 <hr>
                 <div class="row">
 
                   <div class="col-sm-3">
                     <div class="form-group">
-                      <label for="min_memory2">{{ translate('serverWizard', 'minMem') }} <small> - {{ translate('serverWizard', 'sizeInGB') }}</small></label>
+                      <label for="min_memory2">{{ translate('serverWizard', 'minMem', data['lang']) }} <small> - {{ translate('serverWizard', 'sizeInGB', data['lang']) }}</small></label>
                       <input type="number" class="form-control" id="min_memory2"  name="min_memory" value="1" step="0.5" min="0.5">
                     </div>
                   </div>
 
                   <div class="col-sm-3 offset-1">
                     <div class="form-group">
-                      <label for="max_memory2">{{ translate('serverWizard', 'maxMem') }} <small> - {{ translate('serverWizard', 'sizeInGB') }}</small></label>
+                      <label for="max_memory2">{{ translate('serverWizard', 'maxMem', data['lang']) }} <small> - {{ translate('serverWizard', 'sizeInGB', data['lang']) }}</small></label>
                       <input type="number" class="form-control" id="max_memory2"  name="max_memory" value="2" step="0.5" min="0.5">
                     </div>
                   </div>
 
                   <div class="col-sm-3 offset-1">
                     <div class="form-group">
-                      <label for="port2">{{ translate('serverWizard', 'serverPort') }} <small> - {{ translate('serverWizard', 'defaultPort') }}</small></label>
+                      <label for="port2">{{ translate('serverWizard', 'serverPort', data['lang']) }} <small> - {{ translate('serverWizard', 'defaultPort', data['lang']) }}</small></label>
                       <input type="number" class="form-control" id="port2" name="port" value="25565" step="1" min="1">
                     </div>
                   </div>
 
                 </div>
-                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg(true)">{{ translate('serverWizard', 'importServerButton') }}</button>
-                <button type="reset" class="btn btn-danger mr-2">{{ translate('serverWizard', 'resetForm') }}</button>
+                <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg(true)">{{ translate('serverWizard', 'importServerButton', data['lang']) }}</button>
+                <button type="reset" class="btn btn-danger mr-2">{{ translate('serverWizard', 'resetForm', data['lang']) }}</button>
 
               </form>
             </p>
@@ -158,7 +158,7 @@
         <div class="card">
           <div class="card-body">
 
-            <h4>{{ translate('serverWizard', 'importZip') }}</h4>
+            <h4>{{ translate('serverWizard', 'importZip', data['lang']) }}</h4>
             <br />
             <p class="card-description">
 
@@ -170,21 +170,21 @@
                   <div class="col-sm-9">
                     <div class="col-sm-12">
                       <div class="form-group">
-                        <label for="server_name">{{ translate('serverWizard', 'serverName') }}</label>
-                        <input type="text" class="form-control" id="server_name" name="server_name" value="" placeholder="{{ translate('serverWizard', 'myNewServer') }}">
+                        <label for="server_name">{{ translate('serverWizard', 'serverName', data['lang']) }}</label>
+                        <input type="text" class="form-control" id="server_name" name="server_name" value="" placeholder="{{ translate('serverWizard', 'myNewServer', data['lang']) }}">
                       </div>
                     </div>
 
                     <div class="col-sm-12">
                       <div class="form-group">
-                        <label for="server">{{ translate('serverWizard', 'zipPath') }} <small>{{ translate('serverWizard', 'absoluteZipPath') }}</small></label>
+                        <label for="server">{{ translate('serverWizard', 'zipPath', data['lang']) }} <small>{{ translate('serverWizard', 'absoluteZipPath', data['lang']) }}</small></label>
                         <input type="text" class="form-control" id="server_path" name="server_path" placeholder="/var/opt/server.zip">
                       </div>
                     </div>
 
                     <div class="col-sm-12">
                       <div class="form-group">
-                        <label for="server_jar">{{ translate('serverWizard', 'serverJar') }}</label>
+                        <label for="server_jar">{{ translate('serverWizard', 'serverJar', data['lang']) }}</label>
                         <input type="text" class="form-control" id="server_jar" name="server_jar" value="" placeholder="paper.jar">
                       </div>
                     </div>
@@ -193,34 +193,34 @@
 
 
                   <div class="col-sm-3">
-                    <h4 class="card-title">{{ translate('serverWizard', 'quickSettings') }} <small style="text-transform: none;"> - {{ translate('serverWizard', 'quickSettingsDescription') }}</small></h4>
+                    <h4 class="card-title">{{ translate('serverWizard', 'quickSettings', data['lang']) }} <small style="text-transform: none;"> - {{ translate('serverWizard', 'quickSettingsDescription', data['lang']) }}</small></h4>
                     <hr>
                     <div class="row">
 
                       <div class="col-sm-12">
                         <div class="form-group">
-                          <label for="min_memory3">{{ translate('serverWizard', 'minMem') }} <small> - {{ translate('serverWizard', 'sizeInGB') }}</small></label>
+                          <label for="min_memory3">{{ translate('serverWizard', 'minMem', data['lang']) }} <small> - {{ translate('serverWizard', 'sizeInGB', data['lang']) }}</small></label>
                           <input type="number" class="form-control" id="min_memory3"  name="min_memory" value="1" step="0.5" min="0.5">
                         </div>
                       </div>
 
                       <div class="col-sm-12">
                         <div class="form-group">
-                          <label for="max_memory3">{{ translate('serverWizard', 'maxMem') }} <small> - {{ translate('serverWizard', 'sizeInGB') }}</small></label>
+                          <label for="max_memory3">{{ translate('serverWizard', 'maxMem', data['lang']) }} <small> - {{ translate('serverWizard', 'sizeInGB', data['lang']) }}</small></label>
                           <input type="number" class="form-control" id="max_memory3"  name="max_memory" value="2" step="0.5" min="0.5">
                         </div>
                       </div>
 
                       <div class="col-sm-12">
                         <div class="form-group">
-                          <label for="port3">{{ translate('serverWizard', 'serverPort') }} <small> - {{ translate('serverWizard', 'defaultPort') }}</small></label>
+                          <label for="port3">{{ translate('serverWizard', 'serverPort', data['lang']) }} <small> - {{ translate('serverWizard', 'defaultPort', data['lang']) }}</small></label>
                           <input type="number" class="form-control" id="port3" name="port" value="25565" step="1" min="1">
                         </div>
                       </div>
 
                     </div>
-                    <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg(true)">{{ translate('serverWizard', 'importServerButton') }}</button>
-                    <button type="reset" class="btn btn-danger mr-2">{{ translate('serverWizard', 'resetForm') }}</button>
+                    <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg(true)">{{ translate('serverWizard', 'importServerButton', data['lang']) }}</button>
+                    <button type="reset" class="btn btn-danger mr-2">{{ translate('serverWizard', 'resetForm', data['lang']) }}</button>
                   </div>
                 </div>
               </form>
@@ -254,8 +254,8 @@
 
   function wait_msg(importing){
     bootbox.alert({
-        title: importing ? '{% raw translate("serverWizard", "importing") %}' : '{% raw translate("serverWizard", "downloading") %}',
-        message: '<i class="fas fa-cloud-download"></i> {% raw translate("serverWizard", "bePatient") %}'
+        title: importing ? '{% raw translate("serverWizard", "importing", data['lang']) %}' : '{% raw translate("serverWizard", "downloading", data['lang']) %}',
+        message: '<i class="fas fa-cloud-download"></i> {% raw translate("serverWizard", "bePatient", data['lang']) %}'
       });
   }
 
@@ -272,10 +272,10 @@
 
 </script>
 <script type="text/javascript">
-  //<![CDATA[ 
-  // array of possible countries in the same order as they appear in the country selection list 
-  
-  function decodeHtmlCharCodes(str) { 
+  //<![CDATA[
+  // array of possible countries in the same order as they appear in the country selection list
+
+  function decodeHtmlCharCodes(str) {
     return str.replace("&quot;", "\"");
   }
 
@@ -290,38 +290,38 @@
   var text = '{% raw data["js_server_types"] %}';
   var serverTypesLists = JSON.parse(text);
   //convertHtmlJsonToJavacriptArray('{{ data["js_server_types"] }}')
-  /* CountryChange() is called from the onchange event of a select element. 
-  * param selectObj - the select object which fired the on change event. 
-  */ 
-  function serverTypeChange(selectObj) { 
-    // get the index of the selected option 
-    var idx = selectObj.selectedIndex; 
-    // get the value of the selected option 
-    var which = selectObj.options[idx].value; 
-    // use the selected option value to retrieve the list of items from the serverTypesLists array 
-    cList = serverTypesLists[which]; 
-    // get the country select element via its known id 
-    var cSelect = document.getElementById("server"); 
-    // remove the current options from the country select 
-    var len=cSelect.options.length; 
-    while (cSelect.options.length > 0) { 
-      cSelect.remove(0); 
-    } 
-    var newOption; 
-    // create new options 
-    for (var i=0; i<cList.length; i++) { 
-      newOption = document.createElement("option"); 
-      newOption.value = which+"|"+cList[i];  // assumes option string and value are the same 
-      newOption.text=cList[i]; 
-      // add the new option 
-      try { 
-        cSelect.add(newOption);  // this will fail in DOM browsers but is needed for IE 
-      } 
-      catch (e) { 
-        cSelect.appendChild(newOption); 
-      } 
-    } 
-  } 
+  /* CountryChange() is called from the onchange event of a select element.
+  * param selectObj - the select object which fired the on change event.
+  */
+  function serverTypeChange(selectObj) {
+    // get the index of the selected option
+    var idx = selectObj.selectedIndex;
+    // get the value of the selected option
+    var which = selectObj.options[idx].value;
+    // use the selected option value to retrieve the list of items from the serverTypesLists array
+    cList = serverTypesLists[which];
+    // get the country select element via its known id
+    var cSelect = document.getElementById("server");
+    // remove the current options from the country select
+    var len=cSelect.options.length;
+    while (cSelect.options.length > 0) {
+      cSelect.remove(0);
+    }
+    var newOption;
+    // create new options ordered by descending
+    for (var i=(cList.length)-1; i>=0; i--) {
+      newOption = document.createElement("option");
+      newOption.value = which+"|"+cList[i];  // assumes option string and value are the same
+      newOption.text=cList[i];
+      // add the new option
+      try {
+        cSelect.add(newOption);  // this will fail in DOM browsers but is needed for IE
+      }
+      catch (e) {
+        cSelect.appendChild(newOption);
+      }
+    }
+  }
  //]]>
  </script>
 {% end %}

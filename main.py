@@ -9,10 +9,10 @@ import signal
 """ Our custom classes / pip packages """
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
-from app.classes.shared.models import installer, database
+from app.classes.shared.main_models import installer, database
 
 from app.classes.shared.tasks import TasksManager
-from app.classes.shared.controller import Controller
+from app.classes.shared.main_controller import Controller
 from app.classes.shared.migration import MigrationManager
 
 from app.classes.shared.cmd import MainPrompt
@@ -23,14 +23,14 @@ def do_intro():
 
     version = helper.get_version_string()
 
-    intro = """
-    {lines}
-    #\t\tWelcome to Crafty Controller - v.{version}\t\t      #
-    {lines}
-    #   \tServer Manager / Web Portal for your Minecraft server \t      #
-    #   \t\tHomepage: www.craftycontrol.com\t\t\t      #
-    {lines}
-    """.format(lines="/" * 75, version=version)
+    intro = f"""
+    {'/' * 75}
+    #{("Welcome to Crafty Controller - v." + version).center(73, " ")}#
+    {'/' * 75}
+    #{"Server Manager / Web Portal for your Minecraft server".center(73, " ")}#
+    #{"Homepage: www.craftycontrol.com".center(73, " ")}#
+    {'/' * 75}
+    """
 
     console.magenta(intro)
 

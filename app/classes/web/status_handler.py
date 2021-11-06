@@ -9,7 +9,7 @@ import requests
 from app.classes.shared.helpers import helper
 from app.classes.web.base_handler import BaseHandler
 from app.classes.shared.console import console
-from app.classes.shared.models import Users, fn, db_helper
+from app.classes.shared.main_models import fn
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,8 @@ except ModuleNotFoundError as e:
 class StatusHandler(BaseHandler):
     def get(self):
         page_data = {}
-        page_data['servers'] = db_helper.get_all_servers_stats()
+        page_data['lang'] = tornado.locale.get("en_EN")
+        page_data['servers'] = self.controller.servers.get_all_servers_stats()
         for srv in page_data['servers']:
             server_data = srv.get('server_data', False)
             server_id = server_data.get('server_id', False)
@@ -40,7 +41,7 @@ class StatusHandler(BaseHandler):
     )
     def post(self):
         page_data = {}
-        page_data['servers'] = db_helper.get_all_servers_stats()
+        page_data['servers'] = self.controller.servers.get_all_servers_stats()
         for srv in page_data['servers']:
             server_data = srv.get('server_data', False)
             server_id = server_data.get('server_id', False)

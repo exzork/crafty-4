@@ -60,7 +60,7 @@
 
           <div class="warnings">
             <noscript class="noscript-warning" style="padding: 20px; background-color: rgb(247, 151, 15);">
-              <div>{% raw translate('base', 'doesNotWorkWithoutJavascript') %}</div>
+              <div>{% raw translate('base', 'doesNotWorkWithoutJavascript', data['lang']) %}</div>
             </noscript>
           </div>
 
@@ -134,12 +134,12 @@
     <script src="/static/assets/js/shared/hoverable-collapse.js"></script>
     <script src="/static/assets/js/shared/misc.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.22/fh-3.1.7/r-2.2.6/sc-2.0.3/sp-1.2.2/datatables.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
 
     <script>
 
       $.extend($.fn.dataTable.defaults, {
-        language: {% raw translate('datatables', 'i18n') %}
+        language: {% raw translate('datatables', 'i18n', data['lang']) %}
       })
 
       //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
