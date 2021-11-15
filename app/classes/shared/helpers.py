@@ -121,6 +121,8 @@ class Helpers:
                     cmd_out.append("")
                     np = False
             if esc: # if we encountered an escape character on the last loop, append this char regardless of what it is
+                if c not in Helpers.allowed_quotes:
+                    cmd_out[ci] += '\\'
                 cmd_out[ci] += c
                 esc = False
             else:

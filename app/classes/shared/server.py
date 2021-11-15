@@ -45,9 +45,17 @@ class ServerOutBuf:
         self.max_lines = helper.get_setting('virtual_terminal_lines')
         self.line_buffer = ''
         ServerOutBuf.lines[self.server_id] = []
+        self.lsi = 0
 
     def process_byte(self, char):
-        if char == os.linesep:
+        if char == os.linesep[self.lsi]:
+            self.lsi += 1
+        else:
+            self.lsi = 0
+            self.line_buffer += char
+
+        if self.lsi >= len(os.linesep):
+            self.lsi = 0
             ServerOutBuf.lines[self.server_id].append(self.line_buffer)
 
             self.new_line_handler(self.line_buffer)
@@ -55,8 +63,6 @@ class ServerOutBuf:
             # Limit list length to self.max_lines:
             if len(ServerOutBuf.lines[self.server_id]) > self.max_lines:
                 ServerOutBuf.lines[self.server_id].pop(0)
-        else:
-            self.line_buffer += char
 
     def check(self):
         while True:
@@ -189,7 +195,6 @@ class Server:
         if os.name == "nt":
             logger.info("Windows Detected")
             creationflags=subprocess.CREATE_NEW_CONSOLE
-            self.server_command = self.server_command.replace('\\', '/')
         else:
             logger.info("Unix Detected")
             creationflags=None
