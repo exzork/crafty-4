@@ -70,6 +70,17 @@
                       <input type="number" class="form-control" id="port1" name="port" value="25565" step="1" min="1">
                     </div>
                   </div>
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <label for="roles">Add your server to your roles</label>
+                      <select class="form-control form-control-lg select-css" id="roles" name="roles">
+                      <option value='-1'>None (Crafty Will Create A New Role)</option>
+                        {% for r in data['roles'] %}
+                            <option value="{{ r }}">{{ r.role_name.capitalize() }}</option>
+                        {% end %}
+                      </select>
+                    </div>
+                    </div>
 
                 </div>
                 <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg()">{{ translate('serverWizard', 'buildServer', data['lang']) }}</button>
