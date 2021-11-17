@@ -60,7 +60,7 @@
         "bePatient": "Ole kärsivällinen, kun ' + (importing ? 'tuomme' :  'lataamme') + ' palvelinta",
         "importing": "Tuomme palvelinta...",
         "downloading": "Lataamme palvelinta...",
-        "addRole": "Lisää Rooleja",
+        "addRole": "Lisää Palvelin Olemassa Oleviin Rooleihin",
         "autoCreate": "Jos ketään ei valita, Crafty tekee sellaisen!",
         "selectRole": "Valitse roolit"
 
