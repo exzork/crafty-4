@@ -59,7 +59,10 @@
         "myNewServer": "Mon Nouveau Serveur",
         "bePatient": "Merci de patienter pendant que nous ' + (importing ? 'importons' :  'téléchargeons') + ' le serveur",
         "importing": "Importation du Serveur ...",
-        "downloading": "Téléchargement du Serveur ..."
+        "downloading": "Téléchargement du Serveur ...",
+        "addRole": "Ajouter un rôle",
+        "autoCreate": "- Si aucun n'est sélectionné, Crafty en fera un !",
+        "selectRole": "Sélectionnez le rôle(s)"
     },
     "dashboard": {
         "dashboard": "Tableau de Bord",

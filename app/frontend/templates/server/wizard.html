@@ -72,10 +72,10 @@
                     </div>
                   </div>
                   <div class="col-sm-12">
-                    <h4 class="card-title">Add Roles <small style="text-transform: none;"> - If none are selected Crafty will make one!</small></h4>
+                    <h4 class="card-title">{{ translate('serverWizard', 'addRole', data['lang']) }}<small style="text-transform: none;"> {{ translate('serverWizard', 'autoCreate', data['lang']) }}</small></h4>
                     <div class="form-group">
                       <button onclick="dropDown(event);" class="menu-btn form-control form-control-lg select-css" type="button">
-                      Select a role! &#9013;
+                      {{ translate('serverWizard', 'selectRole', data['lang']) }} &#9013;
                       </button>
                       <div class="d-none shadow rounded menu">
                         {% for r in data['roles'] %}
@@ -159,10 +159,10 @@
                     </div>
                   </div>
                   <div class="col-sm-12">
-                    <h4 class="card-title">Add Roles <small style="text-transform: none;"> - If none are selected Crafty will make one!</small></h4>
+                    <h4 class="card-title">{{ translate('serverWizard', 'addRole', data['lang']) }}<small style="text-transform: none;"> {{ translate('serverWizard', 'autoCreate', data['lang']) }}</small></h4>
                     <div class="form-group">
                       <button onclick="dropDown(event);" class="menu-btn form-control form-control-lg select-css" type="button">
-                      Select a role! &#9013;
+                      {{ translate('serverWizard', 'selectRole', data['lang']) }} &#9013;
                       </button>
                       <div class="d-none shadow rounded menu">
                         {% for r in data['roles'] %}
@@ -248,10 +248,10 @@
                       </div>
 
                       <div class="col-sm-12">
-                        <h4 class="card-title">Add Roles <small style="text-transform: none;"> - If none are selected Crafty will make one!</small></h4>
+                        <h4 class="card-title">{{ translate('serverWizard', 'addRole', data['lang']) }}<small style="text-transform: none;"> {{ translate('serverWizard', 'autoCreate', data['lang']) }}</small></h4>
                         <div class="form-group">
                           <button onclick="dropDown(event);" class="menu-btn form-control form-control-lg select-css" type="button">
-                          Select a role! &#9013;
+                          {{ translate('serverWizard', 'selectRole', data['lang']) }} &#9013;
                           </button>
                           <div class="d-none shadow rounded menu">
                             {% for r in data['roles'] %}
