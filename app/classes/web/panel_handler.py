@@ -315,7 +315,8 @@ class PanelHandler(BaseHandler):
                 user_servers = self.controller.servers.get_authorized_servers(user.user_id)
                 servers = []
                 for server in user_servers:
-                    servers.append(server['server_name'])
+                    if server['server_name'] not in servers:
+                        servers.append(server['server_name'])
                 new_item = {user.user_id: servers}
                 auth_servers.update(new_item)
                 data = {user.user_id: user_roles_list}

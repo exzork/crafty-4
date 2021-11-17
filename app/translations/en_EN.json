@@ -59,7 +59,10 @@
         "myNewServer": "My New Server",
         "bePatient": "Please be patient as we ' + (importing ? 'import' :  'download') + ' the server",
         "importing": "Importing Server...",
-        "downloading": "Downloading Server..."
+        "downloading": "Downloading Server...",
+        "addRole": "Add Server to Existing Role(s)",
+        "autoCreate": "If none are selected Crafty will make one!",
+        "selectRole": "Select Role(s)"
     },
     "dashboard": {
         "dashboard": "Dashboard",

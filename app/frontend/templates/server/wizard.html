@@ -5,6 +5,7 @@
 {% block content %}
 
 <div class="content-wrapper">
+<div class="d-none" id="overlay" onclick="hide(event)"></div>
     <div class="row">
       <div class="col-sm-6 grid-margin stretch-card">
         <div class="card">
@@ -68,6 +69,29 @@
                     <div class="form-group">
                       <label for="port1">{{ translate('serverWizard', 'serverPort', data['lang']) }} <small> - {{ translate('serverWizard', 'defaultPort', data['lang']) }}</small></label>
                       <input type="number" class="form-control" id="port1" name="port" value="25565" step="1" min="1">
+                    </div>
+                  </div>
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <div id="accordion-1">
+                        <div class="card">
+                          <div class="card-header p-2" id="Role-1">
+                            <p class="mb-0 p-0" data-toggle="collapse" data-target="#collapseRole-1" aria-expanded="true" aria-controls="collapseRole-1">
+                            <i class="fas fa-chevron-down"></i> {{ translate('serverWizard', 'addRole', data['lang']) }} <small style="text-transform: none;"> - {{ translate('serverWizard', 'autoCreate', data['lang']) }}</small>
+                            </p>
+                          </div>
+                          <div id="collapseRole-1" class="collapse" aria-labelledby="Role-1" data-parent="">
+                            <div class="card-body scroll">
+                              <div class="form-group">
+                                {% for r in data['roles'] %}
+                                  <span class="d-block menu-option"><label><input name="{{ r['role_id'] }}" type="checkbox">&nbsp;
+                                  {{ r['role_name'].capitalize() }}</label></span>
+                                {% end %}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -143,7 +167,29 @@
                       <input type="number" class="form-control" id="port2" name="port" value="25565" step="1" min="1">
                     </div>
                   </div>
-
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <div id="accordion-2">
+                        <div class="card">
+                          <div class="card-header p-2" id="Role-2">
+                            <p class="mb-0 p-0" data-toggle="collapse" data-target="#collapseRole-2" aria-expanded="true" aria-controls="collapseRole-2">
+                              <i class="fas fa-chevron-down"></i> {{ translate('serverWizard', 'addRole', data['lang']) }} <small style="text-transform: none;"> - {{ translate('serverWizard', 'autoCreate', data['lang']) }}</small>
+                            </p>
+                          </div>
+                          <div id="collapseRole-2" class="collapse" aria-labelledby="Role-2" data-parent="">
+                            <div class="card-body scroll">
+                              <div class="form-group">
+                                {% for r in data['roles'] %}
+                                  <span class="d-block menu-option"><label><input name="{{ r['role_id'] }}" type="checkbox">&nbsp;
+                                  {{ r['role_name'].capitalize() }}</label></span>
+                                {% end %}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg(true)">{{ translate('serverWizard', 'importServerButton', data['lang']) }}</button>
                 <button type="reset" class="btn btn-danger mr-2">{{ translate('serverWizard', 'resetForm', data['lang']) }}</button>
@@ -218,6 +264,30 @@
                         </div>
                       </div>
 
+                      <div class="col-sm-12">
+                        <div class="form-group">
+                          <div id="accordion-3">
+                            <div class="card">
+                              <div class="card-header p-2" id="Role-3">
+                                <p class="mb-0 p-0" data-toggle="collapse" data-target="#collapseRole-3" aria-expanded="true" aria-controls="collapseRole-3">
+                                  <i class="fas fa-chevron-down"></i> {{ translate('serverWizard', 'addRole', data['lang']) }} <small style="text-transform: none;"> - {{ translate('serverWizard', 'autoCreate', data['lang']) }}</small>
+                                </p>
+                              </div>
+                              <div id="collapseRole-3" class="collapse" aria-labelledby="Role-3" data-parent="">
+                                <div class="card-body scroll">
+                                  <div class="form-group">
+                                    {% for r in data['roles'] %}
+                                      <span class="d-block menu-option"><label><input name="{{ r['role_id'] }}" type="checkbox">&nbsp;
+                                      {{ r['role_name'].capitalize() }}</label></span>
+                                    {% end %}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
                     </div>
                     <button type="submit" class="btn btn-primary mr-2" onclick="wait_msg(true)">{{ translate('serverWizard', 'importServerButton', data['lang']) }}</button>
                     <button type="reset" class="btn btn-danger mr-2">{{ translate('serverWizard', 'resetForm', data['lang']) }}</button>
@@ -229,12 +299,52 @@
         </div>
       </div>
 </div>
+<style>
+.scroll {
+    max-height: 12em;
+    overflow-y: auto;
+}
+.menu-btn {
+    font-size: 0.9em;
+    padding: 2px 10px;
+}
+.menu {
+    padding-top: 10px;
+    z-index: 200;
+    margin-top: 4px;
+    position: absolute;
+    background-color: #2a2c44;
+}
+.menu-option {
+    padding: 6px 20px 6px;
+    color: white;
+}
+#overlay {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+}
+</style>
 
 {% end %}
 
 {% block js%}
 
 <script>
+function dropDown(event) {
+    event.target.parentElement.children[1].classList.remove("d-none");
+    document.getElementById("overlay").classList.remove("d-none");
+}
+function hide(event) {
+    var items = document.getElementsByClassName('menu');
+    for (let i = 0; i < items.length; i++) {
+        items[i].classList.add("d-none");
+    }
+    document.getElementById("overlay").classList.add("d-none");
+}
   $( document ).ready(function() {
     console.log('ready');
     var forms = $('form.server-wizard');

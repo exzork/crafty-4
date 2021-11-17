@@ -59,7 +59,11 @@
         "myNewServer": "Minun uusi palvelin",
         "bePatient": "Ole kärsivällinen, kun ' + (importing ? 'tuomme' :  'lataamme') + ' palvelinta",
         "importing": "Tuomme palvelinta...",
-        "downloading": "Lataamme palvelinta..."
+        "downloading": "Lataamme palvelinta...",
+        "addRole": "Lisää Palvelin Olemassa Oleviin Rooleihin",
+        "autoCreate": "Jos ketään ei valita, Crafty tekee sellaisen!",
+        "selectRole": "Valitse roolit"
+
     },
     "dashboard": {
         "dashboard": "Kojelauta",
