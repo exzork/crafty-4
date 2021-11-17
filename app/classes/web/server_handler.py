@@ -170,11 +170,8 @@ class ServerHandler(BaseHandler):
             server_parts = server.split("|")
             captured_roles = []
             for role in user_roles:
-                try:
-                    if bleach.clean(self.get_argument(str(role), '')) == "on":
-                            captured_roles.append(role)
-                except:
-                    pass
+                if bleach.clean(self.get_argument(str(role), '')) == "on":
+                        captured_roles.append(role)
 
             if not server_name:
                 self.redirect("/panel/error?error=Server name cannot be empty!")

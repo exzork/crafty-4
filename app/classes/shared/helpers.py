@@ -209,8 +209,8 @@ class Helpers:
         if r.status_code in [200, 201]:
             try:
                 data = json.loads(r.content)
-            except:
-                pass
+            except Exception as e:
+                logger.error("Failed to load json content with error: {} ".format(e))
 
         return data
 
@@ -377,7 +377,7 @@ class Helpers:
         try:
             os.makedirs(os.path.join(self.root_dir, 'logs'))
         except Exception as e:
-            pass
+            console.error("Failed to make logs directory with error: {} ".format(e))
 
         # ensure the log file is there
         try:
@@ -389,8 +389,8 @@ class Helpers:
         # del any old session.lock file as this is a new session
         try:
             os.remove(session_log_file)
-        except:
-            pass
+        except Exception as e:
+            logger.error("Deleting Session.lock failed with error: {} ".format(e))
 
     @staticmethod
     def get_time_as_string():
@@ -461,7 +461,9 @@ class Helpers:
                 started = data.get('started')
                 console.critical("Another Crafty Controller agent seems to be running...\npid: {} \nstarted on: {}".format(pid, started))
             except Exception as e:
-                pass
+                logger.error("Failed to locate existing session.lock with error: {} ".format(e))
+                console.error("Failed to locate existing session.lock with error: {} ".format(e))
+                
 
             sys.exit(1)
 

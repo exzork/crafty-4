@@ -150,8 +150,8 @@ class PanelHandler(BaseHandler):
                 try:
                     data = json.loads(s['int_ping_results'])
                     s['int_ping_results'] = data
-                except:
-                    pass
+                except Exception as e:
+                    logger.error("Failed server data for page with error: {} ".format(e))
 
             template = "panel/dashboard.html"
 
