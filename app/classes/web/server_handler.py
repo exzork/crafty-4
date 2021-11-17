@@ -38,12 +38,17 @@ class ServerHandler(BaseHandler):
             defined_servers = self.controller.list_defined_servers()
             exec_user_role.add("Super User")
             exec_user_crafty_permissions = self.controller.crafty_perms.list_defined_crafty_permissions()
+            list_roles = []
+            for role in self.controller.roles.get_all_roles():
+                list_roles.append(self.controller.roles.get_role(role.role_id))
         else:
             exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user_id)
             defined_servers = self.controller.servers.get_authorized_servers(exec_user_id)
+            list_roles = []
             for r in exec_user['roles']:
                 role = self.controller.roles.get_role(r)
                 exec_user_role.add(role['role_name'])
+                list_roles.append(self.controller.roles.get_role(role['role_id']))
 
         template = "public/404.html"
 
@@ -51,7 +56,7 @@ class ServerHandler(BaseHandler):
             'version_data': helper.get_version_string(),
             'user_data': exec_user_data,
             'user_role' : exec_user_role,
-            'roles' : exec_user_role,
+            'roles' : list_roles,
             'user_crafty_permissions' : exec_user_crafty_permissions,
             'crafty_permissions': {
                 'Server_Creation': Enum_Permissions_Crafty.Server_Creation,
@@ -69,7 +74,7 @@ class ServerHandler(BaseHandler):
             'lang': self.controller.users.get_user_lang_by_id(exec_user_id)
         }
         if exec_user['superuser'] == 1:
-            page_data['roles'] = self.controller.roles.get_all_roles()
+            page_data['roles'] = list_roles
 
         if page == "step1":
             if not exec_user['superuser'] and not self.controller.crafty_perms.can_create_server(exec_user_id):
@@ -150,6 +155,10 @@ class ServerHandler(BaseHandler):
 
         if page == "step1":
 
+            if not exec_user['superuser']:
+                user_roles = self.controller.roles.get_all_roles()
+            else:
+                user_roles = self.controller.roles.get_all_roles()
             server = bleach.clean(self.get_argument('server', ''))
             server_name = bleach.clean(self.get_argument('server_name', ''))
             min_mem = bleach.clean(self.get_argument('min_memory', ''))
@@ -159,8 +168,13 @@ class ServerHandler(BaseHandler):
             import_server_path = bleach.clean(self.get_argument('server_path', ''))
             import_server_jar = bleach.clean(self.get_argument('server_jar', ''))
             server_parts = server.split("|")
-            roles = bleach.clean(self.get_argument('roles', ''))
-            print(roles)
+            captured_roles = []
+            for role in user_roles:
+                try:
+                    if bleach.clean(self.get_argument(str(role), '')) == "on":
+                            captured_roles.append(role)
+                except:
+                    pass
 
             if not server_name:
                 self.redirect("/panel/error?error=Server name cannot be empty!")
@@ -207,7 +221,7 @@ class ServerHandler(BaseHandler):
                                            self.get_remote_ip())
 
             # These lines create a new Role for the Server with full permissions and add the user to it if he's not a superuser
-            if roles == -1:
+            if len(captured_roles) == 0:
                 if not exec_user['superuser']:
                     new_server_uuid = self.controller.servers.get_server_data_by_id(new_server_id).get("server_uuid")
                     role_id = self.controller.roles.add_role("Creator of Server with uuid={}".format(new_server_uuid))
@@ -216,8 +230,9 @@ class ServerHandler(BaseHandler):
                     self.controller.crafty_perms.add_server_creation(exec_user_id)
 
             else:
-                role_id = roles
-                self.controller.server_perms.add_role_server(new_server_id, role_id, "11111111")
+                for role in captured_roles:
+                    role_id = role
+                    self.controller.server_perms.add_role_server(new_server_id, role_id, "11111111")
 
             self.controller.stats.record_stats()
             self.redirect("/panel/dashboard")
