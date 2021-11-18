@@ -87,7 +87,7 @@ class PanelHandler(BaseHandler):
         elif page == 'credits':
             with open(helper.credits_cache) as republic_credits_will_do:
                 credits = json.load(republic_credits_will_do)
-                page_data["patreons"] = credits["patreons"]
+                page_data["patrons"] = credits["patrons"]
                 page_data["staff"] = credits["staff"]
                 page_data["translations"] = credits["translations"]
             template = "panel/credits.html"
