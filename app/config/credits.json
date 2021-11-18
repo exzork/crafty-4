@@ -18,7 +18,7 @@
 			},
 			{
 				"name": "Pita Bread",
-				"title": null,
+				"title": "Leadership Team",
 				"loc": "Midwest, USA",
 				"tags": [
 					"Staff",
@@ -30,7 +30,7 @@
 			},
 			{
 				"name": "macgeek",
-				"title": null,
+				"title": "Leadership Team",
 				"loc": "Midwest, USA",
 				"tags": [
 					"Staff",
@@ -51,6 +51,18 @@
 				],
 				"blurb": "His interests include Linux, gaming, and helping others. When he's able to unplug he enjoys biking, hiking, and playing soccer.",
 				"pic": "/static/assets/images/credits/parzivaldewey.png"
+			},
+			{
+				"name": "Xithical",
+				"title": null,
+				"loc": "Midwest, USA",
+				"tags": [
+					"Staff",
+					"Developer",
+					null
+				],
+				"blurb": "???",
+				"pic": "/static/assets/images/credits/xithical.png"
 			},
 			{
 				"name": "MC Gaming",
