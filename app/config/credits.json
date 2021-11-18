@@ -87,6 +87,18 @@
 				],
 				"blurb": "Lukas enjoys bashing his head at the table while his code does not work",
 				"pic": "/static/assets/images/credits/lukas.png"
+			},
+			{
+				"name": "Zedifus",
+				"title": null,
+				"loc": "Scotland, UK",
+				"tags": [
+					"Staff",
+					"Developer",
+					"DevOps"
+				],
+				"blurb": "Streamer that currently works in the insurance industry, self teaching software development & DevOps, with the hopes of a career change! Enjoys playing games and has a sassy cat called Eve.",
+				"pic": "/static/assets/images/credits/zedifus.jpg"
 			}
 		],
 		"support": [
@@ -138,7 +150,7 @@
 					"Project Manager"
 				],
 				"blurb": "His interests include learning, Linux, and programming. He enjoys speaking French, doing 6 things at once, and testing software.",
-				"pic": "/static/assets/images/credits/manu_cropped.png"
+				"pic": "/static/assets/images/credits/manu.png"
 			},
 			{
 				"name": "UltraBlack",
@@ -150,7 +162,7 @@
 					"Idea Manager"
 				],
 				"blurb": "Hi, my name is Tim, and I'm a huge fan of linux. I'm often gaming and occasionally coding.",
-				"pic": "/static/assets/images/credits/.png"
+				"pic": "/static/assets/images/credits/ultrablack.png"
 			}
 		]
 	},
