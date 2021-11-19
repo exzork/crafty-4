@@ -3,15 +3,12 @@
 		"development": [
 			{
 				"name": "Phil Tarrant",
-				"title": "Benevolent Dictator for Life",
+				"title": "Creator",
 				"loc": "Atlanta, GA",
 				"tags": [
 					"Staff",
 					"Developer",
-					[
-						"BDFL",
-						"https://en.wikipedia.org/wiki/Benevolent_dictator_for_life"
-					]
+					"Creator"
 				],
 				"blurb": "For best results, apply a thin layer of Phillip to code, cyber security, and parenthood for maximum effectiveness. Phillip often spends too much time with his chickens.",
 				"pic": "/static/assets/images/credits/ptarrant.png"
