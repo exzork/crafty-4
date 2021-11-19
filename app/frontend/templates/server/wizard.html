@@ -22,8 +22,9 @@
                     <div class="form-group">
                       <label for="server_type">{{ translate('serverWizard', 'serverType', data['lang']) }}</label>
                       <select class="form-control form-control-lg select-css" id="server_type" name="server_type" onchange="serverTypeChange(this)">
+                          <option value="empty">{{ translate('serverWizard', 'selectType', data['lang']) }}</option>
                         {% for s in data['server_types'] %}
-                            <option value="{{ s }}">{{ s.capitalize() }}</option>
+                          <option value="{{ s }}">{{ s.capitalize() }}</option>
                         {% end %}
                       </select>
                     </div>
@@ -33,7 +34,7 @@
                     <div class="form-group">
                       <label for="server_version">{{ translate('serverWizard', 'serverVersion', data['lang']) }}</label>
                       <select class="form-control form-control-lg select-css" id="server" name="server">
-                            <option value="0">Select a Version</option>
+                            <option value="0">{{ translate('serverWizard', 'selectVersion', data['lang']) }}</option>
                       </select>
                     </div>
                   </div>
