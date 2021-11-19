@@ -81,10 +81,9 @@
                       <table class="table table-responsive dataTable" id="backup_table">
                         <thead>
                         <tr>
-                            <th width="10%">{{ translate('serverBackups', 'download', data['lang']) }}</th>
+                            <th width="10%">{{ translate('serverBackups', 'options', data['lang']) }}</th>
                             <th>{{ translate('serverBackups', 'path', data['lang']) }}</th>
                             <th width="20%">{{ translate('serverBackups', 'size', data['lang']) }}</th>
-                            <th width="10%">{{ translate('serverBackups', 'delete', data['lang']) }}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -95,16 +94,15 @@
                                     <i class="fas fa-download" aria-hidden="true"></i>
                                     {{ translate('serverBackups', 'download', data['lang']) }}
                                 </a>
-                            </td>
-                            <td>{{ backup['path'] }}</td>
-                            <td>{{ backup['size'] }}</td>
-                            <td>
-                                <button data-file="{{ backup['path'] }}" class="btn btn-danger del_button">
+                                <br>
+                                <br>
+                                                                <button data-file="{{ backup['path'] }}" class="btn btn-danger del_button">
                                     <i class="fas fa-trash" aria-hidden="true"></i>
                                     {{ translate('serverBackups', 'delete', data['lang']) }}
                                 </button>
-
                             </td>
+                            <td>{{ backup['path'] }}</td>
+                            <td>{{ backup['size'] }}</td>
                             </tr>
                         {% end %}
 

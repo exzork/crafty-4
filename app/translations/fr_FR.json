@@ -172,7 +172,8 @@
         "backupTask": "Une sauvegarde vient de démarrer.",
         "destroyBackup": "Supprimer la sauvegarde \" + file_to_del + \" ?",
         "confirmDelete": "Es-tu sûr de vouloir supprimer cette sauvegarde ? Tu ne pourras pas revenir en arrière.",
-        "confirm": "Confirmer"
+        "confirm": "Confirmer",
+        "options": "Options"
     },
     "serverFiles": {
         "noscript": "Le gestionnaire de fichiers ne fonctionne pas sans JavaScript",

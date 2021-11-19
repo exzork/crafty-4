@@ -428,6 +428,9 @@ class Server:
     def backup_server(self):
         backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name="backup")
         logger.info("Starting Backup Thread for server {}.".format(self.settings['server_name']))
+        if self.server_path == None:
+            self.server_path = self.settings['path']
+            logger.info("Backup Thread - Local server path not defined. Setting local server path variable.")
         #checks if the backup thread is currently alive for this server
         if not self.is_backingup:
             try:

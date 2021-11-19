@@ -173,7 +173,8 @@
         "backupTask": "Varmuuskopiointitehtävä on aloitettu.",
         "destroyBackup": "Tuhotaanko varmuuskopio \" + file_to_del + \"?",
         "confirmDelete": "Haluatko poistaa tämän varmuuskopion? Tätä ei voi peruuttaa.",
-        "confirm": "Vahvista"
+        "confirm": "Vahvista",
+        "options": "Vaihtoehtoja"
     },
     "serverFiles": {
         "noscript": "Tiedostojenhallinta ei toimi ilman JavaScriptiä",
