@@ -39,7 +39,7 @@
                 {% else %}
                 <img src="/static/assets/images/pack.png" alt="icon" />
                 {% end %}
-                <span id="input_motd">{{ server['stats']['desc'] }}</span> <br />
+                <span id="input_motd_{{ server['stats']['server_id']['server_id'] }}" class="input_motd">{{ server['stats']['desc'] }}</span> <br />
               {% end %}
           </td>
           <td>
@@ -73,9 +73,12 @@
 {% block js %}
 
     <script src="/static/assets/js/motd.js"></script>
-    <script>      
+    <script>
       $(document).ready(function () {
-          initParser('input_motd', 'input_motd');
+        var all_motds = Array.from(document.getElementsByClassName('input_motd'));
+        for (element of all_motds) {
+          initParser(element.id, element.id);
+        };
       }());
     </script>
 

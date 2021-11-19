@@ -94,7 +94,7 @@
                 <br>
                 <h7>{{ translate('dashboard', 'no-servers', data['lang']) }} {{ translate('dashboard', 'newServer', data['lang']) }}.</h7>
                 </div>
-                
+
               {% end %}
           {% if len(data['servers']) > 0 %}
             <table class="table table-hover">
@@ -180,7 +180,7 @@
                       {{ server['stats']['online'] }} / {{ server['stats']['max'] }} {{ translate('dashboard', 'max', data['lang']) }}<br />
 
                       {% if server['stats']['desc'] != 'False' %}
-                        {{ server['stats']['desc'] }} <br />
+                      <span id="input_motd_{{ server['stats']['server_id']['server_id'] }}" class="input_motd">{{ server['stats']['desc'] }}</span> <br />
                       {% end %}
 
                       {% if server['stats']['version'] != 'False' %}
@@ -221,13 +221,18 @@
 {% end %}
 
 {% block js %}
+<script src="/static/assets/js/motd.js"></script>
 <script>
-$(document).ready(function(){ 
+$(document).ready(function(){
   $('[data-toggle="popover"]').popover();
     if($(window).width() < 1000){
     $('.too_small').popover("show");
   }
-  
+
+  var all_motds = Array.from(document.getElementsByClassName('input_motd'));
+  for (element of all_motds) {
+    initParser(element.id, element.id);
+  };
 });
  $(window).ready(function(){
         $('body').click(function(){
@@ -340,7 +345,7 @@ $( document ).ready(function() {
     title: '{% raw translate("dashboard", "killing", data['lang']) %}',
     message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>'
 });
-            
+
 dialog.init(function(){
     setTimeout(function(){
         location.reload();

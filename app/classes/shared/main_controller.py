@@ -131,7 +131,7 @@ class Controller:
 
         logger.warning("Unable to find server object for server id {}".format(server_id))
         return False
-        
+
     def get_server_data(self, server_id):
         for s in self.servers_list:
             if int(s['server_id']) == int(server_id):
@@ -202,7 +202,7 @@ class Controller:
         try:
             # do a eula.txt
             with open(os.path.join(server_dir, "eula.txt"), 'w') as f:
-                f.write("eula=true")
+                f.write("eula=false")
                 f.close()
 
             # setup server.properties with the port
