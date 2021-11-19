@@ -87,9 +87,11 @@ class PanelHandler(BaseHandler):
         elif page == 'credits':
             with open(helper.credits_cache) as republic_credits_will_do:
                 credits = json.load(republic_credits_will_do)
-                page_data["patreons"] = credits["patreons"]
+                timestamp = credits["lastUpdate"] / 1000.0
+                page_data["patrons"] = credits["patrons"]
                 page_data["staff"] = credits["staff"]
                 page_data["translations"] = credits["translations"]
+                page_data["lastUpdate"] = str(datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S'))
             template = "panel/credits.html"
 
         elif page == 'contribute':
