@@ -3,15 +3,15 @@
 		"development": [
 			{
 				"name": "Phil Tarrant",
-				"title": "Benevolent Dictator for Life",
+				"title": "Creator",
 				"loc": "Atlanta, GA",
 				"tags": [
 					"Staff",
-					"Developer",
 					[
-						"BDFL",
-						"https://en.wikipedia.org/wiki/Benevolent_dictator_for_life"
-					]
+						"Developer",
+						"https://gitlab.com/Ptarrant1"
+					],
+					"Creator"
 				],
 				"blurb": "For best results, apply a thin layer of Phillip to code, cyber security, and parenthood for maximum effectiveness. Phillip often spends too much time with his chickens.",
 				"pic": "/static/assets/images/credits/ptarrant.png"
@@ -34,7 +34,10 @@
 				"loc": "Midwest, USA",
 				"tags": [
 					"Staff",
-					"Developer",
+					[
+						"Developer",
+						"https://gitlab.com/computergeek125"
+					],
 					"Project Manager"
 				],
 				"blurb": "Sysadmin for work and sysadmin for fun (avid homelabber). He enjoys a good tech tangent and gaming.",
@@ -46,7 +49,10 @@
 				"loc": "East Coast, USA",
 				"tags": [
 					"Staff",
-					"Developer",
+					[
+						"Developer",
+						"https://gitlab.com/amcmanu3"
+					],
 					"Support Manager"
 				],
 				"blurb": "His interests include Linux, gaming, and helping others. When he's able to unplug he enjoys biking, hiking, and playing soccer.",
@@ -58,7 +64,10 @@
 				"loc": "Midwest, USA",
 				"tags": [
 					"Staff",
-					"Developer",
+					[
+						"Developer",
+						"https://gitlab.com/xithical"
+					],
 					null
 				],
 				"blurb": "Having sold his soul to the IT administration gods many eons ago, you can usually find him working, going home to do work, or continuing to work in the support Discord.",
@@ -70,7 +79,10 @@
 				"loc": "Central, UK",
 				"tags": [
 					"Staff",
-					"Developer",
+					[
+						"Developer",
+						"https://gitlab.com/MCgamin1738"
+					],
 					null
 				],
 				"blurb": "His interests include learning, Linux, and programming. He loves pentesting apps and gaming.",
@@ -82,7 +94,10 @@
 				"loc": null,
 				"tags": [
 					"Staff",
-					"Developer",
+					[
+						"Developer",
+						"https://gitlab.com/Silversthorn"
+					],
 					null
 				],
 				"blurb": "Often in his cave, he sometimes goes out to help or do silly jokes. He's an IT clown (not the film), but seriously do the job when it's needed.",
@@ -94,7 +109,10 @@
 				"loc": "Helsinki, FI",
 				"tags": [
 					"Staff",
-					"Developer",
+					[
+						"Developer",
+						"https://gitlab.com/LukasDoesDev"
+					],
 					null
 				],
 				"blurb": "Lukas enjoys bashing his head at the table while his code does not work",
@@ -106,7 +124,10 @@
 				"loc": "Scotland, UK",
 				"tags": [
 					"Staff",
-					"Developer",
+					[
+						"Developer",
+						"https://gitlab.com/Zedifus"
+					],
 					"DevOps"
 				],
 				"blurb": "A Streamer, who is currently working in the insurance industry, self-teaching software development & DevOps, with the hopes of a career change! Enjoys playing games and has a sassy cat called Eve.",
@@ -146,7 +167,10 @@
 				"loc": "East Coast, AU",
 				"tags": [
 					"Staff",
-					"Developer",
+					[
+						"Developer",
+						"https://gitlab.com/kevdagoat"
+					],
 					"HOD"
 				],
 				"blurb": "His interests include Linux, programming, and goats of course. He enjoys building APIs, K8s, and geeking over video cards.",
