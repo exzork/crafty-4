@@ -28,7 +28,7 @@
               <div class="col-sm-3 mr-2">
                 {% if data['server_stats']['version'] != 'False' %}
                   <b>{{ translate('serverStats', 'version', data['lang']) }}:</b> {{ data['server_stats']['version'] }} <br />
-                  <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> {{ data['server_stats']['desc'] }} <br />
+                  <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> <span id="input_motd" class="input_motd">{{ data['server_stats']['desc'] }}</span> <br />
                 {% else %}
                   <b>{{ translate('serverStats', 'version', data['lang']) }}:</b> {{ translate('serverStats', 'unableToConnect', data['lang']) }} <br />
                   <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> {{ translate('serverStats', 'unableToConnect', data['lang']) }} <br />
@@ -45,6 +45,7 @@
 
 <script src="/static/assets/vendors/moment/moment.min.js" type="text/javascript" charset="utf-8"></script>
 
+<script src="/static/assets/js/motd.js"></script>
 <script>
 
   function durationToHumanizedString (duration) {
@@ -116,6 +117,8 @@
         var uptimeLoop = setInterval(calculateUptime, 1000)
       }
     }
+
+    initParser('input_motd', 'input_motd');
 
   });
 </script>
