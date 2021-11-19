@@ -85,7 +85,7 @@ class TasksManager:
                     i=j.schedule_id, a=j.action, n=j.interval, t=j.interval_type, s=j.start_time))
                 try:
                     getattr(schedule.every(j.interval), j.interval_type).at(j.start_time).do(
-                        management_helper.send_command, 0, j.server_id, "127.27.23.89", j.action)
+                        self.controller.management.send_command, 0, j.server_id, "127.27.23.89", j.action)
                 except schedule.ScheduleValueError as e:
                     logger.critical("Scheduler value error occurred: {} on ID#{}".format(e, j.schedule_id))
             else:
