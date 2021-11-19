@@ -4,7 +4,7 @@
 			{
 				"name": "Phil Tarrant",
 				"title": "Creator",
-				"loc": "Atlanta, GA",
+				"loc": "Southeast, USA",
 				"tags": [
 					"Staff",
 					[
@@ -22,7 +22,10 @@
 				"loc": "Midwest, USA",
 				"tags": [
 					"Staff",
-					null,
+					[
+						"Developer",
+						"https://gitlab.com/craftbreadth"
+					],
 					"Community Leader"
 				],
 				"blurb": "Baked goods enthusiast who dabbles in Linux and sets up networks for fun. Can be found writing long-winded emails, debugging strange wifi issues, or taking care of his extensive houseplant collection.",
@@ -203,15 +206,18 @@
 		]
 	},
 	"translations": {
+		"ptarrant": [
+			"Sarcasm",
+			"Wit"
+		],
 		"Lukas": [
 			"Finnish"
 		],
 		"Manu": [
 			"French"
 		],
-		"ptarrant": [
-			"Sarcasm",
-			"Wit"
+		"Silversthorn": [
+			"French"
 		],
 		"UltraBlack": [
 			"German"
