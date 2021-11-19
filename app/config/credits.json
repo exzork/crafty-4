@@ -13,7 +13,7 @@
 						"https://en.wikipedia.org/wiki/Benevolent_dictator_for_life"
 					]
 				],
-				"blurb": "For best results, apply a thin layer of Phillip to code, cyber security, parenthood for maximum effectiveness. Phillip often spends too much time with his chickens.",
+				"blurb": "For best results, apply a thin layer of Phillip to code, cyber security, and parenthood for maximum effectiveness. Phillip often spends too much time with his chickens.",
 				"pic": "/static/assets/images/credits/ptarrant.png"
 			},
 			{
@@ -25,7 +25,7 @@
 					null,
 					"Community Leader"
 				],
-				"blurb": "His interests include bread, Linux, and networking. He enjoys pumpkins, organizing, and long-winded emails, but hates wifi.",
+				"blurb": "Baked goods enthusiast who dabbles in Linux and sets up networks for fun. Can be found writing long-winded emails, debugging strange wifi issues, or taking care of his extensive houseplant collection.",
 				"pic": "/static/assets/images/credits/pita.png"
 			},
 			{
@@ -73,7 +73,7 @@
 					"Developer",
 					null
 				],
-				"blurb": "His interests include learning, Linux, programming. He loves pentesting apps and gaming.",
+				"blurb": "His interests include learning, Linux, and programming. He loves pentesting apps and gaming.",
 				"pic": "/static/assets/images/credits/mcgaming.png"
 			},
 			{
@@ -85,7 +85,7 @@
 					"Developer",
 					null
 				],
-				"blurb": "Often in it's cave, he sometimes goes out to help or do silly jokes. He's an IT clown (not the film), but seriously do the job when it's needed.",
+				"blurb": "Often in his cave, he sometimes goes out to help or do silly jokes. He's an IT clown (not the film), but seriously do the job when it's needed.",
 				"pic": "/static/assets/images/credits/silversthorn.png"
 			},
 			{
@@ -123,7 +123,7 @@
 					"Wiki",
 					null
 				],
-				"blurb": "Silver enjoys helping others with their computer needs, writing documentation and loving her cat.",
+				"blurb": "Silver enjoys helping others with their computer needs, writing documentation, and loving her cat.",
 				"pic": "/static/assets/images/credits/isilverfyre.png"
 			},
 			{
@@ -149,7 +149,7 @@
 					"Developer",
 					"HOD"
 				],
-				"blurb": "His interests include Linux, programming, and goats of course. He enjoys building APIs, K8s, and Geeking over video cards.",
+				"blurb": "His interests include Linux, programming, and goats of course. He enjoys building APIs, K8s, and geeking over video cards.",
 				"pic": "/static/assets/images/credits/kevdagoat.jpeg"
 			},
 			{
