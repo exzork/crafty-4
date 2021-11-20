@@ -214,7 +214,7 @@ class AjaxHandler(BaseHandler):
             file_path = self.get_body_argument('file_path', default=None, strip=True)
             server_id = self.get_argument('id', None)
 
-            if file_path.contains('/') or file_path('\\'):
+            if os.name == "nt":
                 file_path = file_path.replace('/', "\\")
 
             console.warning("delete {} for server {}".format(file_path, server_id))

@@ -205,6 +205,7 @@
                     console.log(result);
                     if (result == true) {
                       var full_path = '{{ data['server_stats']['server_id']['backup_path']  }}' + '/' + file_to_del;
+                      console.log(full_path);
                         del_backup(full_path, {{ data['server_stats']['server_id']['server_id'] }} );
                     }
                 }
