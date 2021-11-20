@@ -214,9 +214,13 @@ class AjaxHandler(BaseHandler):
             file_path = self.get_body_argument('file_path', default=None, strip=True)
             server_id = self.get_argument('id', None)
 
+            if os.name == "nt":
+                file_path = file_path.replace('/', "\\")
+
             console.warning("delete {} for server {}".format(file_path, server_id))
 
-            if not self.check_server_id(server_id, 'del_file'): return
+            if not self.check_server_id(server_id, 'del_file'): 
+                return
             else: server_id = bleach.clean(server_id)
 
             server_info = self.controller.servers.get_server_data_by_id(server_id)

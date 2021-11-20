@@ -2,7 +2,7 @@ import os
 import sys
 import cmd
 import time
-
+import threading
 import logging
 
 logger = logging.getLogger(__name__)
@@ -69,6 +69,10 @@ class MainPrompt(cmd.Cmd, object):
         else:
             console.info('Unknown migration command')
     
+    def do_threads(self, line):
+        for thread in threading.enumerate():
+            print(f'Name: {thread.name} IDENT: {thread.ident}')
+
     def universal_exit(self):
         logger.info("Stopping all server daemons / threads")
         console.info("Stopping all server daemons / threads - This may take a few seconds")

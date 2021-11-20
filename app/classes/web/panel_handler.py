@@ -206,8 +206,11 @@ class PanelHandler(BaseHandler):
             page_data['user_permissions'] = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
 
             if subpage == "backup":
+                server_info = self.controller.servers.get_server_data_by_id(server_id)
                 page_data['backup_config'] = self.controller.management.get_backup_config(server_id)
                 page_data['backup_list'] = server.list_backups()
+                page_data['backup_path'] = server_info["backup_path"]
+                print(page_data['backup_path'])
 
             def get_banned_players_html():
                 banned_players = self.controller.servers.get_banned_players(server_id)

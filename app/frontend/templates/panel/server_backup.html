@@ -149,10 +149,13 @@
 
         console.log('Sending Command to delete backup: ' + filename)
         $.ajax({
-          type: "POST",
+          type: "DELETE",
           headers: {'X-XSRFToken': token},
           url: '/ajax/del_file?server_id='+id,
-          data: data_to_send,
+          data: {
+          file_path: filename,
+          id: id
+          },
           success: function(data) {
             location.reload();
           },
@@ -201,7 +204,8 @@
                 callback: function (result) {
                     console.log(result);
                     if (result == true) {
-                        del_backup(file_to_del, {{ data['server_stats']['server_id']['server_id'] }} );
+                      var full_path = '{{ data['backup_path'] }}' + '/' + file_to_del;
+                        del_backup(full_path, {{ data['server_stats']['server_id']['server_id'] }} );
                     }
                 }
             });
