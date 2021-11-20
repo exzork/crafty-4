@@ -74,6 +74,7 @@ class ServerOutBuf:
                 flush = self.proc.stdout.read().decode('utf-8')
                 for char in flush:
                     self.process_byte(char)
+                break
 
     def new_line_handler(self, new_line):
         new_line = re.sub('(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)|(> )', '', new_line)
@@ -114,7 +115,7 @@ class Server:
         self.restart_count = 0
         self.crash_watcher_schedule = None
         self.stats = stats
-        self.backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name="backup")
+        self.backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name=f"backup_{self.name}")
         self.is_backingup = False
 
     def reload_server_settings(self):
@@ -260,7 +261,7 @@ class Server:
             self.send_command(self.settings['stop_command'])
         else:
             #windows will need to be handled separately for Ctrl+C
-            self.process.terinate()
+            self.process.terminate()
         running = self.check_running()
         if not running:
             logger.info("Can't stop server {} if it's not running".format(self.name))
@@ -426,7 +427,7 @@ class Server:
             return False
 
     def backup_server(self):
-        backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name="backup")
+        backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name=f"backup_{self.name}")
         logger.info("Starting Backup Thread for server {}.".format(self.settings['server_name']))
         if self.server_path == None:
             self.server_path = self.settings['path']
@@ -475,7 +476,7 @@ class Server:
 
     def jar_update(self):
         servers_helper.set_update(self.server_id, True)
-        update_thread = threading.Thread(target=self.a_jar_update, daemon=True, name="exe_update")
+        update_thread = threading.Thread(target=self.a_jar_update, daemon=True, name=f"exe_update_{self.name}")
         update_thread.start()
 
     def check_update(self):
