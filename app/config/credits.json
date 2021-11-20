@@ -94,7 +94,7 @@
 			{
 				"name": "Silversthorn",
 				"title": null,
-				"loc": null,
+				"loc": "Provence, FR",
 				"tags": [
 					"Staff",
 					[
@@ -103,7 +103,7 @@
 					],
 					null
 				],
-				"blurb": "Often in his cave, he sometimes goes out to help or do silly jokes. He's an IT clown (not the film), but seriously do the job when it's needed.",
+				"blurb": "Developper at work and at home, testing his own code is a pain, so his coding precept is \"Testing is Doubting\"",
 				"pic": "/static/assets/images/credits/silversthorn.png"
 			},
 			{
