@@ -71,7 +71,7 @@ class ServerOutBuf:
                 # TODO: we may want to benchmark reading in blocks and userspace processing it later, reads are kind of expensive as a syscall
                 self.process_byte(char)
             else:
-                flush = self.proc.stdout.read().decode('utf-8')
+                flush = self.proc.stdout.readall().decode('utf-8')
                 for char in flush:
                     self.process_byte(char)
                 break

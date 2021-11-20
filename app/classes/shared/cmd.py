@@ -71,7 +71,7 @@ class MainPrompt(cmd.Cmd, object):
     
     def do_threads(self, line):
         for thread in threading.enumerate():
-            print(f'Name: {thread.name} PID: {thread.ident}')
+            print(f'Name: {thread.name} IDENT: {thread.ident}')
 
     def universal_exit(self):
         logger.info("Stopping all server daemons / threads")
