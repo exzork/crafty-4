@@ -1,16 +1,23 @@
 import json
 import logging
+import tempfile
+import threading
+from typing import Container
+import zipfile
+
 import tornado.web
 import tornado.escape
 import bleach
 import os
 import shutil
+import html
+import re
 
 from app.classes.shared.console import console
-from app.classes.shared.models import Users, installer
+from app.classes.shared.main_models import Users, installer
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.models import db_helper
 from app.classes.shared.helpers import helper
+from app.classes.shared.server import ServerOutBuf
 
 logger = logging.getLogger(__name__)
 
@@ -47,28 +54,31 @@ class AjaxHandler(BaseHandler):
             if server_id is None:
                 logger.warning("Server ID not found in server_log ajax call")
                 self.redirect("/panel/error?error=Server ID Not Found")
-                return False
+                return
 
             server_id = bleach.clean(server_id)
 
-            server_data = db_helper.get_server_data_by_id(server_id)
+            server_data = self.controller.servers.get_server_data_by_id(server_id)
             if not server_data:
                 logger.warning("Server Data not found in server_log ajax call")
                 self.redirect("/panel/error?error=Server ID Not Found")
+                return
 
             if not server_data['log_path']:
                 logger.warning("Log path not found in server_log ajax call ({})".format(server_id))
 
             if full_log:
                 log_lines = helper.get_setting('max_log_lines')
+                data = helper.tail_file(server_data['log_path'], log_lines)
             else:
-                log_lines = helper.get_setting('virtual_terminal_lines')
+                data = ServerOutBuf.lines.get(server_id, [])
 
-            data = helper.tail_file(server_data['log_path'], log_lines)
 
             for d in data:
                 try:
-                    line = helper.log_colors(d)
+                    d = re.sub('(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)|(> )', '', d)
+                    d = re.sub('[A-z]{2}\b\b', '', d)
+                    line = helper.log_colors(html.escape(d))
                     self.write('{}<br />'.format(line))
                     # self.write(d.encode("utf-8"))
 
@@ -85,14 +95,14 @@ class AjaxHandler(BaseHandler):
             file_path = self.get_argument('file_path', None)
             server_id = self.get_argument('id', None)
 
-            if not self.check_server_id(server_id, 'get_file'): return False
+            if not self.check_server_id(server_id, 'get_file'): return
             else: server_id = bleach.clean(server_id)
 
-            if not helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], file_path)\
+            if not helper.in_path(self.controller.servers.get_server_data_by_id(server_id)['path'], file_path)\
                 or not helper.check_file_exists(os.path.abspath(file_path)):
                 logger.warning("Invalid path in get_file ajax call ({})".format(file_path))
                 console.warning("Invalid path in get_file ajax call ({})".format(file_path))
-                return False
+                return
             
             
             error = None
@@ -113,11 +123,11 @@ class AjaxHandler(BaseHandler):
         elif page == "get_tree":
             server_id = self.get_argument('id', None)
 
-            if not self.check_server_id(server_id, 'get_tree'): return False
+            if not self.check_server_id(server_id, 'get_tree'): return
             else: server_id = bleach.clean(server_id)
 
-            self.write(db_helper.get_server_data_by_id(server_id)['path'] + '\n' +
-                       helper.generate_tree(db_helper.get_server_data_by_id(server_id)['path']))
+            self.write(self.controller.servers.get_server_data_by_id(server_id)['path'] + '\n' +
+                       helper.generate_tree(self.controller.servers.get_server_data_by_id(server_id)['path']))
             self.finish()
 
     @tornado.web.authenticated
@@ -144,21 +154,22 @@ class AjaxHandler(BaseHandler):
                 if srv_obj.check_running():
                     srv_obj.send_command(command)
 
+            self.controller.management.add_to_audit_log(user_data['user_id'], "Sent command to {} terminal: {}".format(self.controller.servers.get_server_friendly_name(server_id), command), server_id, self.get_remote_ip())
+
         elif page == "create_file":
             file_parent = self.get_body_argument('file_parent', default=None, strip=True)
             file_name = self.get_body_argument('file_name', default=None, strip=True)
             file_path = os.path.join(file_parent, file_name)
             server_id = self.get_argument('id', None)
-            print(server_id)
 
-            if not self.check_server_id(server_id, 'create_file'): return False
+            if not self.check_server_id(server_id, 'create_file'): return
             else: server_id = bleach.clean(server_id)
 
-            if not helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], file_path) \
+            if not helper.in_path(self.controller.servers.get_server_data_by_id(server_id)['path'], file_path) \
                 or helper.check_file_exists(os.path.abspath(file_path)):
                 logger.warning("Invalid path in create_file ajax call ({})".format(file_path))
                 console.warning("Invalid path in create_file ajax call ({})".format(file_path))
-                return False
+                return
 
             # Create the file by opening it
             with open(file_path, 'w') as file_object:
@@ -169,19 +180,33 @@ class AjaxHandler(BaseHandler):
             dir_name = self.get_body_argument('dir_name', default=None, strip=True)
             dir_path = os.path.join(dir_parent, dir_name)
             server_id = self.get_argument('id', None)
-            print(server_id)
 
-            if not self.check_server_id(server_id, 'create_dir'): return False
+            if not self.check_server_id(server_id, 'create_dir'): return
             else: server_id = bleach.clean(server_id)
 
-            if not helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], dir_path) \
+            if not helper.in_path(self.controller.servers.get_server_data_by_id(server_id)['path'], dir_path) \
                 or helper.check_path_exists(os.path.abspath(dir_path)):
                 logger.warning("Invalid path in create_dir ajax call ({})".format(dir_path))
                 console.warning("Invalid path in create_dir ajax call ({})".format(dir_path))
-                return False
-
+                return
             # Create the directory
             os.mkdir(dir_path)
+
+        elif page == "unzip_file":
+            server_id = self.get_argument('id', None)
+            path = self.get_argument('path', None)
+            helper.unzipFile(path)
+            self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
+            return
+
+        elif page == "kill":
+            server_id = self.get_argument('id', None)
+            svr = self.controller.get_server_obj(server_id)
+            try:
+                svr.kill()
+            except Exception as e:
+                logger.error("Could not find PID for requested termsig. Full error: {}".format(e))
+            return
 
     @tornado.web.authenticated
     def delete(self, page):
@@ -189,18 +214,22 @@ class AjaxHandler(BaseHandler):
             file_path = self.get_body_argument('file_path', default=None, strip=True)
             server_id = self.get_argument('id', None)
 
+            if os.name == "nt":
+                file_path = file_path.replace('/', "\\")
+
             console.warning("delete {} for server {}".format(file_path, server_id))
 
-            if not self.check_server_id(server_id, 'del_file'): return False
+            if not self.check_server_id(server_id, 'del_file'): 
+                return
             else: server_id = bleach.clean(server_id)
 
-            server_info = db_helper.get_server_data_by_id(server_id)
+            server_info = self.controller.servers.get_server_data_by_id(server_id)
             if not (helper.in_path(server_info['path'], file_path) \
                 or helper.in_path(server_info['backup_path'], file_path)) \
                 or not helper.check_file_exists(os.path.abspath(file_path)):
                 logger.warning("Invalid path in del_file ajax call ({})".format(file_path))
                 console.warning("Invalid path in del_file ajax call ({})".format(file_path))
-                return False
+                return
 
             # Delete the file
             os.remove(file_path)
@@ -208,23 +237,34 @@ class AjaxHandler(BaseHandler):
         elif page == "del_dir":
             dir_path = self.get_body_argument('dir_path', default=None, strip=True)
             server_id = self.get_argument('id', None)
-            print(server_id)
 
-            console.warning("delete {} for server {}".format(file_path, server_id))
+            console.warning("delete {} for server {}".format(dir_path, server_id))
 
-            if not self.check_server_id(server_id, 'del_dir'): return False
+            if not self.check_server_id(server_id, 'del_dir'): return
             else: server_id = bleach.clean(server_id)
 
-            server_info = db_helper.get_server_data_by_id(server_id)
+            server_info = self.controller.servers.get_server_data_by_id(server_id)
             if not helper.in_path(server_info['path'], dir_path) \
                 or not helper.check_path_exists(os.path.abspath(dir_path)):
                 logger.warning("Invalid path in del_file ajax call ({})".format(dir_path))
                 console.warning("Invalid path in del_file ajax call ({})".format(dir_path))
-                return False
+                return
 
             # Delete the directory
             # os.rmdir(dir_path)     # Would only remove empty directories
             shutil.rmtree(dir_path)  # Removes also when there are contents
+
+        elif page == "delete_server":
+            server_id = self.get_argument('id', None)
+            logger.info(
+                "Removing server from panel for server: {}".format(self.controller.servers.get_server_friendly_name(server_id)))
+            self.controller.remove_server(server_id, False)
+
+        elif page == "delete_server_files":
+            server_id = self.get_argument('id', None)
+            logger.info(
+                "Removing server and all associated files for server: {}".format(self.controller.servers.get_server_friendly_name(server_id)))
+            self.controller.remove_server(server_id, True)
 
     @tornado.web.authenticated
     def put(self, page):
@@ -232,18 +272,15 @@ class AjaxHandler(BaseHandler):
             file_contents = self.get_body_argument('file_contents', default=None, strip=True)
             file_path = self.get_body_argument('file_path', default=None, strip=True)
             server_id = self.get_argument('id', None)
-            print(file_contents)
-            print(file_path)
-            print(server_id)
 
-            if not self.check_server_id(server_id, 'save_file'): return False
+            if not self.check_server_id(server_id, 'save_file'): return
             else: server_id = bleach.clean(server_id)
 
-            if not helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], file_path)\
+            if not helper.in_path(self.controller.servers.get_server_data_by_id(server_id)['path'], file_path)\
                 or not helper.check_file_exists(os.path.abspath(file_path)):
                 logger.warning("Invalid path in save_file ajax call ({})".format(file_path))
                 console.warning("Invalid path in save_file ajax call ({})".format(file_path))
-                return False
+                return
 
             # Open the file in write mode and store the content in file_object
             with open(file_path, 'w') as file_object:
@@ -253,29 +290,28 @@ class AjaxHandler(BaseHandler):
             item_path = self.get_body_argument('item_path', default=None, strip=True)
             new_item_name = self.get_body_argument('new_item_name', default=None, strip=True)
             server_id = self.get_argument('id', None)
-            print(server_id)
 
-            if not self.check_server_id(server_id, 'rename_item'): return False
+            if not self.check_server_id(server_id, 'rename_item'): return
             else: server_id = bleach.clean(server_id)
 
             if item_path is None or new_item_name is None:
                 logger.warning("Invalid path(s) in rename_item ajax call")
                 console.warning("Invalid path(s) in rename_item ajax call")
-                return False
+                return
 
-            if not helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], item_path) \
+            if not helper.in_path(self.controller.servers.get_server_data_by_id(server_id)['path'], item_path) \
                 or not helper.check_path_exists(os.path.abspath(item_path)):
                 logger.warning("Invalid old name path in rename_item ajax call ({})".format(server_id))
                 console.warning("Invalid old name path in rename_item ajax call ({})".format(server_id))
-                return False
+                return
 
             new_item_path = os.path.join(os.path.split(item_path)[0], new_item_name)
 
-            if not helper.in_path(db_helper.get_server_data_by_id(server_id)['path'], new_item_path) \
+            if not helper.in_path(self.controller.servers.get_server_data_by_id(server_id)['path'], new_item_path) \
                 or helper.check_path_exists(os.path.abspath(new_item_path)):
                 logger.warning("Invalid new name path in rename_item ajax call ({})".format(server_id))
                 console.warning("Invalid new name path in rename_item ajax call ({})".format(server_id))
-                return False
+                return
 
             # RENAME
             os.rename(item_path, new_item_path)
@@ -283,13 +319,13 @@ class AjaxHandler(BaseHandler):
         if server_id is None:
             logger.warning("Server ID not defined in {} ajax call ({})".format(page_name, server_id))
             console.warning("Server ID not defined in {} ajax call ({})".format(page_name, server_id))
-            return False
+            return
         else:
             server_id = bleach.clean(server_id)
 
             # does this server id exist?
-            if not db_helper.server_id_exists(server_id):
+            if not self.controller.servers.server_id_exists(server_id):
                 logger.warning("Server ID not found in {} ajax call ({})".format(page_name, server_id))
                 console.warning("Server ID not found in {} ajax call ({})".format(page_name, server_id))
-                return False
+                return
         return True

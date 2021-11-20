@@ -60,7 +60,7 @@
 
           <div class="warnings">
             <noscript class="noscript-warning" style="padding: 20px; background-color: rgb(247, 151, 15);">
-              <div>{% raw translate('base', 'doesNotWorkWithoutJavascript') %}</div>
+              <div>{% raw translate('base', 'doesNotWorkWithoutJavascript', data['lang']) %}</div>
             </noscript>
           </div>
 
@@ -134,12 +134,12 @@
     <script src="/static/assets/js/shared/hoverable-collapse.js"></script>
     <script src="/static/assets/js/shared/misc.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.22/fh-3.1.7/r-2.2.6/sc-2.0.3/sp-1.2.2/datatables.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
 
     <script>
 
       $.extend($.fn.dataTable.defaults, {
-        language: {% raw translate('datatables', 'i18n') %}
+        language: {% raw translate('datatables', 'i18n', data['lang']) %}
       })
 
       //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
@@ -173,8 +173,9 @@
       let listenEvents = [];
 
       try {
-
-        var wsInternal = new WebSocket('wss://' + location.host + '/ws');
+        pageQueryParams = 'page_query_params=' + encodeURIComponent(location.search)
+        page = 'page=' + encodeURIComponent(location.pathname)
+        var wsInternal = new WebSocket('wss://' + location.host + '/ws?' + page + '&' + pageQueryParams);
         wsInternal.onopen = function() {
           console.log('opened WebSocket connection:', wsInternal)
         };
@@ -218,6 +219,24 @@
       warn('WebSockets are not supported in Crafty if not using the https protocol')
       var webSocket;
     // {% end%}
+
+if (webSocket) {
+    webSocket.on('send_start_error', function (start_error) {
+            var x = document.querySelector('.bootbox');
+            if(x){
+            x.remove()}
+            var x = document.querySelector('.modal-backdrop');
+            if(x){
+            x.remove()}
+            bootbox.alert({
+              message: start_error.error,
+              callback: function () {
+              location.reload();
+    }
+})
+    });
+  }
+
 
     function warn(message) {
       var closeEl = document.createElement('span');

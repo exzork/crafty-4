@@ -19,7 +19,7 @@ class ServerProps:
                     s = line
                     s1 = s[:s.find('=')]
                     if '\n' in s:
-                        s2 = s[s.find('=')+1:s.find('\\')]
+                        s2 = s[s.find('=')+1:s.find('\n')]
                     else:
                         s2 = s[s.find('=')+1:]
                     d[s1] = s2

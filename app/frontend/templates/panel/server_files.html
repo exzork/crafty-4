@@ -4,7 +4,7 @@
 <!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
-{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails') }}{% end %}
+{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails', data['lang']) }}{% end %}
 
 {% block content %}
 
@@ -15,7 +15,7 @@
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
-          {{ translate('serverDetails', 'serverDetails') }} - {{ data['server_stats']['server_id']['server_name'] }}
+          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{ data['server_stats']['server_id']['server_name'] }}
             <br />
             <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
         </h4>
@@ -32,104 +32,94 @@
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-            <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=term" role="tab" aria-selected="false">
-                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'terminal') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=logs" role="tab" aria-selected="false">
-                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'logs') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=tasks" role="tab" aria-selected="false">
-                  <i class="fas fa-clock"></i>{{ translate('serverDetails', 'schedule') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="false">
-                  <i class="fas fa-save"></i>{{ translate('serverDetails', 'backup') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link active" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files" role="tab" aria-selected="false">
-                  <i class="fas fa-folder-tree"></i>{{ translate('serverDetails', 'files') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=config" role="tab" aria-selected="true">
-                  <i class="fas fa-cogs"></i>{{ translate('serverDetails', 'config') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=admin_controls" role="tab" aria-selected="true">
-                  <i class="fas fa-users"></i>{{ translate('serverDetails', 'playerControls') }}</a>
-              </li>
-
-            </ul>
+            {% include "parts/server_controls_list.html %}
 
             <div class="row">
               <div class="col-md-6 col-sm-12">
                 <noscript>
-                  {{ translate('serverFiles', 'noscript') }}
+                  {{ translate('serverFiles', 'noscript', data['lang']) }}
                 </noscript>
                 <div id="files-tree-nav" class="overlay">
 
                   <!-- Button to close the overlay navigation -->
-                  <a href="javascript:void(0)" class="closebtn" onclick="document.getElementById('files-tree-nav').style.height = '0%';">&times;</a>
 
                   <!-- Overlay content -->
                   <div id="files-tree-nav-content" class="overlay-content">
-                    <a onclick="createFileE(event)" href="javascript:void(0)" id="createFile" href="#">{{ translate('serverFiles', 'createFile') }}</a>
-                    <a onclick="createDirE(event)" href="javascript:void(0)" id="createDir" href="#">{{ translate('serverFiles', 'createDir') }}</a>
-                    <a onclick="renameItemE(event)" href="javascript:void(0)" id="renameItem" href="#">{{ translate('serverFiles', 'rename') }}</a>
-                    <a onclick="deleteFileE(event)" href="javascript:void(0)" id="deleteFile" href="#">{{ translate('serverFiles', 'delete') }}</a>
-                    <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#">{{ translate('serverFiles', 'delete') }}</a>
+                    <a onclick="createFileE(event)" href="javascript:void(0)" id="createFile" href="#">{{ translate('serverFiles', 'createFile', data['lang']) }}</a>
+                    <a onclick="createDirE(event)" href="javascript:void(0)" id="createDir" href="#">{{ translate('serverFiles', 'createDir', data['lang']) }}</a>
+                    <a onclick="renameItemE(event)" href="javascript:void(0)" id="renameItem" href="#">{{ translate('serverFiles', 'rename', data['lang']) }}</a>
+                    <a onclick="uploadFilesE(event)" href="javascript:void(0)" id="upload" href="#">{{ translate('serverFiles', 'upload', data['lang']) }}</a>
+                    <a onclick="unzipFilesE(event)" href="javascript:void(0)" id="unzip" href="#">{{ translate('serverFiles', 'unzip', data['lang']) }}</a>
+                    <a onclick="downloadFileE(event)" href="javascript:void(0)" id="downloadFile" href="#">{{ translate('serverFiles', 'download', data['lang']) }}</a>
+                    <a onclick="deleteFileE(event)" href="javascript:void(0)" id="deleteFile" href="#" style="color: red">{{ translate('serverFiles', 'delete', data['lang']) }}</a>
+                    <a onclick="deleteDirE(event)" href="javascript:void(0)" id="deleteDir" href="#" style="color: red">{{ translate('serverFiles', 'delete', data['lang']) }}</a>
+                    <a href="javascript:void(0)" class="closebtn" style="color: #8862e0;" onclick="document.getElementById('files-tree-nav').style.display = 'none';">{{ translate('serverFiles', 'close', data['lang']) }}</a>
                   </div>
 
                 </div>
                 <style>
                   /* The Overlay (background) */
                   .overlay {
-                    /* Height & width depends on how you want to reveal the overlay (see JS below) */
-                    height: 0;
-                    width: 100vw;
-                    position: fixed; /* Stay in place */
-                    z-index: 1031; /* Sit on top */
-                    left: 0;
-                    top: 0;
-                    background-color: rgb(0,0,0); /* Black fallback color */
-                    background-color: rgba(0,0,0, 0.9); /* Black w/opacity */
-                    overflow-x: hidden; /* Disable horizontal scroll */
-                    transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+                  display: none;
+                  flex-direction: column;
+                  background-color: #fff;
+                  border-radius: 10px;
+                  box-shadow: 0 10px 20px rgb(64 64 64 / 5%);
+                  padding: 10px 0;
+                  z-index: 10000;
+                  overflow: scroll;
+
+                  }
+                  .overlay::-webkit-scrollbar {
+                      display: none;
+                  }
+
+                  /* Hide scrollbar for IE, Edge and Firefox */
+                  .overlay {
+                    -ms-overflow-style: none;  /* IE and Edge */
+                    scrollbar-width: none;  /* Firefox */
                   }
 
                   /* Position the content inside the overlay */
                   .overlay-content {
-                    position: relative;
-                    top: 25%; /* 25% from the top */
-                    width: 100%; /* 100% width */
-                    text-align: center; /* Centered text/links */
-                    margin-top: 30px; /* 30px top margin to avoid conflict with the close button on smaller screens */
+                   display: flex;
+                    flex-direction: column;
+                    background-color: #fff;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 20px rgb(64 64 64 / 5%);
+                    padding: 10px 0;
                   }
 
                   /* The navigation links inside the overlay */
                   .overlay a {
-                    padding: 8px;
-                    text-decoration: none;
-                    font-size: 36px;
-                    color: #818181;
-                    display: block; /* Display block instead of inline */
-                    transition: 0.3s; /* Transition effects on hover (color) */
+                      font: inherit;
+                      border: 0;
+                      padding: 10px 30px 10px 15px;
+                      width: 100%;
+                      display: flex;
+                      align-items: center;
+                      position: relative;
+                      text-decoration: unset;
+                      color: #000;
+                      font-weight: 500;
+                      transition: 0.5s linear;
+                      -webkit-transition: 0.5s linear;
+                      -moz-transition: 0.5s linear;
+                      -ms-transition: 0.5s linear;
+                      -o-transition: 0.5s linear;
                   }
 
                   /* When you mouse over the navigation links, change their color */
                   .overlay a:hover, .overlay a:focus {
-                    color: #f1f1f1;
+                     background:#f1f3f7;
+                      color: #4b00ff;
                   }
 
                   /* Position the close button (top right corner) */
-                  .overlay .closebtn {
-                    position: absolute;
-                    top: 20px;
-                    right: 45px;
-                    font-size: 60px;
+                  .overlay .closebtn .closebtn:hover {
+                    background-color: red;
+                    color: red;
+                    z-index: 10000;
                   }
 
                   /* When the height of the screen is less than 450 pixels, change the font-size of the links and position the close button again, so they don't overlap */
@@ -147,10 +137,10 @@
                     <div class="tree-caret tree-ctx-item files-tree-title">
                       <i class="far fa-folder"></i>
                       <i class="far fa-folder-open"></i>
-                      {{ translate('serverFiles', 'files') }}
+                      {{ translate('serverFiles', 'files', data['lang']) }}
                     </div>
                     <ul class="tree-nested" id="files-tree">
-                      <li>{{ translate('serverFiles', 'error') }}</li>
+                      <li>{{ translate('serverFiles', 'error', data['lang']) }}</li>
 
                     </ul>
                   </li>
@@ -166,8 +156,9 @@
                   margin-left: 10px;
                 }
 
-                /* Style the caret/arrow */
-                .tree-caret {
+                /* Style the items */
+                .tree-item,
+                .files-tree-title {
                   cursor: pointer;
                   user-select: none; /* Prevent text selection */
                 }
@@ -194,20 +185,21 @@
                 }
               </style>
               <div class="col-md-6 col-sm-12">
+                <h2 id="fileError"></h2>
                 <div id="editorParent">
-                  {{ translate('serverFiles', 'editingFile') }} <span id="editingFile"></span>
+                  {{ translate('serverFiles', 'editingFile', data['lang']) }} <span id="editingFile"></span>
                   <div id="editor" onresize="editor.resize()" style="resize: both;width: 100%;">file_contents</div>
                   <br/>
                 </div>
-                {{ translate('serverFiles', 'keybindings') }}:
+                {{ translate('serverFiles', 'keybindings', data['lang']) }}:
                 <div class="btn-group" role="group">
-                  <button onclick="setKeyboard(event.target)" class="btn btn-primary" data-handler-name="null">{{ translate('serverFiles', 'default') }}</button>
+                  <button onclick="setKeyboard(event.target)" class="btn btn-primary" data-handler-name="null">{{ translate('serverFiles', 'default', data['lang']) }}</button>
                   <button onclick="setKeyboard(event.target)" class="btn btn-secondary" data-handler-name="ace/keyboard/vim">Vim</button>
                   <button onclick="setKeyboard(event.target)" class="btn btn-secondary" data-handler-name="ace/keyboard/emacs">Emacs</button>
                   <button onclick="setKeyboard(event.target)" class="btn btn-secondary" data-handler-name="ace/keyboard/sublime">Sublime</button>
                 </div>
                 <h3 id="file_warn"></h3>
-                <button class="btn btn-success" onclick="save()">{{ translate('serverFiles', 'save') }}</button>
+                <button class="btn btn-success" onclick="save()"><i class="fas fa-save"></i> {{ translate('serverFiles', 'save', data['lang']) }}</button>
               </div>
             </div>
 
@@ -330,6 +322,10 @@
         regex: /^properties$/,
         replaceWith: 'ace/mode/properties'
       },
+      {
+        regex: /^log$/,
+        replaceWith: 'ace/mode/txt'
+      },
     ];
 
     var filePath = '';
@@ -344,10 +340,13 @@
           console.log('Got File Contents From Server');
           json = JSON.parse(data)
           if (json.error) {
-            $('#editorParent').toggle(false)
+            $('#editorParent').toggle(false) // hide
+            $('#fileError').toggle(true)     // show
+            $('#fileError').text("{{ translate('serverFiles', 'fileReadError', data['lang']) }}: " + json.error) // show error
             editor.blur()
           } else {
-            $('#editorParent').toggle(true)
+            $('#editorParent').toggle(true) // show
+            $('#fileError').toggle(false)   // hide
             setFileName(event.target.innerText);
             editor.session.setValue(json.content);
           }
@@ -371,12 +370,13 @@
         setMode('txt');
         document
           .querySelector('#file_warn')
-          .innerText = "{% raw translate('serverFiles', 'unsupportedLanguage') %}";
+          .innerText = "{% raw translate('serverFiles', 'unsupportedLanguage', data['lang']) %}";
       }
     }
 
     setFileName();
-    $('#editorParent').toggle(false)
+    $('#editorParent').toggle(false) // show
+    $('#fileError').toggle(false)    // hide
     editor.blur()
 
     function setMode (extension) {
@@ -392,7 +392,7 @@
       if (!aceMode.startsWith('ace/mode/')) {
         document
           .querySelector('#file_warn')
-          .innerText = "{% raw translate('serverFiles', 'unsupportedLanguage') %}";
+          .innerText = "{% raw translate('serverFiles', 'unsupportedLanguage', data['lang']) %}";
       } else {
         document
           .querySelector('#file_warn')
@@ -513,6 +513,141 @@
       });
     }
 
+        function unZip(path, callback) {
+      var token = getCookie("_xsrf")
+      $.ajax({
+        type: "POST",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/unzip_file?id={{ data['server_stats']['server_id']['server_id'] }}',
+        data: {
+          path: path
+        },
+      });
+      window.location.href = "/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files"
+    }
+
+  function sendFile(file, path, server_id, left, onProgress){
+    var xmlHttpRequest = new XMLHttpRequest();
+    var token = getCookie("_xsrf")
+    var fileName = file.name
+    var target = '/upload?server_id=' + server_id
+    var mimeType = file.type
+
+    xmlHttpRequest.open('POST', target, true);
+    xmlHttpRequest.setRequestHeader('X-Content-Type', mimeType);
+    xmlHttpRequest.setRequestHeader('X-XSRFToken', token);
+    xmlHttpRequest.setRequestHeader('X-Content-Disposition', 'attachment; filename="' + fileName + '"');
+    xmlHttpRequest.setRequestHeader('X-Path', path);
+    xmlHttpRequest.setRequestHeader('X-Files-Left', left);
+    xmlHttpRequest.setRequestHeader('X-FileName', fileName);
+    xmlHttpRequest.setRequestHeader('X-ServerId', "{{ data['server_stats']['server_id']['server_id'] }}");
+    xmlHttpRequest.upload.addEventListener('progress', (event) =>
+      onProgress(Math.floor(event.loaded / event.total * 100)), false);
+    xmlHttpRequest.addEventListener('load', (event) => {
+      if (event.target.responseText == 'success') {
+        console.log('Upload for file', file.name, 'was successful!')
+      }
+      else {
+        alert('Upload failed with response: ' + event.target.responseText);
+        doUpload = false;
+      }
+    }, false);
+    xmlHttpRequest.addEventListener('error', (e) => {
+      console.error('Error while uploading file', file.name + '.', 'Event:', e)
+    }, false);
+    
+    xmlHttpRequest.send(file);
+  }
+
+  var uploadWaitDialog;
+  var doUpload = true;
+
+  function uploadFilesE(event){
+    path = event.target.parentElement.getAttribute('data-path');
+    console.log("PATH: " + path);
+    $(function () {
+      server_id = {{ data['server_stats']['server_id']['server_id'] }};
+      var uploadHtml = "<div>" +
+        '<form id="upload_file" enctype="multipart/form-data">'+"<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
+            "<input id='files' name='files' type='file' style='display:none;' multiple='true'>" +
+            "<i class='fa fa-cloud-upload fa-3x'></i>" +
+            "<br />" +
+            "{{translate('serverFiles', 'clickUpload', data['lang'])}}" +
+        "</label></form>" +
+        "<br />" +
+        "<ul style='margin-left:5px !important;' id='fileList'></ul>" +
+    "</div><div class='clearfix'></div>";
+    bootbox.dialog({
+        message: uploadHtml,
+        title: "{{ translate('serverFiles', 'uploadTitle', data['lang'])}}"+path,
+        buttons: {
+            success: {
+                label: "{{ translate('serverFiles', 'upload', data['lang']) }}",
+                className: "btn-default",
+                callback: async function () {
+                  var height = files.files.length*50;
+
+                  var waitMessage = '<p class="text-center mb-0">'+
+                    '<i class="fa fa-spin fa-cog"></i>'+
+                    "{{ translate('serverFiles', 'waitUpload', data['lang']) }}"+'<br>'+
+                    '<strong>'+"{{ translate('serverFiles', 'stayHere', data['lang']) }}"+'</strong>'+
+                  '</p>'+
+                  '<div class="progress" id="upload-progress-bar-parent" style="height:'+height +'px; width:100%; display: block;">'+
+                  '</div>'
+                    files = document.getElementById("files");
+                    uploadWaitDialog = bootbox.dialog({
+                      message: waitMessage,
+                      closeButton: false
+                  });
+                  let nFiles = files.files.length;
+                  for(i=0; i < files.files.length; i++) {
+                    if (!doUpload) {
+                      doUpload = true;
+                      hideUploadBox();
+                      break;
+                    }
+                    console.log(files.files[i].name);
+                    const progressHtml = `
+                    <div style="width: 100%; min-width: 100%;">
+                      ${files.files[i].name}:
+                      <br><div
+                        id="upload-progress-bar-${i + 1}"
+                        class="progress-bar progress-bar-striped progress-bar-animated"
+                        role="progressbar"
+                        style="width: 100%; height: 10px;"
+                        aria-valuenow="0"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                      ></div>
+                    </div><br>
+                    `;
+                    $('#upload-progress-bar-parent').append(progressHtml);
+                    console.log(files.files.length)
+                    sendFile(files.files[i], path, server_id, files.files.length - i - 1, (progress) => {
+                      $(`#upload-progress-bar-${i + 1}`).attr('aria-valuenow', progress)
+                      $(`#upload-progress-bar-${i + 1}`).css('width', progress + '%')
+                    });
+                  }
+                  hideUploadBox();
+                  //$('#upload_file').submit(); //.trigger('submit');
+                }
+            }
+        }
+  });
+
+  
+
+  var fileList = document.getElementById("files");
+  fileList.addEventListener("change", function (e) {
+      var list = "";
+      for (var i = 0; i < this.files.length; i++) {
+          list += "<li class='col-xs-12 file-list'>" + this.files[i].name + "</li>"
+      }
+
+      document.getElementById("fileList").innerHTML = list;
+  }, false);
+});
+    }
     function getTreeView() {
       $.ajax({
         type: "GET",
@@ -566,9 +701,11 @@
           $('#createFile').toggle(isDir);
           $('#createDir').toggle(isDir);
           $('#deleteDir').toggle(isDir);
+          $('#upload').toggle(isDir);
 
           var isFile = event.target.classList.contains('tree-file');
           $('#deleteFile').toggle(isFile);
+          $('#downloadFile').toggle(isFile);
           console.log({ 'event.target': event.target, isDir, isFile });
 
           if(event.target.classList.contains('files-tree-title')) {
@@ -577,58 +714,109 @@
             $('#renameItem').hide();
             $('#deleteDir').hide();
             $('#deleteFile').hide();
+            $('#downloadFile').hide();
+            $('#upload').show();
           }
+                      if(event.target.textContent.endsWith('.zip')){
+             $('#unzip').show();
+             console.log(event.target.textContent)
+            }else{
+            $('#unzip').hide();}
+
+        var clientX = event.clientX;
+        var clientY = event.clientY;
+
 
 
           document.getElementById('files-tree-nav-content')
             .setAttribute('data-path', ctxmenuPath);
-
           document.getElementById('files-tree-nav-content')
             .setAttribute('data-name', ctxmenuName);
-
-          document.getElementById("files-tree-nav").style.height = "100%";
+          document.getElementById("files-tree-nav").style.display = "flex";
+          document.getElementById("files-tree-nav").style.position = "fixed";
+          domRect = document.getElementById("files-tree-nav").getBoundingClientRect();
+          sum = (clientY+domRect['height']) - window.innerHeight
+          if(domRect['height']+clientY > window.innerHeight){
+            clientY = clientY - sum
+          }
+          document.getElementById("files-tree-nav").style.top = clientY + 'px';
+          document.getElementById("files-tree-nav").style.left =  clientX + 'px';
+          console.log(domRect)
+          console.log(window.innerHeight)
         })
       }
     }
 
+    document.addEventListener('click', function(e){
+  let inside = (e.target.closest('#files-tree-nav'));
+  let contextMenu = document.getElementById('files-tree-nav');
+  if(!inside){
+    contextMenu.setAttribute('style', 'display:none');
+  }else{
+    contextMenu.setAttribute('style', 'display:none');
+  }
+});
+
+    if (webSocket) {
+      webSocket.on('close_upload_box', function (close_upload_box) {
+        hideUploadBox();
+      });
+    }
+    function hideUploadBox(){
+      if (!uploadWaitDialog) return;
+      uploadWaitDialog.modal('hide');
+      getTreeView();
+    }
 
     function createFileE(event) {
-      bootbox.prompt("{% raw translate('serverFiles', 'createFileQuestion') %}", function(result) {
+      bootbox.prompt("{% raw translate('serverFiles', 'createFileQuestion', data['lang']) %}", function(result) {
         path = event.target.parentElement.getAttribute('data-path');
         name = event.target.parentElement.getAttribute('data-name');
         if (!result) return;
 
         createFile(path, result, function () {
           getTreeView()
-          document.getElementById('files-tree-nav').style.height = '0%';
+          document.getElementById('files-tree-nav').style.display = 'none';
         });
       })
     }
 
     function createDirE(event) {
-      bootbox.prompt("{% raw translate('serverFiles', 'createDirQuestion') %}", function(result) {
+      bootbox.prompt("{% raw translate('serverFiles', 'createDirQuestion', data['lang']) %}", function(result) {
         path = event.target.parentElement.getAttribute('data-path');
         name = event.target.parentElement.getAttribute('data-name');
         if (!result) return;
 
         createDir(path, result, function () {
           getTreeView()
-          document.getElementById('files-tree-nav').style.height = '0%';
+          document.getElementById('files-tree-nav').style.display = 'none';
         });
       })
     }
+    function downloadFileE(event) {
+      path = event.target.parentElement.getAttribute('data-path');
+      name = event.target.parentElement.getAttribute('data-name');
+      window.location.href = '/panel/download_file?id={{ data['server_stats']['server_id']['server_id'] }}&path='+path+'&name='+name;
+    }
 
     function renameItemE(event) {
-      bootbox.prompt("{% raw translate('serverFiles', 'renameItemQuestion') %}", function(result) {
+      path = event.target.parentElement.getAttribute('data-path');
+      name = event.target.parentElement.getAttribute('data-name');
+      bootbox.prompt({
+          title: "{% raw translate('serverFiles', 'renameItemQuestion', data['lang']) %}",
+          value: name,
+          callback: function(result) {
+            if (!result) return;
+            renameItem(path, result, function () {
+              getTreeView()
+              document.getElementById('files-tree-nav').style.display = 'none';
+            });
+          }
+      });
+    }
+        function unzipFilesE(event) {
         path = event.target.parentElement.getAttribute('data-path');
-        name = event.target.parentElement.getAttribute('data-name');
-        if (!result) return;
-
-        renameItem(path, result, function () {
-          getTreeView()
-          document.getElementById('files-tree-nav').style.height = '0%';
-        });
-      })
+      unZip(path)
     }
 
     function deleteFileE(event) {
@@ -636,16 +824,16 @@
       name = event.target.parentElement.getAttribute('data-name');
       bootbox.confirm({
           size: "",
-          title: "{% raw translate('serverFiles', 'deleteItemQuestion') %}",
+          title: "{% raw translate('serverFiles', 'deleteItemQuestion', data['lang']) %}",
           closeButton: false,
-          message: "{% raw translate('serverFiles', 'deleteItemQuestionMessage') %}",
+          message: "{% raw translate('serverFiles', 'deleteItemQuestionMessage', data['lang']) %}",
           buttons: {
             confirm: {
-              label: "{{ translate('serverFiles', 'yesDelete') }}",
+              label: "{{ translate('serverFiles', 'yesDelete', data['lang']) }}",
               className: 'btn-danger'
             },
             cancel: {
-              label: "{{ translate('serverFiles', 'noDelete') }}",
+              label: "{{ translate('serverFiles', 'noDelete', data['lang']) }}",
               className: 'btn-link'
             }
           },
@@ -653,7 +841,7 @@
             if (!result) return;
             deleteFile(path, function () {
               getTreeView()
-              document.getElementById('files-tree-nav').style.height = '0%';
+              document.getElementById('files-tree-nav').style.display = 'none';
             });
           }
       });
@@ -664,16 +852,16 @@
       name = event.target.parentElement.getAttribute('data-name');
       bootbox.confirm({
           size: "",
-          title: "{% raw translate('serverFiles', 'deleteItemQuestion') %}",
+          title: "{% raw translate('serverFiles', 'deleteItemQuestion', data['lang']) %}",
           closeButton: false,
-          message: "{% raw translate('serverFiles', 'deleteItemQuestionMessage') %}",
+          message: "{% raw translate('serverFiles', 'deleteItemQuestionMessage', data['lang']) %}",
           buttons: {
             confirm: {
-              label: "{{ translate('serverFiles', 'yesDelete') }}",
+              label: "{{ translate('serverFiles', 'yesDelete', data['lang']) }}",
               className: 'btn-danger'
             },
             cancel: {
-              label: "{{ translate('serverFiles', 'noDelete') }}",
+              label: "{{ translate('serverFiles', 'noDelete', data['lang']) }}",
               className: 'btn-link'
             }
           },
@@ -681,7 +869,7 @@
             if (!result) return;
             deleteDir(path, function () {
               getTreeView()
-              document.getElementById('files-tree-nav').style.height = '0%';
+              document.getElementById('files-tree-nav').style.display = 'none';
             });
           }
       });

@@ -10,7 +10,10 @@
         "contact": "Ota yhteyttä Crafty Control -tukeen Discordin kautta",
         "terribleFailure": "Mikä kauhea epäonnistuminen!",
         "embarassing": "No, tämähän on noloa.",
-        "error": "Virhe!"
+        "error": "Virhe!",
+        "start-error": "Palvelin {} ei käynnistynyt virhekoodilla: {}",
+        "closedPort": "Olemme havainneet, että portti {} ei ehkä ole auki isäntäverkossa tai palomuuri estää sen. Etäasiakkaan yhteydet palvelimeen voivat olla rajallisia.",
+        "internet": "Olemme havainneet, että Crafty -koneella ei ole Internet -yhteyttä. Asiakasyhteydet palvelimelle voivat olla rajalliset."
     },
     "404": {
         "contact": "Ota yhteyttä Crafty Control -tukeen Discordin kautta",
@@ -38,6 +41,9 @@
         "serverName": "Palvelimen nimi",
         "serverPath": "Palvelimen polku",
         "serverType": "Palvelimen tyypi",
+        "selectType": "Valitse tyypi",
+        "serverVersion": "Palvelimen versio",
+        "selectVersion": "Valitse versio",
         "absoluteServerPath": "Absoluuttinen polku palvelimeesi",
         "serverJar": "Palvelimen Jar -tiedosto",
         "minMem": "Minimi Muisti",
@@ -55,7 +61,11 @@
         "myNewServer": "Minun uusi palvelin",
         "bePatient": "Ole kärsivällinen, kun ' + (importing ? 'tuomme' :  'lataamme') + ' palvelinta",
         "importing": "Tuomme palvelinta...",
-        "downloading": "Lataamme palvelinta..."
+        "downloading": "Lataamme palvelinta...",
+        "addRole": "Lisää Palvelin Olemassa Oleviin Rooleihin",
+        "autoCreate": "Jos ketään ei valita, Crafty tekee sellaisen!",
+        "selectRole": "Valitse roolit"
+
     },
     "dashboard": {
         "dashboard": "Kojelauta",
@@ -69,6 +79,8 @@
         "server": "Palvelin",
         "actions": "Toiminnot",
         "world": "Maailma",
+        "motd": "MOTD",
+        "version": "Versio",
         "status": "Tila",
         "online": "Päällä",
         "offline": "Pois päältä",
@@ -76,6 +88,7 @@
         "nextBackup": "Seuraava:",
         "servers": "Palvelimet",
         "cannotSeeOnMobile": "Etkö näe kaikkea mobiililaitteella?",
+        "cannotSee": "Etkö näe kaikkea?",
         "cannotSeeOnMobile2": "Yritä vierittää taulukkoa sivuttain.",
         "max": "maks.",
         "avg": "ka.",
@@ -86,7 +99,17 @@
         "sendingCommand": "Lähetämme komentoasi",
         "cpuCurFreq": "Nykyinen kellotaajuus",
         "cpuMaxFreq": "Maksimi kellotaajuus",
-        "cpuCores": "Suorittimen ytimet"
+        "cpuCores": "Suorittimen ytimet",
+        "start": "Alkaa",
+        "stop": "Lopettaa",
+        "clone": "Klooni",
+        "kill": "Tapa prosessi",
+        "restart": "Uudelleenkäynnistää",
+        "killing": "Tappamisprosessi ...",
+        "starting": "Myöhästynyt lähtö",
+        "delay-explained": "Palvelu/agentti on äskettäin aloittanut ja viivästyttää minecraft -palvelimen ilmentymän alkua",
+        "no-servers": "Palvelimia ei tällä hetkellä ole. Aloita napsauttamalla",
+        "welcome": "Tervetuloa Crafty Controller"
     },
     "accessDenied": {
         "accessDenied": "Käyttö estetty",
@@ -106,7 +129,7 @@
         "version": "Versio",
         "description": "Kuvaus",
         "errorCalculatingUptime": "Virhe laskettaessa käyttöaikaa",
-        "serverTime": "Palvelimen aikaa",
+        "serverTime": "UTC aikaa",
         "unableToConnect": "Yhteyden muodostaminen epäonnistui"
     },
     "serverDetails": {
@@ -120,12 +143,15 @@
         "playerControls": "Pelaajahallinta"
     },
     "serverTerm": {
-        "stopRefresh": "Lopeta päivitys",
+        "stopScroll": "Lopeta automaattinen vieritys",
         "commandInput": "Kirjoita komento",
         "sendCommand": "Lähetä komento",
         "start": "Käynnistä",
         "restart": "Uudelleen&shy;käynnistä",
-        "stop": "Sammuta"
+        "stop": "Sammuta",
+        "updating": "Updating",
+        "starting": "Myöhästynyt lähtö",
+        "delay-explained": "Palvelu/agentti on äskettäin aloittanut ja viivästyttää minecraft -palvelimen ilmentymän alkua"
     },
     "serverPlayerManagement": {
         "players": "Pelaajat",
@@ -149,7 +175,8 @@
         "backupTask": "Varmuuskopiointitehtävä on aloitettu.",
         "destroyBackup": "Tuhotaanko varmuuskopio \" + file_to_del + \"?",
         "confirmDelete": "Haluatko poistaa tämän varmuuskopion? Tätä ei voi peruuttaa.",
-        "confirm": "Vahvista"
+        "confirm": "Vahvista",
+        "options": "Vaihtoehtoja"
     },
     "serverFiles": {
         "noscript": "Tiedostojenhallinta ei toimi ilman JavaScriptiä",
@@ -166,11 +193,20 @@
         "createDirQuestion": "Minkä nimen haluat uudelle hakemistolle?",
         "renameItemQuestion": "Mikä uuden nimen pitäisi olla?",
         "deleteItemQuestion": "Haluatko varmasti poistaa \" + name + \"?",
-        "deleteItemQuestionMessage": "Olet poistamassa \\\"\" + path + \"\\\"!<br/><br/>Tämä toiminta on peruuttamaton ja se menetetään ikuisesti!",
+        "deleteItemQuestionMessage": "Olet poistamassa \\\"\" + path + \"\\\"!<br/><br/>Tämä toiminto on peruuttamaton ja se menetetään ikuisesti!",
         "yesDelete": "Kyllä, ymmärrän seuraukset",
         "noDelete": "En",
         "unsupportedLanguage": "Varoitus: Tätä tiedostotyyppiä ei tueta",
-        "keybindings": "Pikanäppäimet"
+        "keybindings": "Pikanäppäimet",
+        "fileReadError": "Tiedoston lukuvirhe",
+        "upload": "Lataa",
+        "unzip": "Pura",
+        "clickUpload": "Valitse tiedostosi napsauttamalla tätä",
+        "uploadTitle": "Lähetä tiedostot: ",
+        "waitUpload": "Odota, kunnes lataamme tiedostosi ... Tämä voi kestää hetken.",
+        "stayHere": "ÄLÄ JÄTÄ SIVUTA!",
+        "close": "Kiinni",
+        "download": "Ladata"
     },
     "serverConfig": {
         "serverName": "Palvelimen nimi",
@@ -216,6 +252,11 @@
             "    sudo chmod 2775 /polku/palvelimellesi -R<br />",
             "</code>"
         ]
+    },
+    "panelConfig": {
+        "save": "Tallenna",
+        "cancel": "Peruuta",
+        "delete": "Poista"
     },
     "datatables": {
         "i18n": {

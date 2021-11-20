@@ -4,7 +4,7 @@
 <!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
-{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails') }}{% end %}
+{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails', data['lang']) }}{% end %}
 
 {% block content %}
 
@@ -15,7 +15,7 @@
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
-          {{ translate('serverDetails', 'serverDetails') }} - {{ data['server_stats']['server_id']['server_name'] }}
+          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{ data['server_stats']['server_id']['server_name'] }}
             <br />
             <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
         </h4>
@@ -32,37 +32,7 @@
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-            <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=term" role="tab" aria-selected="false">
-                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'terminal') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=logs" role="tab" aria-selected="false">
-                  <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'logs') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=tasks" role="tab" aria-selected="false">
-                  <i class="fas fa-clock"></i>{{ translate('serverDetails', 'schedule') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link active" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="true">
-                  <i class="fas fa-save"></i>{{ translate('serverDetails', 'backup') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files" role="tab" aria-selected="false">
-                  <i class="fas fa-folder-tree"></i>{{ translate('serverDetails', 'files') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=config" role="tab" aria-selected="false">
-                  <i class="fas fa-cogs"></i>{{ translate('serverDetails', 'config') }}</a>
-              </li>
-              <li class="nav-item term-nav-item">
-                <a class="nav-link" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=admin_controls" role="tab" aria-selected="false">
-                  <i class="fas fa-users"></i>{{ translate('serverDetails', 'playerControls') }}</a>
-              </li>
-
-            </ul>
+            {% include "parts/server_controls_list.html %}
 
             <div class="row">
                 <div class="col-md-6 col-sm-12">
@@ -72,37 +42,37 @@
                       <input type="hidden" name="subpage" value="backup">
 
                       <div class="form-group">
-                        <a href="/panel/backup_now?id={{ data['server_stats']['server_id']['server_id'] }}" class="btn btn-primary" onclick="backup_started()">{{ translate('serverBackups', 'backupNow') }}</a>
+                        <a href="/panel/backup_now?id={{ data['server_stats']['server_id']['server_id'] }}" class="btn btn-primary" onclick="backup_started()">{{ translate('serverBackups', 'backupNow', data['lang']) }}</a>
                       </div>
                       <div class="form-group">
-                        <label for="server_name">{{ translate('serverBackups', 'storageLocation') }} <small class="text-muted ml-1"> - {{ translate('serverBackups', 'storageLocationDesc') }}</small> </label>
-                        <input type="text" class="form-control" name="backup_path" id="backup_path" value="{{ data['server_stats']['server_id']['backup_path']  }}" placeholder="{{ translate('serverBackups', 'storageLocation') }}" >
+                        <label for="server_name">{{ translate('serverBackups', 'storageLocation', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverBackups', 'storageLocationDesc', data['lang']) }}</small> </label>
+                        <input type="text" class="form-control" name="backup_path" id="backup_path" value="{{ data['server_stats']['server_id']['backup_path']  }}" placeholder="{{ translate('serverBackups', 'storageLocation', data['lang']) }}" >
                       </div>
 
                       <div class="form-group">
-                        <label for="server_path">{{ translate('serverBackups', 'maxBackups') }} <small class="text-muted ml-1"> - {{ translate('serverBackups', 'maxBackupsDesc') }}</small> </label>
-                        <input type="text" class="form-control" name="max_backups" id="max_backups" value="{{ data['backup_config']['max_backups']  }}" placeholder="{{ translate('serverBackups', 'maxBackups') }}" >
+                        <label for="server_path">{{ translate('serverBackups', 'maxBackups', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverBackups', 'maxBackupsDesc', data['lang']) }}</small> </label>
+                        <input type="text" class="form-control" name="max_backups" id="max_backups" value="{{ data['backup_config']['max_backups']  }}" placeholder="{{ translate('serverBackups', 'maxBackups', data['lang']) }}" >
                       </div>
 
                       <div class="form-group">
                         <label for="superuser" class="form-check-label ml-4 mb-4">
                           {% if data['backup_config']['auto_enabled'] %}
-                              <input type="checkbox" class="form-check-input" id="auto_enabled" name="auto_enabled" checked="" value="1" >{{ translate('serverBackups', 'backupAtMidnight') }}
+                              <input type="checkbox" class="form-check-input" id="auto_enabled" name="auto_enabled" checked="" value="1" >{{ translate('serverBackups', 'backupAtMidnight', data['lang']) }}
                           {% else %}
-                              <input type="checkbox" class="form-check-input" id="auto_enabled" name="auto_enabled" value="1" >{{ translate('serverBackups', 'backupAtMidnight') }}
+                              <input type="checkbox" class="form-check-input" id="auto_enabled" name="auto_enabled" value="1" >{{ translate('serverBackups', 'backupAtMidnight', data['lang']) }}
                           {% end %}
                         </label>
                       </div>
 
-                      <button type="submit" class="btn btn-success mr-2">{{ translate('serverBackups', 'save') }}</button>
-                      <button type="reset" class="btn btn-light">{{ translate('serverBackups', 'cancel') }}</button>
+                      <button type="submit" class="btn btn-success mr-2">{{ translate('serverBackups', 'save', data['lang']) }}</button>
+                      <button type="reset" class="btn btn-light">{{ translate('serverBackups', 'cancel', data['lang']) }}</button>
                     </form>
                 </div>
 
                 <div class="col-md-6 col-sm-12">
                     <div class="card">
                       <div class="card-body">
-                        <h4 class="card-title">{{ translate('serverBackups', 'currentBackups') }}</h4>
+                        <h4 class="card-title">{{ translate('serverBackups', 'currentBackups', data['lang']) }}</h4>
                         
                       </div>
                     </div>
@@ -111,10 +81,9 @@
                       <table class="table table-responsive dataTable" id="backup_table">
                         <thead>
                         <tr>
-                            <th width="10%">{{ translate('serverBackups', 'download') }}</th>
-                            <th>{{ translate('serverBackups', 'path') }}</th>
-                            <th width="20%">{{ translate('serverBackups', 'size') }}</th>
-                            <th width="10%">{{ translate('serverBackups', 'delete') }}</th>
+                            <th width="10%">{{ translate('serverBackups', 'options', data['lang']) }}</th>
+                            <th>{{ translate('serverBackups', 'path', data['lang']) }}</th>
+                            <th width="20%">{{ translate('serverBackups', 'size', data['lang']) }}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -123,18 +92,17 @@
                             <td>
                                 <a href="/panel/download_backup?file={{ backup['path'] }}&id={{ data['server_stats']['server_id']['server_id'] }}" class="btn btn-primary">
                                     <i class="fas fa-download" aria-hidden="true"></i>
-                                    {{ translate('serverBackups', 'download') }}
+                                    {{ translate('serverBackups', 'download', data['lang']) }}
                                 </a>
+                                <br>
+                                <br>
+                                                                <button data-file="{{ backup['path'] }}" class="btn btn-danger del_button">
+                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                    {{ translate('serverBackups', 'delete', data['lang']) }}
+                                </button>
                             </td>
                             <td>{{ backup['path'] }}</td>
                             <td>{{ backup['size'] }}</td>
-                            <td>
-                                <button data-file="{{ backup['path'] }}" class="btn btn-danger del_button">
-                                    <i class="fas fa-trash" aria-hidden="true"></i>
-                                    {{ translate('serverBackups', 'delete') }}
-                                </button>
-
-                            </td>
                             </tr>
                         {% end %}
 
@@ -169,7 +137,7 @@
 
     function backup_started(time='5-10') {
             bootbox.alert({
-            message: "{{ translate('serverBackups', 'backupTask') }}",
+            message: "{{ translate('serverBackups', 'backupTask', data['lang']) }}",
             backdrop: true
         });
     }
@@ -181,10 +149,13 @@
 
         console.log('Sending Command to delete backup: ' + filename)
         $.ajax({
-          type: "POST",
+          type: "DELETE",
           headers: {'X-XSRFToken': token},
           url: '/ajax/del_file?server_id='+id,
-          data: data_to_send,
+          data: {
+          file_path: filename,
+          id: id
+          },
           success: function(data) {
             location.reload();
           },
@@ -220,20 +191,21 @@
             console.log("file to delete is" + file_to_del);
 
             bootbox.confirm({
-                title: "{% raw translate('serverBackups', 'destroyBackup') %}",
-                message: "{{ translate('serverBackups', 'confirmDelete') }}",
+                title: "{% raw translate('serverBackups', 'destroyBackup', data['lang']) %}",
+                message: "{{ translate('serverBackups', 'confirmDelete', data['lang']) }}",
                 buttons: {
                     cancel: {
-                        label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel") }}'
+                        label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
                     },
                     confirm: {
-                        label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm") }}'
+                        label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm", data['lang']) }}'
                     }
                 },
                 callback: function (result) {
                     console.log(result);
                     if (result == true) {
-                        del_backup(file_to_del, {{ data['server_stats']['server_id']['server_id'] }} );
+                      var full_path = '{{ data['backup_path'] }}' + '/' + file_to_del;
+                        del_backup(full_path, {{ data['server_stats']['server_id']['server_id'] }} );
                     }
                 }
             });

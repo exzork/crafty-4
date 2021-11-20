@@ -8,9 +8,12 @@
     "error": {
         "hereIsTheError": "Here is the error",
         "contact": "Contact Crafty Control Support via Discord",
-        "terribleFailure": "What a Terrble Failure!",
+        "terribleFailure": "What a Terrible Failure!",
         "embarassing": "Oh my, well, this is embarrassing.",
-        "error": "Error!"
+        "error": "Error!",
+        "start-error": "Server {} failed to start with error code: {}",
+        "closedPort": "We have detected port {} may not be open on the host network or a firewall is blocking it. Remote client connections to the server may be limited.",
+        "internet": "We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited."
     },
     "404": {
         "contact": "Contact Crafty Control Support via Discord",
@@ -38,6 +41,9 @@
         "serverName": "Server Name",
         "serverPath": "Server Path",
         "serverType": "Server Type",
+        "selectType": "Select a Type",
+        "serverVersion": "Server Version",
+        "selectVersion": "Select a Version",
         "absoluteServerPath": "Absolute path to your server",
         "serverJar": "Server Jarfile",
         "minMem": "Minimum Memory",
@@ -55,7 +61,10 @@
         "myNewServer": "My New Server",
         "bePatient": "Please be patient as we ' + (importing ? 'import' :  'download') + ' the server",
         "importing": "Importing Server...",
-        "downloading": "Downloading Server..."
+        "downloading": "Downloading Server...",
+        "addRole": "Add Server to Existing Role(s)",
+        "autoCreate": "If none are selected Crafty will make one!",
+        "selectRole": "Select Role(s)"
     },
     "dashboard": {
         "dashboard": "Dashboard",
@@ -69,13 +78,16 @@
         "server": "Server",
         "actions": "Actions",
         "world": "World",
+        "motd": "MOTD",
+        "version": "Version",
         "status": "Status",
         "online": "Online",
         "offline": "Offline",
         "lastBackup": "Last:",
         "nextBackup": "Next:",
         "servers": "Servers",
-        "cannotSeeOnMobile": "Can't see everything on mobile?",
+        "cannotSeeOnMobile": "Not seeing everything on mobile?",
+        "cannotSee": "Not seeing everything?",
         "cannotSeeOnMobile2": "Try scrolling the table sideways.",
         "max": "Max",
         "avg": "Avg",
@@ -86,7 +98,17 @@
         "sendingCommand": "Sending your command",
         "cpuCurFreq": "CPU Current Clock",
         "cpuMaxFreq": "CPU Maximum Clock",
-        "cpuCores": "CPU Cores"
+        "cpuCores": "CPU Cores",
+        "start": "Start",
+        "stop": "Stop",
+        "clone": "Clone",
+        "kill": "Kill Process",
+        "restart": "Restart",
+        "killing": "Killing process...",
+        "starting": "Delayed-Start",
+        "delay-explained": "The service/agent has recently started and is delaying the start of the minecraft server instance",
+        "no-servers": "There are currently no servers. To get started, click",
+        "welcome": "Welcome to Crafty Controller"
     },
     "accessDenied": {
         "accessDenied": "Access Denied",
@@ -106,7 +128,7 @@
         "version": "Version",
         "description": "Description",
         "errorCalculatingUptime": "Error Calculating Uptime",
-        "serverTime": "Server Time",
+        "serverTime": "UTC Time",
         "unableToConnect": "Unable To Connect"
     },
     "serverDetails": {
@@ -120,13 +142,16 @@
         "playerControls": "Player Management"
     },
     "serverTerm": {
-        "stopRefresh": "Stop Refresh",
+        "stopScroll": "Stop Auto Scrollling",
         "commandInput": "Enter your command",
         "sendCommand": "Send command",
         "start": "Start",
         "restart": "Restart",
-        "stop": "Stop"
-    },
+        "stop": "Stop",
+        "updating": "Updating...",
+        "starting": "Delayed-Start",
+        "delay-explained": "The service/agent has recently started and is delaying the start of the minecraft server instance"
+        },
     "serverPlayerManagement": {
         "players": "Players",
         "bannedPlayers": "Banned Players",
@@ -149,7 +174,8 @@
         "backupTask": "A backup task has been started.",
         "destroyBackup": "Destroy backup \" + file_to_del + \"?",
         "confirmDelete": "Do you want to delete this backup? This cannot be undone.",
-        "confirm": "Confirm"
+        "confirm": "Confirm",
+        "options": "Options"
     },
     "serverFiles": {
         "noscript": "The file manager does not work without JavaScript",
@@ -170,7 +196,16 @@
         "yesDelete": "Yes, I understand the consequences",
         "noDelete": "No",
         "unsupportedLanguage": "Warning: This is not a supported file type",
-        "keybindings": "Keybindings"
+        "keybindings": "Keybindings",
+        "fileReadError": "File read error",
+        "upload": "Upload",
+        "unzip": "Unzip",
+        "clickUpload": "Click here to select your files",
+        "uploadTitle": "Upload Files to: ",
+        "waitUpload": "Please wait while we upload your files... This may take a while.",
+        "stayHere": "DO NOT LEAVE THIS PAGE!",
+        "close": "Close",
+        "download": "Download"
     },
     "serverConfig": {
         "serverName": "Server Name",
@@ -198,7 +233,23 @@
         "save": "Save",
         "cancel": "Cancel",
         "deleteServer": "Delete Server",
-        "stopBeforeDeleting": "Please stop the server before deleting it"
+        "stopBeforeDeleting": "Please stop the server before deleting it",
+        "exeUpdateURLDesc": "Direct Download URL for  updates.",
+        "exeUpdateURL": "Server Executable Update URL",
+        "update": "Update Executable",
+        "bePatientUpdate": "Please be patient while we update the server. Download times can vary depending upon your internet speeds.<br /> This screen will refresh in a moment",
+        "sendingRequest": "Sending your request...",
+        "deleteServerQuestion": "Delete Server?",
+        "deleteServerQuestionMessage": "Are you sure you want to delete this server? After this there is no going back...",
+        "yesDelete": "Yes, delete",
+        "noDelete": "No, go back",
+        "deleteFilesQuestion": "Delete server files from machine?",
+        "deleteFilesQuestionMessage": "Would you like Crafty to delete all server files from the host machine?",
+        "yesDeleteFiles": "Yes, delete files",
+        "noDeleteFiles": "No, just remove from panel",
+        "sendingDelete": "Deleting Server",
+        "bePatientDelete": "Please be patient while we remove your server from the Crafty panel. This screen will close in a few moments.",
+        "bePatientDeleteFiles" : "Please be patient while we remove your server from the Crafty panel and delete all files. This screen will close in a few moments."
     },
     "serverConfigHelp": {
         "title": "Server Config Area",
@@ -216,6 +267,11 @@
             "    sudo chmod 2775 /path/to/your/server -R<br />",
             "</code>"
         ]
+    },
+    "panelConfig": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete"
     },
     "datatables": {
         "i18n": {

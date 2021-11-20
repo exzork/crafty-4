@@ -5,6 +5,7 @@ import time
 import logging
 import threading
 import asyncio
+import shutil
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
@@ -12,7 +13,8 @@ from app.classes.web.tornado import Webserver
 from app.classes.web.websocket_helper import websocket_helper
 
 from app.classes.minecraft.serverjars import server_jar_obj
-from app.classes.shared.models import db_helper
+from app.classes.models.servers import servers_helper
+from app.classes.models.management import management_helper
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +23,7 @@ try:
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
+    console.critical("Import Error: Unable to load {} module".format(e.name))
     sys.exit(1)
 
 scheduler_intervals = { 'seconds',
@@ -74,7 +76,7 @@ class TasksManager:
             time.sleep(5)
 
     def reload_schedule_from_db(self):
-        jobs = db_helper.get_schedules_enabled()
+        jobs = management_helper.get_schedules_enabled()
         schedule.clear(tag='backup')
         schedule.clear(tag='db')
         for j in jobs:
@@ -83,7 +85,7 @@ class TasksManager:
                     i=j.schedule_id, a=j.action, n=j.interval, t=j.interval_type, s=j.start_time))
                 try:
                     getattr(schedule.every(j.interval), j.interval_type).at(j.start_time).do(
-                        db_helper.send_command, 0, j.server_id, "127.27.23.89", j.action)
+                        self.controller.management.send_command, 0, j.server_id, "127.27.23.89", j.action)
                 except schedule.ScheduleValueError as e:
                     logger.critical("Scheduler value error occurred: {} on ID#{}".format(e, j.schedule_id))
             else:
@@ -92,25 +94,28 @@ class TasksManager:
     def command_watcher(self):
         while True:
             # select any commands waiting to be processed
-            commands = db_helper.get_unactioned_commands()
+            commands = management_helper.get_unactioned_commands()
             for c in commands:
 
                 svr = self.controller.get_server_obj(c['server_id']['server_id'])
+                user_lang = c.get('user')['lang']
                 command = c.get('command', None)
 
                 if command == 'start_server':
-                    svr.run_threaded_server()
+                    svr.run_threaded_server(user_lang)
 
                 elif command == 'stop_server':
                     svr.stop_threaded_server()
 
                 elif command == "restart_server":
-                    svr.restart_threaded_server()
+                    svr.restart_threaded_server(user_lang)
 
                 elif command == "backup_server":
                     svr.backup_server()
 
-                db_helper.mark_command_complete(c.get('command_id', None))
+                elif command == "update_executable":
+                    svr.jar_update()
+                management_helper.mark_command_complete(c.get('command_id', None))
 
             time.sleep(1)
 
@@ -184,20 +189,20 @@ class TasksManager:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
-        host_stats = db_helper.get_latest_hosts_stats()
+        host_stats = management_helper.get_latest_hosts_stats()
 
         while True:
 
             if host_stats.get('cpu_usage') != \
-                    db_helper.get_latest_hosts_stats().get('cpu_usage') or \
+                    management_helper.get_latest_hosts_stats().get('cpu_usage') or \
                     host_stats.get('mem_percent') != \
-                    db_helper.get_latest_hosts_stats().get('mem_percent'):
+                    management_helper.get_latest_hosts_stats().get('mem_percent'):
                 # Stats are different
 
-                host_stats = db_helper.get_latest_hosts_stats()
+                host_stats = management_helper.get_latest_hosts_stats()
                 if len(websocket_helper.clients) > 0:
                     # There are clients
-                    websocket_helper.broadcast('update_host_stats', {
+                    websocket_helper.broadcast_page('/panel/dashboard', 'update_host_stats', {
                         'cpu_usage': host_stats.get('cpu_usage'),
                         'cpu_cores': host_stats.get('cpu_cores'),
                         'cpu_cur_freq': host_stats.get('cpu_cur_freq'),
@@ -205,13 +210,9 @@ class TasksManager:
                         'mem_percent': host_stats.get('mem_percent'),
                         'mem_usage': host_stats.get('mem_usage')
                     })
-                time.sleep(4)
-            else:
-                # Stats are same
-                time.sleep(8)
+            time.sleep(4)
 
     def log_watcher(self):
-        console.debug('in log_watcher')
-        helper.check_for_old_logs(db_helper)
-        schedule.every(6).hours.do(lambda: helper.check_for_old_logs(db_helper)).tag('log-mgmt')
+        self.controller.servers.check_for_old_logs()
+        schedule.every(6).hours.do(lambda: self.controller.servers.check_for_old_logs()).tag('log-mgmt')
 

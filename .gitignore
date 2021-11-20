@@ -23,5 +23,9 @@ session.lock
 .header
 default.json
 .vscode/
+.DS_Store
+.DS_STORE
 
 app/config/
+docker/*
+!docker/docker-compose.yml

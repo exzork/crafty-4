@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import threading
 import time
 import shutil
 import logging
@@ -8,8 +9,9 @@ from datetime import datetime
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
-from app.classes.shared.models import Servers
+from app.classes.models.servers import Servers
 from app.classes.minecraft.server_props import ServerProps
+from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +19,8 @@ try:
     import requests
 
 except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e, e.name))
-    console.critical("Import Error: Unable to load {} module".format(e, e.name))
+    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
+    console.critical("Import Error: Unable to load {} module".format(e.name))
     sys.exit(1)
 
 
@@ -70,6 +72,29 @@ class ServerJars:
     def get_serverjar_data(self):
         data = self._read_cache()
         return data.get('servers')
+
+    def get_serverjar_data_sorted(self):
+        data = self.get_serverjar_data()
+
+        def str_to_int(x, counter=0):
+            try:
+                return ord(x[0]) + str_to_int(x[1:], counter + 1) + len(x)
+            except IndexError:
+                return 0
+
+        def to_int(x):
+            try:
+                return int(x)
+            except ValueError:
+                temp = x.split('-')
+                return to_int(temp[0]) + str_to_int(temp[1]) / 100000
+
+        sort_key_fn = lambda x: [to_int(y) for y in x.split('.')]
+
+        for key in data.keys():
+            data[key] = sorted(data[key], key=sort_key_fn)
+
+        return data
 
     def _check_api_alive(self):
         logger.info("Checking serverjars.com API status")
@@ -149,7 +174,11 @@ class ServerJars:
         response = self._get_api_result(url)
         return response
 
-    def download_jar(self, server, version, path):
+    def download_jar(self, server, version, path, name):
+        update_thread = threading.Thread(target=self.a_download_jar, daemon=True, name="exe_download", args=(server, version, path, name))
+        update_thread.start()
+
+    def a_download_jar(self, server, version, path, name):
         fetch_url = "{base}/api/fetchJar/{server}/{version}".format(base=self.base_url, server=server, version=version)
 
         # open a file stream
@@ -161,6 +190,8 @@ class ServerJars:
             except Exception as e:
                 logger.error("Unable to save jar to {path} due to error:{error}".format(path=path, error=e))
                 pass
+        websocket_helper.broadcast('notification', "Executable download finished for server named: " + name)
+        
 
         return False
 

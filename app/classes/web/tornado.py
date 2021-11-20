@@ -25,7 +25,11 @@ try:
     from app.classes.web.ajax_handler import AjaxHandler
     from app.classes.web.api_handler import ServersStats, NodeStats
     from app.classes.web.websocket_handler import SocketHandler
+    from app.classes.web.static_handler import CustomStaticHandler
     from app.classes.shared.translation import translation
+    from app.classes.web.upload_handler import UploadHandler
+    from app.classes.web.http_handler import HTTPHandler, HTTPHandlerPage
+    from app.classes.web.status_handler import StatusHandler
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e, e.name))
@@ -88,16 +92,12 @@ class Webserver:
 
         http_port = helper.get_setting('http_port')
         https_port = helper.get_setting('https_port')
-
-        lang = helper.get_setting('language')
+        
         debug_errors = helper.get_setting('show_errors')
         cookie_secret = helper.get_setting('cookie_secret')
 
         if cookie_secret is False:
             cookie_secret = helper.random_string_generator(32)
-
-        if not lang:
-            lang = "en_EN"
 
         if not http_port:
             http_port = 8000
@@ -112,14 +112,11 @@ class Webserver:
 
         logger.info("Starting Web Server on ports http:{} https:{}".format(http_port, https_port))
 
-        console.info("http://{}:{} is up and ready for connection:".format(helper.get_local_ip(), http_port))
-        console.info("https://{}:{} is up and ready for connection:".format(helper.get_local_ip(), https_port))
-
         asyncio.set_event_loop(asyncio.new_event_loop())
 
         tornado.template.Loader('.')
 
-        tornado.locale.set_default_locale(lang)
+        tornado.locale.set_default_locale('en_EN')
 
         handler_args = {"controller": self.controller, "tasks_manager": self.tasks_manager, "translator": translation}
         handlers = [
@@ -131,6 +128,8 @@ class Webserver:
             (r'/api/stats/servers', ServersStats, handler_args),
             (r'/api/stats/node', NodeStats, handler_args),
             (r'/ws', SocketHandler, handler_args),
+            (r'/upload', UploadHandler, handler_args),
+            (r'/status', StatusHandler, handler_args)
             ]
 
         app = tornado.web.Application(
@@ -143,18 +142,47 @@ class Webserver:
             autoreload=False,
             log_function=self.log_function,
             login_url="/login",
-            default_handler_class=PublicHandler
+            default_handler_class=PublicHandler,
+            static_handler_class=CustomStaticHandler,
+            serve_traceback=debug_errors,
+        )
+        HTTPhanders = [(r'/', HTTPHandler, handler_args),
+            (r'/public/(.*)', HTTPHandlerPage, handler_args),
+            (r'/panel/(.*)', HTTPHandlerPage, handler_args),
+            (r'/server/(.*)', HTTPHandlerPage, handler_args),
+            (r'/ajax/(.*)', HTTPHandlerPage, handler_args),
+            (r'/api/stats/servers', HTTPHandlerPage, handler_args),
+            (r'/api/stats/node', HTTPHandlerPage, handler_args),
+            (r'/ws', HTTPHandlerPage, handler_args),
+            (r'/upload', HTTPHandlerPage, handler_args)]
+        HTTPapp = tornado.web.Application(
+            HTTPhanders,
+            template_path=os.path.join(helper.webroot, 'templates'),
+            static_path=os.path.join(helper.webroot, 'static'),
+            debug=debug_errors,
+            cookie_secret=cookie_secret,
+            xsrf_cookies=True,
+            autoreload=False,
+            log_function=self.log_function,
+            default_handler_class = HTTPHandler,
+            login_url="/login",
+            serve_traceback=debug_errors,
         )
 
-        self.HTTP_Server = tornado.httpserver.HTTPServer(app)
+        self.HTTP_Server = tornado.httpserver.HTTPServer(HTTPapp)
         self.HTTP_Server.listen(http_port)
 
         self.HTTPS_Server = tornado.httpserver.HTTPServer(app, ssl_options=cert_objects)
         self.HTTPS_Server.listen(https_port)
 
+        logger.info("http://{}:{} is up and ready for connections.".format(helper.get_local_ip(), http_port))
+        logger.info("https://{}:{} is up and ready for connections.".format(helper.get_local_ip(), https_port))
+        console.info("http://{}:{} is up and ready for connections.".format(helper.get_local_ip(), http_port))
+        console.info("https://{}:{} is up and ready for connections.".format(helper.get_local_ip(), https_port))
+
         console.info("Server Init Complete: Listening For Connections:")
 
-        self.ioloop = tornado.ioloop.IOLoop.instance()
+        self.ioloop = tornado.ioloop.IOLoop.current()
         self.ioloop.start()
 
     def stop_web_server(self):

@@ -1,0 +1,9 @@
+docker/
+
+.git/
+.gitignore
+
+crafty_commander.exe
+DBCHANGES.md
+docker-compose.yml.example
+README.md
