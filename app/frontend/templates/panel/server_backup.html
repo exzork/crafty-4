@@ -204,8 +204,7 @@
                 callback: function (result) {
                     console.log(result);
                     if (result == true) {
-                      var full_path = '{{ data['server_stats']['server_id']['backup_path']  }}' + '/' + file_to_del;
-                        del_backup(full_path, {{ data['server_stats']['server_id']['server_id'] }} );
+                        del_backup(file_to_del, {{ data['server_stats']['server_id']['server_id'] }} );
                     }
                 }
             });

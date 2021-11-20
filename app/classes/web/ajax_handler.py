@@ -214,8 +214,9 @@ class AjaxHandler(BaseHandler):
             file_path = self.get_body_argument('file_path', default=None, strip=True)
             server_id = self.get_argument('id', None)
 
-            if os.name == "nt":
-                file_path = file_path.replace('/', "\\")
+            if file_path.contains('/') or file_path('\\'):
+                server_info = self.controller.servers.get_server_data_by_id(server_id)
+                file_path = os.path.abspath(os.path.join(server_info["backup_path"], file_path))
 
             console.warning("delete {} for server {}".format(file_path, server_id))
 
