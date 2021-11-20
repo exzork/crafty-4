@@ -114,7 +114,7 @@ class TasksManager:
                     svr.backup_server()
 
                 elif command == "update_executable":
-                    svr.jar_update(user_lang)
+                    svr.jar_update()
                 management_helper.mark_command_complete(c.get('command_id', None))
 
             time.sleep(1)

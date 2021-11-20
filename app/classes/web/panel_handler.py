@@ -210,7 +210,6 @@ class PanelHandler(BaseHandler):
                 page_data['backup_config'] = self.controller.management.get_backup_config(server_id)
                 page_data['backup_list'] = server.list_backups()
                 page_data['backup_path'] = server_info["backup_path"].replace('\\', '/')
-                print(page_data['backup_path'])
 
             def get_banned_players_html():
                 banned_players = self.controller.servers.get_banned_players(server_id)
@@ -340,8 +339,11 @@ class PanelHandler(BaseHandler):
             page_data['user-roles'] = user_roles
 
             if exec_user['superuser'] == 1:
+                super_auth_servers = []
+                super_auth_servers.append("Access To All Servers")
                 page_data['users'] = self.controller.users.get_all_users()
                 page_data['roles'] = self.controller.roles.get_all_roles()
+                page_data['auth-servers'][exec_user['user_id']] = super_auth_servers
             else:
                 page_data['users'] = self.controller.users.user_query(exec_user['user_id'])
                 page_data['roles'] = self.controller.users.user_role_query(exec_user['user_id'])
