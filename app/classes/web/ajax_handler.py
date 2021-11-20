@@ -216,7 +216,8 @@ class AjaxHandler(BaseHandler):
 
             console.warning("delete {} for server {}".format(file_path, server_id))
 
-            if not self.check_server_id(server_id, 'del_file'): return
+            if not self.check_server_id(server_id, 'del_file'): 
+                return
             else: server_id = bleach.clean(server_id)
 
             server_info = self.controller.servers.get_server_data_by_id(server_id)
