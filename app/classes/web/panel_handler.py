@@ -209,7 +209,7 @@ class PanelHandler(BaseHandler):
                 server_info = self.controller.servers.get_server_data_by_id(server_id)
                 page_data['backup_config'] = self.controller.management.get_backup_config(server_id)
                 page_data['backup_list'] = server.list_backups()
-                page_data['backup_path'] = server_info["backup_path"]
+                page_data['backup_path'] = server_info["backup_path"].replace('\\', '\\\\')
                 print(page_data['backup_path'])
 
             def get_banned_players_html():
