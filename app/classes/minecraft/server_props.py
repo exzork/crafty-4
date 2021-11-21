@@ -8,7 +8,7 @@ class ServerProps:
         self.props = self._parse()
 
     def _parse(self):
-        """Loads and parses the file speified in self.filepath"""
+        """Loads and parses the file specified in self.filepath"""
         with open(self.filepath) as fp:
             line = fp.readline()
             d = {}
@@ -32,7 +32,7 @@ class ServerProps:
     def print(self):
         """Prints the properties dictionary (using pprint)"""
         pprint.pprint(self.props)
-        
+
     def get(self):
         """Returns the properties dictionary"""
         return self.props

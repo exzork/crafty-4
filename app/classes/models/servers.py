@@ -88,7 +88,7 @@ class Server_Stats(Model):
 #                                   Servers Class
 #************************************************************************************************
 class helper_servers:
-    
+
     #************************************************************************************************
     #                                   Generic Servers Methods
     #************************************************************************************************
@@ -108,6 +108,15 @@ class helper_servers:
             Servers.stop_command: server_stop,
             Servers.backup_path: backup_path
         }).execute()
+
+
+    @staticmethod
+    def get_server_obj(server_id):
+        return Servers.get_by_id(server_id)
+
+    @staticmethod
+    def update_server(server_obj):
+        return server_obj.save()
 
     @staticmethod
     def remove_server(server_id):
@@ -186,7 +195,7 @@ class helper_servers:
         if (time_limit == -1) or (ttl_no_players > time_limit):
             can = True
         return can
-        
+
     @staticmethod
     def set_waiting_start(server_id, value):
         try:

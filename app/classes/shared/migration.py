@@ -479,7 +479,7 @@ class MigrationManager(object):
         Reads a migration from a file.
         """
         call_params = dict()
-        if os.name == 'nt' and sys.version_info >= (3, 0):
+        if helper.is_os_windows() and sys.version_info >= (3, 0):
             # if system is windows - force utf-8 encoding
             call_params['encoding'] = 'utf-8'
         with open(os.path.join(helper.migration_dir, name + '.py'), **call_params) as f:

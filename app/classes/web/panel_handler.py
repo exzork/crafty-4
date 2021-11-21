@@ -209,7 +209,8 @@ class PanelHandler(BaseHandler):
                 server_info = self.controller.servers.get_server_data_by_id(server_id)
                 page_data['backup_config'] = self.controller.management.get_backup_config(server_id)
                 page_data['backup_list'] = server.list_backups()
-                page_data['backup_path'] = server_info["backup_path"].replace('\\', '/')
+                page_data['backup_path'] = helper.wtol_path(server_info["backup_path"])
+                print(page_data['backup_path'])
 
             def get_banned_players_html():
                 banned_players = self.controller.servers.get_banned_players(server_id)
@@ -256,8 +257,8 @@ class PanelHandler(BaseHandler):
                         return
 
             server_info = self.controller.servers.get_server_data_by_id(server_id)
-            backup_file = os.path.abspath(os.path.join(server_info["backup_path"], file))
-            if not helper.in_path(server_info["backup_path"], backup_file) \
+            backup_file = os.path.abspath(os.path.join(helper.get_os_understandable_path(server_info["backup_path"]), file))
+            if not helper.in_path(helper.get_os_understandable_path(server_info["backup_path"]), backup_file) \
                     or not os.path.isfile(backup_file):
                 self.redirect("/panel/error?error=Invalid path detected")
                 return
@@ -540,7 +541,7 @@ class PanelHandler(BaseHandler):
 
         elif page == 'download_file':
             server_id = self.get_argument('id', None)
-            file = self.get_argument('path', "")
+            file = helper.get_os_understandable_path(self.get_argument('path', ""))
             name = self.get_argument('name', "")
 
             if server_id is None:
@@ -559,7 +560,7 @@ class PanelHandler(BaseHandler):
 
             server_info = self.controller.servers.get_server_data_by_id(server_id)
 
-            if not helper.in_path(server_info["path"], file) \
+            if not helper.in_path(helper.get_os_understandable_path(server_info["path"]), file) \
                     or not os.path.isfile(file):
                 self.redirect("/panel/error?error=Invalid path detected")
                 return
@@ -645,22 +646,21 @@ class PanelHandler(BaseHandler):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
 
-            #TODO use controller method
-            Servers.update({
-                Servers.server_name: server_name,
-                Servers.path: server_path,
-                Servers.log_path: log_path,
-                Servers.executable: executable,
-                Servers.execution_command: execution_command,
-                Servers.stop_command: stop_command,
-                Servers.auto_start_delay: auto_start_delay,
-                Servers.server_ip: server_ip,
-                Servers.server_port: server_port,
-                Servers.auto_start: auto_start,
-                Servers.executable_update_url: executable_update_url,
-                Servers.crash_detection: crash_detection,
-                Servers.logs_delete_after: logs_delete_after,
-            }).where(Servers.server_id == server_id).execute()
+            server_obj = self.controller.servers.get_server_obj(server_id)
+            server_obj.server_name = server_name
+            server_obj.path = server_path
+            server_obj.log_path = log_path
+            server_obj.executable = executable
+            server_obj.execution_command = execution_command
+            server_obj.stop_command = stop_command
+            server_obj.auto_start_delay = auto_start_delay
+            server_obj.server_ip = server_ip
+            server_obj.server_port = server_port
+            server_obj.auto_start = auto_start
+            server_obj.executable_update_url = executable_update_url
+            server_obj.crash_detection = crash_detection
+            server_obj.logs_delete_after = logs_delete_after
+            self.controller.servers.update_server(server_obj)
 
             self.controller.refresh_server_settings(server_id)
 
@@ -695,14 +695,16 @@ class PanelHandler(BaseHandler):
 
             if backup_path is not None:
                 if enabled == '0':
-                    Servers.update({
-                        Servers.backup_path: backup_path
-                    }).where(Servers.server_id == server_id).execute()
+                    #TODO Use Controller method
+                    server_obj = self.controller.servers.get_server_obj(server_id)
+                    server_obj.backup_path = backup_path
+                    self.controller.servers.update_server(server_obj)
                     self.controller.management.set_backup_config(server_id, max_backups=max_backups, auto_enabled=False)
                 else:
-                    Servers.update({
-                        Servers.backup_path: backup_path
-                    }).where(Servers.server_id == server_id).execute()
+                    #TODO Use Controller method
+                    server_obj = self.controller.servers.get_server_obj(server_id)
+                    server_obj.backup_path = backup_path
+                    self.controller.servers.update_server(server_obj)
                     self.controller.management.set_backup_config(server_id, max_backups=max_backups, auto_enabled=True)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
