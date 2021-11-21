@@ -340,8 +340,11 @@ class PanelHandler(BaseHandler):
             page_data['user-roles'] = user_roles
 
             if exec_user['superuser'] == 1:
+                super_auth_servers = []
+                super_auth_servers.append("Access To All Servers")
                 page_data['users'] = self.controller.users.get_all_users()
                 page_data['roles'] = self.controller.roles.get_all_roles()
+                page_data['auth-servers'][exec_user['user_id']] = super_auth_servers
             else:
                 page_data['users'] = self.controller.users.user_query(exec_user['user_id'])
                 page_data['roles'] = self.controller.users.user_role_query(exec_user['user_id'])
