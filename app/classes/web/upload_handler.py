@@ -52,8 +52,8 @@ class UploadHandler(tornado.web.RequestHandler):
         filename = self.request.headers.get('X-FileName', None)
         full_path = os.path.join(path, filename)
 
-        if not helper.in_path(self.controller.servers.get_server_data_by_id(server_id)['path'], full_path):
-            print(user_id, server_id, self.controller.servers.get_server_data_by_id(server_id)['path'], full_path)
+        if not helper.in_path(helper.get_os_understandable_path(self.controller.servers.get_server_data_by_id(server_id)['path']), full_path):
+            print(user_id, server_id, helper.get_os_understandable_path(self.controller.servers.get_server_data_by_id(server_id)['path']), full_path)
             logger.warning(f'User {user_id} tried to upload a file to {server_id} but the path is not inside of the server!')
             console.warning(f'User {user_id} tried to upload a file to {server_id} but the path is not inside of the server!')
             self.do_upload = False

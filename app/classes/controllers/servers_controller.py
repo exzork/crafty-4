@@ -37,6 +37,14 @@ class Servers_Controller:
         return servers_helper.create_server(name, server_uuid, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, server_port)
 
     @staticmethod
+    def get_server_obj(server_id):
+        return servers_helper.get_server_obj(server_id)
+
+    @staticmethod
+    def update_server(server_obj):
+        return servers_helper.update_server(server_obj)
+
+    @staticmethod
     def remove_server(server_id):
         roles_list = server_permissions.get_roles_from_server(server_id)
         for role in roles_list:
@@ -146,7 +154,7 @@ class Servers_Controller:
         path = os.path.join(server_path, 'banned-players.json')
 
         try:
-            with open(path) as file:
+            with open(helper.get_os_understandable_path(path)) as file:
                 content = file.read()
                 file.close()
         except Exception as ex:
@@ -170,7 +178,7 @@ class Servers_Controller:
             ))
             for log_file in log_files:
                 log_file_path = os.path.join(logs_path, log_file)
-                if self.check_file_exists(log_file_path) and \
-                        self.is_file_older_than_x_days(log_file_path, logs_delete_after):
+                if helper.check_file_exists(log_file_path) and \
+                        helper.is_file_older_than_x_days(log_file_path, logs_delete_after):
                     os.remove(log_file_path)
 

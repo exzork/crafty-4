@@ -463,7 +463,7 @@ class Helpers:
             except Exception as e:
                 logger.error("Failed to locate existing session.lock with error: {} ".format(e))
                 console.error("Failed to locate existing session.lock with error: {} ".format(e))
-                
+
 
             sys.exit(1)
 
@@ -600,6 +600,20 @@ class Helpers:
             return True
         else:
             return False
+
+    @staticmethod
+    def wtol_path(w_path):
+        l_path = w_path.replace('\\', '/')
+        return l_path
+
+    @staticmethod
+    def ltow_path(l_path):
+        w_path = l_path.replace('/', '\\')
+        return w_path
+
+    @staticmethod
+    def get_os_understandable_path(path):
+        return os.path.normpath(path)
 
     def find_default_password(self):
         default_file = os.path.join(self.root_dir, "default.json")

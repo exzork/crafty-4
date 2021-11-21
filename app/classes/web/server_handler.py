@@ -139,7 +139,7 @@ class ServerHandler(BaseHandler):
                     stop_command = server_data.get('stop_command')
                     new_server_command = str(server_data.get('execution_command')).replace(server_uuid, new_server_uuid)
                     new_executable = server_data.get('executable')
-                    new_server_log_file = str(server_data.get('log_path')).replace(server_uuid, new_server_uuid)
+                    new_server_log_file = str(helper.get_os_understandable_path(server_data.get('log_path'))).replace(server_uuid, new_server_uuid)
                     auto_start = server_data.get('auto_start')
                     auto_start_delay = server_data.get('auto_start_delay')
                     crash_detection = server_data.get('crash_detection')

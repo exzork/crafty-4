@@ -132,7 +132,7 @@ class Backups(Model):
         database = database
 
 class helpers_management:
-       
+
     #************************************************************************************************
     #                                   Host_Stats Methods
     #************************************************************************************************
@@ -165,7 +165,7 @@ class helpers_management:
             Commands.update({
                 Commands.executed: True
             }).where(Commands.command_id == command_id).execute()
-            
+
     #************************************************************************************************
     #                                   Audit_Log Methods
     #************************************************************************************************
@@ -173,7 +173,7 @@ class helpers_management:
     def get_actity_log():
         q = Audit_Log.select()
         return db_helper.return_db_rows(q)
-    
+
     @staticmethod
     def add_to_audit_log(user_id, log_msg, server_id=None, source_ip=None):
         logger.debug("Adding to audit log User:{} - Message: {} ".format(user_id, log_msg))
