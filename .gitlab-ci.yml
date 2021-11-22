@@ -112,6 +112,7 @@ win-dev-build:
     --hidden-import cryptography
     --hidden-import cffi
   artifacts:
+    name: "crafty-win-dev"
     paths:
     - app\
     - .\crafty_commander.exe
@@ -146,6 +147,7 @@ win-prod-build:
     --hidden-import cryptography
     --hidden-import cffi
   artifacts:
+    name: "crafty-win-prod"
     paths:
     - app\
     - .\crafty_commander.exe
