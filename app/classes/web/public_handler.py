@@ -40,6 +40,7 @@ class PublicHandler(BaseHandler):
     def get(self, page=None):
 
         error = bleach.clean(self.get_argument('error', "Invalid Login!"))
+        error_msg = bleach.clean(self.get_argument('error_msg', ''))
 
         page_data = {
             'version': helper.get_version_string(),
@@ -75,6 +76,7 @@ class PublicHandler(BaseHandler):
             template,
             data=page_data,
             translate=self.translator.translate,
+            error_msg = error_msg
         )
 
     def post(self, page=None):
@@ -89,18 +91,18 @@ class PublicHandler(BaseHandler):
 
             # if we don't have a user
             if not user_data:
-                next_page = "/public/error?error=Login Failed"
+                error_msg = "Inncorrect username or password. Please try again."               
                 self.clear_cookie("user")
                 self.clear_cookie("user_data")
-                self.redirect(next_page)
+                self.redirect('/public/login?error_msg={}'.format(error_msg))
                 return
 
             # if they are disabled
             if not user_data.enabled:
-                next_page = "/public/error?error=Login Failed"
+                error_msg = "User account disabled. Please contact your system administrator for more info."  
                 self.clear_cookie("user")
                 self.clear_cookie("user_data")
-                self.redirect(next_page)
+                self.redirect('/public/login?error_msg={}'.format(error_msg))
                 return
 
             login_result = helper.verify_pass(entered_password, user_data.password)
@@ -132,9 +134,10 @@ class PublicHandler(BaseHandler):
             else:
                 self.clear_cookie("user")
                 self.clear_cookie("user_data")
+                error_msg = "Inncorrect username or password. Please try again."
                 # log this failed login attempt
                 self.controller.management.add_to_audit_log(user_data.user_id, "Tried to log in", 0, self.get_remote_ip())
-                self.redirect('/public/error?error=Login Failed')
+                self.redirect('/public/login?error_msg={}'.format(error_msg))
         else:
             self.redirect("/public/login")
 

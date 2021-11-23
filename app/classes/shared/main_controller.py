@@ -223,7 +223,7 @@ class Controller:
         # download the jar
         server_jar_obj.download_jar(server, version, full_jar_path, name)
 
-        new_id = self.register_server(name, server_id, server_dir, backup_path, server_command, server_file, server_log_file, server_stop)
+        new_id = self.register_server(name, server_id, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, port)
         return new_id
 
     @staticmethod
@@ -252,6 +252,16 @@ class Controller:
         helper.ensure_dir_exists(backup_path)
         server_path = helper.get_os_understandable_path(server_path)
         dir_util.copy_tree(server_path, new_server_dir)
+
+        has_properties = False
+        for item in os.listdir(new_server_dir):
+            if str(item) == 'server.properties':
+                has_properties = True
+        if not has_properties:
+            logger.info("No server.properties found on zip file import. Creating one with port selection of {}".format(str(port)))
+            with open(os.path.join(new_server_dir, "server.properties"), "w") as f:
+                f.write("server-port={}".format(port))
+                f.close()
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
@@ -317,7 +327,7 @@ class Controller:
                                       server_log_file, server_stop, port)
         return new_id
 
-    def register_server(self, name: str, server_uuid: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port=25565):
+    def register_server(self, name: str, server_uuid: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port: int):
         # put data in the db
         new_id = self.servers.create_server(name, server_uuid, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, server_port)
 

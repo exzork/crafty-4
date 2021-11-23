@@ -207,6 +207,10 @@ class AjaxHandler(BaseHandler):
             except Exception as e:
                 logger.error("Could not find PID for requested termsig. Full error: {}".format(e))
             return
+        elif page == "eula":
+            server_id = self.get_argument('id', None)
+            svr = self.controller.get_server_obj(server_id)
+            svr.agree_eula(self.controller.users.get_user_lang_by_id(user_data['user_id']))
 
     @tornado.web.authenticated
     def delete(self, page):
