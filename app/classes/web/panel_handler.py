@@ -987,7 +987,10 @@ class PanelHandler(BaseHandler):
 
         else:
             self.set_status(404)
+            page_data = []
+            page_data['lang'] = tornado.locale.get("en_EN")
             self.render(
                 "public/404.html",
                 translate=self.translator.translate,
+                data=page_data
             )
