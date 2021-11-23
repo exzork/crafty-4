@@ -193,7 +193,6 @@ class Server:
         logger.info("Launching Server {} with command {}".format(self.name, self.server_command))
         console.info("Launching Server {} with command {}".format(self.name, self.server_command))
 
-<<<<<<< app/classes/shared/server.py
         if helper.check_file_exists(os.path.join(self.settings['path'], 'eula.txt')):
             f = open(os.path.join(self.settings['path'], 'eula.txt'), 'r')
             line = f.readline().lower()
@@ -222,7 +221,6 @@ class Server:
         f.close()
         
         if helper.is_os_windows():
->>>>>>> app/classes/shared/server.py
             logger.info("Windows Detected")
             creationflags=subprocess.CREATE_NEW_CONSOLE
         else:
