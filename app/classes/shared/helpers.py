@@ -15,6 +15,7 @@ import zipfile
 import pathlib
 import shutil
 from requests import get
+from contextlib import suppress
 
 from datetime import datetime
 from socket import gethostname
@@ -373,9 +374,10 @@ class Helpers:
             logger.critical("Unable to write to {} directory!".format(self.root_dir))
             sys.exit(1)
 
-        # ensure the log directory is there
+        # ensure the log directory is there  
         try:
-            os.makedirs(os.path.join(self.root_dir, 'logs'))
+            with suppress(FileExistsError):
+                os.makedirs(os.path.join(self.root_dir, 'logs'))
         except Exception as e:
             console.error("Failed to make logs directory with error: {} ".format(e))
 
