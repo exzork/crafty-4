@@ -13,7 +13,10 @@
         "error": "Virhe!",
         "start-error": "Palvelin {} ei käynnistynyt virhekoodilla: {}",
         "closedPort": "Olemme havainneet, että portti {} ei ehkä ole auki isäntäverkossa tai palomuuri estää sen. Etäasiakkaan yhteydet palvelimeen voivat olla rajallisia.",
-        "internet": "Olemme havainneet, että Crafty -koneella ei ole Internet -yhteyttä. Asiakasyhteydet palvelimelle voivat olla rajalliset."
+        "internet": "Olemme havainneet, että Crafty -koneella ei ole Internet -yhteyttä. Asiakasyhteydet palvelimelle voivat olla rajalliset.",
+        "eulaTitle": "Hyväksy EULA",
+        "eulaMsg": "Sinun on hyväksyttävä EULA. Kopio Mojang EULA:sta on linkitetty tämän viestin alla.",
+        "eulaAgree": "Oletko samaa mieltä?"
     },
     "404": {
         "contact": "Ota yhteyttä Crafty Control -tukeen Discordin kautta",

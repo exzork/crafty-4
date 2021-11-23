@@ -13,7 +13,10 @@
         "error": "Erreur !",
         "start-error": "Le serveur {} n'a pas pu démarrer avec le code d'erreur : {}",
         "closedPort": "Nous avons détecté que le port {} n'est peut-être pas ouvert sur le réseau hôte ou qu'un pare-feu le bloque. Les connexions des clients distants au serveur peuvent être limitées.",
-        "internet": "Nous avons détecté que la machine exécutant Crafty n'a pas de connexion à Internet. Les connexions client au serveur peuvent être limitées."
+        "internet": "Nous avons détecté que la machine exécutant Crafty n'a pas de connexion à Internet. Les connexions client au serveur peuvent être limitées.",
+        "eulaTitle": "Accepter le EULA",
+        "eulaMsg": "Vous devez accepter le EULA. Une copie du CLUF de Mojang est liée sous ce message.",
+        "eulaAgree": "Êtes-vous d'accord?"
     },
     "404": {
         "contact": "Contacter le Support de Crafty Control via Discord",

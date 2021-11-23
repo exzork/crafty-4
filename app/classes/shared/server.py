@@ -193,6 +193,35 @@ class Server:
         logger.info("Launching Server {} with command {}".format(self.name, self.server_command))
         console.info("Launching Server {} with command {}".format(self.name, self.server_command))
 
+        e_flag = False
+
+        if helper.check_file_exists(os.path.join(self.settings['path'], 'eula.txt')):
+            f = open(os.path.join(self.settings['path'], 'eula.txt'), 'r')
+            line = f.readline().lower()
+            if line == 'eula=true':
+                e_flag = True
+
+            elif line == 'eula = true':
+                e_flag = True
+
+            elif line == 'eula= true':
+                e_flag = True
+
+            elif line == 'eula =true':
+                e_flag = True
+
+            else:
+                e_flag = False
+        else:
+            e_flag = False
+
+        if e_flag == False:
+            websocket_helper.broadcast('send_eula_bootbox', {
+                'id': self.server_id
+                })
+            return False
+        f.close()
+            
         if os.name == "nt":
             logger.info("Windows Detected")
             creationflags=subprocess.CREATE_NEW_CONSOLE
@@ -346,7 +375,7 @@ class Server:
         if self.settings['crash_detection']:
             logger.warning("The server {} has crashed and will be restarted. Restarting server".format(name))
             console.warning("The server {} has crashed and will be restarted. Restarting server".format(name))
-            self.run_threaded_server()
+            self.run_threaded_server('en_EN')
             return True
         else:
             logger.critical(
@@ -419,6 +448,13 @@ class Server:
         logger.info("Removing old crash detection watcher thread")
         console.info("Removing old crash detection watcher thread")
         schedule.clear(self.name)
+
+    def agree_eula(self, user_lang):
+        file = os.path.join(self.server_path, 'eula.txt')
+        f = open(file, 'w')
+        f.write('eula=true')
+        f.close
+        self.run_threaded_server(user_lang)
 
     def is_backup_running(self):
         if self.is_backingup:
