@@ -237,6 +237,57 @@ if (webSocket) {
     });
   }
 
+  if (webSocket) {
+    webSocket.on('send_eula_bootbox', function (server_id) {
+            var x = document.querySelector('.bootbox');
+            if(x){
+            x.remove()}
+            var x = document.querySelector('.modal-backdrop');
+            if(x){
+            x.remove()}
+            bootbox.confirm({
+              title: '{% raw translate("error", "eulaTitle", data['lang']) %}',
+              message: '{% raw translate("error", "eulaMsg", data['lang']) %} <br><br><a href="https://account.mojang.com/documents/minecraft_eula" target="_blank">EULA</a><br><br>{% raw translate("error", "eulaAgree", data['lang']) %}',
+              buttons: {
+        confirm: {
+            label: 'Yes',
+            className: 'btn-info'
+        },
+        cancel: {
+            label: 'No',
+            className: 'btn-secondary'
+        }
+    },
+              callback: function (result) {
+                if(result == true){
+                  eulaAgree(server_id.id)
+                }
+                else {
+                  location.reload()
+                }
+              
+    }
+})
+    });
+  }
+
+    function eulaAgree (server_id, command){
+    <!--  this getCookie function is in base.html-->
+      var token = getCookie("_xsrf");
+
+      $.ajax({
+        type: "POST",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/eula?id='+ server_id,
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+          location.reload();
+
+        }
+      });
+    }
+
 
     function warn(message) {
       var closeEl = document.createElement('span');
