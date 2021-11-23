@@ -103,7 +103,7 @@
 					],
 					null
 				],
-				"blurb": "Developper at work and at home, testing his own code is a pain, so his coding precept is \"Testing is Doubting\"",
+				"blurb": "Developer at work and at home, testing his own code is a pain, so his coding precept is \"Testing is Doubting\"",
 				"pic": "/static/assets/images/credits/silversthorn.png"
 			},
 			{
@@ -156,8 +156,11 @@
 				"loc": null,
 				"tags": [
 					"Staff",
-					"Developer",
-					null
+					[
+						"Developer",
+						"https://gitlab.com/qub3d"
+					],
+					"Wiki"
 				],
 				"blurb": "Hosts Minecraft servers for his weird friends, works for an IoT company as his dayjob. The 's' in IoT stands for 'secure'.",
 				"pic": "/static/assets/images/credits/qub3d.png"
@@ -245,10 +248,6 @@
 			"level": "Crafty Sustainer"
 		},
 		{
-			"name": "zedifus",
-			"level": "Crafty Sustainer"
-		},
-		{
 			"name": "Lino",
 			"level": "Crafty Sustainer"
 		},
@@ -295,7 +294,15 @@
 		{
 			"name": "Row H",
 			"level": "Crafty Supporter"
+		},
+		{
+			"name": "vorboid",
+			"level": "Crafty Supporter"
+		},
+		{
+			"name": "Justman",
+			"level": "Crafty Sustainer"
 		}
 	],
-	"lastUpdate": 1637281075498
+	"lastUpdate": 1637635758855
 }
