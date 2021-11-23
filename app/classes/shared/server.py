@@ -157,9 +157,9 @@ class Server:
 
     def setup_server_run_command(self):
         # configure the server
-        server_exec_path = self.settings['executable']
+        server_exec_path = helper.get_os_understandable_path(self.settings['executable'])
         self.server_command = helper.cmdparse(self.settings['execution_command'])
-        self.server_path = self.settings['path']
+        self.server_path = helper.get_os_understandable_path(self.settings['path'])
 
         # let's do some quick checking to make sure things actually exists
         full_path = os.path.join(self.server_path, server_exec_path)
@@ -193,8 +193,7 @@ class Server:
         logger.info("Launching Server {} with command {}".format(self.name, self.server_command))
         console.info("Launching Server {} with command {}".format(self.name, self.server_command))
 
-        e_flag = False
-
+<<<<<<< app/classes/shared/server.py
         if helper.check_file_exists(os.path.join(self.settings['path'], 'eula.txt')):
             f = open(os.path.join(self.settings['path'], 'eula.txt'), 'r')
             line = f.readline().lower()
@@ -221,8 +220,9 @@ class Server:
                 })
             return False
         f.close()
-            
-        if os.name == "nt":
+        
+        if helper.is_os_windows():
+>>>>>>> app/classes/shared/server.py
             logger.info("Windows Detected")
             creationflags=subprocess.CREATE_NEW_CONSOLE
         else:
@@ -230,7 +230,7 @@ class Server:
             creationflags=None
 
         logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
-        
+
         servers_helper.set_waiting_start(self.server_id, False)
         try:
             self.process = subprocess.Popen(self.server_command, cwd=self.server_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -408,7 +408,7 @@ class Server:
             return self.process.pid
         else:
             return None
-        
+
     def detect_crash(self):
 
         logger.info("Detecting possible crash for server: {} ".format(self.name))
@@ -466,7 +466,7 @@ class Server:
         backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name=f"backup_{self.name}")
         logger.info("Starting Backup Thread for server {}.".format(self.settings['server_name']))
         if self.server_path == None:
-            self.server_path = self.settings['path']
+            self.server_path = helper.get_os_understandable_path(self.settings['path'])
             logger.info("Backup Thread - Local server path not defined. Setting local server path variable.")
         #checks if the backup thread is currently alive for this server
         if not self.is_backingup:
@@ -487,13 +487,13 @@ class Server:
         try:
             backup_filename = "{}/{}".format(self.settings['backup_path'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
             logger.info("Creating backup of server '{}' (ID#{}) at '{}'".format(self.settings['server_name'], self.server_id, backup_filename))
-            shutil.make_archive(backup_filename, 'zip', self.server_path)
+            shutil.make_archive(helper.get_os_understandable_path(backup_filename), 'zip', self.server_path)
             while len(self.list_backups()) > conf["max_backups"] and conf["max_backups"] > 0:
                 backup_list = self.list_backups()
                 oldfile = backup_list[0]
                 oldfile_path = "{}/{}".format(conf['backup_path'], oldfile['path'])
                 logger.info("Removing old backup '{}'".format(oldfile['path']))
-                os.remove(oldfile_path)
+                os.remove(helper.get_os_understandable_path(oldfile_path))
             self.is_backingup = False
             logger.info("Backup of server: {} completed".format(self.name))
             return
@@ -504,9 +504,9 @@ class Server:
 
     def list_backups(self):
         conf = management_helper.get_backup_config(self.server_id)
-        if helper.check_path_exists(self.settings['backup_path']):
-            files = helper.get_human_readable_files_sizes(helper.list_dir_by_date(self.settings['backup_path']))
-            return [{"path": os.path.relpath(f['path'], start=conf['backup_path']), "size": f["size"]} for f in files]
+        if helper.check_path_exists(helper.get_os_understandable_path(self.settings['backup_path'])):
+            files = helper.get_human_readable_files_sizes(helper.list_dir_by_date(helper.get_os_understandable_path(self.settings['backup_path'])))
+            return [{"path": os.path.relpath(f['path'], start=helper.get_os_understandable_path(conf['backup_path'])), "size": f["size"]} for f in files]
         else:
             return []
 
@@ -543,7 +543,7 @@ class Server:
                 'wasRunning': wasStarted,
                 'string': message
             })
-        backup_dir = os.path.join(self.settings['path'], 'crafty_executable_backups')
+        backup_dir = os.path.join(helper.get_os_understandable_path(self.settings['path']), 'crafty_executable_backups')
         #checks if backup directory already exists
         if os.path.isdir(backup_dir):
             backup_executable = os.path.join(backup_dir, 'old_server.jar')
@@ -560,7 +560,7 @@ class Server:
             else:
                 logger.info("No old backups found for server: {}".format(self.name))
 
-        current_executable = os.path.join(self.settings['path'], self.settings['executable'])
+        current_executable = os.path.join(helper.get_os_understandable_path(self.settings['path']), self.settings['executable'])
 
         #copies to backup dir
         helper.copy_files(current_executable, backup_executable)

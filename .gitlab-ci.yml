@@ -112,6 +112,7 @@ win-dev-build:
     --hidden-import cryptography
     --hidden-import cffi
   artifacts:
+    name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
     paths:
     - app\
     - .\crafty_commander.exe
@@ -146,6 +147,7 @@ win-prod-build:
     --hidden-import cryptography
     --hidden-import cffi
   artifacts:
+    name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
     paths:
     - app\
     - .\crafty_commander.exe

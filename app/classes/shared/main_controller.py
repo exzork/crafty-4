@@ -69,7 +69,7 @@ class Controller:
                 continue
 
             # if this server path no longer exists - let's warn and bomb out
-            if not helper.check_path_exists(s['path']):
+            if not helper.check_path_exists(helper.get_os_understandable_path(s['path'])):
                 logger.warning("Unable to find server {} at path {}. Skipping this server".format(s['server_name'],
                                                                                                   s['path']))
 
@@ -77,7 +77,7 @@ class Controller:
                                                                                                    s['path']))
                 continue
 
-            settings_file = os.path.join(s['path'], 'server.properties')
+            settings_file = os.path.join(helper.get_os_understandable_path(s['path']), 'server.properties')
 
             # if the properties file isn't there, let's warn
             if not helper.check_file_exists(settings_file):
@@ -228,6 +228,7 @@ class Controller:
 
     @staticmethod
     def verify_jar_server( server_path: str, server_jar: str):
+        server_path = helper.get_os_understandable_path(server_path)
         path_check = helper.check_path_exists(server_path)
         jar_check = helper.check_file_exists(os.path.join(server_path, server_jar))
         if not path_check or not jar_check:
@@ -236,6 +237,7 @@ class Controller:
 
     @staticmethod
     def verify_zip_server(zip_path: str):
+        zip_path = helper.get_os_understandable_path(zip_path)
         zip_check = helper.check_file_exists(zip_path)
         if not zip_check:
             return False
@@ -248,6 +250,7 @@ class Controller:
 
         helper.ensure_dir_exists(new_server_dir)
         helper.ensure_dir_exists(backup_path)
+        server_path = helper.get_os_understandable_path(server_path)
         dir_util.copy_tree(server_path, new_server_dir)
 
         has_properties = False
@@ -275,6 +278,7 @@ class Controller:
         server_id = helper.create_uuid()
         new_server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
+        zip_path = helper.get_os_understandable_path(zip_path)
 
         if helper.check_file_perms(zip_path):
             helper.ensure_dir_exists(new_server_dir)
@@ -361,7 +365,7 @@ class Controller:
                 if running:
                     self.stop_server(server_id)
                 if files:
-                    shutil.rmtree(self.servers.get_server_data_by_id(server_id)['path'])
+                    shutil.rmtree(helper.get_os_understandable_path(self.servers.get_server_data_by_id(server_id)['path']))
                 # remove the server from the DB
                 self.servers.remove_server(server_id)
 

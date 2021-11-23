@@ -92,7 +92,7 @@ class Stats:
         # print(templ % ("Device", "Total", "Used", "Free", "Use ", "Type","Mount"))
 
         for part in psutil.disk_partitions(all=False):
-            if os.name == 'nt':
+            if helper.is_os_windows():
                 if 'cdrom' in part.opts or part.fstype == '':
                     # skip cd-rom drives with no disk in it; they may raise
                     # ENOENT, pop-up a Windows GUI error for a non-ready
@@ -163,7 +163,7 @@ class Stats:
         }
 
         return ping_data
-    
+
     def get_server_players(self, server_id):
 
         server = servers_helper.get_server_data_by_id(server_id)
@@ -257,7 +257,7 @@ class Stats:
             server_stats_list.append(server_stats)
 
         return server_stats_list
-        
+
     def get_raw_server_stats(self, server_id):
 
         server_stats = {}
