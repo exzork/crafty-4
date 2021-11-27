@@ -219,9 +219,14 @@ class Server:
             e_flag = False
 
         if e_flag == False:
-            websocket_helper.broadcast_user(user_id, 'send_eula_bootbox', {
-                'id': self.server_id
-                })
+            if user_id:
+                websocket_helper.broadcast_user(user_id, 'send_eula_bootbox', {
+                    'id': self.server_id
+                    })
+            else:
+                logger.error("Autostart failed due to EULA being false. Agree not sent due to auto start.")
+                servers_helper.set_waiting_start(self.server_id, False)
+                return False
             return False
         f.close()
         
