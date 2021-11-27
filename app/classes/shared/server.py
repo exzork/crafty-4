@@ -541,15 +541,14 @@ class Server:
             # There are clients
             self.check_update()
             message = '<a data-id="'+str(self.server_id)+'" class=""> UPDATING...</i></a>'
-            page_params = {id: self.server_id}
-            websocket_helper.broadcast_page_params('server_detail', page_params, 'update_button_status', {
+            websocket_helper.broadcast_page('/panel/server_detail', 'update_button_status', {
                 'isUpdating': self.check_update(),
                 'server_id': self.server_id,
                 'wasRunning': wasStarted,
                 'string': message
             })
-        websocket_helper.broadcast_page('dashboard', 'send_start_reload', {
-        })
+            websocket_helper.broadcast_page('/panel/dashboard', 'send_start_reload', {
+            })
         backup_dir = os.path.join(helper.get_os_understandable_path(self.settings['path']), 'crafty_executable_backups')
         #checks if backup directory already exists
         if os.path.isdir(backup_dir):
@@ -585,13 +584,13 @@ class Server:
                     self.check_update()
                     websocket_helper.broadcast('notification', "Executable update finished for " + self.name)
                     time.sleep(3)
-                    websocket_helper.broadcast_page_params('server_detail', page_params, 'update_button_status', {
+                    websocket_helper.broadcast_page('/panel/server_detail', 'update_button_status', {
                         'isUpdating': self.check_update(),
                         'server_id': self.server_id,
                         'wasRunning': wasStarted
                     })
-                websocket_helper.broadcast_page('dashboard', 'send_start_reload', {
-                })
+                    websocket_helper.broadcast_page('/panel/dashboard', 'send_start_reload', {
+                    })
                 websocket_helper.broadcast('notification', "Executable update finished for "+self.name)
 
                 management_helper.add_to_audit_log_raw('Alert', '-1', self.server_id, "Executable update finished for "+self.name, self.settings['server_ip'])
