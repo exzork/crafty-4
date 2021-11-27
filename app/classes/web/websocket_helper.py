@@ -42,15 +42,36 @@ class WebSocketHelper:
         def filter_fn(client):
             return client.page == page
 
-        clients = list(filter(filter_fn, self.clients))
+        self.broadcast_with_fn(filter_fn, event_type, data)
 
-        logger.debug('Sending to {} out of {} clients: {}'.format(len(clients), len(self.clients), json.dumps({'event': event_type, 'data': data})))
+    def broadcast_user(self, user_id: str, event_type: str, data):
+        def filter_fn(client):
+            return client.get_user_id() == user_id
 
-        for client in clients:
-            try:
-                self.send_message(client, event_type, data)
-            except Exception as e:
-                logger.exception('Error catched while sending WebSocket message to {}'.format(client.get_remote_ip()))
+        self.broadcast_with_fn(filter_fn, event_type, data)
+
+    def broadcast_user_page(self, page: str, user_id: str, event_type: str, data):
+        def filter_fn(client):
+            if client.get_user_id() != user_id:
+                return False
+            if client.page != page:
+                return False
+            return True
+
+        self.broadcast_with_fn(filter_fn, event_type, data)
+
+    def broadcast_user_page_params(self, page: str, params: dict, user_id: str, event_type: str, data):
+        def filter_fn(client):
+            if client.get_user_id() != user_id:
+                return False
+            if client.page != page:
+                return False
+            for key, param in params.items():
+                if param != client.page_query_params.get(key, None):
+                    return False
+            return True
+
+        self.broadcast_with_fn(filter_fn, event_type, data)
     
     def broadcast_page_params(self, page: str, params: dict, event_type: str, data):
         def filter_fn(client):
@@ -61,6 +82,9 @@ class WebSocketHelper:
                     return False
             return True
 
+        self.broadcast_with_fn(filter_fn, event_type, data)
+
+    def broadcast_with_fn(self, filter_fn, event_type: str, data):
         clients = list(filter(filter_fn, self.clients))
 
         logger.debug('Sending to {} out of {} clients: {}'.format(len(clients), len(self.clients), json.dumps({'event': event_type, 'data': data})))

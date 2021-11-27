@@ -98,20 +98,17 @@ class TasksManager:
             for c in commands:
 
                 svr = self.controller.get_server_obj(c['server_id']['server_id'])
-                user_lang = c.get('user')['lang']
+                user_id = c.get('user')['user_id']
                 command = c.get('command', None)
 
                 if command == 'start_server':
-                    if user_lang is None:
-                        logger.warning('Could not capture user language from request. Falling back to default language from config file.')
-                        user_lang = helper.get_setting('language')
-                    svr.run_threaded_server(user_lang)
+                    svr.run_threaded_server(user_id)
 
                 elif command == 'stop_server':
                     svr.stop_threaded_server()
 
                 elif command == "restart_server":
-                    svr.restart_threaded_server(user_lang)
+                    svr.restart_threaded_server(user_id)
 
                 elif command == "backup_server":
                     svr.backup_server()
