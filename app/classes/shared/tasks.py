@@ -102,6 +102,9 @@ class TasksManager:
                 command = c.get('command', None)
 
                 if command == 'start_server':
+                    if user_lang is None:
+                        logger.warning('Could not capture user language from request. Falling back to default language from config file.')
+                        user_lang = helper.get_setting('language')
                     svr.run_threaded_server(user_lang)
 
                 elif command == 'stop_server':

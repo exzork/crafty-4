@@ -373,7 +373,7 @@ class Server:
         if self.settings['crash_detection']:
             logger.warning("The server {} has crashed and will be restarted. Restarting server".format(name))
             console.warning("The server {} has crashed and will be restarted. Restarting server".format(name))
-            self.run_threaded_server('en_EN')
+            self.run_threaded_server(helper.get_setting('language'))
             return True
         else:
             logger.critical(
