@@ -145,7 +145,7 @@ class Server:
     def run_scheduled_server(self):
         console.info("Starting server ID: {} - {}".format(self.server_id, self.name))
         logger.info("Starting server {}".format(self.server_id, self.name))
-        self.run_threaded_server()
+        self.run_threaded_server(helper.get_setting('language'))
 
         # remove the scheduled job since it's ran
         return schedule.CancelJob
