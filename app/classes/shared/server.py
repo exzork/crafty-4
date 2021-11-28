@@ -20,6 +20,7 @@ from app.classes.models.servers import Servers, servers_helper
 from app.classes.models.management import management_helper
 from app.classes.web.websocket_helper import websocket_helper
 from app.classes.shared.translation import translation
+from app.classes.models.users import users_helper
 
 logger = logging.getLogger(__name__)
 
@@ -145,14 +146,14 @@ class Server:
     def run_scheduled_server(self):
         console.info("Starting server ID: {} - {}".format(self.server_id, self.name))
         logger.info("Starting server {}".format(self.server_id, self.name))
-        self.run_threaded_server()
+        self.run_threaded_server(None)
 
         # remove the scheduled job since it's ran
         return schedule.CancelJob
 
-    def run_threaded_server(self, lang):
+    def run_threaded_server(self, user_id):
         # start the server
-        self.server_thread = threading.Thread(target=self.start_server, daemon=True, args=(lang,), name='{}_server_thread'.format(self.server_id))
+        self.server_thread = threading.Thread(target=self.start_server, daemon=True, args=(user_id,), name='{}_server_thread'.format(self.server_id))
         self.server_thread.start()
 
     def setup_server_run_command(self):
@@ -177,7 +178,11 @@ class Server:
             console.warning("Unable to write/access {}".format(self.server_path))
             helper.do_exit()
 
-    def start_server(self, user_lang):
+    def start_server(self, user_id):
+        if not user_id:
+            user_lang = helper.get_setting('language')
+        else:
+            user_lang = users_helper.get_user_lang_by_id(user_id)
 
         logger.info("Start command detected. Reloading settings from DB for server {}".format(self.name))
         self.setup_server_run_command()
@@ -214,9 +219,14 @@ class Server:
             e_flag = False
 
         if e_flag == False:
-            websocket_helper.broadcast('send_eula_bootbox', {
-                'id': self.server_id
-                })
+            if user_id:
+                websocket_helper.broadcast_user(user_id, 'send_eula_bootbox', {
+                    'id': self.server_id
+                    })
+            else:
+                logger.error("Autostart failed due to EULA being false. Agree not sent due to auto start.")
+                servers_helper.set_waiting_start(self.server_id, False)
+                return False
             return False
         f.close()
         
@@ -235,23 +245,25 @@ class Server:
         except Exception as ex:
             msg = "Server {} failed to start with error code: {}".format(self.name, ex)
             logger.error(msg)
-            websocket_helper.broadcast('send_start_error', {
-                'error': translation.translate('error', 'start-error', user_lang).format(self.name, ex)
-            })
+            if user_id:
+                websocket_helper.broadcast_user(user_id, 'send_start_error',{
+                    'error': translation.translate('error', 'start-error', user_lang).format(self.name, ex)
+                })
             return False
-        if helper.check_internet():
-            loc_server_port = servers_helper.get_server_stats_by_id(self.server_id)['server_port']
-            if helper.check_port(loc_server_port):
-                websocket_helper.broadcast('send_start_reload', {
+        if user_id:
+            if helper.check_internet():
+                loc_server_port = servers_helper.get_server_stats_by_id(self.server_id)['server_port']
+                if helper.check_port(loc_server_port):
+                    websocket_helper.broadcast_user(user_id, 'send_start_reload', {
+                    })
+                else:
+                    websocket_helper.broadcast_user(user_id, 'send_start_error', {
+                    'error': translation.translate('error', 'closedPort', user_lang).format(loc_server_port)
                 })
             else:
-                websocket_helper.broadcast('send_start_error', {
-                'error': translation.translate('error', 'closedPort', user_lang).format(loc_server_port)
-            })
-        else:
-            websocket_helper.broadcast('send_start_error', {
-                'error': translation.translate('error', 'internet', user_lang)
-            })
+                websocket_helper.broadcast_user(user_id, 'send_start_error', {
+                    'error': translation.translate('error', 'internet', user_lang)
+                })
         servers_helper.set_waiting_start(self.server_id, False)
         out_buf = ServerOutBuf(self.process, self.server_id)
 
@@ -322,15 +334,14 @@ class Server:
 
         self.stats.record_stats()
 
-    def restart_threaded_server(self, lang):
-
+    def restart_threaded_server(self, user_id):
         # if not already running, let's just start
         if not self.check_running():
-            self.run_threaded_server(lang)
+            self.run_threaded_server(user_id)
         else:
             self.stop_threaded_server()
             time.sleep(2)
-            self.run_threaded_server(lang)
+            self.run_threaded_server(user_id)
 
     def cleanup_server_object(self):
         self.start_time = None
@@ -373,7 +384,7 @@ class Server:
         if self.settings['crash_detection']:
             logger.warning("The server {} has crashed and will be restarted. Restarting server".format(name))
             console.warning("The server {} has crashed and will be restarted. Restarting server".format(name))
-            self.run_threaded_server('en_EN')
+            self.run_threaded_server(None)
             return True
         else:
             logger.critical(
@@ -447,12 +458,12 @@ class Server:
         console.info("Removing old crash detection watcher thread")
         schedule.clear(self.name)
 
-    def agree_eula(self, user_lang):
+    def agree_eula(self, user_id):
         file = os.path.join(self.server_path, 'eula.txt')
         f = open(file, 'w')
         f.write('eula=true')
         f.close
-        self.run_threaded_server(user_lang)
+        self.run_threaded_server(user_id)
 
     def is_backup_running(self):
         if self.is_backingup:
@@ -502,11 +513,14 @@ class Server:
 
     def list_backups(self):
         conf = management_helper.get_backup_config(self.server_id)
-        if helper.check_path_exists(helper.get_os_understandable_path(self.settings['backup_path'])):
-            files = helper.get_human_readable_files_sizes(helper.list_dir_by_date(helper.get_os_understandable_path(self.settings['backup_path'])))
-            return [{"path": os.path.relpath(f['path'], start=helper.get_os_understandable_path(conf['backup_path'])), "size": f["size"]} for f in files]
+        if self.settings['backup_path']:
+            if helper.check_path_exists(helper.get_os_understandable_path(self.settings['backup_path'])):
+                files = helper.get_human_readable_files_sizes(helper.list_dir_by_date(helper.get_os_understandable_path(self.settings['backup_path'])))
+                return [{"path": os.path.relpath(f['path'], start=helper.get_os_understandable_path(conf['backup_path'])), "size": f["size"]} for f in files]
+            else:
+                return []
         else:
-            return []
+            return[]
 
     def jar_update(self):
         servers_helper.set_update(self.server_id, True)
@@ -535,11 +549,13 @@ class Server:
             # There are clients
             self.check_update()
             message = '<a data-id="'+str(self.server_id)+'" class=""> UPDATING...</i></a>'
-            websocket_helper.broadcast('update_button_status', {
+            websocket_helper.broadcast_page('/panel/server_detail', 'update_button_status', {
                 'isUpdating': self.check_update(),
                 'server_id': self.server_id,
                 'wasRunning': wasStarted,
                 'string': message
+            })
+            websocket_helper.broadcast_page('/panel/dashboard', 'send_start_reload', {
             })
         backup_dir = os.path.join(helper.get_os_understandable_path(self.settings['path']), 'crafty_executable_backups')
         #checks if backup directory already exists
@@ -568,7 +584,6 @@ class Server:
 
         while servers_helper.get_server_stats_by_id(self.server_id)['updating']:
             if downloaded and not self.is_backingup:
-                print("Backup Status: " + str(self.is_backingup))
                 logger.info("Executable updated successfully. Starting Server")
 
                 servers_helper.set_update(self.server_id, False)
@@ -577,10 +592,12 @@ class Server:
                     self.check_update()
                     websocket_helper.broadcast('notification', "Executable update finished for " + self.name)
                     time.sleep(3)
-                    websocket_helper.broadcast('update_button_status', {
+                    websocket_helper.broadcast_page('/panel/server_detail', 'update_button_status', {
                         'isUpdating': self.check_update(),
                         'server_id': self.server_id,
                         'wasRunning': wasStarted
+                    })
+                    websocket_helper.broadcast_page('/panel/dashboard', 'send_start_reload', {
                     })
                 websocket_helper.broadcast('notification', "Executable update finished for "+self.name)
 

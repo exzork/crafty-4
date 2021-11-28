@@ -366,7 +366,7 @@ dialog.init(function(){
   }
 
     if (webSocket) {
-    webSocket.on('send_start_reload', function (start_error) {
+    webSocket.on('send_start_reload', function () {
     location.reload()
     });
   }

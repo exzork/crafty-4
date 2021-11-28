@@ -1,11 +1,13 @@
 import json
 import logging
 import asyncio
+import sys
 
 from urllib.parse import parse_qsl
 from app.classes.models.users import Users
 from app.classes.shared.helpers import helper
 from app.classes.web.websocket_helper import websocket_helper
+from app.classes.shared.console import console
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +32,14 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
                     self.request.headers.get("X-Forwarded-For") or \
                     self.request.remote_ip
         return remote_ip
+
+    def get_user_id(self):
+        user_data_cookie_raw = self.get_secure_cookie('user_data')
+
+        if user_data_cookie_raw and user_data_cookie_raw.decode('utf-8'):
+            user_data_cookie = user_data_cookie_raw.decode('utf-8')
+            user_id = json.loads(user_data_cookie)['user_id']
+            return user_id
 
     def check_auth(self):
         user_data_cookie_raw = self.get_secure_cookie('user_data')

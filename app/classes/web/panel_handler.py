@@ -647,6 +647,12 @@ class PanelHandler(BaseHandler):
                     return
 
             server_obj = self.controller.servers.get_server_obj(server_id)
+            server_settings = self.controller.get_server_data(server_id)
+            stale_executable = server_obj.executable
+            #Compares old jar name to page data being passed. If they are different we replace the executable name in the
+            if str(stale_executable) != str(executable):
+                execution_command = execution_command.replace(str(stale_executable), str(executable))
+
             server_obj.server_name = server_name
             server_obj.path = server_path
             server_obj.log_path = log_path
@@ -693,7 +699,6 @@ class PanelHandler(BaseHandler):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
 
-            if backup_path is not None:
                 if enabled == '0':
                     #TODO Use Controller method
                     server_obj = self.controller.servers.get_server_obj(server_id)

@@ -127,13 +127,17 @@
      if (webSocket) {
     webSocket.on('update_button_status', function (updateButton) {
       if (updateButton.isUpdating){
+        if(updateButton.server_id == '{{ data['server_stats']['server_id']['server_id'] }}') {
         console.log(updateButton.isUpdating)
         document.getElementById('control_buttons').innerHTML = '<button onclick="" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "updating", data['lang']) }}</button><button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data['lang']) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data['lang']) }}</button>';
+        }
       }
       else{
+        if (updateButton.server_id == '{{ data['server_stats']['server_id']['server_id'] }}') {
         window.location.reload()
         document.getElementById('update_control_buttons').innerHTML = '<button onclick="send_command(server_id, "start_server");" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "start", data['lang']) }}</button><button onclick="send_command(server_id, "restart_server");" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data['lang']) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data['lang']) }}</button>';
-        }
+        }  
+      }
     });
   }
     // Convert running to lower case (example: 'True' converts to 'true') and
