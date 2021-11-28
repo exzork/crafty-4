@@ -654,16 +654,19 @@ class PanelHandler(BaseHandler):
                 execution_command = execution_command.replace(str(stale_executable), str(executable))
 
             server_obj.server_name = server_name
-            server_obj.path = server_path
-            server_obj.log_path = log_path
-            server_obj.executable = executable
-            server_obj.execution_command = execution_command
-            server_obj.stop_command = stop_command
+            if exec_user['superuser']:
+                if helper.validate_traversal(helper.get_servers_root_dir(), server_path):
+                    server_obj.path = server_path
+                    server_obj.log_path = log_path
+                if helper.validate_traversal(helper.get_servers_root_dir(), executable):
+                    server_obj.executable = executable
+                server_obj.execution_command = execution_command
+                server_obj.stop_command = stop_command
+                server_obj.server_ip = server_ip
+                server_obj.server_port = server_port
+                server_obj.executable_update_url = executable_update_url
             server_obj.auto_start_delay = auto_start_delay
-            server_obj.server_ip = server_ip
-            server_obj.server_port = server_port
             server_obj.auto_start = auto_start
-            server_obj.executable_update_url = executable_update_url
             server_obj.crash_detection = crash_detection
             server_obj.logs_delete_after = logs_delete_after
             self.controller.servers.update_server(server_obj)

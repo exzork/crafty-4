@@ -82,6 +82,9 @@ class Helpers:
         logger.error("{} does not exist".format(file))
         return True
 
+    def get_servers_root_dir(self):
+        return self.servers_dir
+
     @staticmethod
     def check_internet():
         try:
@@ -273,6 +276,19 @@ class Helpers:
             line = re.sub(old, new, line, flags=re.IGNORECASE)
 
         return line
+
+
+    def validate_traversal(self, base_path, filename):
+        logger.debug("Validating traversal (\"{x}\", \"{y}\")".format(x=base_path, y=filename))
+        base = pathlib.Path(base_path).resolve()
+        file = pathlib.Path(filename)
+        fileabs = base.joinpath(file).resolve()
+        cp = pathlib.Path(os.path.commonpath([base, fileabs]))
+        if base == cp:
+            return fileabs
+        else:
+            raise ValueError("Path traversal detected")
+
 
     def tail_file(self, file_name, number_lines=20):
         if not self.check_file_exists(file_name):
