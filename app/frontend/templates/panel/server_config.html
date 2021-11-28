@@ -82,7 +82,7 @@
                       {% if data['super_user'] %}
                         <div class="form-group">
                         <label for="executable_update_url">{{ translate('serverConfig', 'exeUpdateURL', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'exeUpdateURLDesc', data['lang']) }}</small> </label>
-                        <input type="text" class="form-control" name="executable_update_url" id="executable_update_url" value="{{ data['server_stats']['server_id']['executable_update_url']  }}" placeholder="{{ translate('serverConfig', 'exeUpdateURL', data['lang']) }}" required>
+                        <input type="text" class="form-control" name="executable_update_url" id="executable_update_url" value="{{ data['server_stats']['server_id']['executable_update_url']  }}" placeholder="{{ translate('serverConfig', 'exeUpdateURL', data['lang']) }}">
                       </div>
 
                       <div class="form-group">
