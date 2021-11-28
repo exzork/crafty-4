@@ -513,11 +513,14 @@ class Server:
 
     def list_backups(self):
         conf = management_helper.get_backup_config(self.server_id)
-        if helper.check_path_exists(helper.get_os_understandable_path(self.settings['backup_path'])):
-            files = helper.get_human_readable_files_sizes(helper.list_dir_by_date(helper.get_os_understandable_path(self.settings['backup_path'])))
-            return [{"path": os.path.relpath(f['path'], start=helper.get_os_understandable_path(conf['backup_path'])), "size": f["size"]} for f in files]
+        if self.settings['backup_path']:
+            if helper.check_path_exists(helper.get_os_understandable_path(self.settings['backup_path'])):
+                files = helper.get_human_readable_files_sizes(helper.list_dir_by_date(helper.get_os_understandable_path(self.settings['backup_path'])))
+                return [{"path": os.path.relpath(f['path'], start=helper.get_os_understandable_path(conf['backup_path'])), "size": f["size"]} for f in files]
+            else:
+                return []
         else:
-            return []
+            return[]
 
     def jar_update(self):
         servers_helper.set_update(self.server_id, True)
