@@ -43,57 +43,57 @@
 
                       <div class="form-group">
                         <label for="server_name">{{ translate('serverConfig', 'serverName', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverNameDesc', data['lang']) }}</small> </label>
-                        <input type="text" class="form-control" name="server_name" id="server_name" value="{{ data['server_stats']['server_id']['server_name']  }}" placeholder="{{ translate('serverConfig', 'serverName', data['lang']) }}" >
+                        <input type="text" class="form-control" name="server_name" id="server_name" value="{{ data['server_stats']['server_id']['server_name']  }}" placeholder="{{ translate('serverConfig', 'serverName', data['lang']) }}" required>
                       </div>
 
                       <div class="form-group">
                         <label for="server_path">{{ translate('serverConfig', 'serverPath', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPathDesc', data['lang']) }}</small> </label>
-                        <input type="text" class="form-control" name="server_path" id="server_path" value="{{ data['server_stats']['server_id']['path']  }}" placeholder="{{ translate('serverConfig', 'serverPath', data['lang']) }}" >
+                        <input type="text" class="form-control" name="server_path" id="server_path" value="{{ data['server_stats']['server_id']['path']  }}" placeholder="{{ translate('serverConfig', 'serverPath', data['lang']) }}" required>
                       </div>
 
                       <div class="form-group">
                         <label for="log_path">{{ translate('serverConfig', 'serverLogLocation', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverLogLocationDesc', data['lang']) }}</small> </label>
-                        <input type="text" class="form-control" name="log_path" id="log_path" value="{{ data['server_stats']['server_id']['log_path']  }}" placeholder="{{ translate('serverConfig', 'serverLogLocation', data['lang']) }}" >
+                        <input type="text" class="form-control" name="log_path" id="log_path" value="{{ data['server_stats']['server_id']['log_path']  }}" placeholder="{{ translate('serverConfig', 'serverLogLocation', data['lang']) }}" required>
                       </div>
 
                       <div class="form-group">
                         <label for="executable">{{ translate('serverConfig', 'serverExecutable', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverExecutableDesc', data['lang']) }}</small> </label>
-                        <input type="text" class="form-control" name="executable" id="executable" value="{{ data['server_stats']['server_id']['executable']  }}" placeholder="{{ translate('serverConfig', 'serverExecutable', data['lang']) }}" >
+                        <input type="text" class="form-control" name="executable" id="executable" value="{{ data['server_stats']['server_id']['executable']  }}" placeholder="{{ translate('serverConfig', 'serverExecutable', data['lang']) }}" required>
                       </div>
 
                       <div class="form-group">
                         <label for="execution_command">{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverExecutionCommandDesc', data['lang']) }}</small> </label>
-                        <input type="text" class="form-control" name="execution_command" id="execution_command" value="{{ data['server_stats']['server_id']['execution_command']  }}" placeholder="{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}" >
+                        <input type="text" class="form-control" name="execution_command" id="execution_command" value="{{ data['server_stats']['server_id']['execution_command']  }}" placeholder="{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}" required>
                       </div>
 
                       <div class="form-group">
                         <label for="stop_command">{{ translate('serverConfig', 'serverStopCommand', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverStopCommandDesc', data['lang']) }}</small> </label>
-                        <input type="text" class="form-control" name="stop_command" id="stop_command" value="{{ data['server_stats']['server_id']['stop_command']  }}" placeholder="{{ translate('serverConfig', 'serverStopCommand', data['lang']) }}" >
+                        <input type="text" class="form-control" name="stop_command" id="stop_command" value="{{ data['server_stats']['server_id']['stop_command']  }}" placeholder="{{ translate('serverConfig', 'serverStopCommand', data['lang']) }}" required>
                       </div>
 
                       <div class="form-group">
                         <label for="auto_start_delay">{{ translate('serverConfig', 'serverAutostartDelay', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverAutostartDelayDesc', data['lang']) }}</small> </label>
-                        <input type="number" class="form-control" name="auto_start_delay" id="auto_start_delay" value="{{ data['server_stats']['server_id']['auto_start_delay']  }}" step="1" max="999" min="10" >
+                        <input type="number" class="form-control" name="auto_start_delay" id="auto_start_delay" value="{{ data['server_stats']['server_id']['auto_start_delay']  }}" step="1" max="999" min="10" required>
                       </div>
 
                         <div class="form-group">
                         <label for="executable_update_url">{{ translate('serverConfig', 'exeUpdateURL', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'exeUpdateURLDesc', data['lang']) }}</small> </label>
-                        <input type="text" class="form-control" name="executable_update_url" id="executable_update_url" value="{{ data['server_stats']['server_id']['executable_update_url']  }}" placeholder="{{ translate('serverConfig', 'exeUpdateURL', data['lang']) }}" >
+                        <input type="text" class="form-control" name="executable_update_url" id="executable_update_url" value="{{ data['server_stats']['server_id']['executable_update_url']  }}" placeholder="{{ translate('serverConfig', 'exeUpdateURL', data['lang']) }}" required>
                       </div>
 
                       <div class="form-group">
                         <label for="server_ip">{{ translate('serverConfig', 'serverIP', data['lang']) }} <small class="text-muted ml-1">- {{ translate('serverConfig', 'serverIPDesc', data['lang']) }}</small> </label>
-                        <input type="text" class="form-control" name="server_ip" id="server_ip" value="{{ data['server_stats']['server_id']['server_ip']  }}">
+                        <input type="text" class="form-control" name="server_ip" id="server_ip" value="{{ data['server_stats']['server_id']['server_ip']  }}" required>
                       </div>
 
                       <div class="form-group">
                         <label for="server_port">{{ translate('serverConfig', 'serverPort', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPortDesc', data['lang']) }} </small> </label>
-                        <input type="number" class="form-control" name="server_port" id="server_port" value="{{ data['server_stats']['server_id']['server_port']  }}" step="1" max="65566" min="1" >
+                        <input type="number" class="form-control" name="server_port" id="server_port" value="{{ data['server_stats']['server_id']['server_port']  }}" step="1" max="65566" min="1" required>
                       </div>
 
                       <div class="form-group">
                         <label for="logs_delete_after">{{ translate('serverConfig', 'removeOldLogsAfter', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverConfig', 'removeOldLogsAfterDesc', data['lang']) }}</small> </label>
-                        <input type="number" class="form-control" name="logs_delete_after" id="logs_delete_after" value="{{ data['server_stats']['server_id']['logs_delete_after']  }}" step="1" max="365" min="0" >
+                        <input type="number" class="form-control" name="logs_delete_after" id="logs_delete_after" value="{{ data['server_stats']['server_id']['logs_delete_after']  }}" step="1" max="365" min="0" required>
                       </div>
 
                       <div class="form-check-flat">

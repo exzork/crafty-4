@@ -185,6 +185,7 @@ class Controller:
 
     def stop_server(self, server_id):
         # issue the stop command
+        svr_obj = self.get_server_obj(server_id)
         svr_obj.stop_threaded_server()
 
     def create_jar_server(self, server: str, version: str, name: str, min_mem: int, max_mem: int, port: int):
