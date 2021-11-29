@@ -340,9 +340,8 @@ class Helpers:
             return False
 
     def checkRoot(self):
-        print(self.is_os_windows())
         if self.is_os_windows():
-            if ctypes.windll.shell32.IsUserAnAdmin() == 0:
+            if ctypes.windll.shell32.IsUserAnAdmin() == 1:
                 return True
             else:
                 return False
