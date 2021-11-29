@@ -16,6 +16,7 @@ import pathlib
 import shutil
 from requests import get
 from contextlib import suppress
+import ctypes
 
 from datetime import datetime
 from socket import gethostname
@@ -339,10 +340,16 @@ class Helpers:
             return False
 
     def checkRoot(self):
-        if os.geteuid() == 0:
-            return True
+        if helper.is_os_windows():
+            if ctypes.windll.shell32.IsUserAnAdmin() == 0:
+                return True
+            else:
+                return False
         else:
-            return False
+            if os.geteuid() == 0:
+                return True
+            else:
+                return False
 
     def unzipFile(self, zip_path):
         new_dir_list = zip_path.split('/')
