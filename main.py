@@ -1,3 +1,4 @@
+from cmd import Cmd
 import os
 import sys
 import json
@@ -78,13 +79,21 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    if helper.check_file_exists('/.dockerenv'):
+        console.cyan("Docker environment detected!")
+    else:
+        if helper.checkRoot():
+            console.critical("Root detected. Root/Admin access denied. Run Crafty again with non-elevated permissions.")
+            time.sleep(5)
+            console.critical("Crafty shutting down. Root/Admin access denied.")
+            sys.exit(0)
     helper.ensure_logging_setup()
 
     setup_logging(debug=args.verbose)
 
     # setting up the logger object
     logger = logging.getLogger(__name__)
-    print("Logging set to: {} ".format(logger.level))
+    console.cyan("Logging set to: {} ".format(logger.level))
 
     # print our pretty start message
     do_intro()

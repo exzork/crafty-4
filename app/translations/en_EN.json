@@ -16,7 +16,8 @@
         "internet": "We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited.",
         "eulaTitle": "Agree To EULA",
         "eulaMsg": "You must agree to the EULA. A copy of the Mojang EULA is linked under this message.",
-        "eulaAgree": "Do you agree?"
+        "eulaAgree": "Do you agree?",
+        "noJava": "Server {} failed to start with error code: We have detected Java is not installed. Please install java then start the server."
     },
     "404": {
         "contact": "Contact Crafty Control Support via Discord",
@@ -178,7 +179,10 @@
         "destroyBackup": "Destroy backup \" + file_to_del + \"?",
         "confirmDelete": "Do you want to delete this backup? This cannot be undone.",
         "confirm": "Confirm",
-        "options": "Options"
+        "options": "Options",
+        "restoring": "Restoring Backup. This may take a while. Please be patient.",
+        "restore": "Restore",
+        "confirmRestore": "Are you sure you want to restore from this backup. All current server files will changed to backup state and will be unrecoverable."
     },
     "serverFiles": {
         "noscript": "The file manager does not work without JavaScript",
@@ -247,7 +251,7 @@
         "yesDelete": "Yes, delete",
         "noDelete": "No, go back",
         "deleteFilesQuestion": "Delete server files from machine?",
-        "deleteFilesQuestionMessage": "Would you like Crafty to delete all server files from the host machine?",
+        "deleteFilesQuestionMessage": "Would you like Crafty to delete all server files from the host machine? <br><br><strong>This includes server backups.</strong>",
         "yesDeleteFiles": "Yes, delete files",
         "noDeleteFiles": "No, just remove from panel",
         "sendingDelete": "Deleting Server",

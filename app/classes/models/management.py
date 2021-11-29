@@ -228,6 +228,10 @@ class helpers_management:
         Schedules.update(updates).where(Schedules.schedule_id == schedule_id).execute()
 
     @staticmethod
+    def delete_scheduled_task_by_server(server_id):
+         Schedules.delete().where(Schedules.server_id == int(server_id)).execute()
+
+    @staticmethod
     def get_scheduled_task(schedule_id):
         return model_to_dict(Schedules.get(Schedules.schedule_id == schedule_id)).execute()
 

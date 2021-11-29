@@ -121,14 +121,23 @@ class PanelHandler(BaseHandler):
 
         elif page == 'dashboard':
             if exec_user['superuser'] == 1:
-                page_data['servers'] = self.controller.servers.get_all_servers_stats()
+                try:
+                    page_data['servers'] = self.controller.servers.get_all_servers_stats()
+                except IndexError:
+                    self.controller.stats.record_stats()
+                    page_data['servers'] = self.controller.servers.get_all_servers_stats()
+
                 for data in page_data['servers']:
                     try:
                         data['stats']['waiting_start'] = self.controller.servers.get_waiting_start(int(data['stats']['server_id']['server_id']))
                     except:
                         data['stats']['waiting_start'] = False
             else:
-                user_auth = self.controller.servers.get_authorized_servers_stats(exec_user_id)
+                try:
+                    user_auth = self.controller.servers.get_authorized_servers_stats(exec_user_id)
+                except IndexError:
+                    self.controller.stats.record_stats()
+                    user_auth = self.controller.servers.get_authorized_servers_stats(exec_user_id)
                 logger.debug("ASFR: {}".format(user_auth))
                 page_data['servers'] = user_auth
                 page_data['server_stats']['running'] = 0
@@ -208,9 +217,12 @@ class PanelHandler(BaseHandler):
             if subpage == "backup":
                 server_info = self.controller.servers.get_server_data_by_id(server_id)
                 page_data['backup_config'] = self.controller.management.get_backup_config(server_id)
-                page_data['backup_list'] = server.list_backups()
+                self.controller.refresh_server_settings(server_id)
+                try:
+                    page_data['backup_list'] = server.list_backups()
+                except:
+                    page_data['backup_list'] = []
                 page_data['backup_path'] = helper.wtol_path(server_info["backup_path"])
-                print(page_data['backup_path'])
 
             def get_banned_players_html():
                 banned_players = self.controller.servers.get_banned_players(server_id)
@@ -416,8 +428,6 @@ class PanelHandler(BaseHandler):
                 return
             elif Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
                 if str(user_id) != str(exec_user_id):
-                    print("USER ID ", user_id)
-                    print("EXEC ID ", exec_user_id)
                     self.redirect("/panel/error?error=Unauthorized access: not a user editor")
                     return
 

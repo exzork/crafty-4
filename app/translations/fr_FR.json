@@ -16,7 +16,8 @@
         "internet": "Nous avons détecté que la machine exécutant Crafty n'a pas de connexion à Internet. Les connexions client au serveur peuvent être limitées.",
         "eulaTitle": "Accepter le EULA",
         "eulaMsg": "Vous devez accepter le EULA. Une copie du CLUF de Mojang est liée sous ce message.",
-        "eulaAgree": "Êtes-vous d'accord?"
+        "eulaAgree": "Êtes-vous d'accord?",
+        "noJava": "Server {} failed to start with error code: We have detected Java is not installed. Please install java then start the server."
     },
     "404": {
         "contact": "Contacter le Support de Crafty Control via Discord",
@@ -178,7 +179,10 @@
         "destroyBackup": "Supprimer la sauvegarde \" + file_to_del + \" ?",
         "confirmDelete": "Es-tu sûr de vouloir supprimer cette sauvegarde ? Tu ne pourras pas revenir en arrière.",
         "confirm": "Confirmer",
-        "options": "Options"
+        "options": "Options",
+        "restoring": "Restauration de la sauvegarde. Cela peut prendre un peu de temps. S'il vous plaît soyez patient.",
+        "restore": "Restaurer",
+        "restoreConfirm": "Êtes-vous sûr de vouloir restaurer à partir de cette sauvegarde. Tous les fichiers du serveur actuel passeront à l'état de sauvegarde et seront irrécupérables."
     },
     "serverFiles": {
         "noscript": "Le gestionnaire de fichiers ne fonctionne pas sans JavaScript",
@@ -247,7 +251,7 @@
         "yesDelete": "Oui, Supprimer",
         "noDelete": "Non, revenir en arrière",
         "deleteFilesQuestion": "Supprimer les fichiers de la machine ?",
-        "deleteFilesQuestionMessage": "Veux-tu que Crafty supprime tous les fichiers du serveur de la machine hôte ?",
+        "deleteFilesQuestionMessage": "Veux-tu que Crafty supprime tous les fichiers du serveur de la machine hôte? <br><br><strong>Cela inclut les sauvegardes du serveur.</strong>",
         "yesDeleteFiles": "Oui, Supprimer les fichier",
         "noDeleteFiles": "Non, Supprimer uniquement du tabelau de bord",
         "sendingDelete": "Suppression du Serveur",

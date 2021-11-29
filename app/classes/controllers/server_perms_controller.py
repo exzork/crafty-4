@@ -51,6 +51,17 @@ class Server_Perms_Controller:
     def add_role_server(server_id, role_id, rs_permissions="00000000"):
         return server_permissions.add_role_server(server_id, role_id, rs_permissions)
 
+    @staticmethod
+    def get_server_roles(server_id):
+        return server_permissions.get_server_roles(server_id)
+
+    @staticmethod
+    def backup_role_swap(old_server_id, new_server_id):
+        role_list = server_permissions.get_server_roles(old_server_id)
+        for role in role_list:
+            server_permissions.add_role_server(new_server_id, role.role_id, server_permissions.get_permissions_mask(int(role.role_id), int(old_server_id)))
+            #server_permissions.add_role_server(new_server_id, role.role_id, '00001000')
+
     #************************************************************************************************
     #                                   Servers Permissions Methods
     #************************************************************************************************

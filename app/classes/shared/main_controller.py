@@ -1,13 +1,17 @@
 import os
+import pathlib
 import time
 import logging
 import sys
+from peewee import DoesNotExist
+import schedule
 import yaml
 import asyncio
 import shutil
 import tempfile
 import zipfile
 from distutils import dir_util
+from app.classes.models.management import helpers_management
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
@@ -285,34 +289,55 @@ class Controller:
             helper.ensure_dir_exists(new_server_dir)
             helper.ensure_dir_exists(backup_path)
             tempDir = tempfile.mkdtemp()
+            has_properties = False
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                #extracts archive to temp directory
                 zip_ref.extractall(tempDir)
-                for i in range(len(zip_ref.filelist)):
-                    if len(zip_ref.filelist) > 1 or not zip_ref.filelist[i].filename.endswith('/'):
-                        test = zip_ref.filelist[i].filename
-                        break
-                path_list = test.split('/')
-                root_path = path_list[0]
-                if len(path_list) > 1:
-                    for i in range(len(path_list)-2):
-                        root_path = os.path.join(root_path, path_list[i+1])
+                if len(zip_ref.filelist) > 1:
+                    for item in os.listdir(tempDir):
+                        if str(item) == 'server.properties':
+                            has_properties = True
+                        try:
+                            shutil.move(os.path.join(tempDir, item), os.path.join(new_server_dir, item))
+                        except Exception as ex:
+                            logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
+                    if not has_properties:
+                        logger.info("No server.properties found on zip file import. Creating one with port selection of {}".format(str(port)))
+                        with open(os.path.join(new_server_dir, "server.properties"), "w") as f:
+                            f.write("server-port={}".format(port))
+                            f.close()
+                        zip_ref.close()
+                else:
 
-                full_root_path = os.path.join(tempDir, root_path)
+                    #iterates list of files
+                    for i in range(len(zip_ref.filelist)):
+                        #checks if the list of files inside of a dir is greater than 1 or if it's not a directory.
+                        if len(zip_ref.filelist) > 1 or not zip_ref.filelist[i].is_dir():
+                            #sets local variable to be that filename and we break out of the loop since we found our root dir.
+                            test = zip_ref.filelist[i-1].filename
+                            break
+                    path_list = test.split('/')
+                    root_path = path_list[0]
+                    if len(path_list) > 1:
+                        for i in range(len(path_list)-2):
+                            root_path = os.path.join(root_path, path_list[i+1])
 
-                has_properties = False
-                for item in os.listdir(full_root_path):
-                    if str(item) == 'server.properties':
-                        has_properties = True
-                    try:
-                        shutil.move(os.path.join(full_root_path, item), os.path.join(new_server_dir, item))
-                    except Exception as ex:
-                        logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
-                if not has_properties:
-                    logger.info("No server.properties found on zip file import. Creating one with port selection of {}".format(str(port)))
-                    with open(os.path.join(new_server_dir, "server.properties"), "w") as f:
-                        f.write("server-port={}".format(port))
-                        f.close()
-                zip_ref.close()
+                    full_root_path = os.path.join(tempDir, root_path)
+
+                    
+                    for item in os.listdir(full_root_path):
+                        if str(item) == 'server.properties':
+                            has_properties = True
+                        try:
+                            shutil.move(os.path.join(full_root_path, item), os.path.join(new_server_dir, item))
+                        except Exception as ex:
+                            logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
+                    if not has_properties:
+                        logger.info("No server.properties found on zip file import. Creating one with port selection of {}".format(str(port)))
+                        with open(os.path.join(new_server_dir, "server.properties"), "w") as f:
+                            f.write("server-port={}".format(port))
+                            f.close()
+                    zip_ref.close()
         else:
             return "false"
 
@@ -328,20 +353,30 @@ class Controller:
                                       server_log_file, server_stop, port)
         return new_id
 
+    def rename_backup_dir(self, old_server_id, new_server_id, new_uuid):
+        server_data = self.servers.get_server_data_by_id(old_server_id)
+        old_bu_path = server_data['backup_path']
+        Server_Perms_Controller.backup_role_swap(old_server_id, new_server_id)
+        backup_path = helper.validate_traversal(helper.backup_path, old_bu_path)
+        backup_path_components = list(backup_path.parts)
+        backup_path_components[-1] = new_uuid
+        new_bu_path = pathlib.PurePath(os.path.join(*backup_path_components))
+        backup_path.rename(new_bu_path)
+
     def register_server(self, name: str, server_uuid: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port: int):
         # put data in the db
         new_id = self.servers.create_server(name, server_uuid, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, server_port)
+        if not helper.check_file_exists(os.path.join(server_dir, "crafty_managed.txt")):
+            try:
+                # place a file in the dir saying it's owned by crafty
+                with open(os.path.join(server_dir, "crafty_managed.txt"), 'w') as f:
+                    f.write(
+                        "The server is managed by Crafty Controller.\n Leave this directory/files alone please")
+                    f.close()
 
-        try:
-            # place a file in the dir saying it's owned by crafty
-            with open(os.path.join(server_dir, "crafty_managed.txt"), 'w') as f:
-                f.write(
-                    "The server is managed by Crafty Controller.\n Leave this directory/files alone please")
-                f.close()
-
-        except Exception as e:
-            logger.error("Unable to create required server files due to :{}".format(e))
-            return False
+            except Exception as e:
+                logger.error("Unable to create required server files due to :{}".format(e))
+                return False
 
         # let's re-init all servers
         self.init_all_servers()
@@ -356,6 +391,7 @@ class Controller:
             if int(s['server_id']) == int(server_id):
                 server_data = self.get_server_data(server_id)
                 server_name = server_data['server_name']
+                backup_dir = self.servers.get_server_data_by_id(server_id)['backup_path']
 
                 logger.info("Deleting Server: ID {} | Name: {} ".format(server_id, server_name))
                 console.info("Deleting Server: ID {} | Name: {} ".format(server_id, server_name))
@@ -366,7 +402,19 @@ class Controller:
                 if running:
                     self.stop_server(server_id)
                 if files:
-                    shutil.rmtree(helper.get_os_understandable_path(self.servers.get_server_data_by_id(server_id)['path']))
+                    try:
+                        shutil.rmtree(helper.get_os_understandable_path(self.servers.get_server_data_by_id(server_id)['path']))
+                    except Exception as e:
+                        logger.error("Unable to delete server files for server with ID: {} with error logged: {}".format(server_id, e))
+                    if helper.check_path_exists(self.servers.get_server_data_by_id(server_id)['backup_path']):
+                        shutil.rmtree(helper.get_os_understandable_path(self.servers.get_server_data_by_id(server_id)['backup_path']))
+
+                
+                #Cleanup scheduled tasks
+                try:
+                    helpers_management.delete_scheduled_task_by_server(server_id)
+                except DoesNotExist:
+                    logger.info("No scheduled jobs exist. Continuing.")
                 # remove the server from the DB
                 self.servers.remove_server(server_id)
 
@@ -374,3 +422,4 @@ class Controller:
                 self.servers_list.pop(counter)
 
             counter += 1
+        return

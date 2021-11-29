@@ -236,23 +236,32 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
      function deleteServer (){
       path = "{{data['server_stats']['server_id']['path']}}";
       name = "{{data['server_stats']['server_id']['server_name']}}";
-      bootbox.confirm({
+      bootbox.dialog({
           size: "",
           title: "{% raw translate('serverConfig', 'deleteFilesQuestion', data['lang']) %}",
           closeButton: false,
           message: "{% raw translate('serverConfig', 'deleteFilesQuestionMessage', data['lang']) %}",
           buttons: {
-            confirm: {
+            files: {
               label: "{{ translate('serverConfig', 'yesDeleteFiles', data['lang']) }}",
               className: 'btn-danger',
-            },
-            cancel: {
-              label: "{{ translate('serverConfig', 'noDeleteFiles', data['lang']) }}",
-              className: 'btn-link',
+              callback: function(){
+                deleteServerFilesE();
+                setTimeout(function(){ window.location = '/panel/dashboard'; }, 5000);
+                bootbox.dialog({
+                backdrop: true,
+                title: '{% raw translate("serverConfig", "sendingDelete", data['lang']) %}',
+                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDeleteFiles", data['lang']) %} </div>',
+                closeButton: false
+              })
+
+             return;
             }
-          },
-          callback: function(result) {
-            if (!result){
+            },
+            noFiles: {
+              label: "{{ translate('serverConfig', 'noDeleteFiles', data['lang']) }}",
+              className: 'btn-outline-danger',
+              callback: function(){
                 deleteServerE()
                 setTimeout(function(){ window.location = '/panel/dashboard'; }, 5000);
                 bootbox.dialog({
@@ -261,18 +270,18 @@ let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
                 message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDelete", data['lang']) %} </div>',
                 closeButton: false
     })
-
-             return;}
-             else{
-                deleteServerFilesE();
-                                 setTimeout(function(){ window.location = '/panel/dashboard'; }, 5000);
-                bootbox.dialog({
-                backdrop: true,
-                title: '{% raw translate("serverConfig", "sendingDelete", data['lang']) %}',
-                message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("serverConfig", "bePatientDeleteFiles", data['lang']) %} </div>',
-                closeButton: false
-    })
-             }
+    return;
+            }
+            },
+            cancel: {
+              label: "{{ translate('serverConfig', 'cancel', data['lang']) }}",
+              className: 'btn-secondary',
+              callback: function(){
+                  return;
+              }
+          }
+          },
+          callback: function(result) {
 
           }
       });

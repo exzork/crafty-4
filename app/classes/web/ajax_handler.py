@@ -212,6 +212,21 @@ class AjaxHandler(BaseHandler):
             svr = self.controller.get_server_obj(server_id)
             svr.agree_eula(user_data['user_id'])
 
+        elif page == "restore_backup":
+            server_id = bleach.clean(self.get_argument('id', None))
+            zip_name = bleach.clean(self.get_argument('zip_file', None))
+            svr_obj = self.controller.servers.get_server_obj(server_id)
+            server_data = self.controller.servers.get_server_data_by_id(server_id)
+            backup_path = svr_obj.backup_path
+            if helper.validate_traversal(backup_path, zip_name):
+                new_server = self.controller.import_zip_server(svr_obj.server_name, os.path.join(backup_path, zip_name), server_data['executable'], '1', '2', server_data['server_port'])
+                new_server_id = new_server
+                new_server = self.controller.get_server_data(new_server)
+                self.controller.rename_backup_dir(server_id, new_server_id, new_server['server_uuid'])
+                self.controller.remove_server(server_id, True)
+                self.redirect('/panel/dashboard')
+                
+
     @tornado.web.authenticated
     def delete(self, page):
         if page == "del_file":
