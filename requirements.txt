@@ -1,7 +1,7 @@
+cryptography~=3.4
 argon2-cffi~=20.1
 bleach~=3.1
 colorama~=0.4
-cryptography~=3.4
 peewee~=3.13
 pexpect~=4.8
 psutil~=5.7
@@ -11,3 +11,4 @@ requests~=2.26
 schedule~=1.1.0
 termcolor~=1.1
 tornado~=6.0
+cached_property==1.5.2

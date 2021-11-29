@@ -16,7 +16,8 @@
         "internet": "Olemme havainneet, että Crafty -koneella ei ole Internet -yhteyttä. Asiakasyhteydet palvelimelle voivat olla rajalliset.",
         "eulaTitle": "Hyväksy EULA",
         "eulaMsg": "Sinun on hyväksyttävä EULA. Kopio Mojang EULA:sta on linkitetty tämän viestin alla.",
-        "eulaAgree": "Oletko samaa mieltä?"
+        "eulaAgree": "Oletko samaa mieltä?",
+        "noJava": "Server {} failed to start with error code: We have detected Java is not installed. Please install java then start the server."
     },
     "404": {
         "contact": "Ota yhteyttä Crafty Control -tukeen Discordin kautta",
@@ -179,7 +180,10 @@
         "destroyBackup": "Tuhotaanko varmuuskopio \" + file_to_del + \"?",
         "confirmDelete": "Haluatko poistaa tämän varmuuskopion? Tätä ei voi peruuttaa.",
         "confirm": "Vahvista",
-        "options": "Vaihtoehtoja"
+        "options": "Vaihtoehtoja",
+        "restoring": "Varmuuskopion palauttaminen. Tämä voi kestää hetken. Olkaa kärsivällisiä.",
+        "restore": "Palauttaa",
+        "confirmRestore": "Haluatko varmasti palauttaa tämän varmuuskopion. Kaikki nykyiset palvelintiedostot muutetaan varmuuskopiotilaan, eikä niitä voida palauttaa."
     },
     "serverFiles": {
         "noscript": "Tiedostojenhallinta ei toimi ilman JavaScriptiä",
@@ -237,7 +241,23 @@
         "save": "Tallenna",
         "cancel": "Peruuta",
         "deleteServer": "Poista palvelin",
-        "stopBeforeDeleting": "Pysäytä palvelin ennen sen poistamista"
+        "stopBeforeDeleting": "Pysäytä palvelin ennen sen poistamista",
+        "exeUpdateURLDesc": "Direct Download URL for  updates.",
+        "exeUpdateURL": "Palvelimen suoritettavan päivityksen URL-osoite",
+        "update": "Päivitä suoritettava",
+        "bePatientUpdate": "Ole kärsivällinen, kun päivitämme palvelinta. Latausajat voivat vaihdella Internet-nopeutesi mukaan.<br /> Tämä näyttö päivittyy hetkessä",
+        "sendingRequest": "Pyyntöäsi lähetetään...",
+        "deleteServerQuestion": "Poistetaanko palvelin?",
+        "deleteServerQuestionMessage": "Haluatko varmasti poistaa tämän palvelimen? Tämän jälkeen ei ole paluuta...",
+        "yesDelete": "Kyllä, poista",
+        "noDelete": "Ei, mene takaisin",
+        "deleteFilesQuestion": "Poistetaanko palvelintiedostot koneelta?",
+        "deleteFilesQuestionMessage": "Haluatko Craftyn poistavan kaikki palvelintiedostot isäntäkoneelta? <br><br><strong> Tämä sisältää palvelimen varmuuskopiot. <strong>",
+        "yesDeleteFiles": "Kyllä, poista tiedostoja",
+        "noDeleteFiles": "Ei, poista vain paneelista",
+        "sendingDelete": "Poistetaan palvelinta",
+        "bePatientDelete": "Ole kärsivällinen, kun poistamme palvelimesi Crafty-paneelista. Tämä näyttö sulkeutuu hetken kuluttua.",
+        "bePatientDeleteFiles" : "Ole kärsivällinen, kun poistamme palvelimesi Crafty-paneelista ja poistamme kaikki tiedostot. Tämä näyttö sulkeutuu hetken kuluttua."
     },
     "serverConfigHelp": {
         "title": "Palvelimen asetukset",

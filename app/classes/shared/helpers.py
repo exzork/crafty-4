@@ -338,6 +338,12 @@ class Helpers:
             logger.critical("Unable to write to {} - Error: {}".format(path, e))
             return False
 
+    def checkRoot(self):
+        if os.geteuid() == 0:
+            return True
+        else:
+            return False
+
     def unzipFile(self, zip_path):
         new_dir_list = zip_path.split('/')
         new_dir = ''

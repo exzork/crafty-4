@@ -243,7 +243,16 @@ class Server:
         try:
             self.process = subprocess.Popen(self.server_command, cwd=self.server_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except Exception as ex:
-            msg = "Server {} failed to start with error code: {}".format(self.name, ex)
+            #Checks for java on initial fail
+            if os.system("java -version") == 32512:
+                msg = "Server {} failed to start with error code: {}".format(self.name, "Java not found. Please install Java then try again.")
+                if user_id:
+                    websocket_helper.broadcast_user(user_id, 'send_start_error',{
+                    'error': translation.translate('error', 'noJava', user_lang).format(self.name)
+                })
+                return False
+            else:
+                msg = "Server {} failed to start with error code: {}".format(self.name, ex)
             logger.error(msg)
             if user_id:
                 websocket_helper.broadcast_user(user_id, 'send_start_error',{
@@ -512,14 +521,14 @@ class Server:
             return
 
     def list_backups(self):
-        conf = management_helper.get_backup_config(self.server_id)
         if self.settings['backup_path']:
             if helper.check_path_exists(helper.get_os_understandable_path(self.settings['backup_path'])):
                 files = helper.get_human_readable_files_sizes(helper.list_dir_by_date(helper.get_os_understandable_path(self.settings['backup_path'])))
-                return [{"path": os.path.relpath(f['path'], start=helper.get_os_understandable_path(conf['backup_path'])), "size": f["size"]} for f in files]
+                return [{"path": os.path.relpath(f['path'], start=helper.get_os_understandable_path(self.settings['backup_path'])), "size": f["size"]} for f in files]
             else:
                 return []
         else:
+            logger.info("Error putting backup file list for server with ID: {}".format(self.server_id))
             return[]
 
     def jar_update(self):

@@ -118,9 +118,17 @@ class Permissions_Servers:
     @staticmethod
     def get_permissions_mask(role_id, server_id):
         permissions_mask = ''
-        role_server = Role_Servers.select().where(Role_Servers.role_id == role_id).where(Role_Servers.server_id == server_id).execute()
+        role_server = Role_Servers.select().where(Role_Servers.role_id == role_id).where(Role_Servers.server_id == server_id).get()
         permissions_mask = role_server.permissions
         return permissions_mask
+
+    @staticmethod
+    def get_server_roles(server_id):
+        role_list = []
+        roles = Role_Servers.select().where(Role_Servers.server_id == server_id).execute()
+        for role in roles:
+            role_list.append(role.role_id)
+        return role_list
 
     @staticmethod
     def get_role_permissions_list(role_id):
