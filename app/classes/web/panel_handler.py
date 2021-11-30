@@ -213,8 +213,39 @@ class PanelHandler(BaseHandler):
                 'Players': Enum_Permissions_Server.Players,
             }
             page_data['user_permissions'] = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
+            user_perms = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
+
+            if subpage == 'term':
+                if not page_data['permissions']['Terminal'] in page_data['user_permissions']:
+                    if not exec_user['superuser']:
+                        self.redirect("/panel/error?error=Unauthorized access to Terminal")
+
+            if subpage == 'logs':
+                if not page_data['permissions']['Logs'] in page_data['user_permissions']:
+                    if not exec_user['superuser']:
+                        self.redirect("/panel/error?error=Unauthorized access to Logs")         
+
+
+            if subpage == 'tasks':
+                if not page_data['permissions']['Schedule'] in page_data['user_permissions']:
+                    if not exec_user['superuser']:
+                        self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
+
+            if subpage == 'config':
+                if not page_data['permissions']['Config'] in page_data['user_permissions']:
+                    if not exec_user['superuser']:
+                        self.redirect("/panel/error?error=Unauthorized access Server Config")
+
+            if subpage == 'files':
+                if not page_data['permissions']['Files'] in page_data['user_permissions']:
+                    if not exec_user['superuser']:
+                        self.redirect("/panel/error?error=Unauthorized access Files")
+
 
             if subpage == "backup":
+                if not page_data['permissions']['Backup'] in page_data['user_permissions']:
+                    if not exec_user['superuser']:
+                        self.redirect("/panel/error?error=Unauthorized access to Backups")
                 server_info = self.controller.servers.get_server_data_by_id(server_id)
                 page_data['backup_config'] = self.controller.management.get_backup_config(server_id)
                 self.controller.refresh_server_settings(server_id)
@@ -244,6 +275,9 @@ class PanelHandler(BaseHandler):
 
                 return html
             if subpage == "admin_controls":
+                if not page_data['permissions']['Players'] in page_data['user_permissions']:
+                    if not exec_user['superuser']:
+                        self.redirect("/panel/error?error=Unauthorized access")
                 page_data['banned_players'] = get_banned_players_html()
 
             # template = "panel/server_details.html"
