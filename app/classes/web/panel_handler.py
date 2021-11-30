@@ -233,7 +233,6 @@ class PanelHandler(BaseHandler):
                     if not exec_user['superuser']:
                         self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
                         return
-                for schedule in management_helper.get_schedules_by_server(server_id):
                 page_data['schedules'] = management_helper.get_schedules_by_server(server_id)
 
             if subpage == 'config':

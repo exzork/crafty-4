@@ -43,7 +43,7 @@
 
                       <div class="form-group">
                         <label for="server_name">Action<small class="text-muted ml-1"></small> </label><br>
-                        <select id="action" name="action" onchange="yesnoCheck(this);">
+                        <select id="action" name="action" onchange="yesnoCheck(this);" class="form-control form-control-lg select-css">
                           <option value="start">Start Server</option>
                           <option value="restart">Restart Server</option>
                           <option value="shutdown">Shutdown Server</option>
@@ -56,7 +56,7 @@
                         <input type="number" class="form-control" name="server_path" id="server_path" value="{{ data['server_stats']['server_id']['path']  }}" placeholder="Interval" required>
                         <br>
                         <br>
-                        <select id="interval_type" name="interval_type">
+                        <select id="interval_type" name="interval_type" class="form-control form-control-lg select-css">
                           <option value="days">Days</option>
                           <option value="hours">Hours</option>
                           <option value="minutes">Minutes</option>
