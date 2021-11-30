@@ -361,6 +361,9 @@ class Controller:
         backup_path_components = list(backup_path.parts)
         backup_path_components[-1] = new_uuid
         new_bu_path = pathlib.PurePath(os.path.join(*backup_path_components))
+        if os.path.isdir(new_bu_path):
+            if helper.validate_traversal(helper.backup_path, new_bu_path):
+                os.rmdir(new_bu_path)
         backup_path.rename(new_bu_path)
 
     def register_server(self, name: str, server_uuid: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port: int):
