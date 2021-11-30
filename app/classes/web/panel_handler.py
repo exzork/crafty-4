@@ -18,6 +18,7 @@ from app.classes.web.base_handler import BaseHandler
 from app.classes.models.servers import Servers
 from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
+from app.classes.models.management import management_helper
 
 from app.classes.shared.helpers import helper
 
@@ -185,7 +186,7 @@ class PanelHandler(BaseHandler):
                             self.redirect("/panel/error?error=Invalid Server ID")
                             return False
 
-            valid_subpages = ['term', 'logs', 'backup', 'config', 'files', 'admin_controls']
+            valid_subpages = ['term', 'logs', 'backup', 'config', 'files', 'admin_controls', 'tasks']
 
             if subpage not in valid_subpages:
                 logger.debug('not a valid subpage')
@@ -232,7 +233,8 @@ class PanelHandler(BaseHandler):
                     if not exec_user['superuser']:
                         self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
                         return
-                page_data['']
+                for schedule in management_helper.get_schedules_by_server(server_id):
+                page_data['schedules'] = management_helper.get_schedules_by_server(server_id)
 
             if subpage == 'config':
                 if not page_data['permissions']['Config'] in page_data['user_permissions']:
