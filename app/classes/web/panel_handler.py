@@ -213,39 +213,45 @@ class PanelHandler(BaseHandler):
                 'Players': Enum_Permissions_Server.Players,
             }
             page_data['user_permissions'] = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
-            user_perms = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
 
             if subpage == 'term':
                 if not page_data['permissions']['Terminal'] in page_data['user_permissions']:
                     if not exec_user['superuser']:
                         self.redirect("/panel/error?error=Unauthorized access to Terminal")
+                        return
 
             if subpage == 'logs':
                 if not page_data['permissions']['Logs'] in page_data['user_permissions']:
                     if not exec_user['superuser']:
-                        self.redirect("/panel/error?error=Unauthorized access to Logs")         
+                        self.redirect("/panel/error?error=Unauthorized access to Logs")    
+                        return     
 
 
             if subpage == 'tasks':
                 if not page_data['permissions']['Schedule'] in page_data['user_permissions']:
                     if not exec_user['superuser']:
                         self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
+                        return
+                page_data['']
 
             if subpage == 'config':
                 if not page_data['permissions']['Config'] in page_data['user_permissions']:
                     if not exec_user['superuser']:
                         self.redirect("/panel/error?error=Unauthorized access Server Config")
+                        return
 
             if subpage == 'files':
                 if not page_data['permissions']['Files'] in page_data['user_permissions']:
                     if not exec_user['superuser']:
                         self.redirect("/panel/error?error=Unauthorized access Files")
+                        return
 
 
             if subpage == "backup":
                 if not page_data['permissions']['Backup'] in page_data['user_permissions']:
                     if not exec_user['superuser']:
                         self.redirect("/panel/error?error=Unauthorized access to Backups")
+                        return
                 server_info = self.controller.servers.get_server_data_by_id(server_id)
                 page_data['backup_config'] = self.controller.management.get_backup_config(server_id)
                 self.controller.refresh_server_settings(server_id)
@@ -647,7 +653,18 @@ class PanelHandler(BaseHandler):
         exec_user_data = json.loads(self.get_secure_cookie("user_data"))
         exec_user_id = exec_user_data['user_id']
         exec_user = self.controller.users.get_user_by_id(exec_user_id)
-
+        server_id = self.get_argument('id', None)
+        permissions = {
+                'Commands': Enum_Permissions_Server.Commands,
+                'Terminal': Enum_Permissions_Server.Terminal,
+                'Logs': Enum_Permissions_Server.Logs,
+                'Schedule': Enum_Permissions_Server.Schedule,
+                'Backup': Enum_Permissions_Server.Backup,
+                'Files': Enum_Permissions_Server.Files,
+                'Config': Enum_Permissions_Server.Config,
+                'Players': Enum_Permissions_Server.Players,
+            }
+        user_perms = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
         exec_user_role = set()
         if exec_user['superuser'] == 1:
             defined_servers = self.controller.list_defined_servers()
@@ -661,17 +678,26 @@ class PanelHandler(BaseHandler):
                 exec_user_role.add(role['role_name'])
 
         if page == 'server_detail':
+            if not permissions['Config'] in user_perms:
+                if not exec_user['superuser']:
+                    self.redirect("/panel/error?error=Unauthorized access to Config")    
+                    return         
             server_id = self.get_argument('id', None)
             server_name = self.get_argument('server_name', None)
-            server_path = self.get_argument('server_path', None)
-            log_path = self.get_argument('log_path', None)
-            executable = self.get_argument('executable', None)
-            execution_command = self.get_argument('execution_command', None)
+            server_obj = self.controller.servers.get_server_obj(server_id)
+            if exec_user['superuser']:
+                server_path = self.get_argument('server_path', None)
+                log_path = self.get_argument('log_path', None)
+                executable = self.get_argument('executable', None)
+                execution_command = self.get_argument('execution_command', None)
+                server_ip = self.get_argument('server_ip', None)
+                server_port = self.get_argument('server_port', None)
+                executable_update_url = self.get_argument('executable_update_url', None)
+            else:
+                execution_command = server_obj.execution_command
+                executable = server_obj.executable
             stop_command = self.get_argument('stop_command', None)
             auto_start_delay = self.get_argument('auto_start_delay', '10')
-            server_ip = self.get_argument('server_ip', None)
-            server_port = self.get_argument('server_port', None)
-            executable_update_url = self.get_argument('executable_update_url', None)
             auto_start = int(float(self.get_argument('auto_start', '0')))
             crash_detection = int(float(self.get_argument('crash_detection', '0')))
             logs_delete_after = int(float(self.get_argument('logs_delete_after', '0')))
@@ -705,10 +731,19 @@ class PanelHandler(BaseHandler):
                 if helper.validate_traversal(helper.get_servers_root_dir(), executable):
                     server_obj.executable = executable
                 server_obj.execution_command = execution_command
-                server_obj.stop_command = stop_command
                 server_obj.server_ip = server_ip
                 server_obj.server_port = server_port
                 server_obj.executable_update_url = executable_update_url
+            else:
+                server_obj.path = server_obj.path
+                server_obj.log_path = server_obj.log_path
+                server_obj.executable = server_obj.executable
+                print(server_obj.execution_command)
+                server_obj.execution_command = server_obj.execution_command
+                server_obj.server_ip = server_obj.server_ip
+                server_obj.server_port = server_obj.server_port
+                server_obj.executable_update_url = server_obj.executable_update_url
+            server_obj.stop_command = stop_command
             server_obj.auto_start_delay = auto_start_delay
             server_obj.auto_start = auto_start
             server_obj.crash_detection = crash_detection
@@ -727,15 +762,20 @@ class PanelHandler(BaseHandler):
         if page == "server_backup":
             logger.debug(self.request.arguments)
             server_id = self.get_argument('id', None)
-            backup_path = bleach.clean(self.get_argument('backup_path', None))
+            server_obj = self.controller.servers.get_server_obj(server_id)
+            if exec_user['superuser']:
+                backup_path = bleach.clean(self.get_argument('backup_path', None))
+            else:
+                backup_path = server_obj.backup_path
             max_backups = bleach.clean(self.get_argument('max_backups', None))
             try:
                 enabled = int(float(bleach.clean(self.get_argument('auto_enabled'), '0')))
             except Exception as e:
                 enabled = '0'
 
-            if not exec_user['superuser']:
-                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+            if not permissions['Backup'] in user_perms:
+                if not exec_user['superuser']:
+                    self.redirect("/panel/error?error=Unauthorized access: User not authorized")
                 return
             elif server_id is None:
                 self.redirect("/panel/error?error=Invalid Server ID")

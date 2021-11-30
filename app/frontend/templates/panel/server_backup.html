@@ -157,7 +157,7 @@
         $.ajax({
           type: "DELETE",
           headers: {'X-XSRFToken': token},
-          url: '/ajax/del_file?server_id='+id,
+          url: '/ajax/del_backup?server_id='+id,
           data: {
           file_path: filename,
           id: id
