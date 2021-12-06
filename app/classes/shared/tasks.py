@@ -48,7 +48,6 @@ class TasksManager:
 
         self.webserver_thread = threading.Thread(target=self.tornado.run_tornado, daemon=True, name='tornado_thread')
 
-        self.main_kill_switch_thread = threading.Thread(target=self.main_kill_switch, daemon=True, name="main_loop")
         self.main_thread_exiting = False
 
         self.schedule_thread = threading.Thread(target=self.scheduler_thread, daemon=True, name="scheduler")
@@ -64,16 +63,6 @@ class TasksManager:
 
     def get_main_thread_run_status(self):
         return self.main_thread_exiting
-
-    def start_main_kill_switch_watcher(self):
-        self.main_kill_switch_thread.start()
-
-    def main_kill_switch(self):
-        while True:
-            if os.path.exists(os.path.join(helper.root_dir, 'exit.txt')):
-                logger.info("Found Exit File, stopping everything")
-                self._main_graceful_exit()
-            time.sleep(5)
 
     def reload_schedule_from_db(self):
         jobs = management_helper.get_schedules_enabled()
@@ -122,7 +111,6 @@ class TasksManager:
     def _main_graceful_exit(self):
         try:
             os.remove(helper.session_file)
-            os.remove(os.path.join(helper.root_dir, 'exit.txt'))
             os.remove(os.path.join(helper.root_dir, '.header'))
             self.controller.stop_all_servers()
         except:

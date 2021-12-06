@@ -171,12 +171,10 @@ class Server:
         if not helper.check_path_exists(self.server_path):
             logger.critical("Server path: {} does not seem to exits".format(self.server_path))
             console.critical("Server path: {} does not seem to exits".format(self.server_path))
-            helper.do_exit()
 
         if not helper.check_writeable(self.server_path):
             logger.critical("Unable to write/access {}".format(self.server_path))
             console.warning("Unable to write/access {}".format(self.server_path))
-            helper.do_exit()
 
     def start_server(self, user_id):
         if not user_id:
