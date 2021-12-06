@@ -225,16 +225,6 @@ class Helpers:
                                     version_data.get('meta', '?'))
         return str(version)
 
-    def do_exit(self):
-        exit_file = os.path.join(self.root_dir, 'exit.txt')
-        try:
-            open(exit_file, 'a').close()
-
-        except Exception as e:
-            logger.critical("Unable to create exit file!")
-            console.critical("Unable to create exit file!")
-            sys.exit(1)
-
     def encode_pass(self, password):
         return self.passhasher.hash(password)
 

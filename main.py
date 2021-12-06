@@ -128,9 +128,6 @@ if __name__ == '__main__':
     # refresh our cache and schedule for every 12 hoursour cache refresh for serverjars.com
     tasks_manager.serverjar_cache_refresher()
 
-    # this should always be last
-    tasks_manager.start_main_kill_switch_watcher()
-
     logger.info("Checking Internet/Port Service. This may take a minute.")
     console.info("Checking Internet/Port Service. This may take a minute.")
 
