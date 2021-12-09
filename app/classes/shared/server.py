@@ -257,20 +257,6 @@ class Server:
                     'error': translation.translate('error', 'start-error', user_lang).format(self.name, ex)
                 })
             return False
-        if user_id:
-            if helper.check_internet():
-                loc_server_port = servers_helper.get_server_stats_by_id(self.server_id)['server_port']
-                if helper.check_port(loc_server_port):
-                    websocket_helper.broadcast_user(user_id, 'send_start_reload', {
-                    })
-                else:
-                    websocket_helper.broadcast_user(user_id, 'send_start_error', {
-                    'error': translation.translate('error', 'closedPort', user_lang).format(loc_server_port)
-                })
-            else:
-                websocket_helper.broadcast_user(user_id, 'send_start_error', {
-                    'error': translation.translate('error', 'internet', user_lang)
-                })
         servers_helper.set_waiting_start(self.server_id, False)
         out_buf = ServerOutBuf(self.process, self.server_id)
 
@@ -295,6 +281,20 @@ class Server:
             console.info("Server {} has crash detection enabled - starting watcher task".format(self.name))
 
             self.crash_watcher_schedule = schedule.every(30).seconds.do(self.detect_crash).tag(self.name)
+        if user_id:
+            if helper.check_internet():
+                loc_server_port = servers_helper.get_server_stats_by_id(self.server_id)['server_port']
+                if helper.check_port(loc_server_port):
+                    websocket_helper.broadcast_user(user_id, 'send_start_reload', {
+                    })
+                else:
+                    websocket_helper.broadcast_user(user_id, 'send_start_error', {
+                    'error': translation.translate('error', 'closedPort', user_lang).format(loc_server_port)
+                })
+            else:
+                websocket_helper.broadcast_user(user_id, 'send_start_error', {
+                    'error': translation.translate('error', 'internet', user_lang)
+                })
 
     def stop_threaded_server(self):
         self.stop_server()

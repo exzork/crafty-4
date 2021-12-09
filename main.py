@@ -152,6 +152,7 @@ if __name__ == '__main__':
         print() # for newline
         logger.info("Recieved SIGTERM, stopping Crafty")
         console.info("Recieved SIGTERM, stopping Crafty")
+        tasks_manager._main_graceful_exit()
         Crafty.universal_exit()
 
     signal.signal(signal.SIGTERM, sigterm_handler)
@@ -163,6 +164,7 @@ if __name__ == '__main__':
             print() # for newline
             logger.info("Recieved SIGINT, stopping Crafty")
             console.info("Recieved SIGINT, stopping Crafty")
+            tasks_manager._main_graceful_exit()
             Crafty.universal_exit()
     else:
         print("Crafty started in daemon mode, no shell will be printed")
@@ -175,5 +177,5 @@ if __name__ == '__main__':
                 logger.info("Recieved SIGINT, stopping Crafty")
                 console.info("Recieved SIGINT, stopping Crafty")
                 break
-        
+        tasks_manager._main_graceful_exit()
         Crafty.universal_exit()
