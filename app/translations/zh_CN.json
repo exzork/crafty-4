@@ -25,8 +25,8 @@
     },
     "footer": {
         "version": "版本",
-        "copyright": "版权",
-        "allRightsReserved": "保留所有权利"
+        "copyright": "Copyright",
+        "allRightsReserved": "All rights reserved"
     },
     "sidebar": {
         "dashboard": "仪表板",
@@ -71,8 +71,8 @@
     },
     "dashboard": {
         "dashboard": "仪表板",
-        "memUsage": "内存使用量",
-        "cpuUsage": "CPU 使用量",
+        "memUsage": "内存使用率",
+        "cpuUsage": "CPU 使用率",
         "host": "主机",
         "players": "玩家",
         "backups": "备份",
@@ -126,8 +126,8 @@
         "serverStarted": "服务器已启动",
         "serverUptime": "服务器正常运行时间",
         "players": "玩家",
-        "memUsage": "内存使用量",
-        "cpuUsage": "CPU 使用量",
+        "memUsage": "内存使用率",
+        "cpuUsage": "CPU 使用率",
         "version": "版本",
         "description": "简介",
         "errorCalculatingUptime": "计算正常运行时间时发生错误",
