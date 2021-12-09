@@ -5,6 +5,8 @@ import time
 import threading
 import logging
 
+from app.classes.shared.tasks import TasksManager
+
 logger = logging.getLogger(__name__)
 
 from app.classes.shared.console import console
@@ -35,6 +37,7 @@ class MainPrompt(cmd.Cmd, object):
         pass
 
     def do_exit(self, line):
+        self.tasks_manager._main_graceful_exit()
         self.universal_exit()
     
     def do_migrations(self, line):
