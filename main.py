@@ -141,9 +141,10 @@ if __name__ == '__main__':
     console.info("Checking Internet/Port Service. This may take a minute.")
 
     if not helper.check_internet():
-            console.error("We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited.")
+            console.warning("We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited.")
     elif not helper.check_port(helper.get_setting('https_port')):
-        console.error("We have detected Crafty's port, {} may not be open on the host network or a firewall is blocking it. Remote client connections to Crafty may be limited.".format(helper.get_setting('https_port')))
+        console.warning("We have detected Crafty's port, {} may not be open on the host network or a firewall is blocking it. Remote client connections to Crafty may be limited.".format(helper.get_setting('https_port')))
+        console.help("If you are not forwarding ports from your public IP or your router does not support hairpin NAT you can safely disregard the previous message.")
 
     Crafty = MainPrompt(tasks_manager, migration_manager)
 
