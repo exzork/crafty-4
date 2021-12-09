@@ -34,17 +34,6 @@ class MainPrompt(cmd.Cmd, object):
     def emptyline():
         pass
 
-    @staticmethod
-    def _clean_shutdown():
-        exit_file = os.path.join(helper.root_dir, "exit.txt")
-        try:
-            with open(exit_file, 'w') as f:
-                f.write("exit")
-
-        except Exception as e:
-            logger.critical("Unable to write exit file due to error: {}".format(e))
-            console.critical("Unable to write exit file due to error: {}".format(e))
-
     def do_exit(self, line):
         self.universal_exit()
     
@@ -77,7 +66,6 @@ class MainPrompt(cmd.Cmd, object):
         logger.info("Stopping all server daemons / threads")
         console.info("Stopping all server daemons / threads - This may take a few seconds")
         websocket_helper.disconnect_all()
-        self._clean_shutdown()
         console.info('Waiting for main thread to stop')
         while True:
             if self.tasks_manager.get_main_thread_run_status():

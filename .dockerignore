@@ -2,6 +2,7 @@
 docker/
 .dockerignore
 Dockerfile
+docker-compose.yml
 
 # git & gitlab related
 .git/

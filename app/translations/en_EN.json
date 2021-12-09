@@ -146,7 +146,7 @@
         "playerControls": "Player Management"
     },
     "serverTerm": {
-        "stopScroll": "Stop Auto Scrollling",
+        "stopScroll": "Stop Auto Scrolling",
         "commandInput": "Enter your command",
         "sendCommand": "Send command",
         "start": "Start",

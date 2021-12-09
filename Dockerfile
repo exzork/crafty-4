@@ -2,9 +2,11 @@ FROM python:alpine
 
 LABEL maintainer="Dockerfile created by Zedifus <https://gitlab.com/zedifus>"
 
-# Install Packages, Build Dependencies & Garbage Collect & Harden
+# Install Packages & Garbage Collect Compile Deps & Harden
 COPY requirements.txt /commander/requirements.txt
-RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/latest-stable/community llvm11-libs openssl-dev rust cargo gcc musl-dev libffi-dev make openjdk8-jre-base openjdk11-jre-headless openjdk16-jre-headless mariadb-dev \
+RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/latest-stable/community \
+gcc musl-dev libffi-dev make rust cargo openssl-dev llvm11-libs \
+openjdk8-jre-base openjdk11-jre-headless openjdk16-jre-headless openjdk17-jre-headless mariadb-dev \
 && pip3 install --no-cache-dir -r /commander/requirements.txt \
 && apk del --no-cache gcc musl-dev libffi-dev make rust cargo openssl-dev llvm11-libs \
 && rm -rf /sbin/apk \
