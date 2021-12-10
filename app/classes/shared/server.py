@@ -272,6 +272,8 @@ class Server:
             console.info("Server {} running with PID {}".format(self.name, self.process.pid))
             self.is_crashed = False
             self.stats.record_stats()
+            websocket_helper.broadcast_user(user_id, 'send_start_reload', {
+            })
         else:
             logger.warning("Server PID {} died right after starting - is this a server config issue?".format(self.process.pid))
             console.warning("Server PID {} died right after starting - is this a server config issue?".format(self.process.pid))
@@ -281,13 +283,25 @@ class Server:
             console.info("Server {} has crash detection enabled - starting watcher task".format(self.name))
 
             self.crash_watcher_schedule = schedule.every(30).seconds.do(self.detect_crash).tag(self.name)
+
+        check_port_thread = threading.Thread(target=self.check_internet_thread, daemon=True, args=(user_id, user_lang, ), name=f"backup_{self.name}")
+        check_port_thread.start()
+
+    def check_internet_thread(self, user_id, user_lang):
         if user_id:
             if helper.check_internet():
                 loc_server_port = servers_helper.get_server_stats_by_id(self.server_id)['server_port']
-                if helper.check_port(loc_server_port):
-                    websocket_helper.broadcast_user(user_id, 'send_start_reload', {
-                    })
-                else:
+                port_status = False
+
+                for i in range(1):
+                    if helper.check_port(loc_server_port):
+                        port_status = True
+                        return
+                    else:
+                        time.sleep(5)
+
+
+                if port_status == False:
                     websocket_helper.broadcast_user(user_id, 'send_start_error', {
                     'error': translation.translate('error', 'closedPort', user_lang).format(loc_server_port)
                 })
@@ -295,6 +309,7 @@ class Server:
                 websocket_helper.broadcast_user(user_id, 'send_start_error', {
                     'error': translation.translate('error', 'internet', user_lang)
                 })
+        return
 
     def stop_threaded_server(self):
         self.stop_server()

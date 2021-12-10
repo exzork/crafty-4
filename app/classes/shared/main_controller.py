@@ -168,7 +168,6 @@ class Controller:
         return running_servers
 
     def stop_all_servers(self):
-        print("in stop all servers")
         servers = self.list_running_servers()
         logger.info("Found {} running server(s)".format(len(servers)))
         console.info("Found {} running server(s)".format(len(servers)))
@@ -176,10 +175,7 @@ class Controller:
         logger.info("Stopping All Servers")
         console.info("Stopping All Servers")
 
-        print(servers)
-
         for s in servers:
-            print(s)
             logger.info("Stopping Server ID {} - {}".format(s['id'], s['name']))
             console.info("Stopping Server ID {} - {}".format(s['id'], s['name']))
 

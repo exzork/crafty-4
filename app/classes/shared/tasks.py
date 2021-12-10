@@ -109,9 +109,7 @@ class TasksManager:
             time.sleep(1)
 
     def _main_graceful_exit(self):
-        print("in graceful")
         try:
-            print("in try")
             os.remove(helper.session_file)
             os.remove(os.path.join(helper.root_dir, '.header'))
             self.controller.stop_all_servers()
