@@ -17,6 +17,7 @@ import shutil
 from requests import get
 from contextlib import suppress
 import ctypes
+import telnetlib
 
 from datetime import datetime
 from socket import gethostname
@@ -98,14 +99,9 @@ class Helpers:
     def check_port(server_port):
         try:
             host_public = get('https://api.ipify.org').text
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(10.0)
-            result = sock.connect_ex((host_public ,server_port))
-            sock.close()
-            if result == 0:
-                return True
-            else:
-                return False
+            tn = telnetlib.Telnet(host_public, server_port, 10)
+            telnetlib.close()
+            return True
         except Exception as err:
             return False
 
