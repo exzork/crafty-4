@@ -293,7 +293,7 @@ class Server:
                 loc_server_port = servers_helper.get_server_stats_by_id(self.server_id)['server_port']
                 port_status = False
 
-                for i in range(1):
+                for i in range(3):
                     if helper.check_port(loc_server_port):
                         port_status = True
                         return
