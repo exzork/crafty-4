@@ -2,6 +2,9 @@ FROM python:alpine
 
 LABEL maintainer="Dockerfile created by Zedifus <https://gitlab.com/zedifus>"
 
+# Security Patch for CVE-2021-44228
+ENV LOG4J_FORMAT_MSG_NO_LOOKUPS=true
+
 # Install Packages, Build Dependencies & Garbage Collect & Harden
 #        (Alpine Edge repo is needed because jre16 is new)
 COPY requirements.txt /commander/requirements.txt
