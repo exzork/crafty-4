@@ -68,11 +68,11 @@ class ServerOutBuf:
     def check(self):
         while True:
             if self.proc.poll() is None:
-                char = self.proc.stdout.read(1).decode('utf-8')
+                char = self.proc.stdout.read(1).decode('utf-8', 'ignore')
                 # TODO: we may want to benchmark reading in blocks and userspace processing it later, reads are kind of expensive as a syscall
                 self.process_byte(char)
             else:
-                flush = self.proc.stdout.read().decode('utf-8')
+                flush = self.proc.stdout.read().decode('utf-8', 'ignore')
                 for char in flush:
                     self.process_byte(char)
                 break
