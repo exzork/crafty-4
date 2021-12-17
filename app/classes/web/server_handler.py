@@ -81,8 +81,8 @@ class ServerHandler(BaseHandler):
                 self.redirect("/panel/error?error=Unauthorized access: not a server creator or server limit reached")
                 return
 
-            page_data['server_types'] = server_jar_obj.get_serverjar_data_sorted()
-            page_data['js_server_types'] = json.dumps(server_jar_obj.get_serverjar_data_sorted())
+            page_data['server_types'] = server_jar_obj.get_serverjar_data()
+            page_data['js_server_types'] = json.dumps(server_jar_obj.get_serverjar_data())
             template = "server/wizard.html"
 
         self.render(

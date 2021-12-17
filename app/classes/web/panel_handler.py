@@ -9,7 +9,7 @@ import datetime
 import os
 
 from tornado import iostream
-
+from tornado.ioloop import IOLoop
 from app.classes.shared.console import console
 from app.classes.shared.main_models import Users, installer
 
@@ -27,8 +27,26 @@ logger = logging.getLogger(__name__)
 
 class PanelHandler(BaseHandler):
 
+    # Server fetching, spawned asynchronously 
+    # TODO: Make the related front-end elements update with AJAX
+    def fetch_server_data(self, page_data):
+        total_players = 0
+        for server in page_data['servers']:
+            total_players += len(self.controller.stats.get_server_players(server['server_data']['server_id']))
+        page_data['num_players'] = total_players
+
+        for s in page_data['servers']:
+            try:
+                data = json.loads(s['int_ping_results'])
+                s['int_ping_results'] = data
+            except Exception as e:
+                logger.error("Failed server data for page with error: {} ".format(e))
+        
+        return page_data
+
+
     @tornado.web.authenticated
-    def get(self, page):
+    async def get(self, page):
         error = bleach.clean(self.get_argument('error', "WTF Error!"))
 
         template = "panel/denied.html"
@@ -153,17 +171,9 @@ class PanelHandler(BaseHandler):
                     except:
                         data['stats']['waiting_start'] = False
 
-            total_players = 0
-            for server in page_data['servers']:
-                total_players += len(self.controller.stats.get_server_players(server['server_data']['server_id']))
-            page_data['num_players'] = total_players
+            page_data['num_players'] = 0
 
-            for s in page_data['servers']:
-                try:
-                    data = json.loads(s['int_ping_results'])
-                    s['int_ping_results'] = data
-                except Exception as e:
-                    logger.error("Failed server data for page with error: {} ".format(e))
+            IOLoop.current().add_callback(self.fetch_server_data, page_data)
 
             template = "panel/dashboard.html"
 
