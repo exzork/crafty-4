@@ -319,8 +319,11 @@ class Controller:
                     path_list = test.split('/')
                     root_path = path_list[0]
                     if len(path_list) > 1:
-                        for i in range(len(path_list)-2):
-                            root_path = os.path.join(root_path, path_list[i+1])
+                        for i in range(len(path_list)-1):
+                            try:
+                                root_path = os.path.join(root_path, path_list[i+1])
+                            except:
+                                root_path = root_path
 
                     full_root_path = os.path.join(tempDir, root_path)
 
