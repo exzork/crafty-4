@@ -16,7 +16,8 @@
         "internet": "我们检测到运行 Crafty 的设备没有网络连接。客户端到服务器的连接可能受限。",
         "eulaTitle": "同意最终用户许可协议（EULA）",
         "eulaMsg": "你必须同意最终用户许可协议（EULA）。一份 Mojang EULA 副本的链接在此消息下方。",
-        "eulaAgree": "你同意吗？"
+        "eulaAgree": "你同意吗？",
+        "noJava": "服务器 {} 启动失败，并输出了如下错误码：我们检测到 Java 未安装。请先安装 java 然后再启动服务器。"
     },
     "404": {
         "contact": "通过 Discord 联系 Crafty Control 支持",
@@ -48,7 +49,7 @@
         "serverVersion": "服务器版本",
         "selectVersion": "选择一个版本",
         "absoluteServerPath": "您的服务器的绝对路径",
-        "serverJar": "服务器 Jar 核心",
+        "serverJar": "服务器 Jar 文件",
         "minMem": "最小内存",
         "maxMem": "最大内存",
         "serverPort": "服务器端口",
@@ -178,7 +179,10 @@
         "destroyBackup": "删除备份 \" + file_to_del + \"？",
         "confirmDelete": "您想要删除这个备份吗？此操作不能撤销。",
         "confirm": "确认",
-        "options": "选项"
+        "options": "选项",
+        "restoring": "正在恢复备份。这需要一点时间。请耐心等待。",
+        "restore": "恢复",
+        "confirmRestore": "你确定要从此备份恢复吗？所有现存的服务器文件将更改到备份时的状态，并且无法撤销。"
     },
     "serverFiles": {
         "noscript": "文件管理器无法在没有 JavaScript 的情况下使用",
