@@ -818,6 +818,8 @@ class PanelHandler(BaseHandler):
             self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
 
         elif page == "edit_user":
+            if bleach.clean(self.get_argument('username', None)) == 'system':
+                self.redirect("/panel/error?error=Unauthorized access: system user is not editable")
             user_id = bleach.clean(self.get_argument('id', None))
             username = bleach.clean(self.get_argument('username', None))
             password0 = bleach.clean(self.get_argument('password0', None))
@@ -914,6 +916,8 @@ class PanelHandler(BaseHandler):
 
 
         elif page == "add_user":
+            if bleach.clean(self.get_argument('username', None)):
+                self.redirect("/panel/error?error=Unauthorized access: username system is reserved for the Crafty system. Please choose a different username.")
             username = bleach.clean(self.get_argument('username', None))
             password0 = bleach.clean(self.get_argument('password0', None))
             password1 = bleach.clean(self.get_argument('password1', None))
