@@ -12,7 +12,6 @@ docker-build-dev:
   image: docker:latest
   services:
     - name: docker:dind
-      command: ["--experimental"]
   stage: docker-dev
   tags:
     - docker
@@ -55,7 +54,6 @@ docker-build-prod:
   image: docker:latest
   services:
     - name: docker:dind
-      command: ["--experimental"]
   stage: docker-prod
   tags:
     - docker
