@@ -649,9 +649,9 @@ class Helpers:
 
     @staticmethod
     def generate_tree(folder, output=""):
-        for raw_filename in os.listdir(folder):
-            filename = html.escape(raw_filename)
-            rel = os.path.join(folder, raw_filename)
+        for file in sorted(os.scandir(folder), key=lambda e: e.name):
+            filename = html.escape(file.name)
+            rel = os.path.join(folder, filename)
             if os.path.isdir(rel):
                 output += \
                     """<li class="tree-item" data-path="{}">
