@@ -74,11 +74,8 @@ class db_shortcuts:
         try:
             if query.count() > 0:
                 for s in query:
-                    if s.user_id == 0:
-                        print(s.user_id)
                     rows.append(model_to_dict(s))
         except Exception as e:
-            print('QUERY: ', query)
             logger.warning("Database Error: {}".format(e))
             pass
 
