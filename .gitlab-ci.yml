@@ -4,6 +4,10 @@ stages:
 - docker-dev
 - docker-prod
 
+variables:
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_CERTDIR: "/certs"
+
 docker-build-dev:
   image: docker:latest
   services:
@@ -32,7 +36,8 @@ docker-build-dev:
     - |
       tag=":$CI_COMMIT_REF_SLUG"
       echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
-    - docker buildx create --use --name zedBuilder
+    - docker context create tls-environment
+    - docker buildx create --name zedBuilder --use tls-environment
     - docker buildx build
       --cache-from type=registry,ref="$CI_REGISTRY_IMAGE${tag}"
       --build-arg BUILDKIT_INLINE_CACHE=1
@@ -42,6 +47,7 @@ docker-build-dev:
   after_script:
     - |
       docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
+      docker context rm tls-environment || true
       echo "Please review multi-arch manifests are present:"
       docker buildx imagetools inspect "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
 
@@ -73,7 +79,8 @@ docker-build-prod:
     - |
       tag=""
       echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
-    - docker buildx create --use --name zedBuilder
+    - docker context create tls-environment
+    - docker buildx create --name zedBuilder --use tls-environment
     - docker buildx build
       --cache-from type=registry,ref="$CI_REGISTRY_IMAGE${tag}"
       --build-arg BUILDKIT_INLINE_CACHE=1
@@ -83,6 +90,7 @@ docker-build-prod:
   after_script:
     - |
       docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
+      docker context rm tls-environment || true
       echo "Please review multi-arch manifests are present:"
       docker buildx imagetools inspect "$CI_REGISTRY_IMAGE${tag}"
 
