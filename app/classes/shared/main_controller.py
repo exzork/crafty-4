@@ -3,6 +3,7 @@ import pathlib
 import time
 import logging
 import sys
+from app.classes.models.users import helper_users
 from peewee import DoesNotExist
 import schedule
 import yaml
@@ -119,6 +120,17 @@ class Controller:
     def refresh_server_settings(self, server_id: int):
         server_obj = self.get_server_obj(server_id)
         server_obj.reload_server_settings()
+
+    @staticmethod
+    def check_system_user():
+        if helper_users.get_user_id_by_name("system") is not None:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def add_system_user():
+        helper_users.add_user("system", helper.random_string_generator(64), helper_users.new_api_token(), False, True)
 
     def get_server_settings(self, server_id):
         for s in self.servers_list:

@@ -70,7 +70,7 @@ class helper_users:
 
     @staticmethod
     def get_all_users():
-        query = Users.select()
+        query = Users.select().where(Users.username != "system")
         return query
 
     @staticmethod
@@ -79,8 +79,6 @@ class helper_users:
 
     @staticmethod
     def get_user_id_by_name(username):
-        if username == "SYSTEM":
-            return 0
         try:
             return (Users.get(Users.username == username)).user_id
         except DoesNotExist:
@@ -108,14 +106,14 @@ class helper_users:
         if user_id == 0:
             return {
                 'user_id': 0,
-                'created': None,
-                'last_login': None,
-                'last_update': None,
+                'created': '10/24/2019, 11:34:00',
+                'last_login': '10/24/2019, 11:34:00',
+                'last_update': '10/24/2019, 11:34:00',
                 'last_ip': "127.27.23.89",
                 'username': "SYSTEM",
                 'password': None,
                 'enabled': True,
-                'superuser': False,
+                'superuser': True,
                 'api_token': None,
                 'roles': [],
                 'servers': [],
@@ -129,6 +127,13 @@ class helper_users:
         else:
             #logger.debug("user: ({}) {}".format(user_id, {}))
             return {}
+
+    def check_system_user(user_id):
+        try:
+            Users.get(Users.user_id == user_id).user_id == user_id
+            return True
+        except:
+            return False
 
     @staticmethod
     def add_user(username, password=None, api_token=None, enabled=True, superuser=False):
