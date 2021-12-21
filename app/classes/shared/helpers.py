@@ -94,19 +94,15 @@ class Helpers:
             return True
         except Exception as err:
             return False
-            
+
     @staticmethod
     def check_port(server_port):
-        a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        ip = get('https://api.ipify.org').content.decode('utf8')
-
-        location = (ip, server_port)
-        result_of_check = a_socket.connect_ex(location)
-
-        if result_of_check == 0:
+        try:
+            host_public = get('https://api.ipify.org').text
+            tn = telnetlib.Telnet(host_public, server_port, 10)
+            telnetlib.close()
             return True
-        else:
+        except Exception as err:
             return False
 
     @staticmethod
