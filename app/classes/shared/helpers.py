@@ -94,7 +94,7 @@ class Helpers:
             return True
         except Exception as err:
             return False
-            
+
     @staticmethod
     def check_port(server_port):
         a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -653,7 +653,9 @@ class Helpers:
 
     @staticmethod
     def generate_tree(folder, output=""):
-        for raw_filename in os.listdir(folder):
+        file_list = os.listdir(folder)
+        file_list.sort()
+        for raw_filename in file_list:
             filename = html.escape(raw_filename)
             rel = os.path.join(folder, raw_filename)
             if os.path.isdir(rel):
