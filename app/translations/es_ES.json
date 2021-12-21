@@ -8,7 +8,7 @@
     "error": {
         "hereIsTheError": "Aquí está el error.",
 		"contact": "Contacta el soporte de Crafty Control desde Discord",
-        "terribleFailure": "¡Qué terrible error!",
+        "terribleFailure": "¡Un terrible error!",
         "embarassing": "Oh por, bueno, esto es vergonzoso.",
         "error": "Error!",
         "start-error": "Servidor {} fallo al iniciar con código de error: {}",
@@ -16,7 +16,8 @@
         "internet": "Hemos detectado que la maquina ejecutando Crafty no tiene acceso a internet. Las conexiones de clientes al servidor podrían estar limitadas.",
         "eulaTitle": "Aceptar EULA",
         "eulaMsg": "Debes aceptar el EULA. Una copia del EULA de Mojang esta vinculada debajo de este mensaje.",
-        "eulaAgree": "Estás de acuerdo?"
+        "eulaAgree": "Estás de acuerdo?",
+        "noJava": "Server {} fallo al iniciar con código de error: Detectamos que Java no esta instalado, Por favor instale java y inicie el servidor."
     },
     "404": {
         "contact": "Contacta el soporte de Crafty Control desde Discord",
@@ -43,8 +44,8 @@
         "importZip": "Importar desde archivo Zip",
         "serverName": "Nombre del servidor",
         "serverPath": "Dirección del servidor",
-        "selectType": "Selecciona un tipo",
         "serverType": "Tipo de servidor",
+        "selectType": "Selecciona un tipo",
         "serverVersion": "Versión del servidor",
         "selectVersion": "Selecciona una versión",
         "absoluteServerPath": "Dirección absoluta del servidor",
@@ -109,7 +110,7 @@
         "restart": "Reiniciar",
         "killing": "Matando el proceso...",
         "starting": "Inicio-retrasado",
-        "delay-explained": "El servicio/agente ha iniciado recientemente y está retrasando el inicio de la instancia del servidor de Minecraft.",
+        "delay-explained": "El agente/servicio ha iniciado recientemente y está retrasando el inicio de la instancia del servidor de Minecraft.",
         "no-servers": "Actualmente no hay servidores. Para comenzar, haga click",
         "welcome": "Bienvenido a Crafty Controller"
     },
@@ -143,21 +144,21 @@
         "files": "Archivos",
         "config": "Configuración",
         "playerControls": "Gestionar jugadores"
-    }, 
+    },
     "serverTerm": {
-        "stopScroll": "Detener el desplazamiento automático",
-        "commandInput": "Ingrese su comando",
+        "stopScroll": "Detener Scrolling automatico",
+        "commandInput": "Introducir tu comando",
         "sendCommand": "Enviar comando",
         "start": "Iniciar",
         "restart": "Reiniciar",
         "stop": "Detener",
         "updating": "Actualizando...",
         "starting": "Inicio-retrasado",
-        "delay-explained": "El servicio/agente ha iniciado recientemente y está retrasando el inicio de la instancia del servidor de Minecraft."
-	},
+        "delay-explained": "El agente/servicio ha recientemente iniciado y está retrasando el inicio de la instancia del servidor de Minecraft."
+    },
     "serverPlayerManagement": {
         "players": "Jugadores",
-        "bannedPlayers": "Jugadores baneados",
+        "bannedPlayers": "Jugadores Baneados",
         "loadingBannedPlayers": "Cargando jugadores baneados"
     },
     "serverBackups": {
@@ -178,7 +179,10 @@
         "destroyBackup": "¿Destruir copia de seguridad \" + file_to_del + \"?",
         "confirmDelete": "¿Quieres eliminar esta copia de seguridad? Esto no se puede deshacer.",
         "confirm": "Confirmar",
-        "options": "Opciones"
+        "options": "Opciones",
+        "restoring": "Restaurando copia de seguridad. Esto puede tomar un tiempo. Sea paciente.",
+        "restore": "Restaurar",
+        "confirmRestore": "Esta seguro de que quiere restaurar desde este backup. Todos los archivos actuales del servidor seran cambiados al estado del backup y seran irrecuperables."
     },
     "serverFiles": {
         "noscript": "El administrador de archivos no funciona sin JavaScript ",
@@ -247,24 +251,24 @@
         "yesDelete": "Si, borralo.",
         "noDelete": "No, vuelve atrás.",
         "deleteFilesQuestion": "¿Eliminar archivos del servidor de la máquina?",
-        "deleteFilesQuestionMessage": "¿Le gustaría que Crafty elimine todos los archivos del servidor de la máquina host?",
+        "deleteFilesQuestionMessage": "¿Le gustaría que Crafty elimine todos los archivos del servidor de la máquina host? <br><br><strong>Esto incluye backups del servidor.</strong>",
         "yesDeleteFiles": "Si, borra los archivos.",
         "noDeleteFiles": "No, solo remover del panel.",
         "sendingDelete": "Eliminando servidor",
         "bePatientDelete": "Tenga paciencia mientras eliminamos su servidor del panel de Crafty. Esta pantalla se cerrará en unos momentos.",
-        "bePatientDeleteFiles" : "Tenga paciencia mientras eliminamos su servidor del panel de Crafty y eliminamos todos los archivos. Esta pantalla se cerrará en unos momentos. "
+        "bePatientDeleteFiles" : "Tenga paciencia mientras eliminamos su servidor del panel de Crafty y eliminamos todos los archivos. Esta pantalla se cerrará en unos momentos."
     },
     "serverConfigHelp": {
-        "title": "Área de configuración del servidor",
-        "desc": "Aquí es donde puedes cambiar la configuración de su servidor",
+        "title": "Server Config Area",
+        "desc": "Here is where you can change the configuration of your server",
         "perms": [
-            "Está recomendado que <code>NO</code> cambie las direcciones de un servidor administrado por Crafty.",
-            "Cambiar direcciones <code>PUEDE</code> romper cosas, especialmente en sistemas operativos de tipo Linux donde los permisos están más restringidos.",
+            "It is recommended to <code>NOT</code> change the paths of a server managed by Crafty.",
+            "Changing paths <code>CAN</code> break things, especially on Linux type operating systems where file permissions are more locked down.",
             "<br /><br/>",
-            "Si necesita cambiar donde se ubica un servidor, puede hacerlo siempre y cuando le des al usuario \"crafty\" permiso para leer / escribir a la ubicación del servidor.",
+            "If you feel you have to change a where a server is located you may do so as long as you give the \"crafty\" user permission to read / write to the server path.",
             "<br />",
             "<br />",
-            "En linux, esto es mejor hecho ejecutando lo siguiente:<br />",
+            "On Linux this is best done by executing the following:<br />",
             "<code>",
             "    sudo chown crafty:crafty /path/to/your/server -R<br />",
             "    sudo chmod 2775 /path/to/your/server -R<br />",
