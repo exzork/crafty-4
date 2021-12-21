@@ -6,6 +6,7 @@ import time
 import argparse
 import logging.config
 import signal
+from app.classes.controllers.management_controller import Management_Controller
 
 """ Our custom classes / pip packages """
 from app.classes.shared.console import console
@@ -145,6 +146,9 @@ if __name__ == '__main__':
     elif not helper.check_port(helper.get_setting('https_port')):
         console.warning("We have detected Crafty's port, {} may not be open on the host network or a firewall is blocking it. Remote client connections to Crafty may be limited.".format(helper.get_setting('https_port')))
         console.help("If you are not forwarding ports from your public IP or your router does not support hairpin NAT you can safely disregard the previous message.")
+
+    if not controller.check_system_user():
+        controller.add_system_user()
 
     Crafty = MainPrompt(tasks_manager, migration_manager)
 

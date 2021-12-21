@@ -139,7 +139,7 @@
                       <i class="far fa-folder-open"></i>
                       {{ translate('serverFiles', 'files', data['lang']) }}
                     </div>
-                    <ul class="tree-nested" id="files-tree">
+                    <ul class="tree-nested d-block" id="files-tree">
                       <li>{{ translate('serverFiles', 'error', data['lang']) }}</li>
 
                     </ul>
@@ -647,7 +647,7 @@
       document.getElementById("fileList").innerHTML = list;
   }, false);
 });
-    }
+  }
     function getTreeView() {
       $.ajax({
         type: "GET",
@@ -897,6 +897,8 @@
       target.classList.remove('btn-secondary');
       target.classList.add('btn-primary');
     }
+
+    window.onload = getTreeView();
 
 </script>
 

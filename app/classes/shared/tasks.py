@@ -73,8 +73,9 @@ class TasksManager:
                 logger.info("Loading schedule ID#{i}: '{a}' every {n} {t} at {s}".format(
                     i=j.schedule_id, a=j.action, n=j.interval, t=j.interval_type, s=j.start_time))
                 try:
+                    print(self.controller.users.get_id_by_name('system'))
                     getattr(schedule.every(j.interval), j.interval_type).at(j.start_time).do(
-                        self.controller.management.send_command, 0, j.server_id, "127.27.23.89", j.action)
+                        self.controller.management.send_command, self.controller.users.get_id_by_name('system'), j.server_id, "127.27.23.89", j.action)
                 except schedule.ScheduleValueError as e:
                     logger.critical("Scheduler value error occurred: {} on ID#{}".format(e, j.schedule_id))
             else:
