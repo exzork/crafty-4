@@ -130,7 +130,7 @@ class Controller:
 
     @staticmethod
     def add_system_user():
-        helper_users.add_user("system", helper.random_string_generator(64), helper_users.new_api_token(), False, True)
+        helper_users.add_user("system", helper.random_string_generator(64), helper_users.new_api_token(), False, False)
 
     def get_server_settings(self, server_id):
         for s in self.servers_list:
