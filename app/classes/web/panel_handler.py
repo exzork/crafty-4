@@ -469,7 +469,7 @@ class PanelHandler(BaseHandler):
             page_data['quantity_server'] = self.controller.crafty_perms.list_crafty_permissions_quantity_limits(user_id)
             page_data['languages'] = []
             page_data['languages'].append(self.controller.users.get_user_lang_by_id(user_id))
-            for file in os.listdir(os.path.join(helper.root_dir, 'app', 'translations')):
+            for file in sorted(os.listdir(os.path.join(helper.root_dir, 'app', 'translations'))):
                 if file.endswith('.json'):
                     if file != str(page_data['languages'][0] + '.json'):
                         page_data['languages'].append(file.split('.')[0])
@@ -916,8 +916,9 @@ class PanelHandler(BaseHandler):
 
 
         elif page == "add_user":
-            if bleach.clean(self.get_argument('username', None)):
+            if bleach.clean(self.get_argument('username', None)).lower() == 'system':
                 self.redirect("/panel/error?error=Unauthorized access: username system is reserved for the Crafty system. Please choose a different username.")
+                return
             username = bleach.clean(self.get_argument('username', None))
             password0 = bleach.clean(self.get_argument('password0', None))
             password1 = bleach.clean(self.get_argument('password1', None))
