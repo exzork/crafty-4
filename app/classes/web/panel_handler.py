@@ -422,6 +422,7 @@ class PanelHandler(BaseHandler):
             page_data['user'] = {}
             page_data['user']['username'] = ""
             page_data['user']['user_id'] = -1
+            page_data['user']['email'] = ""
             page_data['user']['enabled'] = True
             page_data['user']['superuser'] = False
             page_data['user']['api_token'] = "N/A"
@@ -489,6 +490,9 @@ class PanelHandler(BaseHandler):
 
             if exec_user['user_id'] != page_data['user']['user_id']:
                 page_data['user']['api_token'] = "********"
+
+            if exec_user['email'] == 'default@example.com':
+                page_data['user']['email'] = ""
             template = "panel/panel_edit_user.html"
 
         elif page == "remove_user":
@@ -824,6 +828,7 @@ class PanelHandler(BaseHandler):
             username = bleach.clean(self.get_argument('username', None))
             password0 = bleach.clean(self.get_argument('password0', None))
             password1 = bleach.clean(self.get_argument('password1', None))
+            email = bleach.clean(self.get_argument('email', "default@example.com"))
             enabled = int(float(self.get_argument('enabled', '0')))
             regen_api = int(float(self.get_argument('regen_api', '0')))
             lang = bleach.clean(self.get_argument('language'), 'en_EN')
@@ -894,9 +899,13 @@ class PanelHandler(BaseHandler):
                 else:
                     server_quantity[permission.name] = 0
 
+            # if email is None or "":
+            #     email = "default@example.com"
+
             user_data = {
                 "username": username,
                 "password": password0,
+                "email": email,
                 "enabled": enabled,
                 "regen_api": regen_api,
                 "roles": roles,
@@ -922,6 +931,7 @@ class PanelHandler(BaseHandler):
             username = bleach.clean(self.get_argument('username', None))
             password0 = bleach.clean(self.get_argument('password0', None))
             password1 = bleach.clean(self.get_argument('password1', None))
+            email  = bleach.clean(self.get_argument('email', "default@example.com"))
             enabled = int(float(self.get_argument('enabled', '0'))),
             lang = bleach.clean(self.get_argument('lang', 'en_EN'))
 
@@ -972,7 +982,7 @@ class PanelHandler(BaseHandler):
                 else:
                     server_quantity[permission.name] = 0
 
-            user_id = self.controller.users.add_user(username, password=password0, enabled=enabled)
+            user_id = self.controller.users.add_user(username, password=password0, email=email, enabled=enabled)
             user_data = {
                 "roles": roles,
                 'lang': lang

@@ -97,12 +97,32 @@ class Helpers:
 
     @staticmethod
     def check_port(server_port):
+        try:
+            ip = get('https://api.ipify.org').content.decode('utf8')
+        except:
+            ip = 'google.com'
         a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        ip = get('https://api.ipify.org').content.decode('utf8')
+        a_socket.settimeout(20.0)
 
         location = (ip, server_port)
         result_of_check = a_socket.connect_ex(location)
+
+        a_socket.close()
+
+        if result_of_check == 0:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def check_server_conn(server_port):
+        a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        a_socket.settimeout(10.0)
+        ip = '127.0.0.1'
+
+        location = (ip, server_port)
+        result_of_check = a_socket.connect_ex(location)
+        a_socket.close()
 
         if result_of_check == 0:
             return True
@@ -654,29 +674,58 @@ class Helpers:
     @staticmethod
     def generate_tree(folder, output=""):
         file_list = os.listdir(folder)
-        file_list.sort()
+        file_list = sorted(file_list, key=str.casefold)
         for raw_filename in file_list:
             filename = html.escape(raw_filename)
             rel = os.path.join(folder, raw_filename)
             if os.path.isdir(rel):
                 output += \
                     """<li class="tree-item" data-path="{}">
-                    \n<div data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                    \n<div id="{}" data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                    <span id="{}span" class="files-tree-title" data-path="{}" onclick="getDirView(event)">
                       <i class="far fa-folder"></i>
                       <i class="far fa-folder-open"></i>
                       {}
-                    </div>
-                    \n<ul class="tree-nested">"""\
-                        .format(os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
+                      </span>
+                    </div><li>
+                    \n"""\
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), filename)
+            else:
+                output += """<li
+                class="tree-item tree-ctx-item tree-file"
+                data-path="{}"
+                data-name="{}"
+                onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename,  filename)
+        return output
 
-                output += helper.generate_tree(rel)
-                output += '</ul>\n</li>'
+    @staticmethod
+    def generate_dir(folder, output=""):
+        file_list = os.listdir(folder)
+        file_list = sorted(file_list, key=str.casefold)
+        output += \
+    """<ul class="tree-nested d-block" id="{}ul">"""\
+        .format(folder)
+        for raw_filename in file_list:
+            filename = html.escape(raw_filename)
+            rel = os.path.join(folder, raw_filename)
+            if os.path.isdir(rel):
+                output += \
+                    """<li class="tree-item" data-path="{}">
+                    \n<div id="{}" data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                    <span id="{}span" class="files-tree-title" data-path="{}" onclick="getDirView(event)">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {}
+                      </span>
+                    </div><li>"""\
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), filename)
             else:
                 output += """<li
                 class="tree-item tree-ctx-item tree-file"
                 data-path="{}"
                 data-name="{}"
                 onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename, filename)
+        output += '</ul>\n'
         return output
 
     @staticmethod

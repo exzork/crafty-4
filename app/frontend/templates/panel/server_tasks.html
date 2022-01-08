@@ -43,36 +43,51 @@
 
                       <div class="form-group">
                         <label for="server_name">Action<small class="text-muted ml-1"></small> </label><br>
-                        <select id="action" name="action" onchange="yesnoCheck(this);" class="form-control form-control-lg select-css">
-                          <option value="start">Start Server</option>
-                          <option value="restart">Restart Server</option>
-                          <option value="shutdown">Shutdown Server</option>
-                          <option value="command">Custon Command</option>
+                        <select id="action" name="action" onchange="basicAdvanced(this);" class="form-control form-control-lg select-css">
+                          <option value="basic">Basic</option>
+                          <option value="advanced">Advanced</option>
                         </select>
                       </div>
-
-                      <div class="form-group">
-                        <label for="server_path">Interval <small class="text-muted ml-1"> - How often you want this task to execute</small> </label>
-                        <input type="number" class="form-control" name="server_path" id="server_path" value="{{ data['server_stats']['server_id']['path']  }}" placeholder="Interval" required>
-                        <br>
-                        <br>
-                        <select id="interval_type" name="interval_type" class="form-control form-control-lg select-css">
-                          <option value="days">Days</option>
-                          <option value="hours">Hours</option>
-                          <option value="minutes">Minutes</option>
-                          <option value="weeks">Weeks</option>
-                        </select>
-                      </div>
-
-                      <div class="form-group">
-                        <label for="time">Time <small class="text-muted ml-1"> - What time do you want your task to execute?</small> </label>
-                        <input type="time" class="form-control" name="time" id="time" value="{{ data['server_stats']['server_id']['log_path']  }}" placeholder="Time" required>
-                      </div>
-                      <div id="ifYes" style="display: none;">
+                      <div id="ifBasic">
                         <div class="form-group">
-                          <label for="command">Command <small class="text-muted ml-1"> - What command do you want us to execute? Do not include the '/'</small> </label>
-                          <input type="input" class="form-control" name="command" id="command" value="" placeholder="Command" required>
+                          <label for="server_name">Action<small class="text-muted ml-1"></small> </label><br>
+                          <select id="action" name="action" onchange="yesnoCheck(this);" class="form-control form-control-lg select-css">
+                            <option value="start">Start Server</option>
+                            <option value="restart">Restart Server</option>
+                            <option value="shutdown">Shutdown Server</option>
+                            <option value="command">Custon Command</option>
+                          </select>
                         </div>
+
+                        <div class="form-group">
+                          <label for="server_path">Interval <small class="text-muted ml-1"> - How often you want this task to execute</small> </label>
+                          <input type="number" class="form-control" name="server_path" id="server_path" value="{{ data['server_stats']['server_id']['path']  }}" placeholder="Interval" required>
+                          <br>
+                          <br>
+                          <select id="interval_type" name="interval_type" class="form-control form-control-lg select-css">
+                            <option value="days">Days</option>
+                            <option value="hours">Hours</option>
+                            <option value="minutes">Minutes</option>
+                            <option value="weeks">Weeks</option>
+                          </select>
+                        </div>
+
+                        <div class="form-group">
+                          <label for="time">Time <small class="text-muted ml-1"> - What time do you want your task to execute?</small> </label>
+                          <input type="time" class="form-control" name="time" id="time" value="{{ data['server_stats']['server_id']['log_path']  }}" placeholder="Time" required>
+                        </div>
+                        <div id="ifYes" style="display: none;">
+                          <div class="form-group">
+                            <label for="command">Command <small class="text-muted ml-1"> - What command do you want us to execute? Do not include the '/'</small> </label>
+                            <input type="input" class="form-control" name="command" id="command" value="" placeholder="Command" required>
+                          </div>
+                      </div>
+                    </div>
+                    <div id="ifAdvanced" style="display: none;">
+                      <div class="form-group">
+                        <label for="cron">Cron <small class="text-muted ml-1"> - Input your cron string</small> </label>
+                        <input type="input" class="form-control" name="cron" id="cron" value="* * * * backup_server" placeholder="Cron" required>
+                      </div>
                     </div>
 
                       <div class="form-check-flat">
@@ -173,6 +188,15 @@
           document.getElementById("ifYes").style.display = "none";
       }
   }
+  function basicAdvanced(that) {
+    if (that.value == "advanced") {
+        document.getElementById("ifAdvanced").style.display = "block";
+        document.getElementById("ifBasic").style.display = "none";
+    } else {
+        document.getElementById("ifAdvanced").style.display = "none";
+        document.getElementById("ifBasic").style.display = "block";
+    }
+}
 
 </script>
 

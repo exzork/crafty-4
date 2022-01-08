@@ -94,8 +94,8 @@ class Users_Controller:
         users_helper.update_user(user_id, up_data)
 
     @staticmethod
-    def add_user(username, password=None, api_token=None, enabled=True, superuser=False):
-        return users_helper.add_user(username, password=password, api_token=api_token, enabled=enabled, superuser=superuser)
+    def add_user(username, password=None, email="default@example.com", api_token=None, enabled=True, superuser=False):
+        return users_helper.add_user(username, password=password, email=email, api_token=api_token, enabled=enabled, superuser=superuser)
 
     @staticmethod
     def remove_user(user_id):

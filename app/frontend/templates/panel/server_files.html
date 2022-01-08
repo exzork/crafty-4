@@ -25,7 +25,7 @@
   </div>
   <!-- Page Title Header Ends-->
 
- {% include "parts/details_stats.html %}
+ {% include "parts/details_stats.html" %}
 
   <div class="row">
 
@@ -134,13 +134,15 @@
                 </style>
                 <ul class="tree-view">
                   <li>
-                    <div class="tree-caret tree-ctx-item files-tree-title">
-                      <i class="far fa-folder"></i>
-                      <i class="far fa-folder-open"></i>
-                      {{ translate('serverFiles', 'files', data['lang']) }}
+                    <div class="tree-ctx-item" data-path="{{ data['server_stats']['server_id']['path'] }}">
+                      <span id="{{ data['server_stats']['server_id']['path'] }}span" class="files-tree-title tree-caret-down" data-path="{{ data['server_stats']['server_id']['path'] }}" onclick="getToggleMain(event)">
+                        <i class="far fa-folder"></i>
+                        <i class="far fa-folder-open"></i>
+                        {{ translate('serverFiles', 'files', data['lang']) }}
+                        </span>
                     </div>
                     <ul class="tree-nested d-block" id="files-tree">
-                      <li>{{ translate('serverFiles', 'error', data['lang']) }}</li>
+                      <li><i class="fa fa-spin fa-spinner"></i>{{ translate('serverFiles', 'loadingRecords', data['lang']) }}</li>
 
                     </ul>
                   </li>
@@ -648,10 +650,13 @@
   }, false);
 });
   }
-    function getTreeView() {
+    function getTreeView(event) {
+
+      path = '{{ data['server_stats']['server_id']['path'] }}'
+
       $.ajax({
         type: "GET",
-        url: '/ajax/get_tree?id={{ data['server_stats']['server_id']['server_id'] }}',
+        url: '/ajax/get_tree?id={{ data['server_stats']['server_id']['server_id'] }}&path='+path,
         dataType: 'text',
         success: function(data){
           console.log("got response:");
@@ -661,25 +666,74 @@
           serverDir = dataArr.shift(); // Remove & return first element (server directory)
           text = dataArr.join('\n');
 
-          document.getElementById('files-tree').innerHTML = text;
+          try{
+            document.getElementById(path).innerHTML += text;
+            event.target.parentElement.classList.add("clicked");
+          }catch{
+            document.getElementById('files-tree').innerHTML = text;
+          }
+          
 
           document.getElementsByClassName('files-tree-title')[0].setAttribute('data-path', serverDir);
           document.getElementsByClassName('files-tree-title')[0].setAttribute('data-name', 'Files');
 
           setTimeout(function () {setTreeViewContext()}, 1000);
+        },
+      });
+    }
 
-          var toggler = document.getElementsByClassName("tree-caret");
-          var i;
+    function getToggleMain(event) {
+      path = event.target.parentElement.getAttribute('data-path');
+          document.getElementById("files-tree").classList.toggle("d-block");
+          document.getElementById(path+"span").classList.toggle("tree-caret-down");
+          document.getElementById(path+"span").classList.toggle("tree-caret");
+      }
 
-          for (i = 0; i < toggler.length; i++) {
-            if (toggler[i].classList.contains('files-tree-title')) continue;
-            toggler[i].addEventListener("click", function caretListener() {
-              this.parentElement.querySelector(".tree-nested").classList.toggle("d-block");
-              this.classList.toggle("tree-caret-down");
+    function getDirView(event) {
+        path = event.target.parentElement.getAttribute('data-path');
+
+        if (document.getElementById(path).classList.contains('clicked')){
+
+        var toggler = document.getElementById(path+"span");
+
+        if (toggler.classList.contains('files-tree-title')){
+            document.getElementById(path+"ul").classList.toggle("d-block");
+            document.getElementById(path+"span").classList.toggle("tree-caret-down");
+        }
+        return;
+      }else{
+      $.ajax({
+        type: "GET",
+        url: '/ajax/get_dir?id={{ data['server_stats']['server_id']['server_id'] }}&path='+path,
+        dataType: 'text',
+        success: function(data){
+          console.log("got response:");
+
+          dataArr = data.split('\n');
+          serverDir = dataArr.shift(); // Remove & return first element (server directory)
+          text = dataArr.join('\n');
+
+          try{
+            document.getElementById(path+"span").classList.add('tree-caret-down');
+            document.getElementById(path).innerHTML += text;
+            document.getElementById(path).classList.add("clicked");
+          }catch{
+            console.log("Bad")
+          }
+
+          setTimeout(function () {setTreeViewContext()}, 1000);
+
+          var toggler = document.getElementById(path);
+  
+            if (toggler.classList.contains('files-tree-title')){
+            document.getElementById(path+"span").addEventListener("click", function caretListener() {
+              document.getElementById(path+"ul").classList.toggle("d-block");
+              document.getElementById(path+"span").classList.toggle("tree-caret-down");
             });
           }
         },
       });
+    }
     }
 
     function setTreeViewContext() {
@@ -875,11 +929,6 @@
       });
     }
 
-    document.getElementsByClassName('files-tree-title')[0].addEventListener("click", function caretListener() {
-      this.parentElement.querySelector(".tree-nested").classList.toggle("d-block");
-      this.classList.toggle("tree-caret-down");
-    });
-
     getTreeView();
     setTreeViewContext();
 
@@ -898,7 +947,7 @@
       target.classList.add('btn-primary');
     }
 
-    window.onload = getTreeView();
+
 
 </script>
 
