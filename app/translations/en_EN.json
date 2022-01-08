@@ -212,7 +212,8 @@
         "waitUpload": "Please wait while we upload your files... This may take a while.",
         "stayHere": "DO NOT LEAVE THIS PAGE!",
         "close": "Close",
-        "download": "Download"
+        "download": "Download",
+        "loadingRecords": "Loading Files..."
     },
     "serverConfig": {
         "serverName": "Server Name",

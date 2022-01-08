@@ -124,12 +124,26 @@ class AjaxHandler(BaseHandler):
 
         elif page == "get_tree":
             server_id = self.get_argument('id', None)
+            path = self.get_argument('path', None)
 
             if not self.check_server_id(server_id, 'get_tree'): return
             else: server_id = bleach.clean(server_id)
 
-            self.write(helper.get_os_understandable_path(self.controller.servers.get_server_data_by_id(server_id)['path']) + '\n' +
-                       helper.generate_tree(helper.get_os_understandable_path(self.controller.servers.get_server_data_by_id(server_id)['path'])))
+            if helper.validate_traversal(self.controller.servers.get_server_data_by_id(server_id)['path'], path):
+                self.write(helper.get_os_understandable_path(path) + '\n' +
+                        helper.generate_tree(path))
+            self.finish()
+        
+        elif page == "get_dir":
+            server_id = self.get_argument('id', None)
+            path = self.get_argument('path', None)
+
+            if not self.check_server_id(server_id, 'get_tree'): return
+            else: server_id = bleach.clean(server_id)
+
+            if helper.validate_traversal(self.controller.servers.get_server_data_by_id(server_id)['path'], path):
+                self.write(helper.get_os_understandable_path(path) + '\n' +
+                        helper.generate_dir(path))
             self.finish()
 
     @tornado.web.authenticated
@@ -328,7 +342,8 @@ class AjaxHandler(BaseHandler):
                 return
 
             # Delete the file
-            os.remove(file_path)
+            if helper.validate_traversal(helper.get_os_understandable_path(server_info['path']), file_path):
+                os.remove(file_path)
 
         elif page == "del_dir":
             if not permissions['Files'] in user_perms:
@@ -352,7 +367,8 @@ class AjaxHandler(BaseHandler):
 
             # Delete the directory
             # os.rmdir(dir_path)     # Would only remove empty directories
-            shutil.rmtree(dir_path)  # Removes also when there are contents
+            if helper.validate_traversal(helper.get_os_understandable_path(server_info['path']), dir_path):
+                shutil.rmtree(dir_path)  # Removes also when there are contents
 
         elif page == "delete_server":
             if not permissions['Config'] in user_perms:

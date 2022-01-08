@@ -1,10 +1,13 @@
+from re import X
 import sys
 import json
+import libgravatar
 import logging
+import requests
 import tornado.web
 import tornado.escape
 
-from app.classes.shared.helpers import helper
+from app.classes.shared.helpers import Helpers, helper
 from app.classes.web.base_handler import BaseHandler
 from app.classes.shared.console import console
 from app.classes.shared.main_models import fn
@@ -121,9 +124,27 @@ class PublicHandler(BaseHandler):
                 # log this login
                 self.controller.management.add_to_audit_log(user_data.user_id, "Logged in", 0, self.get_remote_ip())
 
+                if  helper.get_setting("allow_nsfw_profile_pictures"):
+                    rating = "x"
+                else:
+                    rating = "g"
+
+
+                #Get grvatar hash for profile pictures
+                if user_data.email != 'default@example.com' or "":
+                    g = libgravatar.Gravatar(libgravatar.sanitize_email(user_data.email))
+                    url = g.get_image(size=80, default="404", force_default=False, rating=rating, filetype_extension=False, use_ssl=True) # + "?d=404"
+                    if requests.head(url).status_code != 404:
+                        profile_url = url
+                    else:
+                        profile_url = "/static/assets/images/faces-clipart/pic-3.png"
+                else:
+                    profile_url = "/static/assets/images/faces-clipart/pic-3.png"
                 cookie_data = {
                     "username": user_data.username,
                     "user_id": user_data.user_id,
+                    "email": user_data.email,
+                    "profile_url": profile_url,
                     "account_type": user_data.superuser,
                 }
 

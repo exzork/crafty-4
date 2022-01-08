@@ -274,6 +274,8 @@ class Server:
             self.stats.record_stats()
             websocket_helper.broadcast_user(user_id, 'send_start_reload', {
             })
+            check_port_thread = threading.Thread(target=self.check_internet_thread, daemon=True, args=(user_id, user_lang, ), name=f"backup_{self.name}")
+            check_port_thread.start()
         else:
             logger.warning("Server PID {} died right after starting - is this a server config issue?".format(self.process.pid))
             console.warning("Server PID {} died right after starting - is this a server config issue?".format(self.process.pid))
@@ -284,27 +286,26 @@ class Server:
 
             self.crash_watcher_schedule = schedule.every(30).seconds.do(self.detect_crash).tag(self.name)
 
-        check_port_thread = threading.Thread(target=self.check_internet_thread, daemon=True, args=(user_id, user_lang, ), name=f"backup_{self.name}")
-        check_port_thread.start()
-
     def check_internet_thread(self, user_id, user_lang):
         if user_id:
             if helper.check_internet():
                 loc_server_port = servers_helper.get_server_stats_by_id(self.server_id)['server_port']
                 port_status = False
 
-                for i in range(3):
-                    if helper.check_port(loc_server_port):
-                        port_status = True
-                        return
+                checked = False
+                while not checked:
+                    if helper.check_server_conn(loc_server_port):
+                        checked = True
+                        result_of_check = helper.check_port(loc_server_port)
+
+                        if result_of_check == True:
+                            return
+                        else:
+                            websocket_helper.broadcast_user(user_id, 'send_start_error', {
+                            'error': translation.translate('error', 'closedPort', user_lang).format(loc_server_port)
+                        })
                     else:
                         time.sleep(5)
-
-
-                if port_status == False:
-                    websocket_helper.broadcast_user(user_id, 'send_start_error', {
-                    'error': translation.translate('error', 'closedPort', user_lang).format(loc_server_port)
-                })
             else:
                 websocket_helper.broadcast_user(user_id, 'send_start_error', {
                     'error': translation.translate('error', 'internet', user_lang)

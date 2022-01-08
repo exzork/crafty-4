@@ -38,6 +38,7 @@ class Users(Model):
     last_ip = CharField(default="")
     username = CharField(default="", unique=True, index=True)
     password = CharField(default="")
+    email = CharField(default="default@example.com")
     enabled = BooleanField(default=True)
     superuser = BooleanField(default=False)
     api_token = CharField(default="", unique=True, index=True) # we may need to revisit this
@@ -112,6 +113,7 @@ class helper_users:
                 'last_ip': "127.27.23.89",
                 'username': "SYSTEM",
                 'password': None,
+                'email': "default@example.com",
                 'enabled': True,
                 'superuser': True,
                 'api_token': None,
@@ -136,7 +138,7 @@ class helper_users:
             return False
 
     @staticmethod
-    def add_user(username, password=None, api_token=None, enabled=True, superuser=False):
+    def add_user(username, password=None, email=None, api_token=None, enabled=True, superuser=False):
         if password is not None:
             pw_enc = helper.encode_pass(password)
         else:
@@ -149,6 +151,7 @@ class helper_users:
         user_id = Users.insert({
             Users.username: username.lower(),
             Users.password: pw_enc,
+            Users.email: email,
             Users.api_token: api_token,
             Users.enabled: enabled,
             Users.superuser: superuser,

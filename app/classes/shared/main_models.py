@@ -48,7 +48,7 @@ class db_builder:
         #    Users.enabled: True,
         #    Users.superuser: True
         #}).execute()
-        user_id = users_helper.add_user(username=username, password=password, superuser=True)
+        user_id = users_helper.add_user(username=username, password=password, email="default@example.com", superuser=True)
         #users_helper.update_user(user_id, user_crafty_data={"permissions_mask":"111", "server_quantity":[-1,-1,-1]} )
 
         #console.info("API token is {}".format(api_token))

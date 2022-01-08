@@ -12,5 +12,6 @@
   "show_contribute_link": true,
   "virtual_terminal_lines": 70,
   "max_log_lines": 700,
-  "keywords": ["help", "chunk"]
+  "keywords": ["help", "chunk"],
+  "allow_nsfw_profile_pictures": false
 }
