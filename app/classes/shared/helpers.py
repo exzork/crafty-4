@@ -682,14 +682,14 @@ class Helpers:
                 output += \
                     """<li class="tree-item" data-path="{}">
                     \n<div id="{}" data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
-                    <span id="{}span" class="files-tree-title" data-path="{}" onclick="getDirView(event)">
+                    <span id="{}span" class="files-tree-title" data-path="{}" data-name="{}" onclick="getDirView(event)">
                       <i class="far fa-folder"></i>
                       <i class="far fa-folder-open"></i>
                       {}
                       </span>
                     </div><li>
                     \n"""\
-                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), filename)
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
             else:
                 output += """<li
                 class="tree-item tree-ctx-item tree-file"
@@ -712,13 +712,13 @@ class Helpers:
                 output += \
                     """<li class="tree-item" data-path="{}">
                     \n<div id="{}" data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
-                    <span id="{}span" class="files-tree-title" data-path="{}" onclick="getDirView(event)">
+                    <span id="{}span" class="files-tree-title" data-path="{}" data-name="{}" onclick="getDirView(event)">
                       <i class="far fa-folder"></i>
                       <i class="far fa-folder-open"></i>
                       {}
                       </span>
                     </div><li>"""\
-                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), filename)
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
             else:
                 output += """<li
                 class="tree-item tree-ctx-item tree-file"
