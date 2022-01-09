@@ -691,11 +691,12 @@ class Helpers:
                     \n"""\
                         .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
             else:
-                output += """<li
-                class="tree-item tree-ctx-item tree-file"
-                data-path="{}"
-                data-name="{}"
-                onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename,  filename)
+                if filename != "crafty_managed.txt":
+                    output += """<li
+                    class="tree-item tree-ctx-item tree-file"
+                    data-path="{}"
+                    data-name="{}"
+                    onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename,  filename)
         return output
 
     @staticmethod
@@ -720,11 +721,12 @@ class Helpers:
                     </div><li>"""\
                         .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
             else:
-                output += """<li
-                class="tree-item tree-ctx-item tree-file"
-                data-path="{}"
-                data-name="{}"
-                onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename, filename)
+                if filename != "crafty_managed.txt":
+                    output += """<li
+                    class="tree-item tree-ctx-item tree-file"
+                    data-path="{}"
+                    data-name="{}"
+                    onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename, filename)
         output += '</ul>\n'
         return output
 
