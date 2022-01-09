@@ -751,13 +751,13 @@
           }
           $('#renameItem').show();
 
-          var isDir = event.target.classList.contains('tree-folder');
+          var isDir = event.target.classList.contains('files-tree-title');
           $('#createFile').toggle(isDir);
           $('#createDir').toggle(isDir);
           $('#deleteDir').toggle(isDir);
           $('#upload').toggle(isDir);
 
-          var isFile = event.target.classList.contains('files-tree-title');
+          var isFile = event.target.classList.contains('tree-file');
           $('#deleteFile').toggle(isFile);
           $('#downloadFile').toggle(isFile);
           console.log({ 'event.target': event.target, isDir, isFile });
