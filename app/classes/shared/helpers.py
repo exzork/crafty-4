@@ -731,6 +731,14 @@ class Helpers:
         return output
 
     @staticmethod
+    def unzipServer(zip_path):
+         tempDir = tempfile.mkdtemp()
+         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            #extracts archive to temp directory
+            zip_ref.extractall(tempDir)
+            return tempDir
+
+    @staticmethod
     def in_path(parent_path, child_path):
         # Smooth out relative path names, note: if you are concerned about symbolic links, you should use os.path.realpath too
         parent_path = os.path.abspath(parent_path)

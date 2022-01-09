@@ -295,64 +295,25 @@ class Controller:
         server_id = helper.create_uuid()
         new_server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
-        zip_path = helper.get_os_understandable_path(zip_path)
+        tempDir = helper.get_os_understandable_path(zip_path)
 
         if helper.check_file_perms(zip_path):
             helper.ensure_dir_exists(new_server_dir)
             helper.ensure_dir_exists(backup_path)
-            tempDir = tempfile.mkdtemp()
             has_properties = False
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                #extracts archive to temp directory
-                zip_ref.extractall(tempDir)
-                if len(zip_ref.filelist) > 1:
-                    for item in os.listdir(tempDir):
-                        if str(item) == 'server.properties':
-                            has_properties = True
-                        try:
-                            shutil.move(os.path.join(tempDir, item), os.path.join(new_server_dir, item))
-                        except Exception as ex:
-                            logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
-                    if not has_properties:
-                        logger.info("No server.properties found on zip file import. Creating one with port selection of {}".format(str(port)))
-                        with open(os.path.join(new_server_dir, "server.properties"), "w") as f:
-                            f.write("server-port={}".format(port))
-                            f.close()
-                        zip_ref.close()
-                else:
-
-                    #iterates list of files
-                    for i in range(len(zip_ref.filelist)):
-                        #checks if the list of files inside of a dir is greater than 1 or if it's not a directory.
-                        if len(zip_ref.filelist) > 1 or not zip_ref.filelist[i].is_dir():
-                            #sets local variable to be that filename and we break out of the loop since we found our root dir.
-                            test = zip_ref.filelist[i-1].filename
-                            break
-                    path_list = test.split('/')
-                    root_path = path_list[0]
-                    if len(path_list) > 1:
-                        for i in range(len(path_list)-1):
-                            try:
-                                root_path = os.path.join(root_path, path_list[i+1])
-                            except:
-                                root_path = root_path
-
-                    full_root_path = os.path.join(tempDir, root_path)
-
-                    
-                    for item in os.listdir(full_root_path):
-                        if str(item) == 'server.properties':
-                            has_properties = True
-                        try:
-                            shutil.move(os.path.join(full_root_path, item), os.path.join(new_server_dir, item))
-                        except Exception as ex:
-                            logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
-                    if not has_properties:
-                        logger.info("No server.properties found on zip file import. Creating one with port selection of {}".format(str(port)))
-                        with open(os.path.join(new_server_dir, "server.properties"), "w") as f:
-                            f.write("server-port={}".format(port))
-                            f.close()
-                    zip_ref.close()
+            #extracts archive to temp directory
+            for item in os.listdir(tempDir):
+                if str(item) == 'server.properties':
+                    has_properties = True
+                try:
+                    shutil.move(os.path.join(tempDir, item), os.path.join(new_server_dir, item))
+                except Exception as ex:
+                    logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
+            if not has_properties:
+                logger.info("No server.properties found on zip file import. Creating one with port selection of {}".format(str(port)))
+                with open(os.path.join(new_server_dir, "server.properties"), "w") as f:
+                    f.write("server-port={}".format(port))
+                    f.close()
         else:
             return "false"
 

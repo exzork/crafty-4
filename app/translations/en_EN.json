@@ -279,7 +279,10 @@
     "panelConfig": {
         "save": "Save",
         "cancel": "Cancel",
-        "delete": "Delete"
+        "delete": "Delete",
+        "superConfirmTitle": "Enable Super User? Are you sure?",
+        "superConfirm": "Proceed only if you want this user to have access to EVERYTHING (all user accounts, servers, panel configs, etc). They can even remove your super user access."
+
     },
     "datatables": {
         "i18n": {

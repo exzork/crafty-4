@@ -209,7 +209,7 @@
             <br />
             <p class="card-description">
 
-              <form method="post" class="server-wizard" onSubmit="wait_msg(true)">
+              <form name="zip" method="post" class="server-wizard" onSubmit="wait_msg(true)">
                 {% raw xsrf_form_html() %}
                 <input type="hidden" value="import_zip" name="create_type">
 
@@ -228,6 +228,15 @@
                         <input type="text" class="form-control" id="server_path" name="server_path" placeholder="/var/opt/server.zip" required>
                       </div>
                     </div>
+
+                    <div class="col-sm-12">
+                      <div class="form-group">
+                        <label for="server">{{ translate('serverWizard', 'zipPath', data['lang']) }} Select Root Dir <small>{{ translate('serverWizard', 'absoluteZipPath', data['lang']) }}</small></label>
+                        <br>
+                        <button class="btn btn-primary mr-2" id="root_files_button" type="button">Click here to select Root Dir</button>
+                      </div>
+                    </div>
+                    
 
                     <div class="col-sm-12">
                       <div class="form-group">
@@ -288,9 +297,13 @@
                           </div>
                         </div>
                       </div>
-
+                      <div class="col-sm-12" style="visibility: hidden;">
+                        <div class="form-group">
+                          <input type="text" class="form-control" id="zip_root_path" name="zip_root_path">
+                        </div>
+                      </div>
                     </div>
-                    <button type="submit" class="btn btn-primary mr-2">{{ translate('serverWizard', 'importServerButton', data['lang']) }}</button>
+                    <button id="zip_submit" type="submit" title="You must select server root dir first" disabled class="btn btn-primary mr-2">{{ translate('serverWizard', 'importServerButton', data['lang']) }}</button>
                     <button type="reset" class="btn btn-danger mr-2">{{ translate('serverWizard', 'resetForm', data['lang']) }}</button>
                   </div>
                 </div>
@@ -299,6 +312,31 @@
           </div>
         </div>
       </div>
+</div>
+<div class="modal fade" id="dir_select" tabindex="-1" role="dialog" aria-labelledby="dir_select" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="tree-ctx-item" data-path="">
+          <span id="main-tree" class="files-tree-title tree-caret-down root-dir" data-path="">
+            <i class="far fa-folder"></i>
+            <i class="far fa-folder-open"></i>
+            {{ translate('serverFiles', 'files', data['lang']) }}
+            </span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" onclick="" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
 </div>
 <style>
 .scroll {
@@ -333,6 +371,26 @@
 {% end %}
 
 {% block js%}
+<script>
+  document.getElementById("root_files_button").addEventListener("click", function(){
+    if(document.forms["zip"]["server_path"].value != ""){
+    path = document.getElementById('server_path')
+    var token = getCookie("_xsrf")
+    $.ajax({
+      type: "POST",
+      headers: {'X-XSRFToken': token},
+      url: '/ajax/unzip_server',
+      data: {
+        path: path,
+        server_id: '-1'
+      },
+    });
+  }else{
+    bootbox.alert("You must input a path before selecting this button");
+  }
+  });
+
+</script>
 
 <script>
 function dropDown(event) {
@@ -366,9 +424,14 @@ function hide(event) {
   function wait_msg(importing){
     bootbox.alert({
         title: importing ? '{% raw translate("serverWizard", "importing", data['lang']) %}' : '{% raw translate("serverWizard", "downloading", data['lang']) %}',
-        message: '<i class="fas fa-cloud-download"></i> {% raw translate("serverWizard", "bePatient", data['lang']) %}'
+        message: '<i class="fas fa-cloud-download"></i> {% raw translate("serverWizard", "bePatient", data['lang']) %}',
       });
   }
+
+  function show_file_tree(){
+    $("#dir_select").modal();
+  }
+  
 
   function check_sizes(a, b, changed){
     max_mem = parseFloat(a.val());
@@ -380,6 +443,104 @@ function hide(event) {
       b.val(max_mem)
     }
   }
+
+  var fileList = document.getElementById("files");
+  fileList.addEventListener("change", function (e) {
+      var list = "";
+      for (var i = 0; i < this.files.length; i++) {
+          list += "<li class='col-xs-12 file-list'>" + this.files[i].name + "</li>"
+      }
+
+      document.getElementById("fileList").innerHTML = list;
+  }, false);
+});
+  }
+    function getTreeView(event) {
+
+      path = '/'
+
+      $.ajax({
+        type: "GET",
+        url: '/ajax/get_tree?id=1&path='+path,
+        dataType: 'text',
+        success: function(data){
+          console.log("got response:");
+          console.log(data);
+
+          dataArr = data.split('\n');
+          serverDir = dataArr.shift(); // Remove & return first element (server directory)
+          text = dataArr.join('\n');
+
+          try{
+            document.getElementById(path).innerHTML += text;
+            event.target.parentElement.classList.add("clicked");
+          }catch{
+            document.getElementById('files-tree').innerHTML = text;
+          }
+          
+
+          document.getElementsByClassName('files-tree-title')[0].setAttribute('data-path', serverDir);
+          document.getElementsByClassName('files-tree-title')[0].setAttribute('data-name', 'Files');
+
+          setTimeout(function () {setTreeViewContext()}, 1000);
+        },
+      });
+    }
+
+    function getToggleMain(event) {
+      path = event.target.parentElement.getAttribute('data-path');
+          document.getElementById("files-tree").classList.toggle("d-block");
+          document.getElementById(path+"span").classList.toggle("tree-caret-down");
+          document.getElementById(path+"span").classList.toggle("tree-caret");
+      }
+
+    function getDirView(event) {
+        path = event.target.parentElement.getAttribute('data-path');
+
+        if (document.getElementById(path).classList.contains('clicked')){
+
+        var toggler = document.getElementById(path+"span");
+
+        if (toggler.classList.contains('files-tree-title')){
+            document.getElementById(path+"ul").classList.toggle("d-block");
+            document.getElementById(path+"span").classList.toggle("tree-caret-down");
+        }
+        return;
+      }else{
+      $.ajax({
+        type: "GET",
+        url: '/ajax/get_dir?id=1&path='+path,
+        dataType: 'text',
+        success: function(data){
+          console.log("got response:");
+
+          dataArr = data.split('\n');
+          serverDir = dataArr.shift(); // Remove & return first element (server directory)
+          text = dataArr.join('\n');
+
+          try{
+            document.getElementById(path+"span").classList.add('tree-caret-down');
+            document.getElementById(path).innerHTML += text;
+            document.getElementById(path).classList.add("clicked");
+          }catch{
+            console.log("Bad")
+          }
+
+          setTimeout(function () {setTreeViewContext()}, 1000);
+
+          var toggler = document.getElementById(path);
+  
+            if (toggler.classList.contains('files-tree-title')){
+            document.getElementById(path+"span").addEventListener("click", function caretListener() {
+              document.getElementById(path+"ul").classList.toggle("d-block");
+              document.getElementById(path+"span").classList.toggle("tree-caret-down");
+            });
+          }
+        },
+      });
+    }
+    }
+
 
 </script>
 <script type="text/javascript">

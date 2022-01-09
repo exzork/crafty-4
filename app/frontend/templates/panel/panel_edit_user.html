@@ -187,9 +187,9 @@
 
                         <label for="superuser" class="form-check-label ml-4 mb-4">
                           {% if data['user']['superuser'] %}
-                              <input type="checkbox" class="form-check-input" id="superuser" name="superuser" checked="" value="1" disabled >Super User
+                              <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser" name="superuser" checked="" value="1" {{ data['super-disabled'] }} >Super User
                           {% else %}
-                              <input type="checkbox" class="form-check-input" id="superuser" name="superuser" value="1" disabled >Super User
+                              <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser" name="superuser" {{ data['super-disabled'] }} value="1" >Super User
                           {% end %}
                         </label>
 
@@ -250,6 +250,32 @@
 
 {% block js %}
 <script>
+
+  function superConfirm() {
+    if (document.getElementById('superuser').checked){
+    bootbox.confirm({
+      title: "{{ translate('panelConfig', 'superConfirmTitle', data['lang']) }}",
+      message: "{{ translate('panelConfig', 'superConfirm', data['lang']) }}",
+      buttons: {
+          cancel: {
+              label: '<i class="fa fa-times"></i> {{ translate('panelConfig', 'cancel', data['lang']) }}'
+          },
+          confirm: {
+              label: '<i class="fa fa-check"></i> {{ translate('serverBackups', 'confirm', data['lang']) }}'
+          }
+      },
+      callback: function (result) {
+          if (result == true){
+            return;
+          }else{
+            document.getElementById('superuser').checked = false;
+          }
+      }
+  });
+}else{
+  return
+}
+  }
 
 
     //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security

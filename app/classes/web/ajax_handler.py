@@ -275,6 +275,14 @@ class AjaxHandler(BaseHandler):
                 self.controller.rename_backup_dir(server_id, new_server_id, new_server['server_uuid'])
                 self.controller.remove_server(server_id, True)
                 self.redirect('/panel/dashboard')
+
+        elif page == "unzip_server":
+            print("in unzip server")
+            path = self.get_argument('path', None)
+            logger.info(
+                "Removing server from panel for server: {}".format(self.controller.servers.get_server_friendly_name(server_id)))
+            self.controller.remove_server(server_id, False)
+            return "test"
                 
 
     @tornado.web.authenticated
