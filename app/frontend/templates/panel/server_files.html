@@ -135,7 +135,7 @@
                 <ul class="tree-view">
                   <li>
                     <div class="tree-ctx-item" data-path="{{ data['server_stats']['server_id']['path'] }}">
-                      <span id="{{ data['server_stats']['server_id']['path'] }}span" class="files-tree-title tree-caret-down" data-path="{{ data['server_stats']['server_id']['path'] }}" onclick="getToggleMain(event)">
+                      <span id="{{ data['server_stats']['server_id']['path'] }}span" class="files-tree-title tree-caret-down root-dir" data-path="{{ data['server_stats']['server_id']['path'] }}" onclick="getToggleMain(event)">
                         <i class="far fa-folder"></i>
                         <i class="far fa-folder-open"></i>
                         {{ translate('serverFiles', 'files', data['lang']) }}
@@ -757,12 +757,12 @@
           $('#deleteDir').toggle(isDir);
           $('#upload').toggle(isDir);
 
-          var isFile = event.target.classList.contains('tree-file');
+          var isFile = event.target.classList.contains('files-tree-title');
           $('#deleteFile').toggle(isFile);
           $('#downloadFile').toggle(isFile);
           console.log({ 'event.target': event.target, isDir, isFile });
 
-          if(event.target.classList.contains('files-tree-title')) {
+          if(event.target.classList.contains('root-dir')) {
             $('#createFile').show();
             $('#createDir').show();
             $('#renameItem').hide();
