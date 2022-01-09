@@ -16,7 +16,7 @@ import html
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
-from app.classes.models.servers import Servers, servers_helper
+from app.classes.models.servers import Servers, helper_servers, servers_helper
 from app.classes.models.management import management_helper
 from app.classes.web.websocket_helper import websocket_helper
 from app.classes.shared.translation import translation
@@ -196,6 +196,8 @@ class Server:
         logger.info("Launching Server {} with command {}".format(self.name, self.server_command))
         console.info("Launching Server {} with command {}".format(self.name, self.server_command))
 
+    #Checks for eula. Creates one if none detected.
+    #If EULA is detected and not set to one of these true vaiants we offer to set it true.
         if helper.check_file_exists(os.path.join(self.settings['path'], 'eula.txt')):
             f = open(os.path.join(self.settings['path'], 'eula.txt'), 'r')
             line = f.readline().lower()
@@ -227,7 +229,6 @@ class Server:
                 return False
             return False
         f.close()
-        
         if helper.is_os_windows():
             logger.info("Windows Detected")
             creationflags=subprocess.CREATE_NEW_CONSOLE
@@ -237,7 +238,9 @@ class Server:
 
         logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
 
+        #Sets waiting start to false since server is now starting.
         servers_helper.set_waiting_start(self.server_id, False)
+        
         try:
             self.process = subprocess.Popen(self.server_command, cwd=self.server_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except Exception as ex:
@@ -257,7 +260,7 @@ class Server:
                     'error': translation.translate('error', 'start-error', user_lang).format(self.name, ex)
                 })
             return False
-        servers_helper.set_waiting_start(self.server_id, False)
+
         out_buf = ServerOutBuf(self.process, self.server_id)
 
         logger.debug('Starting virtual terminal listener for server {}'.format(self.name))
@@ -272,10 +275,19 @@ class Server:
             console.info("Server {} running with PID {}".format(self.name, self.process.pid))
             self.is_crashed = False
             self.stats.record_stats()
-            websocket_helper.broadcast_user(user_id, 'send_start_reload', {
-            })
-            check_port_thread = threading.Thread(target=self.check_internet_thread, daemon=True, args=(user_id, user_lang, ), name=f"backup_{self.name}")
-            check_port_thread.start()
+            check_internet_thread = threading.Thread(target=self.check_internet_thread, daemon=True, args=(user_id, user_lang, ), name="{self.name}_Internet")
+            check_internet_thread.start()
+            #Checks if this is the servers first run.
+            if servers_helper.get_server_stats_by_id(self.server_id)['first_run']:
+                loc_server_port = servers_helper.get_server_stats_by_id(self.server_id)['server_port']
+                #Sends port reminder message.
+                websocket_helper.broadcast_user(user_id, 'send_start_error', {
+                    'error': translation.translate('error', 'portReminder', user_lang).format(self.name, loc_server_port)
+                })
+                servers_helper.set_first_run(self.server_id)
+            else:
+                websocket_helper.broadcast_user(user_id, 'send_start_reload', {
+                })
         else:
             logger.warning("Server PID {} died right after starting - is this a server config issue?".format(self.process.pid))
             console.warning("Server PID {} died right after starting - is this a server config issue?".format(self.process.pid))
@@ -285,28 +297,10 @@ class Server:
             console.info("Server {} has crash detection enabled - starting watcher task".format(self.name))
 
             self.crash_watcher_schedule = schedule.every(30).seconds.do(self.detect_crash).tag(self.name)
-
+            
     def check_internet_thread(self, user_id, user_lang):
         if user_id:
-            if helper.check_internet():
-                loc_server_port = servers_helper.get_server_stats_by_id(self.server_id)['server_port']
-                port_status = False
-
-                checked = False
-                while not checked:
-                    if helper.check_server_conn(loc_server_port):
-                        checked = True
-                        result_of_check = helper.check_port(loc_server_port)
-
-                        if result_of_check == True:
-                            return
-                        else:
-                            websocket_helper.broadcast_user(user_id, 'send_start_error', {
-                            'error': translation.translate('error', 'closedPort', user_lang).format(loc_server_port)
-                        })
-                    else:
-                        time.sleep(5)
-            else:
+            if not helper.check_internet():
                 websocket_helper.broadcast_user(user_id, 'send_start_error', {
                     'error': translation.translate('error', 'internet', user_lang)
                 })

@@ -77,6 +77,7 @@ class Server_Stats(Model):
     version = CharField(default="")
     updating = BooleanField(default=False)
     waiting_start = BooleanField(default=False)
+    first_run = BooleanField(default=True)
 
 
     class Meta:
@@ -181,6 +182,16 @@ class helper_servers:
             logger.error("Database entry not found. ".format(ex))
         with database.atomic():
             Server_Stats.update(updating=value).where(Server_Stats.server_id == server_id).execute()
+
+    @staticmethod
+    def set_first_run(server_id):
+        #Sets first run to false
+        try:
+            row = Server_Stats.select().where(Server_Stats.server_id == server_id)
+        except Exception as ex:
+            logger.error("Database entry not found. ".format(ex))
+        with database.atomic():
+            Server_Stats.update(first_run=False).where(Server_Stats.server_id == server_id).execute()
 
     @staticmethod
     def get_TTL_without_player(server_id):

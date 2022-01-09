@@ -175,9 +175,7 @@ class Webserver:
         self.HTTPS_Server = tornado.httpserver.HTTPServer(app, ssl_options=cert_objects)
         self.HTTPS_Server.listen(https_port)
 
-        logger.info("http://{}:{} is up and ready for connections.".format(helper.get_local_ip(), http_port))
         logger.info("https://{}:{} is up and ready for connections.".format(helper.get_local_ip(), https_port))
-        console.info("http://{}:{} is up and ready for connections.".format(helper.get_local_ip(), http_port))
         console.info("https://{}:{} is up and ready for connections.".format(helper.get_local_ip(), https_port))
 
         console.info("Server Init Complete: Listening For Connections:")

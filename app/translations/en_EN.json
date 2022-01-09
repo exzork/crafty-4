@@ -12,7 +12,7 @@
         "embarassing": "Oh my, well, this is embarrassing.",
         "error": "Error!",
         "start-error": "Server {} failed to start with error code: {}",
-        "closedPort": "We have detected port {} may not be open on the host network or a firewall is blocking it. Remote client connections to the server may be limited.",
+        "portReminder": "We have detected this is the first time {} has been run. Make sure to forward port {} through your router/firewall to make this remotely accessible from the internet.",
         "internet": "We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited.",
         "eulaTitle": "Agree To EULA",
         "eulaMsg": "You must agree to the EULA. A copy of the Mojang EULA is linked under this message.",

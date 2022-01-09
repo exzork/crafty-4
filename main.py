@@ -37,22 +37,6 @@ def do_intro():
 
     console.magenta(intro)
 
-def check_port_thread():
-    port = helper.get_setting('https_port')
-    checked = False
-    while not checked:
-        if helper.check_server_conn(port):
-            checked = True
-            result_of_check = helper.check_port(port)
-            if result_of_check == True:
-                return
-            else:
-                console.warning("We have detected Crafty's port, {} may not be open on the host network or a firewall is blocking it. Remote client connections to Crafty may be limited.".format(helper.get_setting('https_port')))
-                console.help("If you are not forwarding ports from your public IP or your router does not support hairpin NAT you can safely disregard the previous message.")
-        else:
-            time.sleep(5)
-        return
-
 
 def setup_logging(debug=True):
     logging_config_file = os.path.join(os.path.curdir,
@@ -128,6 +112,7 @@ if __name__ == '__main__':
 
     if fresh_install:
         console.debug("Fresh install detected")
+        console.warning("We have detected a fresh install. Please be sure to forward Crafty's port, {}, through your router/firewall if you would like to be able to access Crafty remotely.".format(helper.get_setting('https_port')))
         installer.default_settings()
     else:
         console.debug("Existing install detected")
@@ -160,8 +145,6 @@ if __name__ == '__main__':
 
     if not helper.check_internet():
             console.warning("We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited.")
-    check_port_thread = threading.Thread(target=check_port_thread, daemon=True, name="crafty_port_check")
-    check_port_thread.start()
 
     if not controller.check_system_user():
         controller.add_system_user()
