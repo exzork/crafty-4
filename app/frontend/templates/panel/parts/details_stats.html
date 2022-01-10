@@ -3,7 +3,7 @@
         <div class="card">
           <div class="card-body pt-3 pb-3">
             <div class="row">
-              <div class="col-sm-3 mr-2">
+              <div class="col-sm-4 mr-2">
                 {% if data['server_stats']['running'] %}
                   <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span class="text-success">{{ translate('serverStats', 'online', data['lang']) }}</span><br />
                   <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started">{{ data['server_stats']['started'] }} ({{ translate('serverStats', 'serverTime', data['lang']) }})</span><br />
@@ -13,6 +13,8 @@
                   <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span class="text-danger">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
                   <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span class="text-danger">{{ translate('serverStats', 'offline', data['lang']) }}</span>
                 {% end %}
+                <br>
+                <b>{{ translate('serverStats', 'serverTimeZone', data['lang']) }}:</b> <span class="text-info">{{ data['serverTZ'] }}</span>
               </div>
 
               <div class="col-sm-3 mr-2">

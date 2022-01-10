@@ -144,6 +144,10 @@ class Servers_Controller:
     def get_waiting_start(server_id):
         return servers_helper.get_waiting_start(server_id)
 
+    @staticmethod
+    def get_update_status(server_id):
+        return servers_helper.get_update_status(server_id)
+
     #************************************************************************************************
     #                                    Servers Helpers Methods
     #************************************************************************************************

@@ -74,6 +74,7 @@ class PanelHandler(BaseHandler):
         page_data = {
             # todo: make this actually pull and compare version data
             'update_available': False,
+            'serverTZ': time.tzname,
             'version_data': helper.get_version_string(),
             'user_data': exec_user_data,
             'user_role' : exec_user_role,

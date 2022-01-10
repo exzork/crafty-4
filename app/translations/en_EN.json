@@ -143,7 +143,8 @@
         "description": "Description",
         "errorCalculatingUptime": "Error Calculating Uptime",
         "serverTime": "UTC Time",
-        "unableToConnect": "Unable To Connect"
+        "unableToConnect": "Unable To Connect",
+        "serverTimeZone": "Server Time Zone"
     },
     "serverDetails": {
         "serverDetails": "Server Details",

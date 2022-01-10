@@ -184,6 +184,11 @@ class helper_servers:
             Server_Stats.update(updating=value).where(Server_Stats.server_id == server_id).execute()
 
     @staticmethod
+    def get_update_status(server_id):
+        waiting_start = Server_Stats.select().where(Server_Stats.server_id == server_id).get()
+        return waiting_start.waiting_start
+
+    @staticmethod
     def set_first_run(server_id):
         #Sets first run to false
         try:
@@ -192,6 +197,11 @@ class helper_servers:
             logger.error("Database entry not found. ".format(ex))
         with database.atomic():
             Server_Stats.update(first_run=False).where(Server_Stats.server_id == server_id).execute()
+
+    @staticmethod
+    def get_first_run(server_id):
+        first_run = Server_Stats.select().where(Server_Stats.server_id == server_id).get()
+        return first_run.first_run
 
     @staticmethod
     def get_TTL_without_player(server_id):

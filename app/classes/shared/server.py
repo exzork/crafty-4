@@ -117,7 +117,7 @@ class Server:
         self.crash_watcher_schedule = None
         self.stats = stats
         self.backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name=f"backup_{self.name}")
-        self.is_backingup = False
+        self.is_backingup = False,
 
     def reload_server_settings(self):
         server_data = servers_helper.get_server_data_by_id(self.server_id)
@@ -278,13 +278,13 @@ class Server:
             check_internet_thread = threading.Thread(target=self.check_internet_thread, daemon=True, args=(user_id, user_lang, ), name="{self.name}_Internet")
             check_internet_thread.start()
             #Checks if this is the servers first run.
-            if servers_helper.get_server_stats_by_id(self.server_id)['first_run']:
+            if servers_helper.get_first_run(self.server_id):
+                servers_helper.set_first_run(self.server_id)
                 loc_server_port = servers_helper.get_server_stats_by_id(self.server_id)['server_port']
                 #Sends port reminder message.
                 websocket_helper.broadcast_user(user_id, 'send_start_error', {
                     'error': translation.translate('error', 'portReminder', user_lang).format(self.name, loc_server_port)
                 })
-                servers_helper.set_first_run(self.server_id)
             else:
                 websocket_helper.broadcast_user(user_id, 'send_start_reload', {
                 })
@@ -545,8 +545,7 @@ class Server:
         update_thread.start()
 
     def check_update(self):
-        server_stats = servers_helper.get_server_stats_by_id(self.server_id)
-        if server_stats['updating']:
+        if servers_helper.get_update_status(self.server_id):
             return True
         else:
             return False
