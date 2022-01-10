@@ -296,26 +296,22 @@ class Controller:
         new_server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
         tempDir = helper.get_os_understandable_path(zip_path)
-
-        if helper.check_file_perms(zip_path):
-            helper.ensure_dir_exists(new_server_dir)
-            helper.ensure_dir_exists(backup_path)
-            has_properties = False
-            #extracts archive to temp directory
-            for item in os.listdir(tempDir):
-                if str(item) == 'server.properties':
-                    has_properties = True
-                try:
-                    shutil.move(os.path.join(tempDir, item), os.path.join(new_server_dir, item))
-                except Exception as ex:
-                    logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
-            if not has_properties:
-                logger.info("No server.properties found on zip file import. Creating one with port selection of {}".format(str(port)))
-                with open(os.path.join(new_server_dir, "server.properties"), "w") as f:
-                    f.write("server-port={}".format(port))
-                    f.close()
-        else:
-            return "false"
+        helper.ensure_dir_exists(new_server_dir)
+        helper.ensure_dir_exists(backup_path)
+        has_properties = False
+        #extracts archive to temp directory
+        for item in os.listdir(tempDir):
+            if str(item) == 'server.properties':
+                has_properties = True
+            try:
+                shutil.move(os.path.join(tempDir, item), os.path.join(new_server_dir, item))
+            except Exception as ex:
+                logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
+        if not has_properties:
+            logger.info("No server.properties found on zip file import. Creating one with port selection of {}".format(str(port)))
+            with open(os.path.join(new_server_dir, "server.properties"), "w") as f:
+                f.write("server-port={}".format(port))
+                f.close()
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),

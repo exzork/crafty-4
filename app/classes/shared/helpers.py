@@ -753,7 +753,7 @@ class Helpers:
                       </span>
                     </input></div><li>
                     \n"""\
-                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
         return output
 
     @staticmethod
@@ -777,19 +777,20 @@ class Helpers:
                       {}
                       </span>
                     </input></div><li>"""\
-                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
         return output
 
     @staticmethod
     def unzipServer(zip_path, user_id):
-        tempDir = tempfile.mkdtemp()
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            #extracts archive to temp directory
-            zip_ref.extractall(tempDir)
-        if user_id:
-            websocket_helper.broadcast_user(user_id, 'send_temp_path',{
-            'path': tempDir 
-            })
+        if helper.check_file_perms(zip_path):
+            tempDir = tempfile.mkdtemp()
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                #extracts archive to temp directory
+                zip_ref.extractall(tempDir)
+            if user_id:
+                websocket_helper.broadcast_user(user_id, 'send_temp_path',{
+                'path': tempDir 
+                })
         return
 
     @staticmethod

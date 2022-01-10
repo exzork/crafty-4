@@ -576,7 +576,7 @@ function hide(event) {
     }
     if (webSocket) {
       webSocket.on('send_temp_path', function (data) {
-        document.getElementById('main-tree-input').setAttribute('data-path', data.path)
+        document.getElementById('main-tree-input').setAttribute('value', data.path)
         getTreeView(data.path);
         show_file_tree();
       });
