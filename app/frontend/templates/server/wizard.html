@@ -302,6 +302,33 @@
                           <input type="text" class="form-control" id="zip_root_path" name="zip_root_path">
                         </div>
                       </div>
+                      <div class="modal fade" id="dir_select" tabindex="-1" role="dialog" aria-labelledby="dir_select" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="exampleModalLongTitle">Select Root Dir</h5>
+                              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                            </div>
+                            <div class="modal-body">
+                              <div class="tree-ctx-item" data-path="" style="overflow: scroll; max-height:75%;">
+                                <input type="radio" id="main-tree-input" name="root_path" value="" checked>
+                                  <span id="main-tree" class="files-tree-title tree-caret-down root-dir" data-path="">
+                                    <i class="far fa-folder"></i>
+                                    <i class="far fa-folder-open"></i>
+                                    {{ translate('serverFiles', 'files', data['lang']) }}
+                                    </span>
+                                </input>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                              <button type="button" id="modal-okay" data-dismiss="modal" class="btn btn-primary">Save changes</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <button id="zip_submit" type="submit" title="You must select server root dir first" disabled class="btn btn-primary mr-2">{{ translate('serverWizard', 'importServerButton', data['lang']) }}</button>
                     <button type="reset" class="btn btn-danger mr-2">{{ translate('serverWizard', 'resetForm', data['lang']) }}</button>
@@ -312,31 +339,6 @@
           </div>
         </div>
       </div>
-</div>
-<div class="modal fade" id="dir_select" tabindex="-1" role="dialog" aria-labelledby="dir_select" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="tree-ctx-item" data-path="">
-          <span id="main-tree" class="files-tree-title tree-caret-down root-dir" data-path="">
-            <i class="far fa-folder"></i>
-            <i class="far fa-folder-open"></i>
-            {{ translate('serverFiles', 'files', data['lang']) }}
-            </span>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" onclick="" class="btn btn-primary">Save changes</button>
-      </div>
-    </div>
-  </div>
 </div>
 <style>
 .scroll {
@@ -367,6 +369,44 @@
     z-index: 100;
 }
 </style>
+<style>
+  /* Remove default bullets */
+ .tree-view,
+ .tree-nested {
+   list-style-type: none;
+   margin: 0;
+   padding: 0;
+   margin-left: 10px;
+ }
+
+ /* Style the items */
+ .tree-item,
+ .files-tree-title {
+   cursor: pointer;
+   user-select: none; /* Prevent text selection */
+ }
+
+ /* Create the caret/arrow with a unicode, and style it */
+ .tree-caret .fa-folder {
+   display: inline-block;
+ }
+ .tree-caret .fa-folder-open {
+   display: none;
+ }
+
+ /* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+ .tree-caret-down .fa-folder {
+   display: none;
+ }
+ .tree-caret-down .fa-folder-open {
+   display: inline-block;
+ }
+
+ /* Hide the nested list */
+ .tree-nested {
+   display: none;
+ }
+</style>
 
 {% end %}
 
@@ -374,22 +414,30 @@
 <script>
   document.getElementById("root_files_button").addEventListener("click", function(){
     if(document.forms["zip"]["server_path"].value != ""){
-    path = document.getElementById('server_path')
-    var token = getCookie("_xsrf")
+      if(document.getElementById('root_files_button').classList.contains('clicked')){
+        document.getElementById('main-tree').innerHTML = '<i class="far fa-folder"></i><i class="far fa-folder-open"></i>{{ translate("serverFiles", "files", data["lang"]) }}</span>'
+      }else{
+        document.getElementById('root_files_button').classList.add('clicked')
+      }
+    path = document.forms["zip"]["server_path"].value;
+    console.log(document.forms["zip"]["server_path"].value)
+    var token = getCookie("_xsrf");
+    var dialog = bootbox.dialog({
+      message: '<p class="text-center mb-0"><i class="fa fa-spin fa-cog"></i> Please wait while we gather your files...</p>',
+      closeButton: false
+  });
+  setTimeout(function(){
+    dialog.modal('hide');
+}, 2000);
     $.ajax({
       type: "POST",
       headers: {'X-XSRFToken': token},
-      url: '/ajax/unzip_server',
-      data: {
-        path: path,
-        server_id: '-1'
-      },
+      url: '/ajax/unzip_server?id=-1&path='+path,
     });
   }else{
     bootbox.alert("You must input a path before selecting this button");
   }
   });
-
 </script>
 
 <script>
@@ -431,7 +479,6 @@ function hide(event) {
   function show_file_tree(){
     $("#dir_select").modal();
   }
-  
 
   function check_sizes(a, b, changed){
     max_mem = parseFloat(a.val());
@@ -444,24 +491,13 @@ function hide(event) {
     }
   }
 
-  var fileList = document.getElementById("files");
-  fileList.addEventListener("change", function (e) {
-      var list = "";
-      for (var i = 0; i < this.files.length; i++) {
-          list += "<li class='col-xs-12 file-list'>" + this.files[i].name + "</li>"
-      }
-
-      document.getElementById("fileList").innerHTML = list;
-  }, false);
-});
-  }
-    function getTreeView(event) {
-
-      path = '/'
+    function getTreeView(path) {
+      document.getElementById('zip_submit').disabled = false;
+      path = path
 
       $.ajax({
         type: "GET",
-        url: '/ajax/get_tree?id=1&path='+path,
+        url: '/ajax/get_zip_tree?id=-1&path='+path,
         dataType: 'text',
         success: function(data){
           console.log("got response:");
@@ -472,8 +508,8 @@ function hide(event) {
           text = dataArr.join('\n');
 
           try{
-            document.getElementById(path).innerHTML += text;
-            event.target.parentElement.classList.add("clicked");
+            document.getElementById('main-tree').innerHTML += text;
+            document.getElementById('main-tree').parentElement.classList.add("clicked");
           }catch{
             document.getElementById('files-tree').innerHTML = text;
           }
@@ -482,7 +518,6 @@ function hide(event) {
           document.getElementsByClassName('files-tree-title')[0].setAttribute('data-path', serverDir);
           document.getElementsByClassName('files-tree-title')[0].setAttribute('data-name', 'Files');
 
-          setTimeout(function () {setTreeViewContext()}, 1000);
         },
       });
     }
@@ -493,6 +528,7 @@ function hide(event) {
           document.getElementById(path+"span").classList.toggle("tree-caret-down");
           document.getElementById(path+"span").classList.toggle("tree-caret");
       }
+    
 
     function getDirView(event) {
         path = event.target.parentElement.getAttribute('data-path');
@@ -509,7 +545,7 @@ function hide(event) {
       }else{
       $.ajax({
         type: "GET",
-        url: '/ajax/get_dir?id=1&path='+path,
+        url: '/ajax/get_zip_dir?id=-1&path='+path,
         dataType: 'text',
         success: function(data){
           console.log("got response:");
@@ -526,8 +562,6 @@ function hide(event) {
             console.log("Bad")
           }
 
-          setTimeout(function () {setTreeViewContext()}, 1000);
-
           var toggler = document.getElementById(path);
   
             if (toggler.classList.contains('files-tree-title')){
@@ -540,7 +574,13 @@ function hide(event) {
       });
     }
     }
-
+    if (webSocket) {
+      webSocket.on('send_temp_path', function (data) {
+        document.getElementById('main-tree-input').setAttribute('data-path', data.path)
+        getTreeView(data.path);
+        show_file_tree();
+      });
+    }
 
 </script>
 <script type="text/javascript">

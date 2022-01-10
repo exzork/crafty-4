@@ -191,12 +191,14 @@ class ServerHandler(BaseHandler):
                                            self.get_remote_ip())
             elif import_type == 'import_zip':
                 # here import_server_path means the zip path
-                good_path = self.controller.verify_zip_server(import_server_path)
+                zip_path = bleach.clean(self.get_argument('root_path'))
+                print(zip_path)
+                good_path = helper.check_path_exists(zip_path)
                 if not good_path:
-                    self.redirect("/panel/error?error=Zip file not found!")
+                    self.redirect("/panel/error?error=Temp path not found!")
                     return
 
-                new_server_id = self.controller.import_zip_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
+                new_server_id = self.controller.import_zip_server(server_name, import_server_path, import_server_jar, min_mem, max_mem, port)
                 if new_server_id == "false":
                     self.redirect("/panel/error?error=Zip file not accessible! You can fix this permissions issue with sudo chown -R crafty:crafty {} And sudo chmod 2775 -R {}".format(import_server_path, import_server_path))
                     return
@@ -204,6 +206,8 @@ class ServerHandler(BaseHandler):
                                            "imported a zip server named \"{}\"".format(server_name), # Example: Admin imported a server named "old creative"
                                            new_server_id,
                                            self.get_remote_ip())
+                #deletes temp dir
+                shutil.rmtree(zip_path)
             else:
                 if len(server_parts) != 2:
                     self.redirect("/panel/error?error=Invalid server data")
