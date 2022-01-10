@@ -448,6 +448,10 @@ class PanelHandler(BaseHandler):
             page_data['quantity_server'] = self.controller.crafty_perms.list_all_crafty_permissions_quantity_limits()
             page_data['languages'] = []
             page_data['languages'].append(self.controller.users.get_user_lang_by_id(exec_user_id))
+            if exec_user['superuser']:
+                page_data['super-disabled'] = ''
+            else:
+                page_data['super-disabled'] = 'disabled'
             for file in os.listdir(os.path.join(helper.root_dir, 'app', 'translations')):
                 if file.endswith('.json'):
                     if file != str(page_data['languages'][0] + '.json'):
@@ -1012,7 +1016,7 @@ class PanelHandler(BaseHandler):
                 else:
                     server_quantity[permission.name] = 0
 
-            user_id = self.controller.users.add_user(username, password=password0, email=email, enabled=enabled)
+            user_id = self.controller.users.add_user(username, password=password0, email=email, enabled=enabled, superuser=superuser)
             user_data = {
                 "roles": roles,
                 'lang': lang
