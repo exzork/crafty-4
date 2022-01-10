@@ -18,6 +18,7 @@ from requests import get
 from contextlib import suppress
 import ctypes
 import telnetlib
+from app.classes.web.websocket_helper import websocket_helper
 
 from datetime import datetime
 from socket import gethostname
@@ -729,6 +730,68 @@ class Helpers:
                     onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename, filename)
         output += '</ul>\n'
         return output
+
+    @staticmethod
+    def generate_zip_tree(folder, output=""):
+        file_list = os.listdir(folder)
+        file_list = sorted(file_list, key=str.casefold)
+        output += \
+    """<ul class="tree-nested d-block" id="{}ul">"""\
+        .format(folder)
+        for raw_filename in file_list:
+            filename = html.escape(raw_filename)
+            rel = os.path.join(folder, raw_filename)
+            if os.path.isdir(rel):
+                output += \
+                    """<li class="tree-item" data-path="{}">
+                    \n<div id="{}" data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                    <input type="radio" name="root_path" value="{}">
+                    <span id="{}span" class="files-tree-title" data-path="{}" data-name="{}" onclick="getDirView(event)">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {}
+                      </span>
+                    </input></div><li>
+                    \n"""\
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
+        return output
+
+    @staticmethod
+    def generate_zip_dir(folder, output=""):
+        file_list = os.listdir(folder)
+        file_list = sorted(file_list, key=str.casefold)
+        output += \
+    """<ul class="tree-nested d-block" id="{}ul">"""\
+        .format(folder)
+        for raw_filename in file_list:
+            filename = html.escape(raw_filename)
+            rel = os.path.join(folder, raw_filename)
+            if os.path.isdir(rel):
+                output += \
+                    """<li class="tree-item" data-path="{}">
+                    \n<div id="{}" data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                    <input type="radio" name="root_path" value="{}">
+                    <span id="{}span" class="files-tree-title" data-path="{}" data-name="{}" onclick="getDirView(event)">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {}
+                      </span>
+                    </input></div><li>"""\
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
+        return output
+
+    @staticmethod
+    def unzipServer(zip_path, user_id):
+        if helper.check_file_perms(zip_path):
+            tempDir = tempfile.mkdtemp()
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                #extracts archive to temp directory
+                zip_ref.extractall(tempDir)
+            if user_id:
+                websocket_helper.broadcast_user(user_id, 'send_temp_path',{
+                'path': tempDir 
+                })
+        return
 
     @staticmethod
     def in_path(parent_path, child_path):

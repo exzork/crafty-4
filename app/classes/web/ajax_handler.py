@@ -134,6 +134,22 @@ class AjaxHandler(BaseHandler):
                         helper.generate_tree(path))
             self.finish()
         
+        elif page == "get_zip_tree":
+            server_id = self.get_argument('id', None)
+            path = self.get_argument('path', None)
+
+            self.write(helper.get_os_understandable_path(path) + '\n' +
+                        helper.generate_zip_tree(path))
+            self.finish()
+
+        elif page == "get_zip_dir":
+            server_id = self.get_argument('id', None)
+            path = self.get_argument('path', None)
+
+            self.write(helper.get_os_understandable_path(path) + '\n' +
+                        helper.generate_zip_dir(path))
+            self.finish()
+        
         elif page == "get_dir":
             server_id = self.get_argument('id', None)
             path = self.get_argument('path', None)
@@ -275,6 +291,11 @@ class AjaxHandler(BaseHandler):
                 self.controller.rename_backup_dir(server_id, new_server_id, new_server['server_uuid'])
                 self.controller.remove_server(server_id, True)
                 self.redirect('/panel/dashboard')
+
+        elif page == "unzip_server":
+            path = self.get_argument('path', None)
+            helper.unzipServer(path, exec_user_id)
+            return
                 
 
     @tornado.web.authenticated

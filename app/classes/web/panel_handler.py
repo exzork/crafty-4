@@ -16,8 +16,8 @@ from app.classes.shared.main_models import Users, installer
 from app.classes.web.base_handler import BaseHandler
 
 from app.classes.models.servers import Servers
-from app.classes.models.server_permissions import Enum_Permissions_Server
-from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
+from app.classes.models.server_permissions import Enum_Permissions_Server, Permissions_Servers
+from app.classes.models.crafty_permissions import Enum_Permissions_Crafty, Permissions_Crafty
 from app.classes.models.management import management_helper
 
 from app.classes.shared.helpers import helper
@@ -402,19 +402,22 @@ class PanelHandler(BaseHandler):
             page_data['role-servers'] = auth_role_servers
             page_data['user-roles'] = user_roles
 
-            if exec_user['superuser'] == 1:
-                super_auth_servers = []
-                super_auth_servers.append("Access To All Servers")
-                page_data['users'] = self.controller.users.get_all_users()
-                page_data['roles'] = self.controller.roles.get_all_roles()
-                page_data['auth-servers'][exec_user['user_id']] = super_auth_servers
-            else:
-                page_data['users'] = self.controller.users.user_query(exec_user['user_id'])
-                page_data['roles'] = self.controller.users.user_role_query(exec_user['user_id'])
+            page_data['users'] = self.controller.users.user_query(exec_user['user_id'])
+            page_data['roles'] = self.controller.users.user_role_query(exec_user['user_id'])
+
 
             for user in page_data['users']:
                 if user.user_id != exec_user['user_id']:
                     user.api_token = "********"
+            if exec_user['superuser']:
+                for user in self.controller.users.get_all_users():
+                    if user.superuser == 1:
+                        super_auth_servers = []
+                        super_auth_servers.append("Super User Access To All Servers")
+                        page_data['users'] = self.controller.users.get_all_users()
+                        page_data['roles'] = self.controller.roles.get_all_roles()
+                        page_data['auth-servers'][user.user_id] = super_auth_servers
+
             template = "panel/panel_config.html"
 
         elif page == "add_user":
@@ -445,6 +448,10 @@ class PanelHandler(BaseHandler):
             page_data['quantity_server'] = self.controller.crafty_perms.list_all_crafty_permissions_quantity_limits()
             page_data['languages'] = []
             page_data['languages'].append(self.controller.users.get_user_lang_by_id(exec_user_id))
+            if exec_user['superuser']:
+                page_data['super-disabled'] = ''
+            else:
+                page_data['super-disabled'] = 'disabled'
             for file in os.listdir(os.path.join(helper.root_dir, 'app', 'translations')):
                 if file.endswith('.json'):
                     if file != str(page_data['languages'][0] + '.json'):
@@ -470,6 +477,12 @@ class PanelHandler(BaseHandler):
             page_data['quantity_server'] = self.controller.crafty_perms.list_crafty_permissions_quantity_limits(user_id)
             page_data['languages'] = []
             page_data['languages'].append(self.controller.users.get_user_lang_by_id(user_id))
+            #checks if super user. If not we disable the button.
+            if exec_user['superuser'] and str(exec_user['user_id']) != str(user_id):
+                page_data['super-disabled'] = ''
+            else:
+                page_data['super-disabled'] = 'disabled'
+            
             for file in sorted(os.listdir(os.path.join(helper.root_dir, 'app', 'translations'))):
                 if file.endswith('.json'):
                     if file != str(page_data['languages'][0] + '.json'):
@@ -497,9 +510,13 @@ class PanelHandler(BaseHandler):
 
         elif page == "remove_user":
             user_id = bleach.clean(self.get_argument('id', None))
-
-            if not exec_user['superuser']:
+            
+            if not exec_user['superuser'] and Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return
+
+            elif str(exec_user_id) == str(user_id):
+                self.redirect("/panel/error?error=Unauthorized access: you cannot delete yourself")
                 return
             elif user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
@@ -832,6 +849,18 @@ class PanelHandler(BaseHandler):
             enabled = int(float(self.get_argument('enabled', '0')))
             regen_api = int(float(self.get_argument('regen_api', '0')))
             lang = bleach.clean(self.get_argument('language'), 'en_EN')
+            if exec_user['superuser']:
+                #Checks if user is trying to change super user status of self. We don't want that. Automatically make them stay super user since we know they are.
+                if str(exec_user['user_id']) != str(user_id):
+                    superuser = bleach.clean(self.get_argument('superuser', '0'))
+                else:
+                    superuser = '1'
+            else:
+                superuser = '0'
+            if superuser == '1':
+                superuser = True
+            else:
+                superuser = False
 
             if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
                 if str(user_id) != str(exec_user_id):
@@ -910,6 +939,7 @@ class PanelHandler(BaseHandler):
                 "regen_api": regen_api,
                 "roles": roles,
                 "lang": lang,
+                "superuser": superuser,
             }
             user_crafty_data = {
                 "permissions_mask": permissions_mask,
@@ -934,6 +964,14 @@ class PanelHandler(BaseHandler):
             email  = bleach.clean(self.get_argument('email', "default@example.com"))
             enabled = int(float(self.get_argument('enabled', '0'))),
             lang = bleach.clean(self.get_argument('lang', 'en_EN'))
+            if exec_user['superuser']:
+                superuser = bleach.clean(self.get_argument('superuser', '0'))
+            else:
+                superuser = '0'
+            if superuser == '1':
+                superuser = True
+            else:
+                superuser = False            
 
             if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
                 self.redirect("/panel/error?error=Unauthorized access: not a user editor")
@@ -982,7 +1020,7 @@ class PanelHandler(BaseHandler):
                 else:
                     server_quantity[permission.name] = 0
 
-            user_id = self.controller.users.add_user(username, password=password0, email=email, enabled=enabled)
+            user_id = self.controller.users.add_user(username, password=password0, email=email, enabled=enabled, superuser=superuser)
             user_data = {
                 "roles": roles,
                 'lang': lang

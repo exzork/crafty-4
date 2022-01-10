@@ -68,7 +68,17 @@
         "downloading": "Downloading Server...",
         "addRole": "Add Server to Existing Role(s)",
         "autoCreate": "If none are selected Crafty will make one!",
-        "selectRole": "Select Role(s)"
+        "selectRole": "Select Role(s)",
+        "selectZipDir": "Select the directory in the archive you want us to unzip files from",
+        "close": "Close",
+        "save": "Save",
+        "selectRoot": "Select Archive Root Dir",
+        "clickRoot": "Click here to select Root Dir",
+        "explainRoot": "Please click the button below to select your server's root dir inside of the archive"
+    },
+    "usersConfig":{
+        "deleteUser": "Delete user: ",
+        "confirmDelete": "Are you sure you want to delete this user? This action is irreversible."
     },
     "dashboard": {
         "dashboard": "Dashboard",
@@ -279,7 +289,10 @@
     "panelConfig": {
         "save": "Save",
         "cancel": "Cancel",
-        "delete": "Delete"
+        "delete": "Delete",
+        "superConfirmTitle": "Enable Super User? Are you sure?",
+        "superConfirm": "Proceed only if you want this user to have access to EVERYTHING (all user accounts, servers, panel configs, etc). They can even remove your super user access."
+
     },
     "datatables": {
         "i18n": {

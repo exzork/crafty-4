@@ -187,9 +187,9 @@
 
                         <label for="superuser" class="form-check-label ml-4 mb-4">
                           {% if data['user']['superuser'] %}
-                              <input type="checkbox" class="form-check-input" id="superuser" name="superuser" checked="" value="1" disabled >Super User
+                              <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser" name="superuser" checked="" value="1" {{ data['super-disabled'] }} >Super User
                           {% else %}
-                              <input type="checkbox" class="form-check-input" id="superuser" name="superuser" value="1" disabled >Super User
+                              <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser" name="superuser" {{ data['super-disabled'] }} value="1" >Super User
                           {% end %}
                         </label>
 
@@ -229,7 +229,7 @@
                             <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i> Delete User</a><br />
                             <small>You cannot delete a superuser</small>
                         {% else %}
-                            <a href="/panel/remove_user?id={{ data['user']['user_id'] }}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Delete User</a>
+                            <button class="btn btn-sm btn-danger delete-user"><i class="fas fa-trash"></i> Delete User</a>
                         {% end %}
 
                     </div>
@@ -250,6 +250,58 @@
 
 {% block js %}
 <script>
+  $( ".delete-user" ).click(function() {
+    var file_to_del = $(this).data("file");
+
+    console.log("User to delete is {{ data['user']['username']  }}");
+
+    bootbox.confirm({
+        title: "{% raw translate('usersConfig', 'deleteUser', data['lang']) %}"+"{{ data['user']['username']  }}",
+        message: "{{ translate('usersConfig', 'confirmDelete', data['lang']) }}",
+        buttons: {
+            cancel: {
+                label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
+            },
+            confirm: {
+              className: 'btn-outline-danger',
+                label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm", data['lang']) }}'
+            }
+        },
+        callback: function (result) {
+            console.log(result);
+            if (result == true) {
+              location.href="/panel/remove_user?id={{ data['user']['user_id'] }}";
+            }
+        }
+    });
+});
+
+  function superConfirm() {
+    if (document.getElementById('superuser').checked){
+    bootbox.confirm({
+      title: "{{ translate('panelConfig', 'superConfirmTitle', data['lang']) }}",
+      message: "{{ translate('panelConfig', 'superConfirm', data['lang']) }}",
+      buttons: {
+          cancel: {
+              label: '<i class="fa fa-times"></i> {{ translate('panelConfig', 'cancel', data['lang']) }}'
+          },
+          confirm: {
+            className: 'btn-outline-warning',
+              label: '<i class="fa fa-check"></i> {{ translate('serverBackups', 'confirm', data['lang']) }}'
+          }
+      },
+      callback: function (result) {
+          if (result == true){
+            return;
+          }else{
+            document.getElementById('superuser').checked = false;
+          }
+      }
+  });
+}else{
+  return
+}
+  }
 
 
     //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
