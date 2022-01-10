@@ -780,11 +780,9 @@ class Helpers:
                         .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
         return output
 
-    def unzipServer(self, zip_path, user_id):
-        temp_uuid = str(uuid.uuid4()) + 'temp'
-        servers_path = str(self.get_servers_root_dir())
-        tempDir = os.path.join(servers_path, temp_uuid)
-        os.mkdir(tempDir)
+    @staticmethod
+    def unzipServer(zip_path, user_id):
+        tempDir = tempfile.mkdtemp()
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             #extracts archive to temp directory
             zip_ref.extractall(tempDir)
