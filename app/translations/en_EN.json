@@ -68,7 +68,13 @@
         "downloading": "Downloading Server...",
         "addRole": "Add Server to Existing Role(s)",
         "autoCreate": "If none are selected Crafty will make one!",
-        "selectRole": "Select Role(s)"
+        "selectRole": "Select Role(s)",
+        "selectZipDir": "Select the directory in the archive you want us to unzip files from",
+        "close": "Close",
+        "save": "Save",
+        "selectRoot": "Select Archive Root Dir",
+        "clickRoot": "Click here to select Root Dir",
+        "explainRoot": "Please click the button below to select your server's root dir inside of the archive"
     },
     "dashboard": {
         "dashboard": "Dashboard",
