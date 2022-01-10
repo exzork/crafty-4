@@ -16,8 +16,8 @@ from app.classes.shared.main_models import Users, installer
 from app.classes.web.base_handler import BaseHandler
 
 from app.classes.models.servers import Servers
-from app.classes.models.server_permissions import Enum_Permissions_Server
-from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
+from app.classes.models.server_permissions import Enum_Permissions_Server, Permissions_Servers
+from app.classes.models.crafty_permissions import Enum_Permissions_Crafty, Permissions_Crafty
 from app.classes.models.management import management_helper
 
 from app.classes.shared.helpers import helper
@@ -510,9 +510,13 @@ class PanelHandler(BaseHandler):
 
         elif page == "remove_user":
             user_id = bleach.clean(self.get_argument('id', None))
-
-            if not exec_user['superuser']:
+            
+            if not exec_user['superuser'] and Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return
+
+            elif str(exec_user_id) == str(user_id):
+                self.redirect("/panel/error?error=Unauthorized access: you cannot delete yourself")
                 return
             elif user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
