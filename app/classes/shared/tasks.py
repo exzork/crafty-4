@@ -188,7 +188,12 @@ class TasksManager:
         if job_data['enabled']:
             if job_data['cron_string'] != "":
                 cron = job_data['cron_string'].split(' ')
-                self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+                try:
+                    self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+                except Exception as e:
+                    console.error("Failed to schedule task with error: {}.".format(e))
+                    console.info("Removing failed task from DB.")
+                    management_helper.delete_scheduled_task(sch_id)
             else:
                 if job_data['interval_type'] == 'hours':
                     self.scheduler.add_job(management_helper.add_command, 'cron', minute = 0,  hour = '*/'+str(job_data['interval']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
@@ -208,7 +213,12 @@ class TasksManager:
             self.scheduler.remove_job(str(sch_id))
             if job_data['cron_string'] != "":
                 cron = job_data['cron_string'].split(' ')
-                self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+                try:
+                    self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+                except Exception as e:
+                    console.error("Failed to schedule task with error: {}.".format(e))
+                    console.info("Removing failed task from DB.")
+                    management_helper.delete_scheduled_task(sch_id)
             else:
                 if job_data['interval_type'] == 'hours':
                     self.scheduler.add_job(management_helper.add_command, 'cron', minute = 0,  hour = '*/'+str(job_data['interval']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
