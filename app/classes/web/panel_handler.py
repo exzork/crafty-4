@@ -8,6 +8,7 @@ import time
 import datetime
 import os
 
+from tornado import locale
 from tornado import iostream
 from tornado.ioloop import IOLoop
 from app.classes.shared.console import console
@@ -459,6 +460,98 @@ class PanelHandler(BaseHandler):
                         page_data['languages'].append(file.split('.')[0])
 
             template = "panel/panel_edit_user.html"
+        
+        elif page == "add_schedule":
+            server_id = self.get_argument('id', None)
+            page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
+            page_data['active_link'] = 'tasks'
+            page_data['permissions'] = {
+                'Commands': Enum_Permissions_Server.Commands,
+                'Terminal': Enum_Permissions_Server.Terminal,
+                'Logs': Enum_Permissions_Server.Logs,
+                'Schedule': Enum_Permissions_Server.Schedule,
+                'Backup': Enum_Permissions_Server.Backup,
+                'Files': Enum_Permissions_Server.Files,
+                'Config': Enum_Permissions_Server.Config,
+                'Players': Enum_Permissions_Server.Players,
+            }
+            page_data['user_permissions'] = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
+            exec_user_server_permissions = self.controller.server_perms.get_user_permissions_list(exec_user_id, server_id)
+            page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
+            page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
+            page_data['new_schedule'] = True
+            page_data['schedule'] = {}
+            page_data['schedule']['server_id'] = server_id
+            page_data['schedule']['schedule_id'] = ''
+            page_data['schedule']['action'] = ""
+            page_data['schedule']['enabled'] = True
+            page_data['schedule']['command'] = ''
+            page_data['schedule']['one_time'] = False
+            page_data['schedule']['cron_string'] = ""
+            page_data['schedule']['time'] = ""
+            page_data['schedule']['interval'] = ""
+            #we don't need to check difficulty here. We'll just default to basic for new schedules
+            page_data['schedule']['difficulty'] = "basic"
+            page_data['schedule']['interval_type'] = 'days'
+
+            if not Enum_Permissions_Server.Schedule in exec_user_server_permissions:
+                if not exec_user['superuser']:
+                    self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
+                    return
+
+            template = "panel/server_schedule_edit.html"
+
+        elif page == "edit_schedule":
+            server_id = self.get_argument('id', None)
+            sch_id = self.get_argument('sch_id', None)
+            schedule = self.controller.management.get_scheduled_task_model(sch_id)
+            page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
+            page_data['active_link'] = 'tasks'
+            page_data['permissions'] = {
+                'Commands': Enum_Permissions_Server.Commands,
+                'Terminal': Enum_Permissions_Server.Terminal,
+                'Logs': Enum_Permissions_Server.Logs,
+                'Schedule': Enum_Permissions_Server.Schedule,
+                'Backup': Enum_Permissions_Server.Backup,
+                'Files': Enum_Permissions_Server.Files,
+                'Config': Enum_Permissions_Server.Config,
+                'Players': Enum_Permissions_Server.Players,
+            }
+            page_data['user_permissions'] = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
+            exec_user_server_permissions = self.controller.server_perms.get_user_permissions_list(exec_user_id, server_id)
+            page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
+            page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
+            page_data['new_schedule'] = False
+            page_data['schedule'] = {}
+            page_data['schedule']['server_id'] = server_id
+            page_data['schedule']['schedule_id'] = schedule.schedule_id
+            page_data['schedule']['action'] = schedule.action
+            #we check here to see if the command is any of the default ones. We do not want a user changing to a custom command and seeing our command there.
+            if schedule.action != 'start' or schedule.action != 'stop' or schedule.action != 'restart' or schedule.action != 'backup':
+                page_data['schedule']['command'] = schedule.command
+            else:
+                page_data['schedule']['command'] = ''
+            page_data['schedule']['enabled'] = schedule.enabled
+            page_data['schedule']['one_time'] = schedule.one_time
+            page_data['schedule']['cron_string'] = schedule.cron_string
+            page_data['schedule']['time'] = schedule.start_time
+            page_data['schedule']['interval'] = schedule.interval
+            page_data['schedule']['interval_type'] = schedule.interval_type
+            if schedule.cron_string == '':
+                difficulty = 'basic'
+            else:
+                difficulty = 'advanced'
+            page_data['schedule']['difficulty'] = difficulty
+
+            if sch_id == None or server_id == None:
+                self.redirect("/panel/error?error=Invalid server ID or Schedule ID")
+                
+            if not Enum_Permissions_Server.Schedule in exec_user_server_permissions:
+                if not exec_user['superuser']:
+                    self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
+                    return
+
+            template = "panel/server_schedule_edit.html"
 
         elif page == "edit_user":
             user_id = self.get_argument('id', None)
@@ -815,18 +908,10 @@ class PanelHandler(BaseHandler):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
 
-                if enabled == '0':
-                    #TODO Use Controller method
-                    server_obj = self.controller.servers.get_server_obj(server_id)
-                    server_obj.backup_path = backup_path
-                    self.controller.servers.update_server(server_obj)
-                    self.controller.management.set_backup_config(server_id, max_backups=max_backups, auto_enabled=False)
-                else:
-                    #TODO Use Controller method
-                    server_obj = self.controller.servers.get_server_obj(server_id)
-                    server_obj.backup_path = backup_path
-                    self.controller.servers.update_server(server_obj)
-                    self.controller.management.set_backup_config(server_id, max_backups=max_backups)
+            server_obj = self.controller.servers.get_server_obj(server_id)
+            server_obj.backup_path = backup_path
+            self.controller.servers.update_server(server_obj)
+            self.controller.management.set_backup_config(server_id, max_backups=max_backups)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Edited server {}: updated backups".format(server_id),
@@ -836,7 +921,7 @@ class PanelHandler(BaseHandler):
             self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
 
         
-        if page == "tasks":
+        if page == "add_schedule":
             server_id = bleach.clean(self.get_argument('id', None))
             difficulty = bleach.clean(self.get_argument('difficulty', None))
             server_obj = self.controller.servers.get_server_obj(server_id)
@@ -909,7 +994,7 @@ class PanelHandler(BaseHandler):
                         "interval_type": interval_type,
                         "interval": interval,
                         "command": command,
-                        "time": time,
+                        "start_time": time,
                         "enabled": enabled,
                         "one_time": one_time,
                         "cron_string": ''
@@ -921,7 +1006,7 @@ class PanelHandler(BaseHandler):
                         "interval_type": '',
                         "interval": '',
                         "command": '',
-                        "time": current_time,
+                        "start_time": current_time,
                         "command": command,
                         "cron_string": cron_string,
                         "enabled": enabled,
@@ -935,7 +1020,7 @@ class PanelHandler(BaseHandler):
                         "interval": interval,
                         "command": command,
                         "enabled": enabled,
-                        "time": current_time,
+                        "start_time": current_time,
                         "one_time": one_time,
                         "cron_string": ''
                     }
@@ -943,7 +1028,122 @@ class PanelHandler(BaseHandler):
                 self.tasks_manager.schedule_job(job_data)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Edited server {}: updated backups".format(server_id),
+                                       "Edited server {}: added scheduled job".format(server_id),
+                                       server_id,
+                                       self.get_remote_ip())
+            self.tasks_manager.reload_schedule_from_db()
+            self.redirect("/panel/server_detail?id={}&subpage=tasks".format(server_id))
+
+
+        if page == "edit_schedule":
+            server_id = bleach.clean(self.get_argument('id', None))
+            difficulty = bleach.clean(self.get_argument('difficulty', None))
+            server_obj = self.controller.servers.get_server_obj(server_id)
+            enabled = bleach.clean(self.get_argument('enabled', '0'))
+            if difficulty == 'basic':
+                action = bleach.clean(self.get_argument('action', None))
+                interval = bleach.clean(self.get_argument('interval', None))
+                interval_type = bleach.clean(self.get_argument('interval_type', None))
+                #only check for time if it's number of days
+                if interval_type == "days":
+                    time = bleach.clean(self.get_argument('time', None))
+                if action == "command":
+                    command = bleach.clean(self.get_argument('command', None))
+                elif action == "start":
+                    command = "start_server"
+                elif action == "stop":
+                    command = "stop_server"
+                elif action == "restart":
+                    command = "restart_server"
+                elif action == "backup":
+                    command = "backup_server"
+            else:
+                interval_type = ''
+                cron_string = bleach.clean(self.get_argument('cron', ''))
+                sch_id = self.get_argument('sch_id', None)
+                if len(cron_string.split(' ')) != 5:
+                    self.redirect("/panel/error?error=INVALID FORMAT: Invalid Cron Format. Cron must have a space between each character and only have a max of 5 characters * * * * *")
+                action = bleach.clean(self.get_argument('action', None))
+                if action == "command":
+                    command = bleach.clean(self.get_argument('command', None))
+                elif action == "start":
+                    command = "start_server"
+                elif action == "stop":
+                    command = "stop_server"
+                elif action == "restart":
+                    command = "restart_server"
+                elif action == "backup":
+                    command = "backup_server"
+            if bleach.clean(self.get_argument('enabled', '1'))=='1':
+                enabled = True
+            else:
+                enabled = False
+            if bleach.clean(self.get_argument('one_time', '0')) == '1':
+                one_time = True
+            else:
+                one_time = False
+                
+            if not exec_user['superuser'] and not permissions['Backup'] in user_perms:
+                self.redirect("/panel/error?error=Unauthorized access: User not authorized")
+                return
+            elif server_id is None:
+                self.redirect("/panel/error?error=Invalid Server ID")
+                return
+            else:
+                # does this server id exist?
+                if not self.controller.servers.server_id_exists(server_id):
+                    self.redirect("/panel/error?error=Invalid Server ID")
+                    return
+                minute = datetime.datetime.now().minute
+                hour = datetime.datetime.now().hour
+                if minute < 10:
+                    minute = '0' + str(minute)
+                if hour < 10:
+                    hour = '0'+str(hour)
+                current_time = str(hour)+':'+str(minute)
+
+                if interval_type == "days":
+                    job_data = {
+                        "server_id": server_id,
+                        "action": action,
+                        "interval_type": interval_type,
+                        "interval": interval,
+                        "command": command,
+                        "start_time": time,
+                        "enabled": enabled,
+                        "one_time": one_time,
+                        "cron_string": ''
+                    }
+                elif difficulty == "advanced":
+                        job_data = {
+                        "server_id": server_id,
+                        "action": action,
+                        "interval_type": '',
+                        "interval": '',
+                        "command": '',
+                        "start_time": current_time,
+                        "command": command,
+                        "cron_string": cron_string,
+                        "enabled": enabled,
+                        "one_time": one_time
+                    }
+                else:
+                    job_data = {
+                        "server_id": server_id,
+                        "action": action,
+                        "interval_type": interval_type,
+                        "interval": interval,
+                        "command": command,
+                        "enabled": enabled,
+                        "start_time": current_time,
+                        "one_time": one_time,
+                        "cron_string": ''
+                    }
+                sch_id = self.get_argument('sch_id', None)
+                self.tasks_manager.update_job(sch_id, job_data)
+
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
+                                       "Edited server {}: updated schedule".format(server_id),
                                        server_id,
                                        self.get_remote_ip())
             self.tasks_manager.reload_schedule_from_db()
@@ -1255,8 +1455,8 @@ class PanelHandler(BaseHandler):
 
         else:
             self.set_status(404)
-            page_data = []
-            page_data['lang'] = tornado.locale.get("en_EN")
+            page_data = {}
+            page_data['lang'] = locale.get("en_EN")
             self.render(
                 "public/404.html",
                 translate=self.translator.translate,

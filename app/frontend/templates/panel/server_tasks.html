@@ -35,7 +35,7 @@
             {% include "parts/server_controls_list.html %}
 
             <div class="row">
-<a href="/panel/server_tasks_edit">Create Task</a>
+                <button onclick="location.href=`/panel/add_schedule?id={{ data['server_stats']['server_id']['server_id'] }}`" class="btn btn-info">Create New Schedule <i class="fas fa-pencil-alt"></i></button>
                 <div class="col-md-12 col-sm-12" style="overflow-x:auto;">
                     <div class="card">
                       <div class="card-body">
@@ -84,7 +84,7 @@
                           </td>
                           {% end %}
                           <td id="{{schedule.action}}" class="action">
-                            <button onclick="window.location.href='/panel/edit_schedule?id={{schedule.schedule_id}}'" class="btn btn-info">
+                            <button onclick="window.location.href='/panel/edit_schedule?id={{ data['server_stats']['server_id']['server_id'] }}&sch_id={{schedule.schedule_id}}'" class="btn btn-info">
                               <i class="fas fa-pencil-alt"></i>
                              </button>
                           <br>

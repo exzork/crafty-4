@@ -195,15 +195,34 @@ class TasksManager:
                 elif job_data['interval_type'] == 'minutes':
                     self.scheduler.add_job(management_helper.add_command, 'cron', minute = '*/'+str(job_data['interval']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
                 elif job_data['interval_type'] == 'days':
-                    time = job_data['time'].split(':')
+                    time = job_data['start_time'].split(':')
                     self.scheduler.add_job(management_helper.add_command, 'cron', day = '*/'+str(job_data['interval']), hour = time[0], minute = time[1], id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']], )
 
     def remove_job(self, sch_id):
         management_helper.delete_scheduled_task(sch_id)
         self.scheduler.remove_job(str(sch_id))
 
-    def update_job(self):
-        management_helper.update_scheduled_task()
+    def update_job(self, sch_id, job_data):
+        management_helper.update_scheduled_task(sch_id, job_data)
+        if job_data['enabled']:
+            self.scheduler.remove_job(str(sch_id))
+            if job_data['cron_string'] != "":
+                cron = job_data['cron_string'].split(' ')
+                self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+            else:
+                if job_data['interval_type'] == 'hours':
+                    self.scheduler.add_job(management_helper.add_command, 'cron', minute = 0,  hour = '*/'+str(job_data['interval']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+                elif job_data['interval_type'] == 'minutes':
+                    self.scheduler.add_job(management_helper.add_command, 'cron', minute = '*/'+str(job_data['interval']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+                elif job_data['interval_type'] == 'days':
+                    time = job_data['start_time'].split(':')
+                    self.scheduler.add_job(management_helper.add_command, 'cron', day = '*/'+str(job_data['interval']), hour = time[0], minute = time[1], id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']], )
+        else:
+            try:
+                self.scheduler.get_job(str(sch_id))
+                self.scheduler.remove_job(str(sch_id))
+            except:
+                logger.info("APScheduler found no scheduled job on schedule update for schedule with id: {}. Assuming it was already disabled.".format(sch_id))
 
     def schedule_watcher(self, event):
         if not event.exception:
