@@ -801,10 +801,6 @@ class PanelHandler(BaseHandler):
             else:
                 backup_path = server_obj.backup_path
             max_backups = bleach.clean(self.get_argument('max_backups', None))
-            try:
-                enabled = int(float(bleach.clean(self.get_argument('auto_enabled'), '0')))
-            except Exception as e:
-                enabled = '0'
 
             if not permissions['Backup'] in user_perms:
                 if not exec_user['superuser']:
@@ -830,7 +826,7 @@ class PanelHandler(BaseHandler):
                     server_obj = self.controller.servers.get_server_obj(server_id)
                     server_obj.backup_path = backup_path
                     self.controller.servers.update_server(server_obj)
-                    self.controller.management.set_backup_config(server_id, max_backups=max_backups, auto_enabled=True)
+                    self.controller.management.set_backup_config(server_id, max_backups=max_backups)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Edited server {}: updated backups".format(server_id),

@@ -111,5 +111,5 @@ class Management_Controller:
         return management_helper.get_backup_config(server_id)
 
     @staticmethod
-    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, auto_enabled: bool = True):
-        return management_helper.set_backup_config(server_id, backup_path, max_backups, auto_enabled)
+    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None):
+        return management_helper.set_backup_config(server_id, backup_path, max_backups)

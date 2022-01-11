@@ -278,7 +278,7 @@ class helpers_management:
         return conf
 
     @staticmethod
-    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, auto_enabled: bool = True):
+    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None):
         logger.debug("Updating server {} backup config with {}".format(server_id, locals()))
         try:
             row = Backups.select().where(Backups.server_id == server_id).join(Schedules).join(Servers)[0]
@@ -303,7 +303,6 @@ class helpers_management:
             new_row = True
         if max_backups is not None:
             conf['max_backups'] = max_backups
-        schd['enabled'] = bool(auto_enabled)
         if not new_row:
             with database.atomic():
                 if backup_path is not None:
@@ -311,15 +310,12 @@ class helpers_management:
                 else:
                     u1 = 0
                 u2 = Backups.update(conf).where(Backups.server_id == server_id).execute()
-                u3 = Schedules.update(schd).where(Schedules.schedule_id == row.schedule_id).execute()
             logger.debug("Updating existing backup record.  {}+{}+{} rows affected".format(u1, u2, u3))
         else:
             with database.atomic():
                 conf["server_id"] = server_id
                 if backup_path is not None:
                     u = Servers.update(backup_path=backup_path).where(Servers.server_id == server_id)
-                s = Schedules.create(**schd)
-                conf['schedule_id'] = s.schedule_id
                 b = Backups.create(**conf)
             logger.debug("Creating new backup record.")
 
