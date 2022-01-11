@@ -36,14 +36,14 @@
 
             <div class="row">
                 <div class="col-md-4 col-sm-12">
-                    <form class="forms-sample" method="post" action="/panel/server_detail">
+                    <form class="forms-sample" method="post" action="/panel/tasks">
                       {% raw xsrf_form_html() %}
                       <input type="hidden" name="id" value="{{ data['server_stats']['server_id']['server_id'] }}">
                       <input type="hidden" name="subpage" value="config">
 
                       <div class="form-group">
-                        <label for="server_name">Basic / Cron Select<small class="text-muted ml-1"></small> </label><br>
-                        <select id="action" name="action" onchange="basicAdvanced(this);" class="form-control form-control-lg select-css">
+                        <label for="difficulty">Basic / Cron Select<small class="text-muted ml-1"></small> </label><br>
+                        <select id="difficulty" name="difficulty" onchange="basicAdvanced(this);" class="form-control form-control-lg select-css">
                           <option value="basic">Basic</option>
                           <option value="advanced">Advanced</option>
                         </select>
@@ -61,7 +61,7 @@
 
                         <div class="form-group">
                           <label for="server_path">Interval <small class="text-muted ml-1"> - How often you want this task to execute</small> </label>
-                          <input type="number" class="form-control" name="server_path" id="server_path" value="{{ data['server_stats']['server_id']['path']  }}" placeholder="Interval" required>
+                          <input type="number" class="form-control" name="interval" id="interval" value="{{ data['server_stats']['server_id']['path']  }}" placeholder="Interval" required>
                           <br>
                           <br>
                           <select id="interval_type" name="interval_type" class="form-control form-control-lg select-css">
@@ -74,19 +74,19 @@
 
                         <div class="form-group">
                           <label for="time">Time <small class="text-muted ml-1"> - What time do you want your task to execute?</small> </label>
-                          <input type="time" class="form-control" name="time" id="time" value="{{ data['server_stats']['server_id']['log_path']  }}" placeholder="Time" required>
+                          <input type="time" class="form-control" name="time" id="time" value="{{ data['server_stats']['server_id']['log_path']  }}" placeholder="Time">
                         </div>
                         <div id="ifYes" style="display: none;">
                           <div class="form-group">
                             <label for="command">Command <small class="text-muted ml-1"> - What command do you want us to execute? Do not include the '/'</small> </label>
-                            <input type="input" class="form-control" name="command" id="command" value="" placeholder="Command" required>
+                            <input type="input" class="form-control" name="command" id="command" value="" placeholder="Command">
                           </div>
                       </div>
                     </div>
                     <div id="ifAdvanced" style="display: none;">
                       <div class="form-group">
                         <label for="cron">Cron <small class="text-muted ml-1"> - Input your cron string</small> </label>
-                        <input type="input" class="form-control" name="cron" id="cron" value="" placeholder="* * * * backup_server" required>
+                        <input type="input" class="form-control" name="cron" id="cron" value="" placeholder="* * * * backup_server">
                       </div>
                     </div>
 
@@ -113,6 +113,7 @@
                       <div class="card-body">
                         <h4 class="card-title">Scheduled Tasks</h4>
                         <table class="table table-hover" width="100%">
+                          <thead>
                           <tr class="rounded">
                             <th>Action</th>
                             <th>Interval</th>
@@ -120,7 +121,10 @@
                             <th>Enabled</th>
                             <th>Edit</th>
                           </tr>
+                          </thead>
+                          <tbody>
                           {% for schedule in data['schedules'] %}
+                          <tr>
                           <td id="{{schedule.action}}" class="action">
                             <p>{{schedule.action}}</p>
                           </td>
@@ -146,8 +150,9 @@
                             <a href="/panel/edit_schedule?id={{schedule.schedule_id}}"><i class="fas fa-pencil-alt"></i></a>
                               
                             </td>
-                          
+                          </tr>
                           {% end %}
+                        </tbody>
                         </table>
                       </div>
                     </div>

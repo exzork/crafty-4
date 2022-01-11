@@ -839,6 +839,86 @@ class PanelHandler(BaseHandler):
             self.tasks_manager.reload_schedule_from_db()
             self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
 
+        
+        if page == "tasks":
+            server_id = self.get_argument('id', None)
+            difficulty = self.get_argument('difficulty', None)
+            server_obj = self.controller.servers.get_server_obj(server_id)
+            enabled = self.get_argument('enabled', '0')
+            if difficulty == 'basic':
+                action = self.get_argument('action', None)
+                interval = self.get_argument('interval', None)
+                interval_type = self.get_argument('interval_type', None)
+                #only check for time if it's number of days
+                if interval_type == "days":
+                    time = self.get_argument('time', None)
+                if action == "command":
+                    command = self.get_argument('command', None)
+                elif action == "start":
+                    command = "start_server"
+                elif action == "stop":
+                    command = "stop_server"
+                elif action == "restart":
+                    command = "restar_server"
+
+                if self.get_argument('enabled', '1'):
+                    enabled = True
+                else:
+                    enabled = False
+                if self.get_argument('one_time', '0'):
+                    one_time = True
+                else:
+                    one_time = False
+                
+                
+            if not exec_user['superuser'] and not permissions['Backup'] in user_perms:
+                self.redirect("/panel/error?error=Unauthorized access: User not authorized")
+                return
+            elif server_id is None:
+                self.redirect("/panel/error?error=Invalid Server ID")
+                return
+            else:
+                # does this server id exist?
+                if not self.controller.servers.server_id_exists(server_id):
+                    self.redirect("/panel/error?error=Invalid Server ID")
+                    return
+
+                if interval_type == "days":
+                    print("in job data")
+                    job_data = {
+                        "server_id": server_id,
+                        "action": action,
+                        "interval_type": interval_type,
+                        "interval": interval,
+                        "command": command,
+                        "time": time,
+                        "enabled": enabled,
+                        "one_time": one_time
+                    }
+                else:
+                    print("in job data")
+                    job_data = {
+                        "server_id": server_id,
+                        "action": action,
+                        "interval_type": interval_type,
+                        "interval": interval,
+                        "command": command,
+                        "enabled": enabled,
+                        "time": '00:00',
+                        "one_time": one_time
+                    }
+                print(job_data['time'])
+
+                self.tasks_manager.schedule_job(job_data)
+
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
+                                       "Edited server {}: updated backups".format(server_id),
+                                       server_id,
+                                       self.get_remote_ip())
+            self.tasks_manager.reload_schedule_from_db()
+            self.redirect("/panel/server_detail?id={}&subpage=tasks".format(server_id))
+
+
         elif page == "edit_user":
             if bleach.clean(self.get_argument('username', None)) == 'system':
                 self.redirect("/panel/error?error=Unauthorized access: system user is not editable")

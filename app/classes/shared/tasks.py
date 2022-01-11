@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 import sys
 import json
@@ -6,6 +7,11 @@ import logging
 import threading
 import asyncio
 import shutil
+from schedule import Scheduler
+from tzlocal import get_localzone
+
+from pytz import HOUR, timezone
+from app.classes.controllers.users_controller import Users_Controller
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
@@ -15,6 +21,8 @@ from app.classes.web.websocket_helper import websocket_helper
 from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.models.servers import servers_helper
 from app.classes.models.management import management_helper
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_ALL, EVENT_JOB_REMOVED
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +53,10 @@ class TasksManager:
     def __init__(self, controller):
         self.controller = controller
         self.tornado = Webserver(controller, self)
+
+        self.scheduler = BackgroundScheduler()
+
+        self.users_controller = Users_Controller()
 
         self.webserver_thread = threading.Thread(target=self.tornado.run_tornado, daemon=True, name='tornado_thread')
 
@@ -147,11 +159,42 @@ class TasksManager:
         console.info("Launching realtime thread...")
         self.realtime_thread.start()
 
-    @staticmethod
-    def scheduler_thread():
-        while True:
-            schedule.run_pending()
-            time.sleep(1)
+    def scheduler_thread(self):
+        tz = get_localzone()
+        self.scheduler.configure(timezone=tz)
+        self.scheduler.add_listener(self.schedule_watcher, mask=EVENT_ALL)
+        self.scheduler.add_job(self.scheduler.print_jobs, 'interval', seconds=10, id='1225')
+        self.scheduler.start()
+
+
+    def schedule_job(self, job_data):
+        sch_id = management_helper.create_scheduled_task(job_data['server_id'], job_data['action'], job_data['interval'], job_data['interval_type'], job_data['time'], job_data['command'], job_data['enabled'])
+        if job_data['enabled']:
+            if job_data['interval_type'] == 'hours':
+                self.scheduler.add_job(management_helper.add_command, 'interval', hours = int(job_data['interval']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+            elif job_data['interval_type'] == 'minutes':
+                self.scheduler.add_job(management_helper.add_command, 'interval', minutes = int(job_data['interval']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+            elif job_data['interval_type'] == 'seconds':
+                self.scheduler.add_job(management_helper.add_command, 'interval', seconds = int(job_data['interval']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+            elif job_data['interval_type'] == 'days':
+                self.scheduler.add_job(management_helper.add_command, 'interval', days = int(job_data['interval']), start_date = timedelta(job_data['time']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']], )
+
+    def remove_job(self, sch_id):
+        management_helper.delete_scheduled_task(sch_id)
+        self.scheduler.remove_job(str(sch_id))
+
+    def update_job(self):
+        management_helper.update_scheduled_task()
+
+    def schedule_watcher(self, event):
+        if not event.exception:
+            print(event.job_id, event.code)
+            job = self.scheduler.get_job(event.job_id)
+            trigger = job.trigger
+            if trigger.interval:
+                print(trigger.interval)
+            else:
+                print('well that failed')
 
     def start_stats_recording(self):
         stats_update_frequency = helper.get_setting('stats_update_frequency')
