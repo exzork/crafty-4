@@ -177,6 +177,8 @@ class Server:
             console.warning("Unable to write/access {}".format(self.server_path))
 
     def start_server(self, user_id):
+        #Sets waiting start to false since server is now starting.
+        servers_helper.set_waiting_start(self.server_id, False)
         if not user_id:
             user_lang = helper.get_setting('language')
         else:
@@ -225,7 +227,6 @@ class Server:
                     })
             else:
                 logger.error("Autostart failed due to EULA being false. Agree not sent due to auto start.")
-                servers_helper.set_waiting_start(self.server_id, False)
                 return False
             return False
         f.close()
@@ -237,9 +238,6 @@ class Server:
             creationflags=None
 
         logger.info("Starting server in {p} with command: {c}".format(p=self.server_path, c=self.server_command))
-
-        #Sets waiting start to false since server is now starting.
-        servers_helper.set_waiting_start(self.server_id, False)
         
         try:
             self.process = subprocess.Popen(self.server_command, cwd=self.server_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
