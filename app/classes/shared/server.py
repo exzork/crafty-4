@@ -12,6 +12,9 @@ import shutil
 import subprocess
 import zlib
 import html
+import apscheduler
+from apscheduler.schedulers.background import BackgroundScheduler
+import tzlocal
 
 
 from app.classes.shared.helpers import helper
@@ -141,7 +144,9 @@ class Server:
             logger.info("Scheduling server {} to start in {} seconds".format(self.name, delay))
             console.info("Scheduling server {} to start in {} seconds".format(self.name, delay))
 
-            schedule.every(delay).seconds.do(self.run_scheduled_server)
+            self.server_scheduler = BackgroundScheduler(timezone=str(tzlocal.get_localzone()))
+            self.server_scheduler.add_job(self.run_scheduled_server, 'interval', seconds=delay, id=str(self.server_id))
+            self.server_scheduler.start()
 
     def run_scheduled_server(self):
         console.info("Starting server ID: {} - {}".format(self.server_id, self.name))
@@ -149,7 +154,7 @@ class Server:
         self.run_threaded_server(None)
 
         # remove the scheduled job since it's ran
-        return schedule.CancelJob
+        return self.server_scheduler.remove_job(str(self.server_id))
 
     def run_threaded_server(self, user_id):
         # start the server

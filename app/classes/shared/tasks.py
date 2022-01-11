@@ -7,7 +7,6 @@ import logging
 import threading
 import asyncio
 import shutil
-from tzlocal import get_localzone
 import tzlocal
 
 from pytz import HOUR, timezone
