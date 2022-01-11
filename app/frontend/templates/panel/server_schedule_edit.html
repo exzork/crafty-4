@@ -139,7 +139,7 @@
     });
 
     function yesnoCheck() {
-      if (document.getElementById('command').value == "command") {
+      if (document.getElementById('action').value == "command") {
           document.getElementById("ifYes").style.display = "block";
           document.getElementById("command").required = true;
       } else {
@@ -229,7 +229,6 @@ try{
 }catch{
   console.log("no element named {{ data['schedule']['action'] }}")
 }
-  console.log("in on load")
   yesnoCheck();
   basicAdvanced();
   ifDays();
