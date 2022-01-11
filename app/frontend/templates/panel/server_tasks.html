@@ -168,14 +168,14 @@ $( ".del_button" ).click(function() {
   console.log(sch_id)
 
   bootbox.confirm({
-      title: "Test",
-      message: "{{ translate('serverBackups', 'confirmDelete', data['lang']) }}",
+      title: "{{ translate('serverSchedules', 'areYouSure', data['lang']) }}",
+      message: "{{ translate('serverSchedules', 'confirmDelete', data['lang']) }}",
       buttons: {
           cancel: {
-              label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
+              label: '<i class="fas fa-times"></i> {{ translate("serverSchedules", "cancel", data['lang']) }}'
           },
           confirm: {
-              label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm", data['lang']) }}'
+              label: '<i class="fas fa-check"></i> {{ translate("serverSchedules", "confirm", data['lang']) }}'
           }
       },
       callback: function (result) {

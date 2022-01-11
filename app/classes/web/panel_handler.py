@@ -921,7 +921,7 @@ class PanelHandler(BaseHandler):
             self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
 
         
-        if page == "add_schedule":
+        if page == "new_schedule":
             server_id = bleach.clean(self.get_argument('id', None))
             difficulty = bleach.clean(self.get_argument('difficulty', None))
             server_obj = self.controller.servers.get_server_obj(server_id)

@@ -182,7 +182,7 @@ class TasksManager:
 
 
     def schedule_job(self, job_data):
-        sch_id = management_helper.create_scheduled_task(job_data['server_id'], job_data['action'], job_data['interval'], job_data['interval_type'], job_data['time'], job_data['command'], "None", job_data['enabled'], job_data['one_time'], job_data['cron_string'])
+        sch_id = management_helper.create_scheduled_task(job_data['server_id'], job_data['action'], job_data['interval'], job_data['interval_type'], job_data['start_time'], job_data['command'], "None", job_data['enabled'], job_data['one_time'], job_data['cron_string'])
         if job_data['enabled']:
             if job_data['cron_string'] != "":
                 cron = job_data['cron_string'].split(' ')

@@ -170,32 +170,6 @@ function ifDays() {
   }
 }
 
-$( ".del_button" ).click(function() {
-  var sch_id = $(this).data('sch');
-  var server_id = {{ data['server_stats']['server_id']['server_id'] }};
-
-  console.log(sch_id)
-
-  bootbox.confirm({
-      title: "Test",
-      message: "{{ translate('serverBackups', 'confirmDelete', data['lang']) }}",
-      buttons: {
-          cancel: {
-              label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
-          },
-          confirm: {
-              label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm", data['lang']) }}'
-          }
-      },
-      callback: function (result) {
-          console.log(result);
-          if (result == true) {
-              del_task(sch_id, server_id);
-          }
-      }
-  });
-});
-
 function del_task(sch_id, id){
   var token = getCookie("_xsrf")
 
