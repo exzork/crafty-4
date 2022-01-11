@@ -112,6 +112,8 @@ class Schedules(Model):
     start_time = CharField(null=True)
     command = CharField(null=True)
     comment = CharField()
+    one_time = BooleanField(default=False)
+    cron_string = CharField(default="")
 
     class Meta:
         table_name = 'schedules'
@@ -205,7 +207,7 @@ class helpers_management:
     #                                  Schedules Methods
     #************************************************************************************************
     @staticmethod
-    def create_scheduled_task(server_id, action, interval, interval_type, start_time, command, comment=None, enabled=True):
+    def create_scheduled_task(server_id, action, interval, interval_type, start_time, command, comment=None, enabled=True, one_time=False, cron_string='* * * * *'):
         sch_id = Schedules.insert({
             Schedules.server_id: server_id,
             Schedules.action: action,
@@ -214,7 +216,10 @@ class helpers_management:
             Schedules.interval_type: interval_type,
             Schedules.start_time: start_time,
             Schedules.command: command,
-            Schedules.comment: comment
+            Schedules.comment: comment,
+            Schedules.one_time: one_time,
+            Schedules.cron_string: cron_string
+
         }).execute()
         return sch_id
 
@@ -234,6 +239,10 @@ class helpers_management:
     @staticmethod
     def get_scheduled_task(schedule_id):
         return model_to_dict(Schedules.get(Schedules.schedule_id == schedule_id)).execute()
+
+    @staticmethod
+    def get_scheduled_task_model(schedule_id):
+        return Schedules.select().where(Schedules.schedule_id == schedule_id).get()
 
     @staticmethod
     def get_schedules_by_server(server_id):
@@ -272,7 +281,7 @@ class helpers_management:
         return conf
 
     @staticmethod
-    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, auto_enabled: bool = True):
+    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None):
         logger.debug("Updating server {} backup config with {}".format(server_id, locals()))
         try:
             row = Backups.select().where(Backups.server_id == server_id).join(Schedules).join(Servers)[0]
@@ -297,7 +306,6 @@ class helpers_management:
             new_row = True
         if max_backups is not None:
             conf['max_backups'] = max_backups
-        schd['enabled'] = bool(auto_enabled)
         if not new_row:
             with database.atomic():
                 if backup_path is not None:
@@ -305,15 +313,12 @@ class helpers_management:
                 else:
                     u1 = 0
                 u2 = Backups.update(conf).where(Backups.server_id == server_id).execute()
-                u3 = Schedules.update(schd).where(Schedules.schedule_id == row.schedule_id).execute()
             logger.debug("Updating existing backup record.  {}+{}+{} rows affected".format(u1, u2, u3))
         else:
             with database.atomic():
                 conf["server_id"] = server_id
                 if backup_path is not None:
                     u = Servers.update(backup_path=backup_path).where(Servers.server_id == server_id)
-                s = Schedules.create(**schd)
-                conf['schedule_id'] = s.schedule_id
                 b = Backups.create(**conf)
             logger.debug("Creating new backup record.")
 

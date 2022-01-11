@@ -92,6 +92,10 @@ class Management_Controller:
         return management_helper.get_scheduled_task(schedule_id)
 
     @staticmethod
+    def get_scheduled_task_model(schedule_id):
+        return management_helper.get_scheduled_task_model(schedule_id)
+
+    @staticmethod
     def get_schedules_by_server(server_id):
         return management_helper.get_schedules_by_server(server_id)
 
@@ -111,5 +115,5 @@ class Management_Controller:
         return management_helper.get_backup_config(server_id)
 
     @staticmethod
-    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, auto_enabled: bool = True):
-        return management_helper.set_backup_config(server_id, backup_path, max_backups, auto_enabled)
+    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None):
+        return management_helper.set_backup_config(server_id, backup_path, max_backups)

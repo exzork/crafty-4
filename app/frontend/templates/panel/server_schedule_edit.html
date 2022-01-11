@@ -1,0 +1,251 @@
+{% extends ../base.html %}
+
+{% block meta %}
+<!--  <meta http-equiv="refresh" content="60">-->
+{% end %}
+
+{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails', data['lang']) }}{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        <h4 class="page-title">
+          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{ data['server_stats']['server_id']['server_name'] }}
+            <br />
+            <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
+        </h4>
+      </div>
+    </div>
+
+  </div>
+  <!-- Page Title Header Ends-->
+
+ {% include "parts/details_stats.html %}
+
+  <div class="row">
+
+    <div class="col-sm-12 grid-margin">
+      <div class="card">
+        <div class="card-body  pt-0">
+            {% include "parts/server_controls_list.html %}
+
+            <div class="row">
+                <div class="col-md-12 col-sm-12">
+                  {% if data['new_schedule'] == True %}
+                    <form class="forms-sample" method="post" action="/panel/new_schedule?id={{ data['server_stats']['server_id']['server_id'] }}">
+                  {% else %}
+                  <form class="forms-sample" method="post" action="/panel/edit_schedule?id={{ data['server_stats']['server_id']['server_id'] }}&sch_id={{ data['schedule']['schedule_id'] }}">
+                  {% end %}
+                      {% raw xsrf_form_html() %}
+                      <input type="hidden" name="id" value="{{ data['server_stats']['server_id']['server_id'] }}">
+                      <input type="hidden" name="subpage" value="config">
+
+                      <div class="form-group">
+                        <label for="difficulty">Basic / Cron Select<small class="text-muted ml-1"></small> </label><br>
+                        <select id="difficulty" name="difficulty" onchange="basicAdvanced(this);" class="form-control form-control-lg select-css" value="{{ data['schedule']['difficulty']  }}">
+                          <option id="basic" value="basic">Basic</option>
+                          <option id="advanced" value="advanced">Advanced</option>
+                        </select>
+                      </div>
+                        <div class="form-group">
+                          <label for="server_name">Action<small class="text-muted ml-1"></small> </label><br>
+                          <select id="action" name="action" onchange="yesnoCheck(this);" class="form-control form-control-lg select-css" value="{{ data['schedule']['action']  }}">
+                            <option id="start" value="start">Start Server</option>
+                            <option id="restart" value="restart">Restart Server</option>
+                            <option id="shutdown" value="shutdown">Shutdown Server</option>
+                            <option id="backup" value="backup">Backup Server</option>
+                            <option id="command" value="command">Custon Command</option>
+                          </select>
+                        </div>
+                        <div id="ifBasic">
+                        <div class="form-group">
+                          <label for="server_path">Interval <small class="text-muted ml-1"> - How often you want this task to execute</small> </label>
+                          <input type="number" class="form-control" name="interval" id="interval" value="{{ data['schedule']['interval']  }}" placeholder="Interval" required>
+                          <br>
+                          <br>
+                          <select id="interval_type" onchange="ifDays(this);" name="interval_type" class="form-control form-control-lg select-css" value="{{ data['schedule']['interval_type']  }}">
+                            <option id = "days" value="days">Days</option>
+                            <option id = "hours" value="hours">Hours</option>
+                            <option id = "minutes" value="minutes">Minutes</option>
+                          </select>
+                        </div>
+                        <div id="ifDays" style="display: block;">
+                        <div class="form-group">
+                          <label for="time">Time <small class="text-muted ml-1"> - What time do you want your task to execute?</small> </label>
+                          <input type="time" class="form-control" name="time" id="time" value="{{ data['schedule']['time']  }}" placeholder="Time" required>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="ifYes" style="display: none;">
+                      <div class="form-group">
+                        <label for="command">Command <small class="text-muted ml-1"> - What command do you want us to execute? Do not include the '/'</small> </label>
+                        <input type="input" class="form-control" name="command" id="command_input" value="{{ data['schedule']['command']  }}" placeholder="Command" required>
+                      </div>
+                  </div>
+                    <div id="ifAdvanced" style="display: none;">
+                      <div class="form-group">
+                        <label for="cron">Cron <small class="text-muted ml-1"> - Input your cron string</small> </label>
+                        <input type="input" class="form-control" name="cron" id="cron" value="{{ data['schedule']['cron_string']  }}" placeholder="* * * * *">
+                      </div>
+                    </div>
+
+                      <div class="form-check-flat">
+                        <label for="enabled" class="form-check-label ml-4 mb-4">
+                            <input type="checkbox" class="form-check-input" id="enabled" name="enabled" checked="" value="1">Enabled
+                        </label>
+
+                      </div>
+                      <div class="form-check-flat">
+                        <label for="one_time" class="form-check-label ml-4 mb-4">
+                            <input type="checkbox" class="form-check-input" id="one_time" name="one_time" value="1">Delete After Execution
+                        </label>
+
+                      </div>
+                      <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('serverConfig', 'save', data['lang']) }}</button>
+                      <button type="reset" onclick="location.href=`/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=tasks`" class="btn btn-light"><i class="fas fa-times"></i> {{ translate('serverConfig', 'cancel', data['lang']) }}</button>
+                    </form>
+                </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+</div>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+<script>
+
+
+    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+    function getCookie(name) {
+        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+        return r ? r[1] : undefined;
+    }
+
+    $( document ).ready(function() {
+        console.log( "ready!" );
+
+    });
+
+    function yesnoCheck() {
+      if (document.getElementById('command').value == "command") {
+          document.getElementById("ifYes").style.display = "block";
+          document.getElementById("command").required = true;
+      } else {
+          document.getElementById("ifYes").style.display = "none";
+          document.getElementById("command").required = false;
+      }
+  }
+  function basicAdvanced() {
+    if (document.getElementById('difficulty').value == "advanced") {
+        document.getElementById("ifAdvanced").style.display = "block";
+        document.getElementById("ifBasic").style.display = "none";
+        document.getElementById("interval").required = false;
+        document.getElementById("time").required = false;
+    } else {
+        document.getElementById("ifAdvanced").style.display = "none";
+        document.getElementById("ifBasic").style.display = "block";
+        document.getElementById("interval").required = true;
+        document.getElementById("time").required = true;
+    }
+}
+function ifDays() {
+  if (document.getElementById('interval_type').value == "days") {
+      document.getElementById("ifDays").style.display = "block";
+      document.getElementById("time").required = true;
+  } else {
+      document.getElementById("ifDays").style.display = "none";
+      document.getElementById("time").required = false;
+  }
+}
+
+$( ".del_button" ).click(function() {
+  var sch_id = $(this).data('sch');
+  var server_id = {{ data['server_stats']['server_id']['server_id'] }};
+
+  console.log(sch_id)
+
+  bootbox.confirm({
+      title: "Test",
+      message: "{{ translate('serverBackups', 'confirmDelete', data['lang']) }}",
+      buttons: {
+          cancel: {
+              label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
+          },
+          confirm: {
+              label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm", data['lang']) }}'
+          }
+      },
+      callback: function (result) {
+          console.log(result);
+          if (result == true) {
+              del_task(sch_id, server_id);
+          }
+      }
+  });
+});
+
+function del_task(sch_id, id){
+  var token = getCookie("_xsrf")
+
+  $.ajax({
+    type: "DELETE",
+    headers: {'X-XSRFToken': token},
+    url: '/ajax/del_task?server_id='+id+'&schedule_id='+sch_id,
+    data: {
+    schedule_id: sch_id,
+    id: id
+    },
+    success: function(data) {
+      location.reload();
+    },
+  });
+}
+function startup(){
+  try{
+    document.getElementById("{{ data['schedule']['interval_type'] }}").setAttribute('selected', true);
+  }catch{
+    console.log("no element named {{ data['schedule']['interval_type'] }}")
+  }
+  try{
+  document.getElementById("{{ data['schedule']['difficulty'] }}").setAttribute('selected', true);
+}catch{
+  console.log("no element named {{ data['schedule']['difficulty'] }}")
+}
+try{
+  document.getElementById("{{ data['schedule']['action'] }}").setAttribute('selected', true);
+
+}catch{
+  console.log("no element named {{ data['schedule']['action'] }}")
+}
+  console.log("in on load")
+  yesnoCheck();
+  basicAdvanced();
+  ifDays();
+  if("{{ data['schedule']['enabled']  }}" == 'True'){
+    document.getElementById('enabled').checked = true;
+  }else{
+    document.getElementById('enabled').checked = true;
+  }
+  if("{{ data['schedule']['one_time']  }}" == 'True'){
+    document.getElementById('one_time').checked = true;
+  }else{
+    document.getElementById('one_time').checked = false;
+  }
+}
+
+window.onload(startup())
+</script>
+
+{% end %}

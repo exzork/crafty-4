@@ -35,98 +35,39 @@
             {% include "parts/server_controls_list.html %}
 
             <div class="row">
-                <div class="col-md-4 col-sm-12">
-                    <form class="forms-sample" method="post" action="/panel/server_detail">
-                      {% raw xsrf_form_html() %}
-                      <input type="hidden" name="id" value="{{ data['server_stats']['server_id']['server_id'] }}">
-                      <input type="hidden" name="subpage" value="config">
-
-                      <div class="form-group">
-                        <label for="server_name">Basic / Cron Select<small class="text-muted ml-1"></small> </label><br>
-                        <select id="action" name="action" onchange="basicAdvanced(this);" class="form-control form-control-lg select-css">
-                          <option value="basic">Basic</option>
-                          <option value="advanced">Advanced</option>
-                        </select>
-                      </div>
-                      <div id="ifBasic">
-                        <div class="form-group">
-                          <label for="server_name">Action<small class="text-muted ml-1"></small> </label><br>
-                          <select id="action" name="action" onchange="yesnoCheck(this);" class="form-control form-control-lg select-css">
-                            <option value="start">Start Server</option>
-                            <option value="restart">Restart Server</option>
-                            <option value="shutdown">Shutdown Server</option>
-                            <option value="command">Custon Command</option>
-                          </select>
-                        </div>
-
-                        <div class="form-group">
-                          <label for="server_path">Interval <small class="text-muted ml-1"> - How often you want this task to execute</small> </label>
-                          <input type="number" class="form-control" name="server_path" id="server_path" value="{{ data['server_stats']['server_id']['path']  }}" placeholder="Interval" required>
-                          <br>
-                          <br>
-                          <select id="interval_type" name="interval_type" class="form-control form-control-lg select-css">
-                            <option value="days">Days</option>
-                            <option value="hours">Hours</option>
-                            <option value="minutes">Minutes</option>
-                            <option value="weeks">Weeks</option>
-                          </select>
-                        </div>
-
-                        <div class="form-group">
-                          <label for="time">Time <small class="text-muted ml-1"> - What time do you want your task to execute?</small> </label>
-                          <input type="time" class="form-control" name="time" id="time" value="{{ data['server_stats']['server_id']['log_path']  }}" placeholder="Time" required>
-                        </div>
-                        <div id="ifYes" style="display: none;">
-                          <div class="form-group">
-                            <label for="command">Command <small class="text-muted ml-1"> - What command do you want us to execute? Do not include the '/'</small> </label>
-                            <input type="input" class="form-control" name="command" id="command" value="" placeholder="Command" required>
-                          </div>
-                      </div>
-                    </div>
-                    <div id="ifAdvanced" style="display: none;">
-                      <div class="form-group">
-                        <label for="cron">Cron <small class="text-muted ml-1"> - Input your cron string</small> </label>
-                        <input type="input" class="form-control" name="cron" id="cron" value="" placeholder="* * * * backup_server" required>
-                      </div>
-                    </div>
-
-                      <div class="form-check-flat">
-                        <label for="enabled" class="form-check-label ml-4 mb-4">
-                            <input type="checkbox" class="form-check-input" id="enabled" name="enabled" checked="" value="1">Enabled
-                        </label>
-
-                      </div>
-                      <div class="form-check-flat">
-                        <label for="one_time" class="form-check-label ml-4 mb-4">
-                            <input type="checkbox" class="form-check-input" id="one_time" name="one_time" value="1">Delete After Execution
-                        </label>
-
-                      </div>
-
-                      <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('serverConfig', 'save', data['lang']) }}</button>
-                      <button type="reset" class="btn btn-light"><i class="fas fa-times"></i> {{ translate('serverConfig', 'cancel', data['lang']) }}</button>
-                    </form>
-                </div>
-
-                <div class="col-md-8 col-sm-12">
+                <button onclick="location.href=`/panel/add_schedule?id={{ data['server_stats']['server_id']['server_id'] }}`" class="btn btn-info">Create New Schedule <i class="fas fa-pencil-alt"></i></button>
+                <div class="col-md-12 col-sm-12" style="overflow-x:auto;">
                     <div class="card">
                       <div class="card-body">
                         <h4 class="card-title">Scheduled Tasks</h4>
                         <table class="table table-hover" width="100%">
+                          <thead>
                           <tr class="rounded">
                             <th>Action</th>
+                            <th>Command</th>
                             <th>Interval</th>
                             <th>Start Time</th>
                             <th>Enabled</th>
                             <th>Edit</th>
                           </tr>
+                          </thead>
+                          <tbody>
                           {% for schedule in data['schedules'] %}
+                          <tr>
                           <td id="{{schedule.action}}" class="action">
                             <p>{{schedule.action}}</p>
                           </td>
+                          <td id="{{schedule.command}}" class="action">
+                            <p>{{schedule.command}}</p>
+                          </td>
                           <td id="{{schedule.interval}}" class="action">
+                            {% if schedule.interval != '' %}
                             <p>Every</p>
                             <p>{{schedule.interval}} {{schedule.interval_type}}</p>
+                            {% else %}
+                            <p>Cron String:</p>
+                            <p>{{schedule.cron_string}}</p>
+                            {% end %}
                           </td>
                           <td id="{{schedule.start_time}}" class="action">
                             <p>{{schedule.start_time}}</p>
@@ -143,11 +84,18 @@
                           </td>
                           {% end %}
                           <td id="{{schedule.action}}" class="action">
-                            <a href="/panel/edit_schedule?id={{schedule.schedule_id}}"><i class="fas fa-pencil-alt"></i></a>
-                              
+                            <button onclick="window.location.href='/panel/edit_schedule?id={{ data['server_stats']['server_id']['server_id'] }}&sch_id={{schedule.schedule_id}}'" class="btn btn-info">
+                              <i class="fas fa-pencil-alt"></i>
+                             </button>
+                          <br>
+                          <br>
+                          <button data-sch={{ schedule.schedule_id }} class="btn btn-danger del_button">
+                            <i class="fas fa-trash" aria-hidden="true"></i>
+                        </button>
                             </td>
-                          
+                          </tr>
                           {% end %}
+                        </tbody>
                         </table>
                       </div>
                     </div>
@@ -184,18 +132,76 @@
     function yesnoCheck(that) {
       if (that.value == "command") {
           document.getElementById("ifYes").style.display = "block";
+          document.getElementById("command").required = true;          
       } else {
           document.getElementById("ifYes").style.display = "none";
+          document.getElementById("command").required = false;
       }
   }
   function basicAdvanced(that) {
     if (that.value == "advanced") {
         document.getElementById("ifAdvanced").style.display = "block";
         document.getElementById("ifBasic").style.display = "none";
+        document.getElementById("interval").required = false;
+        document.getElementById("time").required = false;
     } else {
         document.getElementById("ifAdvanced").style.display = "none";
         document.getElementById("ifBasic").style.display = "block";
+        document.getElementById("interval").required = true;
+        document.getElementById("time").required = true;
     }
+}
+function ifDays(that) {
+  if (that.value == "days") {
+      document.getElementById("ifDays").style.display = "block";
+      document.getElementById("time").required = true;
+  } else {
+      document.getElementById("ifDays").style.display = "none";
+      document.getElementById("time").required = false;
+  }
+}
+
+$( ".del_button" ).click(function() {
+  var sch_id = $(this).data('sch');
+  var server_id = {{ data['server_stats']['server_id']['server_id'] }};
+
+  console.log(sch_id)
+
+  bootbox.confirm({
+      title: "Test",
+      message: "{{ translate('serverBackups', 'confirmDelete', data['lang']) }}",
+      buttons: {
+          cancel: {
+              label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
+          },
+          confirm: {
+              label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm", data['lang']) }}'
+          }
+      },
+      callback: function (result) {
+          console.log(result);
+          if (result == true) {
+              del_task(sch_id, server_id);
+          }
+      }
+  });
+});
+
+function del_task(sch_id, id){
+  var token = getCookie("_xsrf")
+
+  $.ajax({
+    type: "DELETE",
+    headers: {'X-XSRFToken': token},
+    url: '/ajax/del_task?server_id='+id+'&schedule_id='+sch_id,
+    data: {
+    schedule_id: sch_id,
+    id: id
+    },
+    success: function(data) {
+      location.reload();
+    },
+  });
 }
 
 </script>
