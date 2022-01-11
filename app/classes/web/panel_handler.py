@@ -862,15 +862,6 @@ class PanelHandler(BaseHandler):
                     command = "restart_server"
                 elif action == "backup":
                     command = "backup_server"
-
-                if bleach.clean(self.get_argument('enabled', '1')):
-                    enabled = True
-                else:
-                    enabled = False
-                if bleach.clean(self.get_argument('one_time', '0')):
-                    one_time = True
-                else:
-                    one_time = False
             else:
                 cron_string = bleach.clean(self.get_argument('cron', ''))
                 action = bleach.clean(self.get_argument('action', None))
@@ -884,6 +875,14 @@ class PanelHandler(BaseHandler):
                     command = "restart_server"
                 elif action == "backup":
                     command = "backup_server"
+            if bleach.clean(self.get_argument('enabled', '1'))=='1':
+                enabled = True
+            else:
+                enabled = False
+            if bleach.clean(self.get_argument('one_time', '0')) == '1':
+                one_time = True
+            else:
+                one_time = False
                 
             if not exec_user['superuser'] and not permissions['Backup'] in user_perms:
                 self.redirect("/panel/error?error=Unauthorized access: User not authorized")
@@ -898,7 +897,6 @@ class PanelHandler(BaseHandler):
                     return
 
                 if interval_type == "days":
-                    print("in job data")
                     job_data = {
                         "server_id": server_id,
                         "action": action,
@@ -919,7 +917,6 @@ class PanelHandler(BaseHandler):
                         "one_time": one_time
                     }
                 else:
-                    print("in job data")
                     job_data = {
                         "server_id": server_id,
                         "action": action,
@@ -930,7 +927,6 @@ class PanelHandler(BaseHandler):
                         "time": '00:00',
                         "one_time": one_time
                     }
-                print(job_data['time'])
 
                 self.tasks_manager.schedule_job(job_data)
 

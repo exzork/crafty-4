@@ -165,8 +165,8 @@ class TasksManager:
         schedules = management_helper.get_schedules_enabled()
         tz = get_localzone()
         self.scheduler.configure(timezone=tz)
-        self.scheduler.add_listener(self.schedule_watcher, mask=EVENT_ALL)
-        self.scheduler.add_job(self.scheduler.print_jobs, 'interval', seconds=10, id='-1')
+        self.scheduler.add_listener(self.schedule_watcher, mask=EVENT_JOB_EXECUTED)
+        #self.scheduler.add_job(self.scheduler.print_jobs, 'interval', seconds=10, id='-1')
         #load schedules from DB
         for schedule in schedules:
             if schedule.interval_type == 'hours':
@@ -181,7 +181,7 @@ class TasksManager:
 
 
     def schedule_job(self, job_data):
-        sch_id = management_helper.create_scheduled_task(job_data['server_id'], job_data['action'], job_data['interval'], job_data['interval_type'], job_data['time'], job_data['command'], job_data['enabled'])
+        sch_id = management_helper.create_scheduled_task(job_data['server_id'], job_data['action'], job_data['interval'], job_data['interval_type'], job_data['time'], job_data['command'], "None", job_data['enabled'], job_data['one_time'])
         if job_data['enabled']:
             if job_data['interval_type'] == 'hours':
                 self.scheduler.add_job(management_helper.add_command, 'cron', minute = 0,  hour = '*/'+str(job_data['interval']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
@@ -200,13 +200,13 @@ class TasksManager:
 
     def schedule_watcher(self, event):
         if not event.exception:
-            print(event.job_id, event.code)
-            job = self.scheduler.get_job(event.job_id)
-            trigger = job.trigger
-            if trigger.interval:
-                print(trigger.interval)
-            else:
-                print('well that failed')
+            task = management_helper.get_scheduled_task_model(int(event.job_id))
+            if task.one_time:
+                self.remove_job(task.schedule_id)
+                logger.info("one time task detected. Deleting...")
+        else:
+            print("error")
+            logger.error("Task failed with error: {}".format(event.exception))
 
     def start_stats_recording(self):
         stats_update_frequency = helper.get_setting('stats_update_frequency')

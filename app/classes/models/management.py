@@ -112,6 +112,7 @@ class Schedules(Model):
     start_time = CharField(null=True)
     command = CharField(null=True)
     comment = CharField()
+    one_time = BooleanField(default=False)
 
     class Meta:
         table_name = 'schedules'
@@ -205,7 +206,7 @@ class helpers_management:
     #                                  Schedules Methods
     #************************************************************************************************
     @staticmethod
-    def create_scheduled_task(server_id, action, interval, interval_type, start_time, command, comment=None, enabled=True):
+    def create_scheduled_task(server_id, action, interval, interval_type, start_time, command, comment=None, enabled=True, one_time=False):
         sch_id = Schedules.insert({
             Schedules.server_id: server_id,
             Schedules.action: action,
@@ -214,7 +215,8 @@ class helpers_management:
             Schedules.interval_type: interval_type,
             Schedules.start_time: start_time,
             Schedules.command: command,
-            Schedules.comment: comment
+            Schedules.comment: comment,
+            Schedules.one_time: one_time
         }).execute()
         return sch_id
 
@@ -234,6 +236,10 @@ class helpers_management:
     @staticmethod
     def get_scheduled_task(schedule_id):
         return model_to_dict(Schedules.get(Schedules.schedule_id == schedule_id)).execute()
+
+    @staticmethod
+    def get_scheduled_task_model(schedule_id):
+        return Schedules.select().where(Schedules.schedule_id == schedule_id).get()
 
     @staticmethod
     def get_schedules_by_server(server_id):
