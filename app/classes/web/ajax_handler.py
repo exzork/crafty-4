@@ -341,6 +341,13 @@ class AjaxHandler(BaseHandler):
             # Delete the file
             os.remove(file_path)
 
+        if page == "del_task":
+            if not permissions['Schedule'] in user_perms:
+                self.redirect("/panel/error?error=Unauthorized access to Tasks")   
+            else:
+                sch_id = self.get_argument('schedule_id', '-404')
+                self.tasks_manager.remove_job(sch_id)
+
         if page == "del_backup":
             if not permissions['Backup'] in user_perms:
                 if not exec_user['superuser']:

@@ -841,35 +841,49 @@ class PanelHandler(BaseHandler):
 
         
         if page == "tasks":
-            server_id = self.get_argument('id', None)
-            difficulty = self.get_argument('difficulty', None)
+            server_id = bleach.clean(self.get_argument('id', None))
+            difficulty = bleach.clean(self.get_argument('difficulty', None))
             server_obj = self.controller.servers.get_server_obj(server_id)
-            enabled = self.get_argument('enabled', '0')
+            enabled = bleach.clean(self.get_argument('enabled', '0'))
             if difficulty == 'basic':
-                action = self.get_argument('action', None)
-                interval = self.get_argument('interval', None)
-                interval_type = self.get_argument('interval_type', None)
+                action = bleach.clean(self.get_argument('action', None))
+                interval = bleach.clean(self.get_argument('interval', None))
+                interval_type = bleach.clean(self.get_argument('interval_type', None))
                 #only check for time if it's number of days
                 if interval_type == "days":
-                    time = self.get_argument('time', None)
+                    time = bleach.clean(self.get_argument('time', None))
                 if action == "command":
-                    command = self.get_argument('command', None)
+                    command = bleach.clean(self.get_argument('command', None))
                 elif action == "start":
                     command = "start_server"
                 elif action == "stop":
                     command = "stop_server"
                 elif action == "restart":
-                    command = "restar_server"
+                    command = "restart_server"
+                elif action == "backup":
+                    command = "backup_server"
 
-                if self.get_argument('enabled', '1'):
+                if bleach.clean(self.get_argument('enabled', '1')):
                     enabled = True
                 else:
                     enabled = False
-                if self.get_argument('one_time', '0'):
+                if bleach.clean(self.get_argument('one_time', '0')):
                     one_time = True
                 else:
                     one_time = False
-                
+            else:
+                cron_string = bleach.clean(self.get_argument('cron', ''))
+                action = bleach.clean(self.get_argument('action', None))
+                if action == "command":
+                    command = bleach.clean(self.get_argument('command', None))
+                elif action == "start":
+                    command = "start_server"
+                elif action == "stop":
+                    command = "stop_server"
+                elif action == "restart":
+                    command = "restart_server"
+                elif action == "backup":
+                    command = "backup_server"
                 
             if not exec_user['superuser'] and not permissions['Backup'] in user_perms:
                 self.redirect("/panel/error?error=Unauthorized access: User not authorized")
@@ -892,6 +906,15 @@ class PanelHandler(BaseHandler):
                         "interval": interval,
                         "command": command,
                         "time": time,
+                        "enabled": enabled,
+                        "one_time": one_time
+                    }
+                elif difficulty == "advanced":
+                        job_data = {
+                        "server_id": server_id,
+                        "action": action,
+                        "command": command,
+                        "cron_string": cron_string,
                         "enabled": enabled,
                         "one_time": one_time
                     }

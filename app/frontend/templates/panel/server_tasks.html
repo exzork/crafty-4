@@ -48,17 +48,17 @@
                           <option value="advanced">Advanced</option>
                         </select>
                       </div>
-                      <div id="ifBasic">
                         <div class="form-group">
                           <label for="server_name">Action<small class="text-muted ml-1"></small> </label><br>
                           <select id="action" name="action" onchange="yesnoCheck(this);" class="form-control form-control-lg select-css">
                             <option value="start">Start Server</option>
                             <option value="restart">Restart Server</option>
                             <option value="shutdown">Shutdown Server</option>
+                            <option value="backup">Backup Server</option>
                             <option value="command">Custon Command</option>
                           </select>
                         </div>
-
+                        <div id="ifBasic">
                         <div class="form-group">
                           <label for="server_path">Interval <small class="text-muted ml-1"> - How often you want this task to execute</small> </label>
                           <input type="number" class="form-control" name="interval" id="interval" value="{{ data['server_stats']['server_id']['path']  }}" placeholder="Interval" required>
@@ -68,7 +68,6 @@
                             <option value="days">Days</option>
                             <option value="hours">Hours</option>
                             <option value="minutes">Minutes</option>
-                            <option value="weeks">Weeks</option>
                           </select>
                         </div>
 
@@ -76,17 +75,17 @@
                           <label for="time">Time <small class="text-muted ml-1"> - What time do you want your task to execute?</small> </label>
                           <input type="time" class="form-control" name="time" id="time" value="{{ data['server_stats']['server_id']['log_path']  }}" placeholder="Time">
                         </div>
-                        <div id="ifYes" style="display: none;">
-                          <div class="form-group">
-                            <label for="command">Command <small class="text-muted ml-1"> - What command do you want us to execute? Do not include the '/'</small> </label>
-                            <input type="input" class="form-control" name="command" id="command" value="" placeholder="Command">
-                          </div>
-                      </div>
                     </div>
+                    <div id="ifYes" style="display: none;">
+                      <div class="form-group">
+                        <label for="command">Command <small class="text-muted ml-1"> - What command do you want us to execute? Do not include the '/'</small> </label>
+                        <input type="input" class="form-control" name="command" id="command" value="" placeholder="Command">
+                      </div>
+                  </div>
                     <div id="ifAdvanced" style="display: none;">
                       <div class="form-group">
                         <label for="cron">Cron <small class="text-muted ml-1"> - Input your cron string</small> </label>
-                        <input type="input" class="form-control" name="cron" id="cron" value="" placeholder="* * * * backup_server">
+                        <input type="input" class="form-control" name="cron" id="cron" value="" placeholder="* * * * *">
                       </div>
                     </div>
 
@@ -108,7 +107,7 @@
                     </form>
                 </div>
 
-                <div class="col-md-8 col-sm-12">
+                <div class="col-md-8 col-sm-12" style="overflow-x:auto;">
                     <div class="card">
                       <div class="card-body">
                         <h4 class="card-title">Scheduled Tasks</h4>
@@ -147,8 +146,14 @@
                           </td>
                           {% end %}
                           <td id="{{schedule.action}}" class="action">
-                            <a href="/panel/edit_schedule?id={{schedule.schedule_id}}"><i class="fas fa-pencil-alt"></i></a>
-                              
+                            <button onclick="window.location.href='/panel/edit_schedule?id={{schedule.schedule_id}}'" class="btn btn-info">
+                              <i class="fas fa-pencil-alt"></i>
+                             </button>
+                          <br>
+                          <br>
+                          <button data-sch={{ schedule.schedule_id }} class="btn btn-danger del_button">
+                            <i class="fas fa-trash" aria-hidden="true"></i>
+                        </button>
                             </td>
                           </tr>
                           {% end %}
@@ -201,6 +206,49 @@
         document.getElementById("ifAdvanced").style.display = "none";
         document.getElementById("ifBasic").style.display = "block";
     }
+}
+
+$( ".del_button" ).click(function() {
+  var sch_id = $(this).data('sch');
+  var server_id = {{ data['server_stats']['server_id']['server_id'] }};
+
+  console.log(sch_id)
+
+  bootbox.confirm({
+      title: "Test",
+      message: "{{ translate('serverBackups', 'confirmDelete', data['lang']) }}",
+      buttons: {
+          cancel: {
+              label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
+          },
+          confirm: {
+              label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm", data['lang']) }}'
+          }
+      },
+      callback: function (result) {
+          console.log(result);
+          if (result == true) {
+              del_task(sch_id, server_id);
+          }
+      }
+  });
+});
+
+function del_task(sch_id, id){
+  var token = getCookie("_xsrf")
+
+  $.ajax({
+    type: "DELETE",
+    headers: {'X-XSRFToken': token},
+    url: '/ajax/del_task?server_id='+id+'&schedule_id='+sch_id,
+    data: {
+    schedule_id: sch_id,
+    id: id
+    },
+    success: function(data) {
+      location.reload();
+    },
+  });
 }
 
 </script>
