@@ -9,6 +9,7 @@ import asyncio
 import shutil
 from schedule import Scheduler
 from tzlocal import get_localzone
+import tzlocal
 
 from pytz import HOUR, timezone
 from app.classes.controllers.users_controller import Users_Controller
@@ -54,7 +55,7 @@ class TasksManager:
         self.controller = controller
         self.tornado = Webserver(controller, self)
 
-        self.scheduler = BackgroundScheduler()
+        self.scheduler = BackgroundScheduler(timezone=str(tzlocal.get_localzone()))
 
         self.users_controller = Users_Controller()
 
@@ -163,33 +164,39 @@ class TasksManager:
 
     def scheduler_thread(self):
         schedules = management_helper.get_schedules_enabled()
-        tz = get_localzone()
-        self.scheduler.configure(timezone=tz)
         self.scheduler.add_listener(self.schedule_watcher, mask=EVENT_JOB_EXECUTED)
         #self.scheduler.add_job(self.scheduler.print_jobs, 'interval', seconds=10, id='-1')
         #load schedules from DB
         for schedule in schedules:
-            if schedule.interval_type == 'hours':
-                self.scheduler.add_job(management_helper.add_command, 'cron', minute = 0,  hour = '*/'+str(schedule.interval), id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
-            elif schedule.interval_type == 'minutes':
-                self.scheduler.add_job(management_helper.add_command, 'cron', minute = '*/'+str(schedule.interval), id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
-            elif schedule.interval_type == 'days':
-                time = schedule.start_time.split(':')
-                self.scheduler.add_job(management_helper.add_command, 'cron', day = '*/'+str(schedule.interval), hour=time[0], minute=time[1], id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
+            if schedule.cron_string != "":
+                cron = schedule.cron_string.split(' ')
+                self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
+            else:
+                if schedule.interval_type == 'hours':
+                    self.scheduler.add_job(management_helper.add_command, 'cron', minute = 0,  hour = '*/'+str(schedule.interval), id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
+                elif schedule.interval_type == 'minutes':
+                    self.scheduler.add_job(management_helper.add_command, 'cron', minute = '*/'+str(schedule.interval), id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
+                elif schedule.interval_type == 'days':
+                    time = schedule.start_time.split(':')
+                    self.scheduler.add_job(management_helper.add_command, 'cron', day = '*/'+str(schedule.interval), hour=time[0], minute=time[1], id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
 
         self.scheduler.start()
 
 
     def schedule_job(self, job_data):
-        sch_id = management_helper.create_scheduled_task(job_data['server_id'], job_data['action'], job_data['interval'], job_data['interval_type'], job_data['time'], job_data['command'], "None", job_data['enabled'], job_data['one_time'])
+        sch_id = management_helper.create_scheduled_task(job_data['server_id'], job_data['action'], job_data['interval'], job_data['interval_type'], job_data['time'], job_data['command'], "None", job_data['enabled'], job_data['one_time'], job_data['cron_string'])
         if job_data['enabled']:
-            if job_data['interval_type'] == 'hours':
-                self.scheduler.add_job(management_helper.add_command, 'cron', minute = 0,  hour = '*/'+str(job_data['interval']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
-            elif job_data['interval_type'] == 'minutes':
-                self.scheduler.add_job(management_helper.add_command, 'cron', minute = '*/'+str(job_data['interval']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
-            elif job_data['interval_type'] == 'days':
-                time = job_data['time'].split(':')
-                self.scheduler.add_job(management_helper.add_command, 'cron', day = '*/'+str(job_data['interval']), hour = time[0], minute = time[1], id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']], )
+            if job_data['cron_string'] != "":
+                cron = job_data['cron_string'].split(' ')
+                self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+            else:
+                if job_data['interval_type'] == 'hours':
+                    self.scheduler.add_job(management_helper.add_command, 'cron', minute = 0,  hour = '*/'+str(job_data['interval']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+                elif job_data['interval_type'] == 'minutes':
+                    self.scheduler.add_job(management_helper.add_command, 'cron', minute = '*/'+str(job_data['interval']), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+                elif job_data['interval_type'] == 'days':
+                    time = job_data['time'].split(':')
+                    self.scheduler.add_job(management_helper.add_command, 'cron', day = '*/'+str(job_data['interval']), hour = time[0], minute = time[1], id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']], )
 
     def remove_job(self, sch_id):
         management_helper.delete_scheduled_task(sch_id)

@@ -113,6 +113,7 @@ class Schedules(Model):
     command = CharField(null=True)
     comment = CharField()
     one_time = BooleanField(default=False)
+    cron_string = CharField(default="")
 
     class Meta:
         table_name = 'schedules'
@@ -206,7 +207,7 @@ class helpers_management:
     #                                  Schedules Methods
     #************************************************************************************************
     @staticmethod
-    def create_scheduled_task(server_id, action, interval, interval_type, start_time, command, comment=None, enabled=True, one_time=False):
+    def create_scheduled_task(server_id, action, interval, interval_type, start_time, command, comment=None, enabled=True, one_time=False, cron_string='* * * * *'):
         sch_id = Schedules.insert({
             Schedules.server_id: server_id,
             Schedules.action: action,
@@ -216,7 +217,9 @@ class helpers_management:
             Schedules.start_time: start_time,
             Schedules.command: command,
             Schedules.comment: comment,
-            Schedules.one_time: one_time
+            Schedules.one_time: one_time,
+            Schedules.cron_string: cron_string
+
         }).execute()
         return sch_id
 

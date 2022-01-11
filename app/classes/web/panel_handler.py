@@ -859,7 +859,10 @@ class PanelHandler(BaseHandler):
                 elif action == "backup":
                     command = "backup_server"
             else:
+                interval_type = ''
                 cron_string = bleach.clean(self.get_argument('cron', ''))
+                if len(cron_string.split(' ')) != 5:
+                    self.redirect("/panel/error?error=INVALID FORMAT: Invalid Cron Format. Cron must have a space between each character and only have a max of 5 characters * * * * *")
                 action = bleach.clean(self.get_argument('action', None))
                 if action == "command":
                     command = bleach.clean(self.get_argument('command', None))
@@ -891,6 +894,13 @@ class PanelHandler(BaseHandler):
                 if not self.controller.servers.server_id_exists(server_id):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
+                minute = datetime.datetime.now().minute
+                hour = datetime.datetime.now().hour
+                if minute < 10:
+                    minute = '0' + str(minute)
+                if hour < 10:
+                    hour = '0'+str(hour)
+                current_time = str(hour)+':'+str(minute)
 
                 if interval_type == "days":
                     job_data = {
@@ -901,12 +911,17 @@ class PanelHandler(BaseHandler):
                         "command": command,
                         "time": time,
                         "enabled": enabled,
-                        "one_time": one_time
+                        "one_time": one_time,
+                        "cron_string": ''
                     }
                 elif difficulty == "advanced":
                         job_data = {
                         "server_id": server_id,
                         "action": action,
+                        "interval_type": '',
+                        "interval": '',
+                        "command": '',
+                        "time": current_time,
                         "command": command,
                         "cron_string": cron_string,
                         "enabled": enabled,
@@ -920,8 +935,9 @@ class PanelHandler(BaseHandler):
                         "interval": interval,
                         "command": command,
                         "enabled": enabled,
-                        "time": '00:00',
-                        "one_time": one_time
+                        "time": current_time,
+                        "one_time": one_time,
+                        "cron_string": ''
                     }
 
                 self.tasks_manager.schedule_job(job_data)
