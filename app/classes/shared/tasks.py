@@ -20,13 +20,12 @@ from app.classes.web.websocket_helper import websocket_helper
 from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.models.servers import servers_helper
 from app.classes.models.management import management_helper
-from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_ALL, EVENT_JOB_REMOVED
 
 logger = logging.getLogger(__name__)
 
 try:
-    import schedule
+    from apscheduler.schedulers.background import BackgroundScheduler
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
@@ -179,7 +178,11 @@ class TasksManager:
                     self.scheduler.add_job(management_helper.add_command, 'cron', day = '*/'+str(schedule.interval), hour=time[0], minute=time[1], id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
 
         self.scheduler.start()
-
+        jobs = self.scheduler.get_jobs()
+        print(jobs)
+        logger.info("Loaded schedules. Current enabled schedules: ".format(jobs))
+        for item in jobs:
+            logger.info("JOB: {}".format(item))
 
     def schedule_job(self, job_data):
         sch_id = management_helper.create_scheduled_task(job_data['server_id'], job_data['action'], job_data['interval'], job_data['interval_type'], job_data['start_time'], job_data['command'], "None", job_data['enabled'], job_data['one_time'], job_data['cron_string'])
@@ -200,6 +203,7 @@ class TasksManager:
                 elif job_data['interval_type'] == 'days':
                     time = job_data['start_time'].split(':')
                     self.scheduler.add_job(management_helper.add_command, 'cron', day = '*/'+str(job_data['interval']), hour = time[0], minute = time[1], id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']], )
+            logger.info("Added job. Current enabled schedules: ".format(self.scheduler.get_jobs()))
 
     def remove_job(self, sch_id):
         management_helper.delete_scheduled_task(sch_id)
