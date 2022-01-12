@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Crafty</Name>
+  <Repository>crafty-controller/crafty-commander:latest</Repository>
+  <Registry>registry.gitlab.com/crafty-controller/crafty-commander</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://discord.gg/9VJPhCE</Support>
+  <Project>https://craftycontrol.com/</Project>
+  <Overview>Crafty controller is a lightweight minecraft wrapper with great featuers and a awesome gui, acessible from a modern web browser.&#xD;
+The username and password appear on the first launch in the docker logs!&#xD;
+Crafty 4 is the successor of crafty controller, the docker image is no longer maintained on dockerhub. (now on gitlab)&#xD;
+For official support join the discord: https://discord.gg/9VJPhCE&#xD;
+For migration from 3.x please refer to the documentation on gitlab: htps://gitlab.com/crafty-docs&#xD;
+</Overview>
+  <Category>GameServers: Other:</Category>
+  <WebUI>https://[IP]:[PORT:8443]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/mrFred-1a4/Freddy0-Crafty-Controller/main/Crafty-controller-freddy0.xml</TemplateURL>
+  <Icon>https://gitlab.com/crafty-controller/crafty-commander/-/raw/master/app/frontend/static/assets/images/logo_square.jpg</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled>1641595780</DateInstalled>
+  <DonateText>Help to support Crafty on Patreon</DonateText>
+  <DonateLink>https://www.patreon.com/craftycontroller</DonateLink>
+  <Description>Crafty controller is a lightweight minecraft wrapper with great featuers and a awesome gui, acessible from a modern web browser.&#xD;
+The username and password appear on the first launch in the docker logs!&#xD;
+Crafty 4 is the successor of crafty controller, the docker image is no longer maintained on dockerhub. (now on gitlab)&#xD;
+For official support join the discord: https://discord.gg/9VJPhCE&#xD;
+For migration from 3.x please refer to the documentation on gitlab: https://gitlab.com/crafty-controller/crafty-commander/-/wikis/home&#xD;
+</Description>
+  <Networking>
+    <Mode>bridge</Mode>
+    <Publish>
+      <Port>
+        <HostPort>8443</HostPort>
+        <ContainerPort>8443</ContainerPort>
+        <Protocol>tcp</Protocol>
+      </Port>
+      <Port>
+        <HostPort>8000</HostPort>
+        <ContainerPort>8000</ContainerPort>
+        <Protocol>tcp</Protocol>
+      </Port>
+      <Port>
+        <HostPort>25500-25600</HostPort>
+        <ContainerPort>25500-25600</ContainerPort>
+        <Protocol>tcp</Protocol>
+      </Port>
+      <Port>
+        <HostPort>8123</HostPort>
+        <ContainerPort>8123</ContainerPort>
+        <Protocol>tcp</Protocol>
+      </Port>
+      <Port>
+        <HostPort>19132</HostPort>
+        <ContainerPort>19132</ContainerPort>
+        <Protocol>udp</Protocol>
+      </Port>
+    </Publish>
+  </Networking>
+  <Data>
+    <Volume>
+      <HostDir>/mnt/user/appdata/Crafty-4/servers/</HostDir>
+      <ContainerDir>/commander/servers</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+    <Volume>
+      <HostDir>/mnt/user/appdata/Crafty-4/backups/</HostDir>
+      <ContainerDir>/commander/backups</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+    <Volume>
+      <HostDir>/mnt/user/appdata/Crafty-4/logs/</HostDir>
+      <ContainerDir>/commander/logs</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+    <Volume>
+      <HostDir>/mnt/user/appdata/Crafty-4/config/</HostDir>
+      <ContainerDir>/commander/app/config</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+  </Data>
+  <Environment/>
+  <Labels/>
+  <Config Name="Port for https traffic" Target="8443" Default="8443" Mode="tcp" Description="Port for https traffic to the web Ui" Type="Port" Display="always-hide" Required="true" Mask="false">8443</Config>
+  <Config Name="Port for http redirections" Target="8000" Default="1800" Mode="tcp" Description="http traffic will automatically be redirected to htps" Type="Port" Display="always-hide" Required="true" Mask="false">8000</Config>
+  <Config Name="Minecraft ports" Target="25500-25600" Default="25500-25600" Mode="tcp" Description="Container Port: 25500-25600 yes, 100 ports for 100 possible Servers" Type="Port" Display="always-hide" Required="true" Mask="false">25500-25600</Config>
+  <Config Name="Port for dynmap" Target="8123" Default="8123" Mode="tcp" Description="Dynmap port" Type="Port" Display="always-hide" Required="true" Mask="false">8123</Config>
+  <Config Name="Port for bedrock server" Target="19132" Default="19132" Mode="udp" Description="Bedrock server port" Type="Port" Display="always-hide" Required="true" Mask="false">19132</Config>
+  <Config Name="Server files" Target="/commander/servers" Default="/mnt/user/appdata/Crafty-4/servers/" Mode="rw" Description="Path to the minecraft server folders" Type="Path" Display="always-hide" Required="true" Mask="false">/mnt/user/appdata/Crafty-4/servers/</Config>
+  <Config Name="Backup files" Target="/commander/backups" Default="/mnt/user/appdata/Crafty-4/backups/" Mode="rw" Description="Server Backups" Type="Path" Display="always-hide" Required="true" Mask="false">/mnt/user/appdata/Crafty-4/backups/</Config>
+  <Config Name="Server Logs" Target="/commander/logs" Default="/mnt/user/appdata/Crafty-4/logs/" Mode="rw" Description="Logs" Type="Path" Display="advanced-hide" Required="true" Mask="false">/mnt/user/appdata/Crafty-4/logs/</Config>
+  <Config Name="Crafty Configuration" Target="/commander/app/config" Default="/mnt/user/appdata/Crafty-4/config/" Mode="rw" Description="Path to the persistent Crafty files" Type="Path" Display="advanced-hide" Required="true" Mask="false">/mnt/user/appdata/Crafty-4/config/</Config>
+</Container>
