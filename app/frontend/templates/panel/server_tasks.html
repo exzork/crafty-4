@@ -40,15 +40,15 @@
                     <div class="card">
                       <div class="card-body">
                         <h4 class="card-title">Scheduled Tasks</h4>
-                        <table class="table table-hover" width="100%">
+                        <table class="table table-hover" width="100%" style="table-layout:fixed;">
                           <thead>
                           <tr class="rounded">
-                            <th>Action</th>
-                            <th>Command</th>
-                            <th>Interval</th>
-                            <th>Start Time</th>
-                            <th>Enabled</th>
-                            <th>Edit</th>
+                            <th style="width: 25%;">Action</th>
+                            <th style="max-width: 40%;">Command</th>
+                            <th style="width: 10%;">Interval</th>
+                            <th style="width: 10%;">Start Time</th>
+                            <th style="width: 10%;">Enabled</th>
+                            <th style="width: 10%;">Edit</th>
                           </tr>
                           </thead>
                           <tbody>
@@ -57,7 +57,7 @@
                           <td id="{{schedule.action}}" class="action">
                             <p>{{schedule.action}}</p>
                           </td>
-                          <td id="{{schedule.command}}" class="action">
+                          <td id="{{schedule.command}}" class="action" style="overflow: scroll;">
                             <p>{{schedule.command}}</p>
                           </td>
                           <td id="{{schedule.interval}}" class="action">
