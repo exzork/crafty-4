@@ -251,17 +251,16 @@ class TasksManager:
 
         # one for now,
         self.controller.stats.record_stats()
-
         # one for later
-        schedule.every(stats_update_frequency).seconds.do(self.controller.stats.record_stats).tag('stats-recording')
+        self.scheduler.add_job(self.controller.stats.record_stats, 'interval', seconds=stats_update_frequency, id="stats")
 
-    @staticmethod
-    def serverjar_cache_refresher():
+
+    def serverjar_cache_refresher(self):
         logger.info("Refreshing serverjars.com cache on start")
         server_jar_obj.refresh_cache()
 
         logger.info("Scheduling Serverjars.com cache refresh service every 12 hours")
-        schedule.every(12).hours.do(server_jar_obj.refresh_cache).tag('serverjars')
+        self.scheduler.add_job(server_jar_obj.refresh_cache, 'interval', hours=12, id="serverjars")
 
     @staticmethod
     def realtime():
@@ -293,5 +292,5 @@ class TasksManager:
 
     def log_watcher(self):
         self.controller.servers.check_for_old_logs()
-        schedule.every(6).hours.do(lambda: self.controller.servers.check_for_old_logs()).tag('log-mgmt')
+        self.scheduler.add_job(self.controller.servers.check_for_old_logs, 'interval', hours=6, id="log-mgmt")
 
