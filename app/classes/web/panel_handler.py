@@ -961,7 +961,7 @@ class PanelHandler(BaseHandler):
                     command = "restart_server"
                 elif action == "backup":
                     command = "backup_server"
-            if bleach.clean(self.get_argument('enabled', '1'))=='1':
+            if bleach.clean(self.get_argument('enabled', '0')) == '1':
                 enabled = True
             else:
                 enabled = False
