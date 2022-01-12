@@ -22,7 +22,7 @@ from app.classes.models.servers import servers_helper
 from app.classes.models.management import management_helper
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_ALL, EVENT_JOB_REMOVED
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('apscheduler')
 
 try:
     from apscheduler.schedulers.background import BackgroundScheduler
@@ -76,19 +76,9 @@ class TasksManager:
 
     def reload_schedule_from_db(self):
         jobs = management_helper.get_schedules_enabled()
-        schedule.clear(tag='backup')
-        schedule.clear(tag='db')
-        for j in jobs:
-            if j.interval_type in scheduler_intervals:
-                logger.info("Loading schedule ID#{i}: '{a}' every {n} {t} at {s}".format(
-                    i=j.schedule_id, a=j.action, n=j.interval, t=j.interval_type, s=j.start_time))
-                try:
-                    getattr(schedule.every(j.interval), j.interval_type).at(j.start_time).do(
-                        self.controller.management.send_command, self.controller.users.get_id_by_name('system'), j.server_id, "127.27.23.89", j.action)
-                except schedule.ScheduleValueError as e:
-                    logger.critical("Scheduler value error occurred: {} on ID#{}".format(e, j.schedule_id))
-            else:
-                logger.critical("Unknown schedule job type '{}' at id {}, skipping".format(j.interval_type, j.schedule_id))
+        logger.info("Reload from DB called. Current enabled schedules: ")
+        for item in jobs:
+            logger.info("JOB: {}".format(item))
     
     def command_watcher(self):
         while True:
@@ -179,8 +169,7 @@ class TasksManager:
 
         self.scheduler.start()
         jobs = self.scheduler.get_jobs()
-        print(jobs)
-        logger.info("Loaded schedules. Current enabled schedules: ".format(jobs))
+        logger.info("Loaded schedules. Current enabled schedules: ")
         for item in jobs:
             logger.info("JOB: {}".format(item))
 
@@ -203,7 +192,10 @@ class TasksManager:
                 elif job_data['interval_type'] == 'days':
                     time = job_data['start_time'].split(':')
                     self.scheduler.add_job(management_helper.add_command, 'cron', day = '*/'+str(job_data['interval']), hour = time[0], minute = time[1], id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']], )
-            logger.info("Added job. Current enabled schedules: ".format(self.scheduler.get_jobs()))
+            logger.info("Added job. Current enabled schedules: ")
+            jobs = self.scheduler.get_jobs()
+            for item in jobs:
+                logger.info("JOB: {}".format(item))
 
     def remove_job(self, sch_id):
         management_helper.delete_scheduled_task(sch_id)
@@ -240,12 +232,14 @@ class TasksManager:
 
     def schedule_watcher(self, event):
         if not event.exception:
-            task = management_helper.get_scheduled_task_model(int(event.job_id))
-            if task.one_time:
-                self.remove_job(task.schedule_id)
-                logger.info("one time task detected. Deleting...")
+            if str(event.job_id).isnumeric():
+                task = management_helper.get_scheduled_task_model(int(event.job_id))
+                if task.one_time:
+                    self.remove_job(task.schedule_id)
+                    logger.info("one time task detected. Deleting...")
+            else:
+                logger.info("Event job ID is not numerical. Assuming it's stats - not stored in DB. Moving on.")
         else:
-            print("error")
             logger.error("Task failed with error: {}".format(event.exception))
 
     def start_stats_recording(self):

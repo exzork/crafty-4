@@ -64,7 +64,7 @@
       "handlers": ["tornado_access_file_handler"],
       "propagate": false
     },
-    "schedule": {
+    "apscheduler": {
       "level": "INFO",
       "handlers": ["schedule_file_handler"],
       "propagate": false
