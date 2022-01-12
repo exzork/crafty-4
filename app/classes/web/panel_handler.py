@@ -1008,7 +1008,8 @@ class PanelHandler(BaseHandler):
                         "interval_type": '',
                         "interval": '',
                         "command": '',
-                        "start_time": current_time,
+                        #We'll base every interval off of a midnight start time.
+                        "start_time": '00:00',
                         "command": command,
                         "cron_string": cron_string,
                         "enabled": enabled,
@@ -1022,7 +1023,8 @@ class PanelHandler(BaseHandler):
                         "interval": interval,
                         "command": command,
                         "enabled": enabled,
-                        "start_time": current_time,
+                        #We'll base every interval off of a midnight start time.
+                        "start_time": '00:00',
                         "one_time": one_time,
                         "cron_string": ''
                     }
@@ -1124,7 +1126,8 @@ class PanelHandler(BaseHandler):
                         "interval_type": '',
                         "interval": '',
                         "command": '',
-                        "start_time": current_time,
+                        #We'll base every interval off of a midnight start time.
+                        "start_time": '00:00',
                         "command": command,
                         "cron_string": cron_string,
                         "enabled": enabled,
@@ -1138,7 +1141,8 @@ class PanelHandler(BaseHandler):
                         "interval": interval,
                         "command": command,
                         "enabled": enabled,
-                        "start_time": current_time,
+                        #We'll base every interval off of a midnight start time.
+                        "start_time": '00:00',
                         "one_time": one_time,
                         "cron_string": ''
                     }
