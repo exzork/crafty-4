@@ -120,7 +120,7 @@ class Server:
         self.crash_watcher_schedule = None
         self.stats = stats
         self.backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name=f"backup_{self.name}")
-        self.is_backingup = False,
+        self.is_backingup = False
 
     def reload_server_settings(self):
         server_data = servers_helper.get_server_data_by_id(self.server_id)

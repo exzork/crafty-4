@@ -127,8 +127,6 @@ class Backups(Model):
     directories = CharField(null=True)
     max_backups = IntegerField()
     server_id = ForeignKeyField(Servers, backref='backups_server')
-    schedule_id = ForeignKeyField(Schedules, backref='backups_schedule')
-
     class Meta:
         table_name = 'backups'
         database = database
@@ -262,12 +260,11 @@ class helpers_management:
     @staticmethod
     def get_backup_config(server_id):
         try:
-            row = Backups.select().where(Backups.server_id == server_id).join(Schedules).join(Servers)[0]
+            row = Backups.select().where(Backups.server_id == server_id).join(Servers)[0]
             conf = {
                 "backup_path": row.server_id.backup_path,
                 "directories": row.directories,
                 "max_backups": row.max_backups,
-                "auto_enabled": row.schedule_id.enabled,
                 "server_id": row.server_id.server_id
             }
         except IndexError:
@@ -275,7 +272,6 @@ class helpers_management:
                 "backup_path": None,
                 "directories": None,
                 "max_backups": 0,
-                "auto_enabled": True,
                 "server_id": server_id
             }
         return conf
@@ -284,7 +280,7 @@ class helpers_management:
     def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None):
         logger.debug("Updating server {} backup config with {}".format(server_id, locals()))
         try:
-            row = Backups.select().where(Backups.server_id == server_id).join(Schedules).join(Servers)[0]
+            row = Backups.select().where(Backups.server_id == server_id).join(Servers)[0]
             new_row = False
             conf = {}
             schd = {}
@@ -293,15 +289,6 @@ class helpers_management:
                 "directories": None,
                 "max_backups": 0,
                 "server_id":   server_id
-            }
-            schd = {
-                "enabled":    True,
-                "action":     "backup_server",
-                "interval_type": "days",
-                "interval":   1,
-                "start_time": "00:00",
-                "server_id":  server_id,
-                "comment":    "Default backup job"
             }
             new_row = True
         if max_backups is not None:
@@ -313,7 +300,7 @@ class helpers_management:
                 else:
                     u1 = 0
                 u2 = Backups.update(conf).where(Backups.server_id == server_id).execute()
-            logger.debug("Updating existing backup record.  {}+{}+{} rows affected".format(u1, u2, u3))
+            logger.debug("Updating existing backup record.  {}+{} rows affected".format(u1, u2))
         else:
             with database.atomic():
                 conf["server_id"] = server_id
