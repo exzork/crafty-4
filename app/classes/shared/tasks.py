@@ -207,8 +207,10 @@ class TasksManager:
 
     def update_job(self, sch_id, job_data):
         management_helper.update_scheduled_task(sch_id, job_data)
-        if job_data['enabled']:
+        try:
             self.scheduler.remove_job(str(sch_id))
+        except:
+            logger.info("No job found in update job. Assuming it was previously disabled. Starting new job.")
             if job_data['cron_string'] != "":
                 cron = job_data['cron_string'].split(' ')
                 try:
