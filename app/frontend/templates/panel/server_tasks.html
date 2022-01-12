@@ -36,6 +36,7 @@
 
             <div class="row">
                 <button onclick="location.href=`/panel/add_schedule?id={{ data['server_stats']['server_id']['server_id'] }}`" class="btn btn-info">Create New Schedule <i class="fas fa-pencil-alt"></i></button>
+                <span class="too_small" data-toggle="popover" data-placement="left" title="{{ translate('serverSchedules', 'cannotSee', data['lang']) }}" data-content="{{ translate('serverSchedules', 'cannotSeeOnMobile', data['lang']) }}"></span>
                 <div class="col-md-12 col-sm-12" style="overflow-x:auto;">
                     <div class="card">
                       <div class="card-body">
@@ -192,6 +193,11 @@
       </div>
     </div>
   </div>
+  <style>
+    .popover-body{
+      color: white !important;;
+  }
+  </style>
 
 
 
@@ -213,6 +219,29 @@ td {
 {% end %}
 
 {% block js %}
+<script>
+  $(document).ready(function(){
+    $('[data-toggle="popover"]').popover();
+      if($(window).width() < 1000){
+      $('.too_small').popover("show");
+    }
+  
+  });
+   $(window).ready(function(){
+          $('body').click(function(){
+              $('.too_small').popover("hide");
+      });
+  });
+  $(window).resize(function() {
+    // This will execute whenever the window is resized
+    if($(window).width() < 1000){
+      $('.too_small').popover("show");
+    }
+    else{
+      $('.too_small').popover("hide");
+    } // New width
+  });
+  </script>
 <script>
 
 
