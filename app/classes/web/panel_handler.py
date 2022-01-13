@@ -783,7 +783,13 @@ class PanelHandler(BaseHandler):
             if exec_user['superuser']:
                 auth_servers = self.controller.servers.get_all_defined_servers()
             else:
-                auth_servers = self.controller.servers.get_authorized_servers(int(exec_user_id))
+                user_servers = self.controller.servers.get_authorized_servers(int(exec_user_id))
+                auth_servers = []
+                for server in user_servers:
+                    if Enum_Permissions_Server.Logs in self.controller.server_perms.get_user_permissions_list(exec_user['user_id'], server["server_id"]):
+                        auth_servers.append(server)
+                    else:
+                        logger.info("Logs permission not available for server {}. Skipping.".format(server["server_name"]))
             #we'll iterate through our list of log paths from auth servers.
             for server in auth_servers:
                 final_path = os.path.join(server_path, str(server['server_name']))
