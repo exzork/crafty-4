@@ -35,17 +35,19 @@
             {% include "parts/server_controls_list.html %}
 
             <div class="row">
-                <button onclick="location.href=`/panel/add_schedule?id={{ data['server_stats']['server_id']['server_id'] }}`" class="btn btn-info">Create New Schedule <i class="fas fa-pencil-alt"></i></button>
-                <span class="too_small" data-toggle="popover" data-placement="left" title="{{ translate('serverSchedules', 'cannotSee', data['lang']) }}" data-content="{{ translate('serverSchedules', 'cannotSeeOnMobile', data['lang']) }}"></span>
                 <div class="col-md-12 col-sm-12" style="overflow-x:auto;">
                     <div class="card">
+                      <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                        <h4 class="card-title"><i class="fas fa-calendar"></i> Scheduled Tasks</h4>
+                        <span class="too_small" title="{{ translate('serverSchedules', 'cannotSee', data['lang']) }}", data-content="{{ translate('serverSchedules', 'cannotSeeOnMobile', data['lang']) }}", data-placement="bottom"></span>
+                        <div><button onclick="location.href=`/panel/add_schedule?id={{ data['server_stats']['server_id']['server_id'] }}`" class="btn btn-info">Create New Schedule <i class="fas fa-pencil-alt"></i></button></div>
+                      </div>
                       <div class="card-body">
-                        <h4 class="card-title">Scheduled Tasks</h4>
-                        <table class="table table-hover d-none d-lg-block" width="100%" style="table-layout:fixed;">
+                        <table class="table table-hover d-none d-lg-block responsive-table" width="100%" style="table-layout:fixed;">
                           <thead>
                           <tr class="rounded">
                             <th style="width: 25%; min-width: 50px;">Action</th>
-                            <th style="max-width: 40%; min-width: 50px;">Command</th>
+                            <th style="width: 40%; min-width: 50px;">Command</th>
                             <th style="width: 10%; min-width: 50px;">Interval</th>
                             <th style="width: 10%; min-width: 50px;">Start Time</th>
                             <th style="width: 10%; min-width: 50px;">Enabled</th>
@@ -58,7 +60,7 @@
                           <td id="{{schedule.action}}" class="action">
                             <p>{{schedule.action}}</p>
                           </td>
-                          <td id="{{schedule.command}}" class="action" style="overflow: scroll;">
+                          <td id="{{schedule.command}}" class="action" style="overflow: scroll; max-width: 30px;">
                             <p>{{schedule.command}}</p>
                           </td>
                           <td id="{{schedule.interval}}" class="action">
@@ -113,7 +115,7 @@
                             <td id="{{schedule.action}}" class="action">
                               <p>{{schedule.action}}</p>
                             </td>
-                            <td id="{{schedule.command}}" class="action" style="overflow: scroll;">
+                            <td id="{{schedule.command}}" class="action" style="overflow: scroll; max-width: 30px;">
                               <p>{{schedule.command}}</p>
                             </td>
                             <td id="{{schedule.enabled}}" class="action">
@@ -139,24 +141,24 @@
                                   </button>
                                 </div>
                                 <div class="modal-body">
-                                  <ul>
-                                    <li id="{{schedule.action}}" class="action">
+                                  <ul style="list-style: none;">
+                                    <li id="{{schedule.action}}" class="action" style="border-top: .1em solid gray;">
                                       <h4>Action</h4><p>{{schedule.action}}</p>
                                     </li>
-                                    <li id="{{schedule.command}}" class="action">
+                                    <li id="{{schedule.command}}" class="action" style="border-top: .1em solid gray;">
                                       <h4>Command</h4><p>{{schedule.command}}</p>
                                     </li>
-                                    <li id="{{schedule.interval}}" class="action">
+                                    <li id="{{schedule.interval}}" class="action" style="border-top: .1em solid gray;">
                                       {% if schedule.interval != '' %}
                                       <h4>Interval</h4> <p>Every {{schedule.interval}} {{schedule.interval_type}}</p>
                                       {% else %}
                                       <h4>Interval</h4> <p>Cron String: {{schedule.cron_string}}</p>
                                       {% end %}
                                     </li>
-                                    <li id="{{schedule.start_time}}" class="action">
+                                    <li id="{{schedule.start_time}}" class="action" style="border-top: .1em solid gray;">
                                       <h4>Start Time</h4> <p>{{schedule.start_time}}</p>
                                     </li>
-                                    <li id="{{schedule.enabled}}" class="action">
+                                    <li id="{{schedule.enabled}}" class="action" style="border-top: .1em solid gray; border-bottom: .1em solid gray">
                                       {% if schedule.enabled %}
                                       <h4>Enabled</h4> <span class="text-success">
                                         <i class="fas fa-check-square"></i> Yes
