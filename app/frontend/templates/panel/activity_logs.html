@@ -80,7 +80,11 @@
 
 $( document ).ready(function() {
     console.log('ready for JS!')
-    $('#audit_table').DataTable();
+    $('#audit_table').DataTable({
+      'order': [1, 'desc']
+    }
+    );
+
 });
 </script>
 <script>
