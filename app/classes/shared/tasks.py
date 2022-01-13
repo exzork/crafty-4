@@ -198,8 +198,12 @@ class TasksManager:
                 logger.info("JOB: {}".format(item))
 
     def remove_job(self, sch_id):
+        job = management_helper.get_scheduled_task_model(sch_id)
         management_helper.delete_scheduled_task(sch_id)
-        self.scheduler.remove_job(str(sch_id))
+        if job.enabled:
+            self.scheduler.remove_job(str(sch_id))
+        else:
+            logger.info("Job with ID {} was deleted from DB, but was not enabled. Not going to try removing something that doesn't exist from active schedules.")
 
     def update_job(self, sch_id, job_data):
         management_helper.update_scheduled_task(sch_id, job_data)

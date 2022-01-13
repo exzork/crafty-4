@@ -235,6 +235,7 @@ td {
     $('[data-toggle="popover"]').popover();
       if($(window).width() < 1000){
       $('.too_small').popover("show");
+      document.getElementById('schedule_table_wrapper').hidden = true;
     }
   
   });
@@ -247,9 +248,11 @@ td {
     // This will execute whenever the window is resized
     if($(window).width() < 1000){
       $('.too_small').popover("show");
+      document.getElementById('schedule_table_wrapper').hidden = true;
     }
     else{
       $('.too_small').popover("hide");
+      document.getElementById('schedule_table_wrapper').hidden = false;
     } // New width
   });
   </script>
