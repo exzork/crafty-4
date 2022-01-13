@@ -29,6 +29,7 @@
           {% end %}
           <p class="font-weight-light text-muted mb-0">Email: {{ data['user_data']['email'] }}</p>
         </div>
+        <a class="dropdown-item" href="/panel/support_logs"><i class="dropdown-item-icon mdi mdi-download-outline text-primary"></i> Support Logs</i></a>
         {% if "Super User" in data['user_role'] %}
         <a class="dropdown-item" href="/panel/activity_logs"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary"></i> Activity</a>
         {% end %}
