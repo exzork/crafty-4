@@ -10,6 +10,7 @@ import datetime
 import os
 import shutil
 import tempfile
+import threading
 
 from tornado import locale
 from tornado import iostream
@@ -769,6 +770,7 @@ class PanelHandler(BaseHandler):
             self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
 
         elif page == "support_logs":
+            logger.info("Support logs requested. Packinging logs for user with ID: {}".format(exec_user_id))
             tempDir = tempfile.mkdtemp()
             tempZipStorage = tempfile.mkdtemp()
             full_temp = os.path.join(tempDir, 'support_logs')
