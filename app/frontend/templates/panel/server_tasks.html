@@ -43,7 +43,7 @@
                         <div><button onclick="location.href=`/panel/add_schedule?id={{ data['server_stats']['server_id']['server_id'] }}`" class="btn btn-info">Create New Schedule <i class="fas fa-pencil-alt"></i></button></div>
                       </div>
                       <div class="card-body">
-                        <table class="table table-hover d-none d-lg-block responsive-table" width="100%" style="table-layout:fixed;">
+                        <table class="table table-hover d-none d-lg-block responsive-table"  id="schedule_table" width="100%" style="table-layout:fixed;">
                           <thead>
                           <tr class="rounded">
                             <th style="width: 25%; min-width: 50px;">Action</th>
@@ -205,6 +205,7 @@
 
 </div>
 <style>
+  
   /* Hide scrollbar for Chrome, Safari and Opera */
 td::-webkit-scrollbar {
   display: none;
@@ -222,6 +223,14 @@ td {
 
 {% block js %}
 <script>
+  $( document ).ready(function() {
+    console.log('ready for JS!')
+    $('#schedule_table').DataTable({
+      'order': [4, 'desc']
+    }
+    );
+
+});
   $(document).ready(function(){
     $('[data-toggle="popover"]').popover();
       if($(window).width() < 1000){
