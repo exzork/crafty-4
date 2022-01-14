@@ -3,6 +3,7 @@ import pathlib
 import time
 import logging
 import sys
+from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.models.users import helper_users
 from peewee import DoesNotExist
 import schedule
@@ -13,6 +14,7 @@ import tempfile
 import zipfile
 from distutils import dir_util
 from app.classes.models.management import helpers_management
+from app.classes.web.websocket_helper import websocket_helper
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
@@ -127,6 +129,43 @@ class Controller:
             return True
         else:
             return False
+
+    def package_support_logs(self, exec_user):
+        websocket_helper.broadcast_user(exec_user['user_id'], 'notification', 'Preparing your support logs')
+        tempDir = tempfile.mkdtemp()
+        tempZipStorage = tempfile.mkdtemp()
+        full_temp = os.path.join(tempDir, 'support_logs')
+        os.mkdir(full_temp)
+        tempZipStorage = os.path.join(tempZipStorage, "support_logs")
+        crafty_path = os.path.join(full_temp, "crafty")
+        os.mkdir(crafty_path)
+        server_path = os.path.join(full_temp, "server")
+        os.mkdir(server_path)
+        if exec_user['superuser']:
+            auth_servers = self.servers.get_all_defined_servers()
+        else:
+            user_servers = self.servers.get_authorized_servers(int(exec_user['user_id']))
+            auth_servers = []
+            for server in user_servers:
+                if Enum_Permissions_Server.Logs in self.server_perms.get_user_permissions_list(exec_user['user_id'], server["server_id"]):
+                    auth_servers.append(server)
+                else:
+                    logger.info("Logs permission not available for server {}. Skipping.".format(server["server_name"]))
+        #we'll iterate through our list of log paths from auth servers.
+        for server in auth_servers:
+            final_path = os.path.join(server_path, str(server['server_name']))
+            os.mkdir(final_path)
+            shutil.copy(server['log_path'], final_path)
+        #Copy crafty logs to archive dir
+        full_log_name = os.path.join(crafty_path, 'logs')
+        shutil.copytree("logs", full_log_name)
+        shutil.make_archive(tempZipStorage, "zip", tempDir)
+
+        tempZipStorage += '.zip'
+        websocket_helper.broadcast_user(exec_user['user_id'], 'send_logs_bootbox', {
+                })
+        
+        self.users.set_support_path(exec_user['user_id'], tempZipStorage)
 
     @staticmethod
     def add_system_user():

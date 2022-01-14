@@ -43,6 +43,7 @@ class Users(Model):
     superuser = BooleanField(default=False)
     api_token = CharField(default="", unique=True, index=True) # we may need to revisit this
     lang = CharField(default="en_EN")
+    support_logs = CharField(default = '')
 
     class Meta:
         table_name = "users"
@@ -119,6 +120,7 @@ class helper_users:
                 'api_token': None,
                 'roles': [],
                 'servers': [],
+                'support_logs': '',
             }
         user = model_to_dict(Users.get(Users.user_id == user_id))
 
@@ -170,6 +172,10 @@ class helper_users:
             User_Roles.delete().where(User_Roles.user_id == user_id).execute()
             user = Users.get(Users.user_id == user_id)
             return user.delete_instance()
+
+    @staticmethod
+    def set_support_path(user_id, support_path):
+        Users.update(support_logs = support_path).where(Users.user_id == user_id).execute()
 
     @staticmethod
     def user_id_exists(user_id):

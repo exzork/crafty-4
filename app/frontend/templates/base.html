@@ -237,6 +237,30 @@ if (webSocket) {
 })
     });
   }
+  if (webSocket) {
+    webSocket.on('send_logs_bootbox', function (server_id) {
+            var x = document.querySelector('.bootbox');
+            if(x){
+            x.remove()}
+            var x = document.querySelector('.modal-backdrop');
+            if(x){
+            x.remove()}
+            bootbox.alert({
+              title: 'Download Support Logs?',
+              message: "We've finished preparing your support logs. Please click download to download",
+              buttons: {
+        ok: {
+            label: 'Download',
+            className: 'btn-info'
+        }
+    },
+    callback: function(){ 
+      console.log("in callback")
+      location.href="/panel/download_support_package"; 
+  }
+});
+    });
+  }
 
   if (webSocket) {
     webSocket.on('send_eula_bootbox', function (server_id) {

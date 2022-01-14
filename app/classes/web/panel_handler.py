@@ -26,6 +26,7 @@ from app.classes.models.crafty_permissions import Enum_Permissions_Crafty, Permi
 from app.classes.models.management import management_helper
 
 from app.classes.shared.helpers import helper
+from app.classes.web.websocket_helper import WebSocketHelper
 
 logger = logging.getLogger(__name__)
 
@@ -769,63 +770,44 @@ class PanelHandler(BaseHandler):
                         del chunk
             self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
 
-        elif page == "support_logs":
-            logger.info("Support logs requested. Packinging logs for user with ID: {}".format(exec_user_id))
-            tempDir = tempfile.mkdtemp()
-            tempZipStorage = tempfile.mkdtemp()
-            full_temp = os.path.join(tempDir, 'support_logs')
-            os.mkdir(full_temp)
-            tempZipStorage = os.path.join(tempZipStorage, "support_logs")
-            crafty_path = os.path.join(full_temp, "crafty")
-            os.mkdir(crafty_path)
-            server_path = os.path.join(full_temp, "server")
-            os.mkdir(server_path)
-            if exec_user['superuser']:
-                auth_servers = self.controller.servers.get_all_defined_servers()
-            else:
-                user_servers = self.controller.servers.get_authorized_servers(int(exec_user_id))
-                auth_servers = []
-                for server in user_servers:
-                    if Enum_Permissions_Server.Logs in self.controller.server_perms.get_user_permissions_list(exec_user['user_id'], server["server_id"]):
-                        auth_servers.append(server)
-                    else:
-                        logger.info("Logs permission not available for server {}. Skipping.".format(server["server_name"]))
-            #we'll iterate through our list of log paths from auth servers.
-            for server in auth_servers:
-                final_path = os.path.join(server_path, str(server['server_name']))
-                os.mkdir(final_path)
-                shutil.copy(server['log_path'], final_path)
-            #Copy crafty logs to archive dir
-            full_log_name = os.path.join(crafty_path, 'logs')
-            shutil.copytree("logs", full_log_name)
-            shutil.make_archive(tempZipStorage, "zip", tempDir)
-
-            tempZipStorage += '.zip'
+        elif page == 'download_support_package':
+            tempZipStorage = exec_user['support_logs']
+            #We'll reset the support path for this user now.
+            self.controller.users.set_support_path(exec_user_id, "")
+            
             self.set_header('Content-Type', 'application/octet-stream')
             self.set_header('Content-Disposition', 'attachment; filename=' + "support_logs.zip")
             chunk_size = 1024 * 1024 * 4 # 4 MiB
-            
-            with open(tempZipStorage, 'rb') as f:
-                while True:
-                    chunk = f.read(chunk_size)
-                    if not chunk:
-                        break
-                    try:
-                        self.write(chunk) # write the chunk to response
-                        self.flush() # send the chunk to client
-                    except iostream.StreamClosedError:
-                        # this means the client has closed the connection
-                        # so break the loop
-                        break
-                    finally:
-                        # deleting the chunk is very important because
-                        # if many clients are downloading files at the
-                        # same time, the chunks in memory will keep
-                        # increasing and will eat up the RAM
-                        del chunk
+            if tempZipStorage != '':
+                with open(tempZipStorage, 'rb') as f:
+                    while True:
+                        chunk = f.read(chunk_size)
+                        if not chunk:
+                            break
+                        try:
+                            self.write(chunk) # write the chunk to response
+                            self.flush() # send the chunk to client
+                        except iostream.StreamClosedError:
+                            # this means the client has closed the connection
+                            # so break the loop
+                            break
+                        finally:
+                            # deleting the chunk is very important because
+                            # if many clients are downloading files at the
+                            # same time, the chunks in memory will keep
+                            # increasing and will eat up the RAM
+                            del chunk
+                self.redirect('/panel/dashboard')
+            else:
+                self.redirect('/panel/error?error=No path found for support logs')
+                return
 
-            
-
+        elif page == "support_logs":
+            logger.info("Support logs requested. Packinging logs for user with ID: {}".format(exec_user_id))
+            logs_thread = threading.Thread(target=self.controller.package_support_logs, daemon=True, args=(exec_user,), name='{}_logs_thread'.format(exec_user['user_id']))
+            logs_thread.start()
+            self.redirect('/panel/dashboard')
+            return
 
 
 
