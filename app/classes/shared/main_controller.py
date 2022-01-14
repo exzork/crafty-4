@@ -130,6 +130,10 @@ class Controller:
         else:
             return False
 
+    def set_project_root(self, root_dir):
+        self.project_root = root_dir
+
+
     def package_support_logs(self, exec_user):
         time.sleep(5)
         websocket_helper.broadcast_user(exec_user['user_id'], 'notification', 'Preparing your support logs')
@@ -159,7 +163,7 @@ class Controller:
             shutil.copy(server['log_path'], final_path)
         #Copy crafty logs to archive dir
         full_log_name = os.path.join(crafty_path, 'logs')
-        shutil.copytree("logs", full_log_name)
+        shutil.copytree(os.path.join(self.project_root, 'logs'), full_log_name)
         shutil.make_archive(tempZipStorage, "zip", tempDir)
 
         tempZipStorage += '.zip'

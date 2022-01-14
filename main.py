@@ -151,6 +151,9 @@ if __name__ == '__main__':
 
     Crafty = MainPrompt(tasks_manager, migration_manager)
 
+    project_root = os.path.dirname(__file__)
+    controller.set_project_root(project_root)
+
     def sigterm_handler(signum, current_stack_frame):
         print() # for newline
         logger.info("Recieved SIGTERM, stopping Crafty")
