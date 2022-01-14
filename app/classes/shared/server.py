@@ -151,6 +151,8 @@ class Server:
     def run_scheduled_server(self):
         console.info("Starting server ID: {} - {}".format(self.server_id, self.name))
         logger.info("Starting server {}".format(self.server_id, self.name))
+        #Sets waiting start to false since we're attempting to start the server.
+        servers_helper.set_waiting_start(self.server_id, False)
         self.run_threaded_server(None)
 
         # remove the scheduled job since it's ran
@@ -182,8 +184,6 @@ class Server:
             console.warning("Unable to write/access {}".format(self.server_path))
 
     def start_server(self, user_id):
-        #Sets waiting start to false since server is now starting.
-        servers_helper.set_waiting_start(self.server_id, False)
         if not user_id:
             user_lang = helper.get_setting('language')
         else:

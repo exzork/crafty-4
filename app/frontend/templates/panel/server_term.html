@@ -43,7 +43,6 @@
               <div style="gap: 0.5rem;" class="input-group flex-wrap">
                 <input style="min-width: 10rem;" type="text" class="form-control" id="server_command" name="server_command" placeholder="{{ translate('serverTerm', 'commandInput', data['lang']) }}" autofocus="">
                 <span class="input-group-btn ml-5">
-                  <input type="hidden" value="" id="last_command"/>
                   <button id="submit" class="btn btn-sm btn-info" type="button">{{ translate('serverTerm', 'sendCommand', data['lang']) }}</button>
                 </span>
               </div>
@@ -206,10 +205,13 @@
                 $(this).removeAttr("disabled"); //Enable the textbox again if needed.
                 $(this).focus();
             }
-            else if (e.which == 38){
-                last_command = $('#last_command').val()
-                $("#server_command").val(last_command)
-            }
+            else if (e.which == 38) {
+              e.preventDefault();
+              $('#server_command').val(cmdHistory.getPrev());
+          } else if (e.which == 40) {
+              e.preventDefault();
+              $('#server_command').val(cmdHistory.getNext());
+          }
 
    });
 
@@ -229,7 +231,8 @@
     function send_command_to_server(){
         var server_command = $("#server_command").val()
         console.log(server_command)
-        $("#last_command").val(server_command)
+        
+        cmdHistory.push(server_command);
 
         var token = getCookie("_xsrf")
 
@@ -248,6 +251,31 @@
           },
         });
     }
+
+    
+    const cmdHistory = {
+      history: [],
+      current: 0,
+      push: function(cmd) {
+          this.history.push(cmd);
+          this.current = this.history.length - 1;
+      },
+      getPrev: function() {
+          const prevCommand = this.history[this.current];
+          this.current--;
+          if (this.current < 0) this.current = 0;
+          return prevCommand;
+      },
+      getNext: function() {
+          this.current++;
+          if (this.current > (this.history.length - 1)) {
+              this.current = (this.history.length - 1);
+              return '';
+          }
+          const nextCommand = this.history[this.current];
+          return nextCommand;
+      }
+  }
 </script>
 
 {% end %}
