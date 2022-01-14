@@ -371,7 +371,7 @@ class AjaxHandler(BaseHandler):
                 return
 
             # Delete the file
-            if helper.validate_traversal(helper.get_os_understandable_path(server_info['path']), file_path):
+            if helper.validate_traversal(helper.get_os_understandable_path(server_info['backup_path']), file_path):
                 os.remove(file_path)
 
         elif page == "del_dir":
