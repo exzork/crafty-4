@@ -38,10 +38,12 @@ class Users(Model):
     last_ip = CharField(default="")
     username = CharField(default="", unique=True, index=True)
     password = CharField(default="")
+    email = CharField(default="default@example.com")
     enabled = BooleanField(default=True)
     superuser = BooleanField(default=False)
     api_token = CharField(default="", unique=True, index=True) # we may need to revisit this
     lang = CharField(default="en_EN")
+    support_logs = CharField(default = '')
 
     class Meta:
         table_name = "users"
@@ -70,7 +72,7 @@ class helper_users:
 
     @staticmethod
     def get_all_users():
-        query = Users.select()
+        query = Users.select().where(Users.username != "system")
         return query
 
     @staticmethod
@@ -79,8 +81,6 @@ class helper_users:
 
     @staticmethod
     def get_user_id_by_name(username):
-        if username == "SYSTEM":
-            return 0
         try:
             return (Users.get(Users.username == username)).user_id
         except DoesNotExist:
@@ -108,17 +108,19 @@ class helper_users:
         if user_id == 0:
             return {
                 'user_id': 0,
-                'created': None,
-                'last_login': None,
-                'last_update': None,
+                'created': '10/24/2019, 11:34:00',
+                'last_login': '10/24/2019, 11:34:00',
+                'last_update': '10/24/2019, 11:34:00',
                 'last_ip': "127.27.23.89",
                 'username': "SYSTEM",
                 'password': None,
+                'email': "default@example.com",
                 'enabled': True,
-                'superuser': False,
+                'superuser': True,
                 'api_token': None,
                 'roles': [],
                 'servers': [],
+                'support_logs': '',
             }
         user = model_to_dict(Users.get(Users.user_id == user_id))
 
@@ -130,8 +132,15 @@ class helper_users:
             #logger.debug("user: ({}) {}".format(user_id, {}))
             return {}
 
+    def check_system_user(user_id):
+        try:
+            Users.get(Users.user_id == user_id).user_id == user_id
+            return True
+        except:
+            return False
+
     @staticmethod
-    def add_user(username, password=None, api_token=None, enabled=True, superuser=False):
+    def add_user(username, password=None, email=None, api_token=None, enabled=True, superuser=False):
         if password is not None:
             pw_enc = helper.encode_pass(password)
         else:
@@ -144,6 +153,7 @@ class helper_users:
         user_id = Users.insert({
             Users.username: username.lower(),
             Users.password: pw_enc,
+            Users.email: email,
             Users.api_token: api_token,
             Users.enabled: enabled,
             Users.superuser: superuser,
@@ -162,6 +172,10 @@ class helper_users:
             User_Roles.delete().where(User_Roles.user_id == user_id).execute()
             user = Users.get(Users.user_id == user_id)
             return user.delete_instance()
+
+    @staticmethod
+    def set_support_path(user_id, support_path):
+        Users.update(support_logs = support_path).where(Users.user_id == user_id).execute()
 
     @staticmethod
     def user_id_exists(user_id):

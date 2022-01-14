@@ -15,6 +15,10 @@ import zipfile
 import pathlib
 import shutil
 from requests import get
+from contextlib import suppress
+import ctypes
+import telnetlib
+from app.classes.web.websocket_helper import websocket_helper
 
 from datetime import datetime
 from socket import gethostname
@@ -34,6 +38,11 @@ except ModuleNotFoundError as e:
     sys.exit(1)
 
 class Helpers:
+    allowed_quotes = [
+        "\"",
+        "'",
+        "`"
+     ]
 
     def __init__(self):
         self.root_dir = os.path.abspath(os.path.curdir)
@@ -76,6 +85,9 @@ class Helpers:
         logger.error("{} does not exist".format(file))
         return True
 
+    def get_servers_root_dir(self):
+        return self.servers_dir
+
     @staticmethod
     def check_internet():
         try:
@@ -87,17 +99,89 @@ class Helpers:
     @staticmethod
     def check_port(server_port):
         try:
-            host_public = get('https://api.ipify.org').text
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(10.0)
-            result = sock.connect_ex((host_public ,server_port))
-            sock.close()
-            if result == 0:
-                return True
-            else:
-                return False
-        except Exception as err:
+            ip = get('https://api.ipify.org').content.decode('utf8')
+        except:
+            ip = 'google.com'
+        a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        a_socket.settimeout(20.0)
+
+        location = (ip, server_port)
+        result_of_check = a_socket.connect_ex(location)
+
+        a_socket.close()
+
+        if result_of_check == 0:
+            return True
+        else:
             return False
+
+    @staticmethod
+    def check_server_conn(server_port):
+        a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        a_socket.settimeout(10.0)
+        ip = '127.0.0.1'
+
+        location = (ip, server_port)
+        result_of_check = a_socket.connect_ex(location)
+        a_socket.close()
+
+        if result_of_check == 0:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def cmdparse(cmd_in):
+        # Parse a string into arguments
+        cmd_out = [] # "argv" output array
+        ci = -1      # command index - pointer to the argument we're building in cmd_out
+        np = True    # whether we're creating a new argument/parameter
+        esc = False  # whether an escape character was encountered
+        stch = None  # if we're dealing with a quote, save the quote type here.  Nested quotes to be dealt with by the command
+        for c in cmd_in: # for character in string
+            if np == True: # if set, begin a new argument and increment the command index.  Continue the loop.
+                if c == ' ':
+                    continue
+                else:
+                    ci += 1
+                    cmd_out.append("")
+                    np = False
+            if esc: # if we encountered an escape character on the last loop, append this char regardless of what it is
+                if c not in Helpers.allowed_quotes:
+                    cmd_out[ci] += '\\'
+                cmd_out[ci] += c
+                esc = False
+            else:
+                if c == '\\': # if the current character is an escape character, set the esc flag and continue to next loop
+                    esc = True
+                elif c == ' ' and stch is None: # if we encounter a space and are not dealing with a quote, set the new argument flag and continue to next loop
+                    np = True
+                elif c == stch: # if we encounter the character that matches our start quote, end the quote and continue to next loop
+                    stch = None
+                elif stch is None and (c in Helpers.allowed_quotes): # if we're not in the middle of a quote and we get a quotable character, start a quote and proceed to the next loop
+                    stch = c
+                else: # else, just store the character in the current arg
+                    cmd_out[ci] += c
+        return cmd_out
+
+    def check_for_old_logs(self, db_helper):
+        servers = db_helper.get_all_defined_servers()
+        for server in servers:
+            logs_path = os.path.split(server['log_path'])[0]
+            latest_log_file = os.path.split(server['log_path'])[1]
+            logs_delete_after = int(server['logs_delete_after'])
+            if logs_delete_after == 0:
+                continue
+
+            log_files = list(filter(
+                lambda val: val != latest_log_file,
+                os.listdir(logs_path)
+            ))
+            for log_file in log_files:
+                log_file_path = os.path.join(logs_path, log_file)
+                if self.check_file_exists(log_file_path) and \
+                        self.is_file_older_than_x_days(log_file_path, logs_delete_after):
+                    os.remove(log_file_path)
 
     def get_setting(self, key, default_return=False):
 
@@ -151,8 +235,8 @@ class Helpers:
         if r.status_code in [200, 201]:
             try:
                 data = json.loads(r.content)
-            except:
-                pass
+            except Exception as e:
+                logger.error("Failed to load json content with error: {} ".format(e))
 
         return data
 
@@ -166,16 +250,6 @@ class Helpers:
                                     version_data.get('sub', '?'),
                                     version_data.get('meta', '?'))
         return str(version)
-
-    def do_exit(self):
-        exit_file = os.path.join(self.root_dir, 'exit.txt')
-        try:
-            open(exit_file, 'a').close()
-
-        except Exception as e:
-            logger.critical("Unable to create exit file!")
-            console.critical("Unable to create exit file!")
-            sys.exit(1)
 
     def encode_pass(self, password):
         return self.passhasher.hash(password)
@@ -214,6 +288,19 @@ class Helpers:
             line = re.sub(old, new, line, flags=re.IGNORECASE)
 
         return line
+
+
+    def validate_traversal(self, base_path, filename):
+        logger.debug("Validating traversal (\"{x}\", \"{y}\")".format(x=base_path, y=filename))
+        base = pathlib.Path(base_path).resolve()
+        file = pathlib.Path(filename)
+        fileabs = base.joinpath(file).resolve()
+        cp = pathlib.Path(os.path.commonpath([base, fileabs]))
+        if base == cp:
+            return fileabs
+        else:
+            raise ValueError("Path traversal detected")
+
 
     def tail_file(self, file_name, number_lines=20):
         if not self.check_file_exists(file_name):
@@ -262,6 +349,18 @@ class Helpers:
         except Exception as e:
             logger.critical("Unable to write to {} - Error: {}".format(path, e))
             return False
+
+    def checkRoot(self):
+        if self.is_os_windows():
+            if ctypes.windll.shell32.IsUserAnAdmin() == 1:
+                return True
+            else:
+                return False
+        else:
+            if os.geteuid() == 0:
+                return True
+            else:
+                return False
 
     def unzipFile(self, zip_path):
         new_dir_list = zip_path.split('/')
@@ -315,11 +414,12 @@ class Helpers:
             logger.critical("Unable to write to {} directory!".format(self.root_dir))
             sys.exit(1)
 
-        # ensure the log directory is there
+        # ensure the log directory is there  
         try:
-            os.makedirs(os.path.join(self.root_dir, 'logs'))
+            with suppress(FileExistsError):
+                os.makedirs(os.path.join(self.root_dir, 'logs'))
         except Exception as e:
-            pass
+            console.error("Failed to make logs directory with error: {} ".format(e))
 
         # ensure the log file is there
         try:
@@ -331,8 +431,8 @@ class Helpers:
         # del any old session.lock file as this is a new session
         try:
             os.remove(session_log_file)
-        except:
-            pass
+        except Exception as e:
+            logger.error("Deleting Session.lock failed with error: {} ".format(e))
 
     @staticmethod
     def get_time_as_string():
@@ -403,7 +503,9 @@ class Helpers:
                 started = data.get('started')
                 console.critical("Another Crafty Controller agent seems to be running...\npid: {} \nstarted on: {}".format(pid, started))
             except Exception as e:
-                pass
+                logger.error("Failed to locate existing session.lock with error: {} ".format(e))
+                console.error("Failed to locate existing session.lock with error: {} ".format(e))
+
 
             sys.exit(1)
 
@@ -541,6 +643,20 @@ class Helpers:
         else:
             return False
 
+    @staticmethod
+    def wtol_path(w_path):
+        l_path = w_path.replace('\\', '/')
+        return l_path
+
+    @staticmethod
+    def ltow_path(l_path):
+        w_path = l_path.replace('/', '\\')
+        return w_path
+
+    @staticmethod
+    def get_os_understandable_path(path):
+        return os.path.normpath(path)
+
     def find_default_password(self):
         default_file = os.path.join(self.root_dir, "default.json")
         data = {}
@@ -558,29 +674,136 @@ class Helpers:
 
     @staticmethod
     def generate_tree(folder, output=""):
-        for raw_filename in os.listdir(folder):
+        file_list = os.listdir(folder)
+        file_list = sorted(file_list, key=str.casefold)
+        for raw_filename in file_list:
             filename = html.escape(raw_filename)
             rel = os.path.join(folder, raw_filename)
             if os.path.isdir(rel):
                 output += \
                     """<li class="tree-item" data-path="{}">
-                    \n<div data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                    \n<div id="{}" data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                    <span id="{}span" class="files-tree-title" data-path="{}" data-name="{}" onclick="getDirView(event)">
                       <i class="far fa-folder"></i>
                       <i class="far fa-folder-open"></i>
                       {}
-                    </div>
-                    \n<ul class="tree-nested">"""\
-                        .format(os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
-
-                output += helper.generate_tree(rel)
-                output += '</ul>\n</li>'
+                      </span>
+                    </div><li>
+                    \n"""\
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
             else:
-                output += """<li
-                class="tree-item tree-ctx-item tree-file"
-                data-path="{}"
-                data-name="{}"
-                onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename, filename)
+                if filename != "crafty_managed.txt":
+                    output += """<li
+                    class="tree-item tree-ctx-item tree-file"
+                    data-path="{}"
+                    data-name="{}"
+                    onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename,  filename)
         return output
+
+    @staticmethod
+    def generate_dir(folder, output=""):
+        file_list = os.listdir(folder)
+        file_list = sorted(file_list, key=str.casefold)
+        output += \
+    """<ul class="tree-nested d-block" id="{}ul">"""\
+        .format(folder)
+        for raw_filename in file_list:
+            filename = html.escape(raw_filename)
+            rel = os.path.join(folder, raw_filename)
+            if os.path.isdir(rel):
+                output += \
+                    """<li class="tree-item" data-path="{}">
+                    \n<div id="{}" data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                    <span id="{}span" class="files-tree-title" data-path="{}" data-name="{}" onclick="getDirView(event)">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {}
+                      </span>
+                    </div><li>"""\
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
+            else:
+                if filename != "crafty_managed.txt":
+                    output += """<li
+                    class="tree-item tree-ctx-item tree-file"
+                    data-path="{}"
+                    data-name="{}"
+                    onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename, filename)
+        output += '</ul>\n'
+        return output
+
+    @staticmethod
+    def generate_zip_tree(folder, output=""):
+        file_list = os.listdir(folder)
+        file_list = sorted(file_list, key=str.casefold)
+        output += \
+    """<ul class="tree-nested d-block" id="{}ul">"""\
+        .format(folder)
+        for raw_filename in file_list:
+            filename = html.escape(raw_filename)
+            rel = os.path.join(folder, raw_filename)
+            if os.path.isdir(rel):
+                output += \
+                    """<li class="tree-item" data-path="{}">
+                    \n<div id="{}" data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                    <input type="radio" name="root_path" value="{}">
+                    <span id="{}span" class="files-tree-title" data-path="{}" data-name="{}" onclick="getDirView(event)">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {}
+                      </span>
+                    </input></div><li>
+                    \n"""\
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
+        return output
+
+    @staticmethod
+    def generate_zip_dir(folder, output=""):
+        file_list = os.listdir(folder)
+        file_list = sorted(file_list, key=str.casefold)
+        output += \
+    """<ul class="tree-nested d-block" id="{}ul">"""\
+        .format(folder)
+        for raw_filename in file_list:
+            filename = html.escape(raw_filename)
+            rel = os.path.join(folder, raw_filename)
+            if os.path.isdir(rel):
+                output += \
+                    """<li class="tree-item" data-path="{}">
+                    \n<div id="{}" data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                    <input type="radio" name="root_path" value="{}">
+                    <span id="{}span" class="files-tree-title" data-path="{}" data-name="{}" onclick="getDirView(event)">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {}
+                      </span>
+                    </input></div><li>"""\
+                        .format(os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, os.path.join(folder, filename), os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
+        return output
+
+    @staticmethod
+    def unzipServer(zip_path, user_id):
+        if helper.check_file_perms(zip_path):
+            tempDir = tempfile.mkdtemp()
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                #extracts archive to temp directory
+                zip_ref.extractall(tempDir)
+            if user_id:
+                websocket_helper.broadcast_user(user_id, 'send_temp_path',{
+                'path': tempDir 
+                })
+        return
+
+    @staticmethod
+    def unzip_backup_archive(backup_path, zip_name):
+        zip_path = os.path.join(backup_path, zip_name)
+        if helper.check_file_perms(zip_path):
+            tempDir = tempfile.mkdtemp()
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                #extracts archive to temp directory
+                zip_ref.extractall(tempDir)      
+            return tempDir
+        else:
+            return False
 
     @staticmethod
     def in_path(parent_path, child_path):

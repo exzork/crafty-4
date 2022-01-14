@@ -1,10 +1,13 @@
+from re import X
 import sys
 import json
+import libgravatar
 import logging
+import requests
 import tornado.web
 import tornado.escape
 
-from app.classes.shared.helpers import helper
+from app.classes.shared.helpers import Helpers, helper
 from app.classes.web.base_handler import BaseHandler
 from app.classes.shared.console import console
 from app.classes.shared.main_models import fn
@@ -40,6 +43,7 @@ class PublicHandler(BaseHandler):
     def get(self, page=None):
 
         error = bleach.clean(self.get_argument('error', "Invalid Login!"))
+        error_msg = bleach.clean(self.get_argument('error_msg', ''))
 
         page_data = {
             'version': helper.get_version_string(),
@@ -75,6 +79,7 @@ class PublicHandler(BaseHandler):
             template,
             data=page_data,
             translate=self.translator.translate,
+            error_msg = error_msg
         )
 
     def post(self, page=None):
@@ -89,18 +94,18 @@ class PublicHandler(BaseHandler):
 
             # if we don't have a user
             if not user_data:
-                next_page = "/public/error?error=Login Failed"
+                error_msg = "Inncorrect username or password. Please try again."               
                 self.clear_cookie("user")
                 self.clear_cookie("user_data")
-                self.redirect(next_page)
+                self.redirect('/public/login?error_msg={}'.format(error_msg))
                 return
 
             # if they are disabled
             if not user_data.enabled:
-                next_page = "/public/error?error=Login Failed"
+                error_msg = "User account disabled. Please contact your system administrator for more info."  
                 self.clear_cookie("user")
                 self.clear_cookie("user_data")
-                self.redirect(next_page)
+                self.redirect('/public/login?error_msg={}'.format(error_msg))
                 return
 
             login_result = helper.verify_pass(entered_password, user_data.password)
@@ -119,9 +124,27 @@ class PublicHandler(BaseHandler):
                 # log this login
                 self.controller.management.add_to_audit_log(user_data.user_id, "Logged in", 0, self.get_remote_ip())
 
+                if  helper.get_setting("allow_nsfw_profile_pictures"):
+                    rating = "x"
+                else:
+                    rating = "g"
+
+
+                #Get grvatar hash for profile pictures
+                if user_data.email != 'default@example.com' or "":
+                    g = libgravatar.Gravatar(libgravatar.sanitize_email(user_data.email))
+                    url = g.get_image(size=80, default="404", force_default=False, rating=rating, filetype_extension=False, use_ssl=True) # + "?d=404"
+                    if requests.head(url).status_code != 404:
+                        profile_url = url
+                    else:
+                        profile_url = "/static/assets/images/faces-clipart/pic-3.png"
+                else:
+                    profile_url = "/static/assets/images/faces-clipart/pic-3.png"
                 cookie_data = {
                     "username": user_data.username,
                     "user_id": user_data.user_id,
+                    "email": user_data.email,
+                    "profile_url": profile_url,
                     "account_type": user_data.superuser,
                 }
 
@@ -132,9 +155,10 @@ class PublicHandler(BaseHandler):
             else:
                 self.clear_cookie("user")
                 self.clear_cookie("user_data")
+                error_msg = "Inncorrect username or password. Please try again."
                 # log this failed login attempt
                 self.controller.management.add_to_audit_log(user_data.user_id, "Tried to log in", 0, self.get_remote_ip())
-                self.redirect('/public/error?error=Login Failed')
+                self.redirect('/public/login?error_msg={}'.format(error_msg))
         else:
             self.redirect("/public/login")
 

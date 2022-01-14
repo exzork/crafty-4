@@ -1,150 +1,311 @@
 {
-  "patreons": [
-    {
-      "name": "Dean of Approval",
-      "level": "sustainer"
-    },
-    {
-      "name": "iSilverfyre",
-      "level": "sustainer"
-    },
-    {
-      "name": "Lightkeeper",
-      "level": "sustainer"
-    },
-    {
-      "name": "Lino",
-      "level": "sustainer"
-    },
-    {
-      "name": "Nicolas T",
-      "level": "sustainer"
-    },
-    {
-      "name": "Richard B",
-      "level": "sustainer"
-    },
-    {
-      "name": "ryuk228",
-      "level": "sustainer"
-    },
-    {
-      "name": "Zedifus",
-      "level": "sustainer"
-    },
-    {
-      "name": "John C",
-      "level": "advocate"
-    }
-  ],
-  "staff": {
-    "development": [
-      {
-        "name":  "Phil Tarrant",
-        "title": "Benevolent Dictator for Life",
-        "loc":   "Atlanta, GA",
-        "tags":  [ "Staff", "Developer", [ "BDFL", "https://en.wikipedia.org/wiki/Benevolent_dictator_for_life" ] ],
-        "blurb": "For best results, apply a thin layer of Phillip to code, cyber security, parenthood for maximum effectiveness. Phillip often spends too much time with his chickens.",
-        "pic":   "/static/assets/images/credits/ptarrant_cropped.png"
-      },
-      {
-        "name":  "Pita Bread",
-        "title": null,
-        "loc":   "Midwest, USA",
-        "tags":  [ "Staff", null, "Community Leader" ],
-        "blurb": "His interests include bread, Linux, and networking. He enjoys pumpkins, organizing, and long-winded emails, but hates wifi.",
-        "pic":   "/static/assets/images/credits/pita_cropped.png"
-      },
-      {
-        "name":  "macgeek",
-        "title": null,
-        "loc":   "Midwest, USA",
-        "tags":  [ "Staff", "Developer", "Project Manager" ],
-        "blurb": "Sysadmin for work and sysadmin for fun (avid homelabber). He enjoys a good tech tangent and gaming.",
-        "pic":   "/static/assets/images/credits/macgeek_cropped.png"
-      },
-      {
-        "name":  "parzivaldewey",
-        "title": null,
-        "loc":   "East Coast, USA",
-        "tags":  [ "Staff", "Developer", "Support Manager" ],
-        "blurb": "His interests include Linux, gaming, and helping others. When he's able to unplug he enjoys biking, hiking, and playing soccer.",
-        "pic":   "/static/assets/images/credits/andrew_cropped.png"
-      },
-      {
-        "name":  "MC Gaming",
-        "title": null,
-        "loc":   "Central, UK",
-        "tags":  [ "Staff", "Developer", null ],
-        "blurb": "His interests include learning, Linux, programming. He loves pentesting apps and gaming.",
-        "pic":   "/static/assets/images/credits/mcgaming.png"
-      },
-      {
-        "name":  "Silversthorn",
-        "title": null,
-        "loc":   null,
-        "tags":  [ "Staff", "Developer", null ],
-        "blurb": "Often in it's cave, he sometimes goes out to help or do silly jokes. He's an IT clown (not the film), but seriously do the job when it's needed.",
-        "pic":   "/static/assets/images/credits/silversthorn.png"
-      },
-      {
-        "name":  "ThatOneLukas",
-        "title": null,
-        "loc":   "Helsinki, FI",
-        "tags":  [ "Staff", "Developer", null ],
-        "blurb": "Lukas enjoys bashing his head at the table while his code does not work",
-        "pic":   "/static/assets/images/credits/lukas_cropped.png"
-      }
-    ],
-    "support": [
-      {
-        "name":  "iSilverfyre",
-        "title": null,
-        "loc":   null,
-        "tags":  [ "Staff", "Wiki", null ],
-        "blurb": "Silver enjoys helping others with their computer needs, writing documentation and loving her cat.",
-        "pic":   "/static/assets/images/credits/isilverfyre.png"
-      },
-      {
-        "name":  "Quentin",
-        "title": null,
-        "loc":   null,
-        "tags":  [ "Staff", "Developer", null ],
-        "blurb": "Hosts Minecraft servers for his weird friends, works for an IoT company as his dayjob. The 's' in IoT stands for 'secure'.",
-        "pic":   "/static/assets/images/credits/qub3d.png"
-      }
-    ],
-    "retired": [
-      {
-        "name":  "Kev Dagoat",
-        "title": "Head of Development",
-        "loc":   "East Coast, AU",
-        "tags":  [ "Staff", "Developer", "HOD" ],
-        "blurb": "His interests include Linux, programming, and goats of course. He enjoys building APIs, K8s, and Geeking over video cards.",
-        "pic":   "/static/assets/images/credits/kevdagoat.jpeg"
-      },
-      {
-        "name":  "Manu",
-        "title": null,
-        "loc":   "Eastern, CA",
-        "tags":  [ "Staff", "Developer", "Project Manager" ],
-        "blurb": "His interests include learning, Linux, and programming. He enjoys speaking French, doing 6 things at once, and testing software.",
-        "pic":   "/static/assets/images/credits/manu_cropped.png"
-      },
-      {
-        "name":  "UltraBlack",
-        "title": null,
-        "loc":   "Bavaria, DE",
-        "tags":  [ "Staff", null, "Idea Manager" ],
-        "blurb": "Hi, my name is Tim, and I'm a huge fan of linux. I'm often gaming and occasionally coding.",
-        "pic":   "/static/assets/images/credits/ultrablack_cropped.png"
-      }
-    ]
-  },
-  "translations": {
-    "Lukas": [ "Finnish" ],
-    "Manu": [ "French" ],
-    "ptarrant": [ "Sarcasm", "Wit" ],
-    "UltraBlack": [ "German" ]
-  }
+	"staff": {
+		"development": [
+			{
+				"name": "Phil Tarrant",
+				"title": "Creator",
+				"loc": "Southeast, USA",
+				"tags": [
+					"Staff",
+					[
+						"Developer",
+						"https://gitlab.com/Ptarrant1"
+					],
+					"Creator"
+				],
+				"blurb": "For best results, apply a thin layer of Phillip to code, cyber security, and parenthood for maximum effectiveness. Phillip often spends too much time with his chickens.",
+				"pic": "/static/assets/images/credits/ptarrant.png"
+			},
+			{
+				"name": "Pita Bread",
+				"title": "Leadership Team",
+				"loc": "Midwest, USA",
+				"tags": [
+					"Staff",
+					[
+						"Developer",
+						"https://gitlab.com/craftbreadth"
+					],
+					"Community Leader"
+				],
+				"blurb": "Baked goods enthusiast who dabbles in Linux and sets up networks for fun. Can be found writing long-winded emails, debugging strange wifi issues, or taking care of his extensive houseplant collection.",
+				"pic": "/static/assets/images/credits/pita.png"
+			},
+			{
+				"name": "macgeek",
+				"title": "Leadership Team",
+				"loc": "Midwest, USA",
+				"tags": [
+					"Staff",
+					[
+						"Developer",
+						"https://gitlab.com/computergeek125"
+					],
+					"Project Manager"
+				],
+				"blurb": "Sysadmin for work and sysadmin for fun (avid homelabber). He enjoys a good tech tangent and gaming.",
+				"pic": "/static/assets/images/credits/macgeek.png"
+			},
+			{
+				"name": "parzivaldewey",
+				"title": null,
+				"loc": "East Coast, USA",
+				"tags": [
+					"Staff",
+					[
+						"Developer",
+						"https://gitlab.com/amcmanu3"
+					],
+					"Support Manager"
+				],
+				"blurb": "His interests include Linux, gaming, and helping others. When he's able to unplug he enjoys biking, hiking, and playing soccer.",
+				"pic": "/static/assets/images/credits/parzivaldewey.png"
+			},
+			{
+				"name": "Xithical",
+				"title": null,
+				"loc": "Midwest, USA",
+				"tags": [
+					"Staff",
+					[
+						"Developer",
+						"https://gitlab.com/xithical"
+					],
+					null
+				],
+				"blurb": "Having sold his soul to the IT administration gods many eons ago, you can usually find him working, going home to do work, or continuing to work in the support Discord.",
+				"pic": "/static/assets/images/credits/xithical.png"
+			},
+			{
+				"name": "MC Gaming",
+				"title": null,
+				"loc": "Central, UK",
+				"tags": [
+					"Staff",
+					[
+						"Developer",
+						"https://gitlab.com/MCgamin1738"
+					],
+					null
+				],
+				"blurb": "His interests include learning, Linux, and programming. He loves pentesting apps and gaming.",
+				"pic": "/static/assets/images/credits/mcgaming.png"
+			},
+			{
+				"name": "Silversthorn",
+				"title": null,
+				"loc": "Provence, FR",
+				"tags": [
+					"Staff",
+					[
+						"Developer",
+						"https://gitlab.com/Silversthorn"
+					],
+					null
+				],
+				"blurb": "Developer at work and at home, testing his own code is a pain, so his coding precept is \"Testing is Doubting\"",
+				"pic": "/static/assets/images/credits/silversthorn.png"
+			},
+			{
+				"name": "ThatOneLukas",
+				"title": null,
+				"loc": "Helsinki, FI",
+				"tags": [
+					"Staff",
+					[
+						"Developer",
+						"https://gitlab.com/LukasDoesDev"
+					],
+					null
+				],
+				"blurb": "Lukas enjoys bashing his head at the table while his code does not work",
+				"pic": "/static/assets/images/credits/lukas.png"
+			},
+			{
+				"name": "Zedifus",
+				"title": null,
+				"loc": "Scotland, UK",
+				"tags": [
+					"Staff",
+					[
+						"Developer",
+						"https://gitlab.com/Zedifus"
+					],
+					"DevOps"
+				],
+				"blurb": "A Streamer, who is currently working in the insurance industry, self-teaching software development & DevOps, with the hopes of a career change! Enjoys playing games and has a sassy cat called Eve.",
+				"pic": "/static/assets/images/credits/zedifus.jpg"
+			}
+		],
+		"support": [
+			{
+				"name": "iSilverfyre",
+				"title": null,
+				"loc": null,
+				"tags": [
+					"Staff",
+					"Wiki",
+					null
+				],
+				"blurb": "Silver enjoys helping others with their computer needs, writing documentation, and loving her cat.",
+				"pic": "/static/assets/images/credits/isilverfyre.png"
+			},
+			{
+				"name": "Quentin",
+				"title": null,
+				"loc": null,
+				"tags": [
+					"Staff",
+					[
+						"Developer",
+						"https://gitlab.com/qub3d"
+					],
+					"Wiki"
+				],
+				"blurb": "Hosts Minecraft servers for his weird friends, works for an IoT company as his dayjob. The 's' in IoT stands for 'secure'.",
+				"pic": "/static/assets/images/credits/qub3d.png"
+			}
+		],
+		"retired": [
+			{
+				"name": "Kev Dagoat",
+				"title": "Head of Development",
+				"loc": "East Coast, AU",
+				"tags": [
+					"Staff",
+					[
+						"Developer",
+						"https://gitlab.com/kevdagoat"
+					],
+					"HOD"
+				],
+				"blurb": "His interests include Linux, programming, and goats of course. He enjoys building APIs, K8s, and geeking over video cards.",
+				"pic": "/static/assets/images/credits/kevdagoat.jpeg"
+			},
+			{
+				"name": "Manu",
+				"title": null,
+				"loc": "Eastern, CA",
+				"tags": [
+					"Staff",
+					"Developer",
+					"Project Manager"
+				],
+				"blurb": "His interests include learning, Linux, and programming. He enjoys speaking French, doing 6 things at once, and testing software.",
+				"pic": "/static/assets/images/credits/manu.png"
+			},
+			{
+				"name": "UltraBlack",
+				"title": null,
+				"loc": "Bavaria, DE",
+				"tags": [
+					"Staff",
+					null,
+					"Idea Manager"
+				],
+				"blurb": "Hi, my name is Tim, and I'm a huge fan of linux. I'm often gaming and occasionally coding.",
+				"pic": "/static/assets/images/credits/ultrablack.png"
+			}
+		]
+	},
+	"translations": {
+		"ptarrant": [
+			"Sarcasm",
+			"Wit"
+		],
+		"Lukas": [
+			"Finnish"
+		],
+		"Manu": [
+			"French"
+		],
+		"Silversthorn": [
+			"French"
+		],
+		"UltraBlack": [
+			"German"
+		],
+		"Zedifus": [
+			"LOLCAT (Kingdum ov Katz)"
+		]
+	},
+	"patrons": [
+		{
+			"name": "Richard B",
+			"level": "Crafty Sustainer"
+		},
+		{
+			"name": "JOHN C",
+			"level": "Crafty Advocate"
+		},
+		{
+			"name": "iSilverfyre",
+			"level": "Crafty Sustainer"
+		},
+		{
+			"name": "Dean R",
+			"level": "Crafty Sustainer"
+		},
+		{
+			"name": "scott m",
+			"level": "Crafty Sustainer"
+		},
+		{
+			"name": "Lino",
+			"level": "Crafty Sustainer"
+		},
+		{
+			"name": "PeterPorker3",
+			"level": "Crafty Supporter"
+		},
+		{
+			"name": "Ewari",
+			"level": "Crafty Supporter"
+		},
+		{
+			"name": "Thyodas",
+			"level": "Crafty Sustainer"
+		},
+		{
+			"name": "AngryPanda",
+			"level": "Crafty Sustainer"
+		},
+		{
+			"name": "Chris T",
+			"level": "Crafty Sustainer"
+		},
+		{
+			"name": "Adam B",
+			"level": "Crafty Sustainer"
+		},
+		{
+			"name": "Eric G",
+			"level": "Crafty Sustainer"
+		},
+		{
+			"name": "Chris B",
+			"level": "Crafty Sustainer"
+		},
+		{
+			"name": "Emmet d",
+			"level": "Crafty Sustainer"
+		},
+		{
+			"name": "Steven T",
+			"level": "Crafty Sustainer"
+		},
+		{
+			"name": "Row H",
+			"level": "Crafty Supporter"
+		},
+		{
+			"name": "vorboid",
+			"level": "Crafty Supporter"
+		},
+		{
+			"name": "Justman",
+			"level": "Crafty Sustainer"
+		}
+	],
+	"lastUpdate": 1637635758855
 }

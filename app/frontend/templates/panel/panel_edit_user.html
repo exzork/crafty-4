@@ -40,12 +40,12 @@
         <div class="card-body  pt-0">
             <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
               <li class="nav-item">
-                <a class="nav-link active" href="/panel/edit_user?id={{ data['user']['user_id'] }}&subpage=config" role="tab" aria-selected="true">
+                <a class="nav-link active" href="/panel/{{ 'add_user' if data['new_user'] else 'edit_user' }}?id={{ data['user']['user_id'] }}&subpage=config" role="tab" aria-selected="true">
                   <i class="fas fa-cogs"></i>Config</a>
               </li>
-              {% if data['new_user'] %}
+              {% if not data['new_user'] %}
               <li class="nav-item">
-                <a class="nav-link" href="/panel/edit_user?id={{ data['user']['user_id'] }}&subpage=other" role="tab" aria-selected="false">
+                <a class="nav-link" href="/panel/add_user?id={{ data['user']['user_id'] }}&subpage=other" role="tab" aria-selected="false">
                   <i class="fas fa-folder-tree"></i>Other</a>
               </li>
               {% end %}
@@ -81,8 +81,12 @@
                             <input type="password" class="form-control" name="password1" id="password1" value="" placeholder="Repeat Password" >
                           </div>
                           <div class="form-group">
+                            <label class="form-label" for="email">Gravatar Email <small class="text-muted ml-1"> - for the profile picture. this is not required. crafty will never make use of user emails. User emails are strictly for Gravatar</small> </label>
+                            <input type="email" class="form-control" name="email" id="email" value="{{ data['user']['email'] }}" placeholder="Gravatar Email" >
+                          </div>
+                          <div class="form-group">
                             <label class="form-label" for="language">User Language:</label>
-                            <select class="form-select" id="language" name="language" form="user_form">
+                            <select class="form-select form-control form-control-lg select-css" id="language" name="language" form="user_form">
                             {% for lang in data['languages'] %}
                               <option value="{{lang}}">{{lang}}</option>
                             {% end %}
@@ -140,7 +144,7 @@
                                   <tr class="rounded">
                                     <th>Permission Name</th>
                                     <th>Authorized ?</th>
-                                    <th>Quantity</th>
+                                    <th>Number of Uses Allowed (-1=No Limit)</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -183,9 +187,9 @@
 
                         <label for="superuser" class="form-check-label ml-4 mb-4">
                           {% if data['user']['superuser'] %}
-                              <input type="checkbox" class="form-check-input" id="superuser" name="superuser" checked="" value="1" disabled >Super User
+                              <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser" name="superuser" checked="" value="1" {{ data['super-disabled'] }} >Super User
                           {% else %}
-                              <input type="checkbox" class="form-check-input" id="superuser" name="superuser" value="1" disabled >Super User
+                              <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser" name="superuser" {{ data['super-disabled'] }} value="1" >Super User
                           {% end %}
                         </label>
 
@@ -225,7 +229,7 @@
                             <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i> Delete User</a><br />
                             <small>You cannot delete a superuser</small>
                         {% else %}
-                            <a href="/panel/remove_user?id={{ data['user']['user_id'] }}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Delete User</a>
+                            <button class="btn btn-sm btn-danger delete-user"><i class="fas fa-trash"></i> Delete User</a>
                         {% end %}
 
                     </div>
@@ -246,6 +250,58 @@
 
 {% block js %}
 <script>
+  $( ".delete-user" ).click(function() {
+    var file_to_del = $(this).data("file");
+
+    console.log("User to delete is {{ data['user']['username']  }}");
+
+    bootbox.confirm({
+        title: "{% raw translate('usersConfig', 'deleteUser', data['lang']) %}"+"{{ data['user']['username']  }}",
+        message: "{{ translate('usersConfig', 'confirmDelete', data['lang']) }}",
+        buttons: {
+            cancel: {
+                label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
+            },
+            confirm: {
+              className: 'btn-outline-danger',
+                label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm", data['lang']) }}'
+            }
+        },
+        callback: function (result) {
+            console.log(result);
+            if (result == true) {
+              location.href="/panel/remove_user?id={{ data['user']['user_id'] }}";
+            }
+        }
+    });
+});
+
+  function superConfirm() {
+    if (document.getElementById('superuser').checked){
+    bootbox.confirm({
+      title: "{{ translate('panelConfig', 'superConfirmTitle', data['lang']) }}",
+      message: "{{ translate('panelConfig', 'superConfirm', data['lang']) }}",
+      buttons: {
+          cancel: {
+              label: '<i class="fa fa-times"></i> {{ translate('panelConfig', 'cancel', data['lang']) }}'
+          },
+          confirm: {
+            className: 'btn-outline-warning',
+              label: '<i class="fa fa-check"></i> {{ translate('serverBackups', 'confirm', data['lang']) }}'
+          }
+      },
+      callback: function (result) {
+          if (result == true){
+            return;
+          }else{
+            document.getElementById('superuser').checked = false;
+          }
+      }
+  });
+}else{
+  return
+}
+  }
 
 
     //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security

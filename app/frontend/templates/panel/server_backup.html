@@ -45,23 +45,15 @@
                         <a href="/panel/backup_now?id={{ data['server_stats']['server_id']['server_id'] }}" class="btn btn-primary" onclick="backup_started()">{{ translate('serverBackups', 'backupNow', data['lang']) }}</a>
                       </div>
                       <div class="form-group">
+                        {% if data['super_user'] %}
                         <label for="server_name">{{ translate('serverBackups', 'storageLocation', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverBackups', 'storageLocationDesc', data['lang']) }}</small> </label>
                         <input type="text" class="form-control" name="backup_path" id="backup_path" value="{{ data['server_stats']['server_id']['backup_path']  }}" placeholder="{{ translate('serverBackups', 'storageLocation', data['lang']) }}" >
+                        {% end %}
                       </div>
 
                       <div class="form-group">
                         <label for="server_path">{{ translate('serverBackups', 'maxBackups', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverBackups', 'maxBackupsDesc', data['lang']) }}</small> </label>
                         <input type="text" class="form-control" name="max_backups" id="max_backups" value="{{ data['backup_config']['max_backups']  }}" placeholder="{{ translate('serverBackups', 'maxBackups', data['lang']) }}" >
-                      </div>
-
-                      <div class="form-group">
-                        <label for="superuser" class="form-check-label ml-4 mb-4">
-                          {% if data['backup_config']['auto_enabled'] %}
-                              <input type="checkbox" class="form-check-input" id="auto_enabled" name="auto_enabled" checked="" value="1" >{{ translate('serverBackups', 'backupAtMidnight', data['lang']) }}
-                          {% else %}
-                              <input type="checkbox" class="form-check-input" id="auto_enabled" name="auto_enabled" value="1" >{{ translate('serverBackups', 'backupAtMidnight', data['lang']) }}
-                          {% end %}
-                        </label>
                       </div>
 
                       <button type="submit" class="btn btn-success mr-2">{{ translate('serverBackups', 'save', data['lang']) }}</button>
@@ -81,10 +73,9 @@
                       <table class="table table-responsive dataTable" id="backup_table">
                         <thead>
                         <tr>
-                            <th width="10%">{{ translate('serverBackups', 'download', data['lang']) }}</th>
+                            <th width="10%">{{ translate('serverBackups', 'options', data['lang']) }}</th>
                             <th>{{ translate('serverBackups', 'path', data['lang']) }}</th>
                             <th width="20%">{{ translate('serverBackups', 'size', data['lang']) }}</th>
-                            <th width="10%">{{ translate('serverBackups', 'delete', data['lang']) }}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -95,16 +86,19 @@
                                     <i class="fas fa-download" aria-hidden="true"></i>
                                     {{ translate('serverBackups', 'download', data['lang']) }}
                                 </a>
-                            </td>
-                            <td>{{ backup['path'] }}</td>
-                            <td>{{ backup['size'] }}</td>
-                            <td>
+                                <br>
+                                <br>
                                 <button data-file="{{ backup['path'] }}" class="btn btn-danger del_button">
                                     <i class="fas fa-trash" aria-hidden="true"></i>
                                     {{ translate('serverBackups', 'delete', data['lang']) }}
                                 </button>
-
+                                <button data-file="{{ backup['path'] }}" class="btn btn-warning restore_button">
+                                  <i class="fas fa-undo-alt" aria-hidden="true"></i>
+                                  {{ translate('serverBackups', 'restore', data['lang']) }}
+                              </button>
                             </td>
+                            <td>{{ backup['path'] }}</td>
+                            <td>{{ backup['size'] }}</td>
                             </tr>
                         {% end %}
 
@@ -151,15 +145,43 @@
 
         console.log('Sending Command to delete backup: ' + filename)
         $.ajax({
-          type: "POST",
+          type: "DELETE",
           headers: {'X-XSRFToken': token},
-          url: '/ajax/del_file?server_id='+id,
-          data: data_to_send,
+          url: '/ajax/del_backup?server_id='+id,
+          data: {
+          file_path: filename,
+          id: id
+          },
           success: function(data) {
             location.reload();
           },
         });
     }
+
+    function restore_backup(filename, id){
+      var token = getCookie("_xsrf")
+
+      console.log('Sending Command to restore backup: ' + filename)
+      $.ajax({
+        type: "POST",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/restore_backup?server_id='+id,
+        data: {
+        zip_file: filename,
+        id: id
+        },
+        success: function(data) {
+          var dialog = bootbox.dialog({
+            message: '<i class="fa fa-spin fa-spinner"></i> {{ translate('serverBackups', 'restoring', data['lang']) }}',
+            closeButton: false
+        });
+        setTimeout(function(){
+          location.href=('/panel/dashboard');
+      }, 15000);
+        },
+      });
+  }
+
 
     $( document ).ready(function() {
         console.log( "ready!" );
@@ -203,13 +225,38 @@
                 callback: function (result) {
                     console.log(result);
                     if (result == true) {
-                        del_backup(file_to_del, {{ data['server_stats']['server_id']['server_id'] }} );
+                      var full_path = '{{ data['backup_path'] }}' + '/' + file_to_del;
+                        del_backup(full_path, {{ data['server_stats']['server_id']['server_id'] }} );
                     }
                 }
             });
         });
+        
+      $( ".restore_button" ).click(function() {
+        var file_to_restore = $(this).data("file");
 
+
+        bootbox.confirm({
+            title: "{{ translate('serverBackups', 'restore', data['lang']) }} "+file_to_restore,
+            message: "{{ translate('serverBackups', 'confirmRestore', data['lang']) }}",
+            buttons: {
+                cancel: {
+                    label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
+                },
+                confirm: {
+                    label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "restore", data['lang']) }}'
+                }
+            },
+            callback: function (result) {
+                console.log(result);
+                if (result == true) {
+                    restore_backup(file_to_restore, {{ data['server_stats']['server_id']['server_id'] }} );
+                }
+            }
+        });
     });
+
+  });
 
 
 </script>

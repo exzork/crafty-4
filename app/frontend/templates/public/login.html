@@ -72,6 +72,11 @@
                   <div class="form-group">
                     <button class="login-input btn btn-primary submit-btn btn-block">{{ translate('login', 'login', data['lang']) }}</button>
                   </div>
+                  {% if error_msg is not None %}
+                  <fieldset style="color: red; text-align: center;">
+                    <span>{{error_msg}}</span>
+                  </fieldset>
+                  {% end %}
                   <div class="form-group d-flex justify-content-between">
                     <div class="form-check form-check-flat mt-0">
                       &nbsp;

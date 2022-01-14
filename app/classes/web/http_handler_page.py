@@ -25,11 +25,9 @@ class HTTPHandlerPage(BaseHandler):
     def get(self, page):
         url = self.request.full_url
         port = 443
-        print(url)
         if url[len(url)-1] == '/':
             url = url.strip(url[len(url)-1])
         url_list = url.split('/')
-        print(url_list)
         if url_list[0] != "":
             primary_url = url_list[0] + ":"+str(port)+"/"
             backup_url = url_list[0] + ":" +str(helper.get_setting["https_port"]) +"/"

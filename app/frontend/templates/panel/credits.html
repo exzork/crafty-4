@@ -64,7 +64,11 @@
                         <span class="btn btn-sm btn-info mr-2">{{ person['tags'][0] }}</span>
                         {% end %}
                         {% if person['tags'][1] %}
-                        <span class="btn btn-sm btn-primary mr-2">{{ person['tags'][1] }}</span>
+                          {% if type(person['tags'][1]) is list %}
+                          <a href="{{ person['tags'][1][1] }}" class="btn btn-sm btn-primary mr-2">{{ person['tags'][1][0] }}</a>
+                          {% else %}
+                          <span class="btn btn-sm btn-primary mr-2">{{ person['tags'][1] }}</span>
+                          {% end %}
                         {% end %}
                         {% if person['tags'][2] %}
                           {% if type(person['tags'][2]) is list %}
@@ -75,11 +79,11 @@
                         {% end %}
                       </div>
 
-                      <div class="wrapper d-flex align-items-start pt-3">
+                      <div class="wrapper align-items-start pt-3">
                         {% if person['title'] %}
-                        Crafty's {{ person['title'] }}<br /><br />
+                        <h5><strong>Crafty's {{ person['title'] }}</strong></h5>
                         {% end %}
-                        {{ person['blurb'] }}
+                        <p>{{ person['blurb'] }}</p>
                       </div>
                     </div>
                   </div>
@@ -129,7 +133,11 @@
                         <span class="btn btn-sm btn-info mr-2">{{ person['tags'][0] }}</span>
                         {% end %}
                         {% if person['tags'][1] %}
-                        <span class="btn btn-sm btn-primary mr-2">{{ person['tags'][1] }}</span>
+                          {% if type(person['tags'][1]) is list %}
+                          <a href="{{ person['tags'][1][1] }}" class="btn btn-sm btn-primary mr-2">{{ person['tags'][1][0] }}</a>
+                          {% else %}
+                          <span class="btn btn-sm btn-primary mr-2">{{ person['tags'][1] }}</span>
+                          {% end %}
                         {% end %}
                         {% if person['tags'][2] %}
                           {% if type(person['tags'][2]) is list %}
@@ -140,11 +148,11 @@
                         {% end %}
                       </div>
 
-                      <div class="wrapper d-flex align-items-start pt-3">
+                      <div class="wrapper align-items-start pt-3">
                         {% if person['title'] %}
-                        Crafty's {{ person['title'] }}<br /><br />
+                        <h5><strong>Crafty's {{ person['title'] }}</strong></h5>
                         {% end %}
-                        {{ person['blurb'] }}
+                        <p>{{ person['blurb'] }}</p>
                       </div>
                     </div>
                   </div>
@@ -195,7 +203,11 @@
                         <span class="btn btn-sm btn-info mr-2">{{ person['tags'][0] }}</span>
                         {% end %}
                         {% if person['tags'][1] %}
-                        <span class="btn btn-sm btn-primary mr-2">{{ person['tags'][1] }}</span>
+                          {% if type(person['tags'][1]) is list %}
+                          <a href="{{ person['tags'][1][1] }}" class="btn btn-sm btn-primary mr-2">{{ person['tags'][1][0] }}</a>
+                          {% else %}
+                          <span class="btn btn-sm btn-primary mr-2">{{ person['tags'][1] }}</span>
+                          {% end %}
                         {% end %}
                         {% if person['tags'][2] %}
                           {% if type(person['tags'][2]) is list %}
@@ -206,11 +218,11 @@
                         {% end %}
                       </div>
 
-                      <div class="wrapper d-flex align-items-start pt-3">
+                      <div class="wrapper align-items-start pt-3">
                         {% if person['title'] %}
-                        Crafty's {{ person['title'] }}<br /><br />
+                        <h5><strong>Crafty's {{ person['title'] }}</strong></h5>
                         {% end %}
-                        {{ person['blurb'] }}
+                        <p>{{ person['blurb'] }}</p>
                       </div>
                     </div>
                   </div>
@@ -232,7 +244,7 @@
       <div class="card">
         <div class="card-body">
           <h4 class="card-title">Patreon Supporters</h4>
-          <p class="card-description"> A huge <code>thank you</code>&nbsp; to our Patreon supporters </p>
+          <p class="card-description"> A huge <code>thank you</code>&nbsp; to our Patreon supporters! | <span style="color: #9365B8">Last Update: {{ data["lastUpdate"] }}</span></p>
           <table class="table table-hover">
             <thead>
               <tr>
@@ -241,15 +253,15 @@
               </tr>
             </thead>
             <tbody>
-              {% for pat in data["patreons"] %}
+              {% for pat in data["patrons"] %}
               <tr>
                 <td>{{ pat["name"] }}</td>
                 <td>
-                  {% if pat["level"] == "sustainer" %}
+                  {% if pat["level"] == "Crafty Sustainer" %}
                   <span class="btn btn-sm btn-info mr-2">Sustainer</span>
-                  {% elif pat["level"] == "advocate" %}
+                  {% elif pat["level"] == "Crafty Advocate" %}
                   <span class="btn btn-sm btn-primary mr-2">Advocate</span>
-                  {% elif pat["level"] == "supporter" %}
+                  {% elif pat["level"] == "Crafty Supporter" %}
                   <span class="btn btn-sm btn-inverse-success mr-2">Supporter</span>
                   {% else %}
                   <span class="btn btn-sm btn-secondary mr-2">Other</span>

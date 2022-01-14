@@ -1,4 +1,4 @@
-# Crafty Controller 4.0.0-alpha.2
+# Crafty Controller 4.0.0-alpha.3
 > Python based Control Panel for your Minecraft Server
 
 ## What is Crafty Controller?
@@ -46,6 +46,15 @@ When you have this just run:
 ```bash
 $ docker login registry.gitlab.com -u <username> -p <token>
 ```
+or
+```bash
+$ echo <token> | docker login registry.gitlab.com -u <username> --password-stdin
+```
+or 
+```bash
+$ cat ~/my_password.txt | docker login registry.gitlab.com -u <username> --password-stdin
+```
+
 Then use one of the following methods:
 #### docker-compose.yml
 ```yml

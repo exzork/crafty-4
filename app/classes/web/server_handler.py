@@ -38,12 +38,17 @@ class ServerHandler(BaseHandler):
             defined_servers = self.controller.list_defined_servers()
             exec_user_role.add("Super User")
             exec_user_crafty_permissions = self.controller.crafty_perms.list_defined_crafty_permissions()
+            list_roles = []
+            for role in self.controller.roles.get_all_roles():
+                list_roles.append(self.controller.roles.get_role(role.role_id))
         else:
             exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user_id)
             defined_servers = self.controller.servers.get_authorized_servers(exec_user_id)
+            list_roles = []
             for r in exec_user['roles']:
                 role = self.controller.roles.get_role(r)
                 exec_user_role.add(role['role_name'])
+                list_roles.append(self.controller.roles.get_role(role['role_id']))
 
         template = "public/404.html"
 
@@ -51,6 +56,7 @@ class ServerHandler(BaseHandler):
             'version_data': helper.get_version_string(),
             'user_data': exec_user_data,
             'user_role' : exec_user_role,
+            'roles' : list_roles,
             'user_crafty_permissions' : exec_user_crafty_permissions,
             'crafty_permissions': {
                 'Server_Creation': Enum_Permissions_Crafty.Server_Creation,
@@ -67,14 +73,16 @@ class ServerHandler(BaseHandler):
             'show_contribute': helper.get_setting("show_contribute_link", True),
             'lang': self.controller.users.get_user_lang_by_id(exec_user_id)
         }
+        if exec_user['superuser'] == 1:
+            page_data['roles'] = list_roles
 
         if page == "step1":
             if not exec_user['superuser'] and not self.controller.crafty_perms.can_create_server(exec_user_id):
                 self.redirect("/panel/error?error=Unauthorized access: not a server creator or server limit reached")
                 return
 
-            page_data['server_types'] = server_jar_obj.get_serverjar_data_sorted()
-            page_data['js_server_types'] = json.dumps(server_jar_obj.get_serverjar_data_sorted())
+            page_data['server_types'] = server_jar_obj.get_serverjar_data()
+            page_data['js_server_types'] = json.dumps(server_jar_obj.get_serverjar_data())
             template = "server/wizard.html"
 
         self.render(
@@ -131,7 +139,7 @@ class ServerHandler(BaseHandler):
                     stop_command = server_data.get('stop_command')
                     new_server_command = str(server_data.get('execution_command')).replace(server_uuid, new_server_uuid)
                     new_executable = server_data.get('executable')
-                    new_server_log_file = str(server_data.get('log_path')).replace(server_uuid, new_server_uuid)
+                    new_server_log_file = str(helper.get_os_understandable_path(server_data.get('log_path'))).replace(server_uuid, new_server_uuid)
                     auto_start = server_data.get('auto_start')
                     auto_start_delay = server_data.get('auto_start_delay')
                     crash_detection = server_data.get('crash_detection')
@@ -147,6 +155,10 @@ class ServerHandler(BaseHandler):
 
         if page == "step1":
 
+            if not exec_user['superuser']:
+                user_roles = self.controller.roles.get_all_roles()
+            else:
+                user_roles = self.controller.roles.get_all_roles()
             server = bleach.clean(self.get_argument('server', ''))
             server_name = bleach.clean(self.get_argument('server_name', ''))
             min_mem = bleach.clean(self.get_argument('min_memory', ''))
@@ -156,6 +168,10 @@ class ServerHandler(BaseHandler):
             import_server_path = bleach.clean(self.get_argument('server_path', ''))
             import_server_jar = bleach.clean(self.get_argument('server_jar', ''))
             server_parts = server.split("|")
+            captured_roles = []
+            for role in user_roles:
+                if bleach.clean(self.get_argument(str(role), '')) == "on":
+                        captured_roles.append(role)
 
             if not server_name:
                 self.redirect("/panel/error?error=Server name cannot be empty!")
@@ -175,12 +191,13 @@ class ServerHandler(BaseHandler):
                                            self.get_remote_ip())
             elif import_type == 'import_zip':
                 # here import_server_path means the zip path
-                good_path = self.controller.verify_zip_server(import_server_path)
+                zip_path = bleach.clean(self.get_argument('root_path'))
+                good_path = helper.check_path_exists(zip_path)
                 if not good_path:
-                    self.redirect("/panel/error?error=Zip file not found!")
+                    self.redirect("/panel/error?error=Temp path not found!")
                     return
 
-                new_server_id = self.controller.import_zip_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
+                new_server_id = self.controller.import_zip_server(server_name, zip_path, import_server_jar, min_mem, max_mem, port)
                 if new_server_id == "false":
                     self.redirect("/panel/error?error=Zip file not accessible! You can fix this permissions issue with sudo chown -R crafty:crafty {} And sudo chmod 2775 -R {}".format(import_server_path, import_server_path))
                     return
@@ -188,6 +205,8 @@ class ServerHandler(BaseHandler):
                                            "imported a zip server named \"{}\"".format(server_name), # Example: Admin imported a server named "old creative"
                                            new_server_id,
                                            self.get_remote_ip())
+                #deletes temp dir
+                shutil.rmtree(zip_path)
             else:
                 if len(server_parts) != 2:
                     self.redirect("/panel/error?error=Invalid server data")
@@ -202,12 +221,18 @@ class ServerHandler(BaseHandler):
                                            self.get_remote_ip())
 
             # These lines create a new Role for the Server with full permissions and add the user to it if he's not a superuser
-            if not exec_user['superuser']:
-                new_server_uuid = self.controller.servers.get_server_data_by_id(new_server_id).get("server_uuid")
-                role_id = self.controller.roles.add_role("Creator of Server with uuid={}".format(new_server_uuid))
-                self.controller.server_perms.add_role_server(new_server_id, role_id, "11111111")
-                self.controller.users.add_role_to_user(exec_user_id, role_id)
-                self.controller.crafty_perms.add_server_creation(exec_user_id)
+            if len(captured_roles) == 0:
+                if not exec_user['superuser']:
+                    new_server_uuid = self.controller.servers.get_server_data_by_id(new_server_id).get("server_uuid")
+                    role_id = self.controller.roles.add_role("Creator of Server with uuid={}".format(new_server_uuid))
+                    self.controller.server_perms.add_role_server(new_server_id, role_id, "11111111")
+                    self.controller.users.add_role_to_user(exec_user_id, role_id)
+                    self.controller.crafty_perms.add_server_creation(exec_user_id)
+
+            else:
+                for role in captured_roles:
+                    role_id = role
+                    self.controller.server_perms.add_role_server(new_server_id, role_id, "11111111")
 
             self.controller.stats.record_stats()
             self.redirect("/panel/dashboard")

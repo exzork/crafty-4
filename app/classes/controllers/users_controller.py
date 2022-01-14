@@ -48,6 +48,10 @@ class Users_Controller:
         return users_helper.user_query(user_id)
 
     @staticmethod
+    def set_support_path(user_id, support_path):
+        users_helper.set_support_path(user_id, support_path)
+
+    @staticmethod
     def update_user(user_id, user_data={}, user_crafty_data={}):
         base_data = users_helper.get_user(user_id)
         up_data = {}
@@ -94,8 +98,8 @@ class Users_Controller:
         users_helper.update_user(user_id, up_data)
 
     @staticmethod
-    def add_user(username, password=None, api_token=None, enabled=True, superuser=False):
-        return users_helper.add_user(username, password=password, api_token=api_token, enabled=enabled, superuser=superuser)
+    def add_user(username, password=None, email="default@example.com", api_token=None, enabled=True, superuser=False):
+        return users_helper.add_user(username, password=password, email=email, api_token=api_token, enabled=enabled, superuser=superuser)
 
     @staticmethod
     def remove_user(user_id):

@@ -1,8 +1,15 @@
+# docker related
 docker/
+.dockerignore
+Dockerfile
+docker-compose.yml
 
+# git & gitlab related
 .git/
 .gitignore
+.gitlab-ci.yml
 
+# root
 crafty_commander.exe
 DBCHANGES.md
 docker-compose.yml.example

@@ -77,6 +77,7 @@ class Server_Stats(Model):
     version = CharField(default="")
     updating = BooleanField(default=False)
     waiting_start = BooleanField(default=False)
+    first_run = BooleanField(default=True)
 
 
     class Meta:
@@ -88,7 +89,7 @@ class Server_Stats(Model):
 #                                   Servers Class
 #************************************************************************************************
 class helper_servers:
-    
+
     #************************************************************************************************
     #                                   Generic Servers Methods
     #************************************************************************************************
@@ -108,6 +109,15 @@ class helper_servers:
             Servers.stop_command: server_stop,
             Servers.backup_path: backup_path
         }).execute()
+
+
+    @staticmethod
+    def get_server_obj(server_id):
+        return Servers.get_by_id(server_id)
+
+    @staticmethod
+    def update_server(server_obj):
+        return server_obj.save()
 
     @staticmethod
     def remove_server(server_id):
@@ -174,6 +184,26 @@ class helper_servers:
             Server_Stats.update(updating=value).where(Server_Stats.server_id == server_id).execute()
 
     @staticmethod
+    def get_update_status(server_id):
+        waiting_start = Server_Stats.select().where(Server_Stats.server_id == server_id).get()
+        return waiting_start.waiting_start
+
+    @staticmethod
+    def set_first_run(server_id):
+        #Sets first run to false
+        try:
+            row = Server_Stats.select().where(Server_Stats.server_id == server_id)
+        except Exception as ex:
+            logger.error("Database entry not found. ".format(ex))
+        with database.atomic():
+            Server_Stats.update(first_run=False).where(Server_Stats.server_id == server_id).execute()
+
+    @staticmethod
+    def get_first_run(server_id):
+        first_run = Server_Stats.select().where(Server_Stats.server_id == server_id).get()
+        return first_run.first_run
+
+    @staticmethod
     def get_TTL_without_player(server_id):
         last_stat = Server_Stats.select().where(Server_Stats.server_id == server_id).order_by(Server_Stats.created.desc()).first()
         last_stat_with_player = Server_Stats.select().where(Server_Stats.server_id == server_id).where(Server_Stats.online > 0).order_by(Server_Stats.created.desc()).first()
@@ -186,7 +216,7 @@ class helper_servers:
         if (time_limit == -1) or (ttl_no_players > time_limit):
             can = True
         return can
-        
+
     @staticmethod
     def set_waiting_start(server_id, value):
         try:

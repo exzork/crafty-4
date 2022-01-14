@@ -13,7 +13,11 @@
         "error": "Erreur !",
         "start-error": "Le serveur {} n'a pas pu démarrer avec le code d'erreur : {}",
         "closedPort": "Nous avons détecté que le port {} n'est peut-être pas ouvert sur le réseau hôte ou qu'un pare-feu le bloque. Les connexions des clients distants au serveur peuvent être limitées.",
-        "internet": "Nous avons détecté que la machine exécutant Crafty n'a pas de connexion à Internet. Les connexions client au serveur peuvent être limitées."
+        "internet": "Nous avons détecté que la machine exécutant Crafty n'a pas de connexion à Internet. Les connexions client au serveur peuvent être limitées.",
+        "eulaTitle": "Accepter le EULA",
+        "eulaMsg": "Vous devez accepter le EULA. Une copie du CLUF de Mojang est liée sous ce message.",
+        "eulaAgree": "Êtes-vous d'accord?",
+        "noJava": "Server {} failed to start with error code: We have detected Java is not installed. Please install java then start the server."
     },
     "404": {
         "contact": "Contacter le Support de Crafty Control via Discord",
@@ -41,7 +45,9 @@
         "serverName": "Non du Serveur",
         "serverPath": "Chemin du Serveur",
         "serverType": "Type du Serveur",
+        "selectType": "Selectionner un Type",
         "serverVersion": "Version du Serveur",
+        "selectVersion": "Selectionner une Version",
         "absoluteServerPath": "Chemin absolu de Votre Serveur",
         "serverJar": "Fichier Jar du Serveur",
         "minMem": "Mémoire Minimum",
@@ -59,7 +65,10 @@
         "myNewServer": "Mon Nouveau Serveur",
         "bePatient": "Merci de patienter pendant que nous ' + (importing ? 'importons' :  'téléchargeons') + ' le serveur",
         "importing": "Importation du Serveur ...",
-        "downloading": "Téléchargement du Serveur ..."
+        "downloading": "Téléchargement du Serveur ...",
+        "addRole": "Ajouter le server au(x) rôle(s) existant(s)",
+        "autoCreate": "Si aucun n'est sélectionné, Crafty en créera un !",
+        "selectRole": "Sélectionnez le rôle(s)"
     },
     "dashboard": {
         "dashboard": "Tableau de Bord",
@@ -169,7 +178,11 @@
         "backupTask": "Une sauvegarde vient de démarrer.",
         "destroyBackup": "Supprimer la sauvegarde \" + file_to_del + \" ?",
         "confirmDelete": "Es-tu sûr de vouloir supprimer cette sauvegarde ? Tu ne pourras pas revenir en arrière.",
-        "confirm": "Confirmer"
+        "confirm": "Confirmer",
+        "options": "Options",
+        "restoring": "Restauration de la sauvegarde. Cela peut prendre un peu de temps. S'il vous plaît soyez patient.",
+        "restore": "Restaurer",
+        "restoreConfirm": "Êtes-vous sûr de vouloir restaurer à partir de cette sauvegarde. Tous les fichiers du serveur actuel passeront à l'état de sauvegarde et seront irrécupérables."
     },
     "serverFiles": {
         "noscript": "Le gestionnaire de fichiers ne fonctionne pas sans JavaScript",
@@ -238,7 +251,7 @@
         "yesDelete": "Oui, Supprimer",
         "noDelete": "Non, revenir en arrière",
         "deleteFilesQuestion": "Supprimer les fichiers de la machine ?",
-        "deleteFilesQuestionMessage": "Veux-tu que Crafty supprime tous les fichiers du serveur de la machine hôte ?",
+        "deleteFilesQuestionMessage": "Veux-tu que Crafty supprime tous les fichiers du serveur de la machine hôte? <br><br><strong>Cela inclut les sauvegardes du serveur.</strong>",
         "yesDeleteFiles": "Oui, Supprimer les fichier",
         "noDeleteFiles": "Non, Supprimer uniquement du tabelau de bord",
         "sendingDelete": "Suppression du Serveur",

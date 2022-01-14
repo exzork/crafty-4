@@ -14,6 +14,7 @@ class Translation():
         self.cached_translation = None
         self.cached_translation_lang = None
         self.lang_file_exists = []
+
     def translate(self, page, word, lang):
         translated_word = None
         fallback_lang = 'en_EN'
@@ -30,6 +31,7 @@ class Translation():
             elif iter(translated_word) and not isinstance(translated_word, str): return '\n'.join(translated_word)
             return translated_word
         return 'Error while getting translation'
+
     def translate_inner(self, page, word, lang):
         lang_file = os.path.join(
             self.translations_path,

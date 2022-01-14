@@ -2,8 +2,10 @@ import os
 import sys
 import cmd
 import time
-
+import threading
 import logging
+
+from app.classes.shared.tasks import TasksManager
 
 logger = logging.getLogger(__name__)
 
@@ -34,18 +36,8 @@ class MainPrompt(cmd.Cmd, object):
     def emptyline():
         pass
 
-    @staticmethod
-    def _clean_shutdown():
-        exit_file = os.path.join(helper.root_dir, "exit.txt")
-        try:
-            with open(exit_file, 'w') as f:
-                f.write("exit")
-
-        except Exception as e:
-            logger.critical("Unable to write exit file due to error: {}".format(e))
-            console.critical("Unable to write exit file due to error: {}".format(e))
-
     def do_exit(self, line):
+        self.tasks_manager._main_graceful_exit()
         self.universal_exit()
     
     def do_migrations(self, line):
@@ -69,11 +61,14 @@ class MainPrompt(cmd.Cmd, object):
         else:
             console.info('Unknown migration command')
     
+    def do_threads(self, line):
+        for thread in threading.enumerate():
+            print(f'Name: {thread.name} IDENT: {thread.ident}')
+
     def universal_exit(self):
         logger.info("Stopping all server daemons / threads")
         console.info("Stopping all server daemons / threads - This may take a few seconds")
         websocket_helper.disconnect_all()
-        self._clean_shutdown()
         console.info('Waiting for main thread to stop')
         while True:
             if self.tasks_manager.get_main_thread_run_status():
