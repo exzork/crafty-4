@@ -1,8 +1,6 @@
 stages:
-- win-dev
-- win-prod
-- docker-dev
-- docker-prod
+- prod-deployment
+- dev-deployment
 
 variables:
   DOCKER_HOST: tcp://docker:2376
@@ -12,7 +10,7 @@ docker-build-dev:
   image: docker:latest
   services:
     - name: docker:dind
-  stage: docker-dev
+  stage: dev-deployment
   tags:
     - docker
   rules:
@@ -55,7 +53,7 @@ docker-build-prod:
   image: docker:latest
   services:
     - name: docker:dind
-  stage: docker-prod
+  stage: prod-deployment
   tags:
     - docker
   rules:
@@ -95,7 +93,7 @@ docker-build-prod:
       docker buildx imagetools inspect "$CI_REGISTRY_IMAGE${tag}"
 
 win-dev-build:
-  stage: win-dev
+  stage: dev-deployment
   tags:
   - win64
   cache:
@@ -130,7 +128,7 @@ win-dev-build:
   # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/dev/download?job=win-dev-build
   
 win-prod-build:
-  stage: win-prod
+  stage: prod-deployment
   tags:
   - win64
   cache:
