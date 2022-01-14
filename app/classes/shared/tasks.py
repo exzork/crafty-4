@@ -7,9 +7,8 @@ import logging
 import threading
 import asyncio
 import shutil
-import tzlocal
+from tzlocal import get_localzone
 
-from pytz import HOUR, timezone
 from app.classes.controllers.users_controller import Users_Controller
 
 from app.classes.shared.helpers import helper
@@ -52,7 +51,8 @@ class TasksManager:
         self.controller = controller
         self.tornado = Webserver(controller, self)
 
-        self.scheduler = BackgroundScheduler(timezone=str(tzlocal.get_localzone()))
+        tz = get_localzone()
+        self.scheduler = BackgroundScheduler(timezone=str(tz))
 
         self.users_controller = Users_Controller()
 

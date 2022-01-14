@@ -14,7 +14,7 @@ import zlib
 import html
 import apscheduler
 from apscheduler.schedulers.background import BackgroundScheduler
-import tzlocal
+from tzlocal import get_localzone
 
 
 from app.classes.shared.helpers import helper
@@ -143,7 +143,8 @@ class Server:
             logger.info("Scheduling server {} to start in {} seconds".format(self.name, delay))
             console.info("Scheduling server {} to start in {} seconds".format(self.name, delay))
 
-            self.server_scheduler = BackgroundScheduler(timezone=str(tzlocal.get_localzone()))
+            tz = get_localzone()
+            self.server_scheduler = BackgroundScheduler(timezone=str(tz))
             self.server_scheduler.add_job(self.run_scheduled_server, 'interval', seconds=delay, id=str(self.server_id))
             self.server_scheduler.start()
 

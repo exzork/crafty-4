@@ -140,8 +140,8 @@ if __name__ == '__main__':
     # refresh our cache and schedule for every 12 hoursour cache refresh for serverjars.com
     tasks_manager.serverjar_cache_refresher()
 
-    logger.info("Checking Internet/Port Service. This may take a minute.")
-    console.info("Checking Internet/Port Service. This may take a minute.")
+    logger.info("Checking Internet. This may take a minute.")
+    console.info("Checking Internet. This may take a minute.")
 
     if not helper.check_internet():
             console.warning("We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited.")
