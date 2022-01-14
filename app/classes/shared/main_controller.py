@@ -131,6 +131,7 @@ class Controller:
             return False
 
     def package_support_logs(self, exec_user):
+        time.sleep(5)
         websocket_helper.broadcast_user(exec_user['user_id'], 'notification', 'Preparing your support logs')
         tempDir = tempfile.mkdtemp()
         tempZipStorage = tempfile.mkdtemp()
