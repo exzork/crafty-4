@@ -1112,8 +1112,10 @@ class PanelHandler(BaseHandler):
                 interval_type = ''
                 cron_string = bleach.clean(self.get_argument('cron', ''))
                 sch_id = self.get_argument('sch_id', None)
-                if len(cron_string.split(' ')) != 5:
-                    self.redirect("/panel/error?error=INVALID FORMAT: Invalid Cron Format. Cron must have a space between each character and only have a max of 5 characters           * * * * *")
+                try:
+                    CronValidator.parse(cron_string)
+                except Exception as e:
+                    self.redirect("/panel/error?error=INVALID FORMAT: Invalid Cron Format. {}".format(e))
                     return
                 action = bleach.clean(self.get_argument('action', None))
                 if action == "command":

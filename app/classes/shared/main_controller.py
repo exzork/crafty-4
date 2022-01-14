@@ -6,7 +6,6 @@ import sys
 from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.models.users import helper_users
 from peewee import DoesNotExist
-import schedule
 import yaml
 import asyncio
 import shutil
