@@ -12,6 +12,8 @@ import shutil
 import tempfile
 import threading
 from cron_validator import CronValidator
+#TZLocal is set as a hidden import on win pipeline
+from tzlocal import get_localzone
 
 from tornado import locale
 from tornado import iostream
@@ -81,7 +83,7 @@ class PanelHandler(BaseHandler):
         page_data = {
             # todo: make this actually pull and compare version data
             'update_available': False,
-            'serverTZ': time.tzname,
+            'serverTZ':get_localzone(),
             'version_data': helper.get_version_string(),
             'user_data': exec_user_data,
             'user_role' : exec_user_role,
