@@ -11,6 +11,7 @@ import os
 import shutil
 import tempfile
 import threading
+from cron_validator import CronValidator
 
 from tornado import locale
 from tornado import iostream
@@ -991,9 +992,10 @@ class PanelHandler(BaseHandler):
             else:
                 interval_type = ''
                 cron_string = bleach.clean(self.get_argument('cron', ''))
-                cron_split = cron_string.split(' ')
-                if len(cron_split) != 5:
-                    self.redirect("/panel/error?error=INVALID FORMAT: Invalid Cron Format. Cron must have a space between each character and only have a max of 5 characters         * * * * *")
+                try:
+                    CronValidator.parse(cron_string)
+                except Exception as e:
+                    self.redirect("/panel/error?error=INVALID FORMAT: Invalid Cron Format. {}".format(e))
                     return
                 action = bleach.clean(self.get_argument('action', None))
                 if action == "command":

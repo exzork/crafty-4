@@ -31,7 +31,6 @@ logger = logging.getLogger(__name__)
 try:
     import psutil
     #import pexpect
-    import schedule
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
