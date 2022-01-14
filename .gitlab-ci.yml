@@ -118,6 +118,7 @@ win-dev-build:
     --hidden-import cryptography
     --hidden-import cffi
     --collect-all tzlocal
+    --collect-all tzdata
   artifacts:
     name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
     paths:
@@ -154,6 +155,7 @@ win-prod-build:
     --hidden-import cryptography
     --hidden-import cffi
     --collect-all tzlocal
+    --collect-all tzdata
   artifacts:
     name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
     paths:
