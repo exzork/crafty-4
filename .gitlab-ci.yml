@@ -120,6 +120,7 @@ win-dev-build:
     --hidden-import apscheduler
     --collect-all tzlocal
     --collect-all tzdata
+    --collect-all pytz
   artifacts:
     name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
     paths:
@@ -158,6 +159,7 @@ win-prod-build:
     --hidden-import apscheduler
     --collect-all tzlocal
     --collect-all tzdata
+    --collect-all pytz
   artifacts:
     name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
     paths:
