@@ -117,8 +117,12 @@ win-dev-build:
     --paths .venv\Lib\site-packages
     --hidden-import cryptography
     --hidden-import cffi
-    --recursive-copy-metadata apscheduler
     --collect-all apscheduler
+    --collect-all tzlocal
+    --collect-all tzdata
+    --collect-all pytz
+    --collect-all six
+
   artifacts:
     name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
     paths:
@@ -154,8 +158,11 @@ win-prod-build:
     --paths .venv\Lib\site-packages
     --hidden-import cryptography
     --hidden-import cffi
-    --recursive-copy-metadata apscheduler
     --collect-all apscheduler
+    --collect-all tzlocal
+    --collect-all tzdata
+    --collect-all pytz
+    --collect-all six
 
   artifacts:
     name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
