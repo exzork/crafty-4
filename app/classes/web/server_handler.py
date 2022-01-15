@@ -71,9 +71,17 @@ class ServerHandler(BaseHandler):
             'hosts_data': self.controller.management.get_latest_hosts_stats(),
             'menu_servers': defined_servers,
             'show_contribute': helper.get_setting("show_contribute_link", True),
-            'lang': self.controller.users.get_user_lang_by_id(exec_user["user_id"])
+            'lang': self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
+            'api_key': {
+                'name': api_key.name,
+                'created': api_key.created,
+                'server_permissions': api_key.server_permissions,
+                'crafty_permissions': api_key.crafty_permissions,
+                'superuser': api_key.superuser
+            } if api_key is not None else None,
+            'superuser': superuser
         }
-        if superuser == 1:
+        if superuser:
             page_data['roles'] = list_roles
 
         if page == "step1":

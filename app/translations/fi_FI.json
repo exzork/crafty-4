@@ -12,7 +12,7 @@
         "embarassing": "No, tämähän on noloa.",
         "error": "Virhe!",
         "start-error": "Palvelin {} ei käynnistynyt virhekoodilla: {}",
-        "closedPort": "Olemme havainneet, että portti {} ei ehkä ole auki isäntäverkossa tai palomuuri estää sen. Etäasiakkaan yhteydet palvelimeen voivat olla rajallisia.",
+        "portReminder": "Olemme havainneet, että tämä on ensimmäinen kerta, kun {} on käynnistetty. Varmista, että välität porttia {} reitittimesi/palomuurisi kautta, jotta se on käytössä internetistä.",
         "internet": "Olemme havainneet, että Crafty -koneella ei ole Internet -yhteyttä. Asiakasyhteydet palvelimelle voivat olla rajalliset.",
         "eulaTitle": "Hyväksy EULA",
         "eulaMsg": "Sinun on hyväksyttävä EULA. Kopio Mojang EULA:sta on linkitetty tämän viestin alla.",
@@ -68,8 +68,17 @@
         "downloading": "Lataamme palvelinta...",
         "addRole": "Lisää Palvelin Olemassa Oleviin Rooleihin",
         "autoCreate": "Jos ketään ei valita, Crafty tekee sellaisen!",
-        "selectRole": "Valitse roolit"
-
+        "selectRole": "Valitse roolit",
+        "selectZipDir": "Valitse arkistosta hakemisto, josta haluat meidän purkavan tiedostot",
+        "close": "Sulje",
+        "save": "Tallenna",
+        "selectRoot": "Valitse arkiston päähakemisto",
+        "clickRoot": "Napsauta tästä valitaksesi juurihakemiston",
+        "explainRoot": "Napsauta alla olevaa painiketta valitaksesi palvelimesi juurihakemiston arkistosta"
+    },
+    "usersConfig":{
+        "deleteUser": "Poista käyttäjä: ",
+        "confirmDelete": "Oletko varma, että haluat poistaa tämän käyttäjän? Tätä ei voi peruuttaa."
     },
     "dashboard": {
         "dashboard": "Kojelauta",
@@ -134,7 +143,8 @@
         "description": "Kuvaus",
         "errorCalculatingUptime": "Virhe laskettaessa käyttöaikaa",
         "serverTime": "UTC aikaa",
-        "unableToConnect": "Yhteyden muodostaminen epäonnistui"
+        "unableToConnect": "Yhteyden muodostaminen epäonnistui",
+        "serverTimeZone": "Palvelimen aikavyöhyke"
     },
     "serverDetails": {
         "serverDetails": "Palvelimen tiedot",
@@ -161,6 +171,14 @@
         "players": "Pelaajat",
         "bannedPlayers": "Kielletyt pelaajat",
         "loadingBannedPlayers": "Ladataan kiellettyjen pelaajien listaa"
+    },
+    "serverSchedules":{
+        "areYouSure": "Poista ajoitettu tehtävä?",
+        "confirmDelete": "Haluatko poistaa tämän ajoitetun tehtävän? Tätä ei voi peruuttaa.",
+        "cancel": "Peruuta",
+        "confirm": "Vahvista",
+        "cannotSee": "Etkö näe kaikkea?",
+        "cannotSeeOnMobile": "Napsauta ajoitettua tehtävää saadaksesi täydet tiedot."
     },
     "serverBackups": {
         "backupNow": "Varmuuskopioi nyt!",
@@ -206,14 +224,15 @@
         "unsupportedLanguage": "Varoitus: Tätä tiedostotyyppiä ei tueta",
         "keybindings": "Pikanäppäimet",
         "fileReadError": "Tiedoston lukuvirhe",
-        "upload": "Lataa",
+        "upload": "Lähetä",
         "unzip": "Pura",
         "clickUpload": "Valitse tiedostosi napsauttamalla tätä",
         "uploadTitle": "Lähetä tiedostot: ",
-        "waitUpload": "Odota, kunnes lataamme tiedostosi ... Tämä voi kestää hetken.",
-        "stayHere": "ÄLÄ JÄTÄ SIVUTA!",
-        "close": "Kiinni",
-        "download": "Ladata"
+        "waitUpload": "Odota, kun lähetämme tiedostojasi... Tämä voi kestää hetken.",
+        "stayHere": "ÄLÄ POISTU SIVULTA!",
+        "close": "Sulje",
+        "download": "Lataa",
+        "loadingRecords": "Ladataan tiedostoja..."
     },
     "serverConfig": {
         "serverName": "Palvelimen nimi",
@@ -248,12 +267,12 @@
         "bePatientUpdate": "Ole kärsivällinen, kun päivitämme palvelinta. Latausajat voivat vaihdella Internet-nopeutesi mukaan.<br /> Tämä näyttö päivittyy hetkessä",
         "sendingRequest": "Pyyntöäsi lähetetään...",
         "deleteServerQuestion": "Poistetaanko palvelin?",
-        "deleteServerQuestionMessage": "Haluatko varmasti poistaa tämän palvelimen? Tämän jälkeen ei ole paluuta...",
+        "deleteServerQuestionMessage": "Haluatko varmasti poistaa tämän palvelimen? Tätä ei voi peruuttaa...",
         "yesDelete": "Kyllä, poista",
         "noDelete": "Ei, mene takaisin",
         "deleteFilesQuestion": "Poistetaanko palvelintiedostot koneelta?",
         "deleteFilesQuestionMessage": "Haluatko Craftyn poistavan kaikki palvelintiedostot isäntäkoneelta? <br><br><strong> Tämä sisältää palvelimen varmuuskopiot. <strong>",
-        "yesDeleteFiles": "Kyllä, poista tiedostoja",
+        "yesDeleteFiles": "Kyllä, poista tiedostot",
         "noDeleteFiles": "Ei, poista vain paneelista",
         "sendingDelete": "Poistetaan palvelinta",
         "bePatientDelete": "Ole kärsivällinen, kun poistamme palvelimesi Crafty-paneelista. Tämä näyttö sulkeutuu hetken kuluttua.",
@@ -279,7 +298,9 @@
     "panelConfig": {
         "save": "Tallenna",
         "cancel": "Peruuta",
-        "delete": "Poista"
+        "delete": "Poista",
+        "superConfirmTitle": "Otetaanko järjestelmänvalvojan oikeudet käyttöön? Oletko varma?",
+        "superConfirm": "Jatka vain, jos haluat, että tällä käyttäjällä on pääsy KAIKKEEN (kaikki käyttäjätilit, palvelimet, paneelin asetukset jne.). Hän voi jopa poistaa sinun järjestelmänvalvojan oikeutesi."
     },
     "datatables": {
         "i18n": {

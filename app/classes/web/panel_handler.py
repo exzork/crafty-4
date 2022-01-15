@@ -497,7 +497,7 @@ class PanelHandler(BaseHandler):
                     user.api_token = "********"
             if superuser:
                 for user in self.controller.users.get_all_users():
-                    if user.superuser == 1:
+                    if user.superuser:
                         super_auth_servers = ["Super User Access To All Servers"]
                         page_data['users'] = self.controller.users.get_all_users()
                         page_data['roles'] = self.controller.roles.get_all_roles()
@@ -1252,7 +1252,7 @@ class PanelHandler(BaseHandler):
             password1 = bleach.clean(self.get_argument('password1', None))
             email = bleach.clean(self.get_argument('email', "default@example.com"))
             enabled = int(float(self.get_argument('enabled', '0')))
-            lang = bleach.clean(self.get_argument('language'), 'en_EN')
+            lang = bleach.clean(self.get_argument('language'), helper.get_setting('language'))
 
             if superuser:
                 #Checks if user is trying to change super user status of self. We don't want that. Automatically make them stay super user since we know they are.
@@ -1389,7 +1389,7 @@ class PanelHandler(BaseHandler):
             password1 = bleach.clean(self.get_argument('password1', None))
             email  = bleach.clean(self.get_argument('email', "default@example.com"))
             enabled = int(float(self.get_argument('enabled', '0'))),
-            lang = bleach.clean(self.get_argument('lang', 'en_EN'))
+            lang = bleach.clean(self.get_argument('lang', helper.get_setting('language')))
             if superuser:
                 superuser = bleach.clean(self.get_argument('superuser', '0'))
             else:
@@ -1507,7 +1507,7 @@ class PanelHandler(BaseHandler):
 
         else:
             self.set_status(404)
-            page_data = {'lang': locale.get("en_EN")}
+            page_data = {'lang': helper.get_setting('language')}
             self.render(
                 "public/404.html",
                 translate=self.translator.translate,

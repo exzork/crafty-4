@@ -27,7 +27,7 @@
           {% for r in data['user_role'] %}            
             <p class="font-weight-light text-muted mb-0">{{ r }}</p>
           {% end %}
-          {% if data['api_key'] %}
+          {% if data.get('api_key') %}
           <p class="mt-3">Logged in as API key "{{ data['api_key']['name'] }}"</p>
           {% end %}
           <p class="font-weight-light text-muted mb-0">Email: {{ data['user_data']['email'] }}</p>
