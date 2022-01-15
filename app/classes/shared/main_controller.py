@@ -280,7 +280,7 @@ class Controller:
 
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
-                                                                     full_jar_path)
+                                                                     +'"'+full_jar_path+'"')
         server_log_file = "{}/logs/latest.log".format(server_dir)
         server_stop = "stop"
 
@@ -336,7 +336,7 @@ class Controller:
 
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
-                                                                     full_jar_path)
+                                                                     +'"'+full_jar_path+'"')
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"
 
@@ -376,7 +376,7 @@ class Controller:
 
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
-                                                                     full_jar_path)
+                                                                     +'"'+full_jar_path+'"')
         logger.debug('command: ' + server_command)
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"
@@ -403,6 +403,7 @@ class Controller:
 
     def register_server(self, name: str, server_uuid: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port: int):
         # put data in the db
+
         new_id = self.servers.create_server(name, server_uuid, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, server_port)
         if not helper.check_file_exists(os.path.join(server_dir, "crafty_managed.txt")):
             try:
