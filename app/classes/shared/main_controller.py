@@ -134,7 +134,6 @@ class Controller:
 
 
     def package_support_logs(self, exec_user):
-        time.sleep(5)
         websocket_helper.broadcast_user(exec_user['user_id'], 'notification', 'Preparing your support logs')
         tempDir = tempfile.mkdtemp()
         tempZipStorage = tempfile.mkdtemp()
@@ -254,6 +253,8 @@ class Controller:
 
         server_file = "{server}-{version}.jar".format(server=server, version=version)
         full_jar_path = os.path.join(server_dir, server_file)
+        if helper.is_os_windows():
+            full_jar_path.replace(' ', '^ ')
 
         # make the dir - perhaps a UUID?
         helper.ensure_dir_exists(server_dir)
@@ -324,6 +325,9 @@ class Controller:
                 f.close()
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
+        if helper.is_os_windows():
+            full_jar_path.replace(' ', '^ ')
+            
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
                                                                      full_jar_path)
@@ -357,6 +361,9 @@ class Controller:
                 f.close()
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
+        if helper.is_os_windows():
+            full_jar_path.replace(' ', '^ ')
+
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
                                                                      full_jar_path)
