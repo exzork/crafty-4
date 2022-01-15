@@ -1039,7 +1039,7 @@ class PanelHandler(BaseHandler):
                         "interval": '',
                         "command": '',
                         #We'll base every interval off of a midnight start time.
-                        "start_time": '00:00',
+                        "start_time": '',
                         "command": command,
                         "cron_string": cron_string,
                         "enabled": enabled,
@@ -1159,7 +1159,7 @@ class PanelHandler(BaseHandler):
                         "interval": '',
                         "command": '',
                         #We'll base every interval off of a midnight start time.
-                        "start_time": '00:00',
+                        "start_time": '',
                         "command": command,
                         "cron_string": cron_string,
                         "enabled": enabled,
