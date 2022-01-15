@@ -29,11 +29,11 @@
           {% end %}
           <p class="font-weight-light text-muted mb-0">Email: {{ data['user_data']['email'] }}</p>
         </div>
-        <a class="dropdown-item" href="/panel/support_logs"><i class="dropdown-item-icon mdi mdi-download-outline text-primary"></i> Support Logs</i></a>
+        <a class="dropdown-item" id="support_logs" ><i class="dropdown-item-icon mdi mdi-download-outline text-primary"></i>{{ translate('notify', 'supportLogs', data['lang']) }}</i></a>
         {% if "Super User" in data['user_role'] %}
-        <a class="dropdown-item" href="/panel/activity_logs"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary"></i> Activity</a>
+        <a class="dropdown-item" href="/panel/activity_logs"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary"></i>{{ translate('notify', 'activityLog', data['lang']) }}</a>
         {% end %}
-        <a class="dropdown-item" href="/public/logout"><i class="dropdown-item-icon mdi mdi-power text-primary"></i>Sign Out</a>
+        <a class="dropdown-item" href="/public/logout"><i class="dropdown-item-icon mdi mdi-power text-primary"></i>{{ translate('notify', 'logout', data['lang']) }}</a>
       </div>
     </li>
   </ul>

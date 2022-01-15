@@ -126,28 +126,6 @@ class PanelHandler(BaseHandler):
         elif page == 'contribute':
             template = "panel/contribute.html"
 
-        elif page == "remove_server":
-            server_id = self.get_argument('id', None)
-
-            if not exec_user['superuser']:
-                self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return
-            elif server_id is None:
-                self.redirect("/panel/error?error=Invalid Server ID")
-                return
-
-            server_data = self.controller.get_server_data(server_id)
-            server_name = server_data['server_name']
-
-            self.controller.management.add_to_audit_log(exec_user_data['user_id'],
-                                       "Deleted server {} named {}".format(server_id, server_name),
-                                       server_id,
-                                       self.get_remote_ip())
-
-            self.controller.remove_server(server_id)
-            self.redirect("/panel/dashboard")
-            return
-
         elif page == 'dashboard':
             if exec_user['superuser'] == 1:
                 try:
