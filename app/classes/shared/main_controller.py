@@ -255,6 +255,7 @@ class Controller:
         full_jar_path = os.path.join(server_dir, server_file)
         if helper.is_os_windows():
             full_jar_path.replace(' ', '^ ')
+            full_jar_path = helper.wtol_path(full_jar_path)
 
         # make the dir - perhaps a UUID?
         helper.ensure_dir_exists(server_dir)
@@ -327,7 +328,8 @@ class Controller:
         full_jar_path = os.path.join(new_server_dir, server_jar)
         if helper.is_os_windows():
             full_jar_path.replace(' ', '^ ')
-            
+            full_jar_path = helper.wtol_path(full_jar_path)
+
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
                                                                      full_jar_path)
@@ -363,6 +365,7 @@ class Controller:
         full_jar_path = os.path.join(new_server_dir, server_jar)
         if helper.is_os_windows():
             full_jar_path.replace(' ', '^ ')
+            full_jar_path = helper.wtol_path(full_jar_path)
 
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
