@@ -43,7 +43,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
 
     def get_user_id(self):
         _, _, user = authentication.check(self.get_cookie('token'))
-        return user.user_id
+        return user['user_id']
 
     def check_auth(self):
         return authentication.check_bool(self.get_cookie('token'))
