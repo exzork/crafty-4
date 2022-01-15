@@ -251,10 +251,10 @@ class Controller:
         server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
         if helper.is_os_windows():
-            server_dir.replace(' ', '^ ')
-            backup_path.replace(' ', '^ ')
             server_dir = helper.wtol_path(server_dir)
             backup_path = helper.wtol_path(backup_path)
+            server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
 
         server_file = "{server}-{version}.jar".format(server=server, version=version)
         full_jar_path = os.path.join(server_dir, server_file)
@@ -312,10 +312,10 @@ class Controller:
         new_server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
         if helper.is_os_windows():
-            new_server_dir.replace(' ', '^ ')
-            backup_path.replace(' ', '^ ')
             server_dir = helper.wtol_path(new_server_dir)
             backup_path = helper.wtol_path(backup_path)
+            new_server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
 
         helper.ensure_dir_exists(new_server_dir)
         helper.ensure_dir_exists(backup_path)
@@ -349,10 +349,10 @@ class Controller:
         new_server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
         if helper.is_os_windows():
+            new_server_dir = helper.wtol_path(new_server_dir)
+            backup_path = helper.wtol_path(backup_path)
             new_server_dir.replace(' ', '^ ')
             backup_path.replace(' ', '^ ')
-            server_dir = helper.wtol_path(new_server_dir)
-            backup_path = helper.wtol_path(backup_path)
 
         tempDir = helper.get_os_understandable_path(zip_path)
         helper.ensure_dir_exists(new_server_dir)
@@ -390,6 +390,9 @@ class Controller:
         old_bu_path = server_data['backup_path']
         Server_Perms_Controller.backup_role_swap(old_server_id, new_server_id)
         backup_path = helper.validate_traversal(helper.backup_path, old_bu_path)
+        if helper.is_os_windows():
+            backup_path = helper.wtol_path(backup_path)
+            backup_path.replace(' ', '^ ')
         backup_path_components = list(backup_path.parts)
         backup_path_components[-1] = new_uuid
         new_bu_path = pathlib.PurePath(os.path.join(*backup_path_components))
