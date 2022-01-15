@@ -250,12 +250,14 @@ class Controller:
         server_id = helper.create_uuid()
         server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
+        if helper.is_os_windows():
+            server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
+            server_dir = helper.wtol_path(server_dir)
+            backup_path = helper.wtol_path(backup_path)
 
         server_file = "{server}-{version}.jar".format(server=server, version=version)
         full_jar_path = os.path.join(server_dir, server_file)
-        if helper.is_os_windows():
-            full_jar_path.replace(' ', '^ ')
-            full_jar_path = helper.wtol_path(full_jar_path)
 
         # make the dir - perhaps a UUID?
         helper.ensure_dir_exists(server_dir)
@@ -309,6 +311,11 @@ class Controller:
         server_id = helper.create_uuid()
         new_server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
+        if helper.is_os_windows():
+            new_server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
+            server_dir = helper.wtol_path(new_server_dir)
+            backup_path = helper.wtol_path(backup_path)
 
         helper.ensure_dir_exists(new_server_dir)
         helper.ensure_dir_exists(backup_path)
@@ -326,9 +333,6 @@ class Controller:
                 f.close()
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
-        if helper.is_os_windows():
-            full_jar_path.replace(' ', '^ ')
-            full_jar_path = helper.wtol_path(full_jar_path)
 
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
@@ -344,6 +348,12 @@ class Controller:
         server_id = helper.create_uuid()
         new_server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
+        if helper.is_os_windows():
+            new_server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
+            server_dir = helper.wtol_path(new_server_dir)
+            backup_path = helper.wtol_path(backup_path)
+
         tempDir = helper.get_os_understandable_path(zip_path)
         helper.ensure_dir_exists(new_server_dir)
         helper.ensure_dir_exists(backup_path)
@@ -363,9 +373,6 @@ class Controller:
                 f.close()
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
-        if helper.is_os_windows():
-            full_jar_path.replace(' ', '^ ')
-            full_jar_path = helper.wtol_path(full_jar_path)
 
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
