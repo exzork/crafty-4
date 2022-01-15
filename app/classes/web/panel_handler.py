@@ -181,7 +181,10 @@ class PanelHandler(BaseHandler):
                     except:
                         data['stats']['waiting_start'] = False
 
-            page_data['num_players'] = 0
+            try:
+                self.fetch_server_data(page_data)
+            except:
+                page_data['num_players'] = 0
 
             IOLoop.current().add_callback(self.fetch_server_data, page_data)
 
