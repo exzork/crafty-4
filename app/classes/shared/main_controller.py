@@ -3,6 +3,8 @@ import pathlib
 import time
 import logging
 import sys
+from typing import Union
+
 from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.models.users import helper_users
 from peewee import DoesNotExist
@@ -18,21 +20,22 @@ from app.classes.web.websocket_helper import websocket_helper
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 
-#Importing Models
-from app.classes.models.crafty_permissions import crafty_permissions, Enum_Permissions_Crafty
+# Importing Models
 from app.classes.models.servers import servers_helper
-#Importing Controllers
+from app.classes.shared.console import console
+from app.classes.shared.helpers import helper
+from app.classes.shared.server import Server
+from app.classes.minecraft.server_props import ServerProps
+from app.classes.minecraft.serverjars import server_jar_obj
+from app.classes.minecraft.stats import Stats
+
+# Importing Controllers
 from app.classes.controllers.crafty_perms_controller import Crafty_Perms_Controller
 from app.classes.controllers.management_controller import Management_Controller
 from app.classes.controllers.users_controller import Users_Controller
 from app.classes.controllers.roles_controller import Roles_Controller
 from app.classes.controllers.server_perms_controller import Server_Perms_Controller
 from app.classes.controllers.servers_controller import Servers_Controller
-
-from app.classes.shared.server import Server
-from app.classes.minecraft.server_props import ServerProps
-from app.classes.minecraft.serverjars import server_jar_obj
-from app.classes.minecraft.stats import Stats
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +176,7 @@ class Controller:
 
     @staticmethod
     def add_system_user():
-        helper_users.add_user("system", helper.random_string_generator(64), "default@example.com", helper_users.new_api_token(), False, False)
+        helper_users.add_user("system", helper.random_string_generator(64), "default@example.com", False, False)
 
     def get_server_settings(self, server_id):
         for s in self.servers_list:
@@ -183,17 +186,17 @@ class Controller:
         logger.warning("Unable to find server object for server id {}".format(server_id))
         return False
 
-    def get_server_obj(self, server_id):
+    def get_server_obj(self, server_id: Union[str, int]) -> Union[bool, Server]:
         for s in self.servers_list:
-            if int(s['server_id']) == int(server_id):
+            if str(s['server_id']) == str(server_id):
                 return s['server_obj']
 
         logger.warning("Unable to find server object for server id {}".format(server_id))
-        return False
+        return False  # TODO: Change to None
 
-    def get_server_data(self, server_id):
+    def get_server_data(self, server_id: str):
         for s in self.servers_list:
-            if int(s['server_id']) == int(server_id):
+            if s['server_id'] == server_id:
                 return s['server_data_obj']
 
         logger.warning("Unable to find server object for server id {}".format(server_id))
@@ -406,7 +409,7 @@ class Controller:
         for s in self.servers_list:
 
             # if this is the droid... im mean server we are looking for...
-            if int(s['server_id']) == int(server_id):
+            if s['server_id'] == server_id:
                 server_data = self.get_server_data(server_id)
                 server_name = server_data['server_name']
                 backup_dir = self.servers.get_server_data_by_id(server_id)['backup_path']

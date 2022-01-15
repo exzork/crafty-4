@@ -371,5 +371,9 @@
     },
     "base": {
         "doesNotWorkWithoutJavascript": "<strong>Varoitus: </strong>Crafty ei toimi kunnolla ilman JavaScriptiä!"
+    },
+    "apiKeys": {
+        "deleteKeyConfirmation": "Haluatko varmasti poistaa tämän API-avaimen? Tämä on peruuttamaton toimenpide!",
+        "deleteKeyConfirmationTitle": "Poistetaanko API-avain ${keyId}?"
     }
 }

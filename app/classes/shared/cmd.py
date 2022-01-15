@@ -41,29 +41,33 @@ class MainPrompt(cmd.Cmd, object):
         self.universal_exit()
     
     def do_migrations(self, line):
-        if (line == 'up'):
+        if line == 'up':
             self.migration_manager.up()
-        elif (line == 'down'):
+        elif line == 'down':
             self.migration_manager.down()
-        elif (line == 'done'):
+        elif line == 'done':
             console.info(self.migration_manager.done)
-        elif (line == 'todo'):
+        elif line == 'todo':
             console.info(self.migration_manager.todo)
-        elif (line == 'diff'):
+        elif line == 'diff':
             console.info(self.migration_manager.diff)
-        elif (line == 'info'):
+        elif line == 'info':
             console.info('Done: {}'.format(self.migration_manager.done))
             console.info('FS:   {}'.format(self.migration_manager.todo))
             console.info('Todo: {}'.format(self.migration_manager.diff))
-        elif (line.startswith('add ')):
+        elif line.startswith('add '):
             migration_name = line[len('add '):]
             self.migration_manager.create(migration_name, False)
         else:
             console.info('Unknown migration command')
-    
-    def do_threads(self, line):
+
+    @staticmethod
+    def do_threads(_line):
         for thread in threading.enumerate():
-            print(f'Name: {thread.name} IDENT: {thread.ident}')
+            if sys.version_info >= (3, 8):
+                print(f'Name: {thread.name} Identifier: {thread.ident} TID/PID: {thread.native_id}')
+            else:
+                print(f'Name: {thread.name} Identifier: {thread.ident}')
 
     def universal_exit(self):
         logger.info("Stopping all server daemons / threads")
@@ -75,11 +79,10 @@ class MainPrompt(cmd.Cmd, object):
                 sys.exit(0)
             time.sleep(1)
 
-
     @staticmethod
     def help_exit():
         console.help("Stops the server if running, Exits the program")
-    
+
     @staticmethod
     def help_migrations():
         console.help("Only for advanced users. Use with caution")

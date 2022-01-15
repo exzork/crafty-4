@@ -42,7 +42,6 @@
                         <tr class="rounded">
                           <th>User</th>
                           <th>Enabled</th>
-                          <th>API Token</th>
                           <th>Allowed Servers</th>
                           <th>Assigned Roles</th>
                           <th>Edit</th>
@@ -63,9 +62,6 @@
                               </span>
 
                             {% end %}
-                          </td>
-                          <td>
-                            <button data-toggle="tooltip" title="Show API Key" data-id="{{ user.api_token }}" type="button" class="btn btn-info show_button">Show</button>
                           </td>
                           <td id="server_list_{{user.user_id}}">
                               <ul id="{{user.user_id}}">

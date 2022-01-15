@@ -35,13 +35,13 @@ class AjaxHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self, page):
-        user_data = json.loads(self.get_secure_cookie("user_data"))
+        _, _, exec_user = self.current_user
         error = bleach.clean(self.get_argument('error', "WTF Error!"))
 
         template = "panel/denied.html"
 
         page_data = {
-            'user_data': user_data,
+            'user_data': exec_user,
             'error': error
         }
 
@@ -164,10 +164,13 @@ class AjaxHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, page):
-        user_data = json.loads(self.get_secure_cookie("user_data"))
+        api_key, _, exec_user = self.current_user
+        superuser = exec_user['superuser']
+        if api_key is not None:
+            superuser = superuser and api_key.superuser
+
         server_id = self.get_argument('id', None)
-        exec_user_id = user_data['user_id']
-        exec_user = helper_users.get_user(exec_user_id)
+
         permissions = {
                 'Commands': Enum_Permissions_Server.Commands,
                 'Terminal': Enum_Permissions_Server.Terminal,
@@ -178,17 +181,17 @@ class AjaxHandler(BaseHandler):
                 'Config': Enum_Permissions_Server.Config,
                 'Players': Enum_Permissions_Server.Players,
             }
-        user_perms = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
+        user_perms = self.controller.server_perms.get_user_id_permissions_list(exec_user['user_id'], server_id)
         error = bleach.clean(self.get_argument('error', "WTF Error!"))
 
         page_data = {
-            'user_data': user_data,
+            'user_data': exec_user,
             'error': error
         }
 
         if page == "send_command":
             command = self.get_body_argument('command', default=None, strip=True)
-            server_id = self.get_argument('id')
+            server_id = self.get_argument('id', None)
 
             if server_id is None:
                 logger.warning("Server ID not found in send_command ajax call")
@@ -200,11 +203,11 @@ class AjaxHandler(BaseHandler):
                 if srv_obj.check_running():
                     srv_obj.send_command(command)
 
-            self.controller.management.add_to_audit_log(user_data['user_id'], "Sent command to {} terminal: {}".format(self.controller.servers.get_server_friendly_name(server_id), command), server_id, self.get_remote_ip())
+            self.controller.management.add_to_audit_log(exec_user['user_id'], "Sent command to {} terminal: {}".format(self.controller.servers.get_server_friendly_name(server_id), command), server_id, self.get_remote_ip())
 
         elif page == "create_file":
             if not permissions['Files'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Files")    
                     return             
             file_parent = helper.get_os_understandable_path(self.get_body_argument('file_parent', default=None, strip=True))
@@ -227,7 +230,7 @@ class AjaxHandler(BaseHandler):
 
         elif page == "create_dir":
             if not permissions['Files'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Files")    
                     return 
             dir_parent = helper.get_os_understandable_path(self.get_body_argument('dir_parent', default=None, strip=True))
@@ -248,7 +251,7 @@ class AjaxHandler(BaseHandler):
 
         elif page == "unzip_file":
             if not permissions['Files'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Files")    
                     return 
             server_id = self.get_argument('id', None)
@@ -259,7 +262,7 @@ class AjaxHandler(BaseHandler):
 
         elif page == "kill":
             if not permissions['Commands'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Commands")    
                     return 
             server_id = self.get_argument('id', None)
@@ -272,11 +275,11 @@ class AjaxHandler(BaseHandler):
         elif page == "eula":
             server_id = self.get_argument('id', None)
             svr = self.controller.get_server_obj(server_id)
-            svr.agree_eula(user_data['user_id'])
+            svr.agree_eula(exec_user['user_id'])
 
         elif page == "restore_backup":
             if not permissions['Backup'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Backups")    
                     return 
             server_id = bleach.clean(self.get_argument('id', None))
@@ -295,16 +298,21 @@ class AjaxHandler(BaseHandler):
 
         elif page == "unzip_server":
             path = self.get_argument('path', None)
-            helper.unzipServer(path, exec_user_id)
+            helper.unzipServer(path, exec_user['user_id'])
             return
                 
 
     @tornado.web.authenticated
     def delete(self, page):
-        user_data = json.loads(self.get_secure_cookie("user_data"))
+        api_key, _, exec_user = self.current_user
+        superuser = exec_user['superuser']
+        if api_key is not None:
+            superuser = superuser and api_key.superuser
+
         server_id = self.get_argument('id', None)
-        exec_user_id = user_data['user_id']
-        exec_user = helper_users.get_user(exec_user_id)
+
+
+
         permissions = {
                 'Commands': Enum_Permissions_Server.Commands,
                 'Terminal': Enum_Permissions_Server.Terminal,
@@ -315,10 +323,10 @@ class AjaxHandler(BaseHandler):
                 'Config': Enum_Permissions_Server.Config,
                 'Players': Enum_Permissions_Server.Players,
             }
-        user_perms = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
+        user_perms = self.controller.server_perms.get_user_id_permissions_list(exec_user['user_id'], server_id)
         if page == "del_file":
             if not permissions['Files'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Files")    
                     return            
             file_path = helper.get_os_understandable_path(self.get_body_argument('file_path', default=None, strip=True))
@@ -350,7 +358,7 @@ class AjaxHandler(BaseHandler):
 
         if page == "del_backup":
             if not permissions['Backup'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Backups")    
                     return            
             file_path = helper.get_os_understandable_path(self.get_body_argument('file_path', default=None, strip=True))
@@ -376,7 +384,7 @@ class AjaxHandler(BaseHandler):
 
         elif page == "del_dir":
             if not permissions['Files'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Files")    
                     return              
             dir_path = helper.get_os_understandable_path(self.get_body_argument('dir_path', default=None, strip=True))
@@ -401,7 +409,7 @@ class AjaxHandler(BaseHandler):
 
         elif page == "delete_server":
             if not permissions['Config'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Config")    
                     return              
             server_id = self.get_argument('id', None)
@@ -411,7 +419,7 @@ class AjaxHandler(BaseHandler):
 
         elif page == "delete_server_files":
             if not permissions['Config'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Config")    
                     return              
             server_id = self.get_argument('id', None)
@@ -421,10 +429,12 @@ class AjaxHandler(BaseHandler):
 
     @tornado.web.authenticated
     def put(self, page):
-        user_data = json.loads(self.get_secure_cookie("user_data"))
+        api_key, _, exec_user = self.current_user
+        superuser = exec_user['superuser']
+        if api_key is not None:
+            superuser = superuser and api_key.superuser
+
         server_id = self.get_argument('id', None)
-        exec_user_id = user_data['user_id']
-        exec_user = helper_users.get_user(exec_user_id)
         permissions = {
                 'Commands': Enum_Permissions_Server.Commands,
                 'Terminal': Enum_Permissions_Server.Terminal,
@@ -435,10 +445,10 @@ class AjaxHandler(BaseHandler):
                 'Config': Enum_Permissions_Server.Config,
                 'Players': Enum_Permissions_Server.Players,
             }
-        user_perms = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
+        user_perms = self.controller.server_perms.get_user_id_permissions_list(exec_user['user_id'], server_id)
         if page == "save_file":
             if not permissions['Files'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Files")    
                     return             
             file_contents = self.get_body_argument('file_contents', default=None, strip=True)
@@ -460,7 +470,7 @@ class AjaxHandler(BaseHandler):
 
         elif page == "rename_item":
             if not permissions['Files'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Files")    
                     return  
             item_path = helper.get_os_understandable_path(self.get_body_argument('item_path', default=None, strip=True))
