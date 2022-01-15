@@ -346,5 +346,9 @@
     },
     "base": {
         "doesNotWorkWithoutJavascript": "<strong>警告：</strong>Crafty 无法在没有 JavaScript 的情况下使用！"
+    },
+    "apiKeys": {
+        "deleteKeyConfirmation": "您确定要删除该 API 密钥吗？此操作无法撤销。",
+        "deleteKeyConfirmationTitle": "删除 API 密钥 ${keyId}？"
     }
 }
