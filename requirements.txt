@@ -15,4 +15,4 @@ tornado~=6.0
 cached_property==1.5.2
 apscheduler~=3.8.1
 cron-validator~=1.0.3
-tzlocal~=4.1
+tzlocal==3.0
