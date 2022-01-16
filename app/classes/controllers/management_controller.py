@@ -31,10 +31,6 @@ class Management_Controller:
     def get_latest_hosts_stats():
         return management_helper.get_latest_hosts_stats()
 
-    @staticmethod
-    def new_api_token():
-        return management_helper.new_api_token()
-
     #************************************************************************************************
     #                                   Commands Methods
     #************************************************************************************************

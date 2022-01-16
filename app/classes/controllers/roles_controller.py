@@ -39,7 +39,9 @@ class Roles_Controller:
 
 
     @staticmethod
-    def update_role(role_id, role_data={}, permissions_mask="00000000"):
+    def update_role(role_id: str, role_data = None, permissions_mask: str = "00000000"):
+        if role_data is None:
+            role_data = {}
         base_data = Roles_Controller.get_role_with_servers(role_id)
         up_data = {}
         added_servers = set()

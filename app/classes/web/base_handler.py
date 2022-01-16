@@ -4,10 +4,12 @@ import bleach
 from typing import (
     Union,
     List,
-    Optional
+    Optional, Tuple, Dict, Any
 )
 
+from app.classes.shared.authentication import authentication
 from app.classes.shared.main_controller import Controller
+from app.classes.models.users import ApiKeys
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +19,8 @@ class BaseHandler(tornado.web.RequestHandler):
     nobleach = {bool, type(None)}
     redactables = ("pass", "api")
 
-    def initialize(self, controller : Controller = None, tasks_manager=None, translator=None):
+    # noinspection PyAttributeOutsideInit
+    def initialize(self, controller: Controller = None, tasks_manager=None, translator=None):
         self.controller = controller
         self.tasks_manager = tasks_manager
         self.translator = translator
@@ -28,8 +31,9 @@ class BaseHandler(tornado.web.RequestHandler):
                     self.request.remote_ip
         return remote_ip
 
-    def get_current_user(self):
-        return self.get_secure_cookie("user", max_age_days=1)
+    current_user: Optional[Tuple[Optional[ApiKeys], Dict[str, Any], Dict[str, Any]]]
+    def get_current_user(self) -> Optional[Tuple[Optional[ApiKeys], Dict[str, Any], Dict[str, Any]]]:
+        return authentication.check(self.get_cookie("token"))
 
     def autobleach(self, name, text):
         for r in self.redactables:

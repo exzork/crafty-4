@@ -164,25 +164,6 @@ class Helpers:
                     cmd_out[ci] += c
         return cmd_out
 
-    def check_for_old_logs(self, db_helper):
-        servers = db_helper.get_all_defined_servers()
-        for server in servers:
-            logs_path = os.path.split(server['log_path'])[0]
-            latest_log_file = os.path.split(server['log_path'])[1]
-            logs_delete_after = int(server['logs_delete_after'])
-            if logs_delete_after == 0:
-                continue
-
-            log_files = list(filter(
-                lambda val: val != latest_log_file,
-                os.listdir(logs_path)
-            ))
-            for log_file in log_files:
-                log_file_path = os.path.join(logs_path, log_file)
-                if self.check_file_exists(log_file_path) and \
-                        self.is_file_older_than_x_days(log_file_path, logs_delete_after):
-                    os.remove(log_file_path)
-
     def get_setting(self, key, default_return=False):
 
         try:

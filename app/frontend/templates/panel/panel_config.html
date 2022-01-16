@@ -14,6 +14,7 @@
   <div class="row page-title-header">
     <div class="col-12">
       <div class="page-header">
+          <!-- TODO: Translate the following -->
         <h4 class="page-title">Panel Config</h4>
       </div>
     </div>
@@ -33,16 +34,17 @@
                       <h4 class="card-title"><i class="fas fa-users"></i> Users</h4>
                       <span class="too_small" title="{{ translate('dashboard', 'cannotSee', data['lang']) }}", data-content="{{ translate('dashboard', 'cannotSeeOnMobile2', data['lang']) }}", data-placement="top"></span>
 
+                  <!-- TODO: Translate the following -->
                   <div><a class="nav-link" href="/panel/add_user"><i class="fas fa-plus-circle"></i> &nbsp; Add New User</a></div>
                 </div>
                 <div class="card-body">
                   <div class="table-responsive">
                     <table class="table table-hover">
                       <thead>
+                        <!-- TODO: Translate the following -->
                         <tr class="rounded">
                           <th>User</th>
                           <th>Enabled</th>
-                          <th>API Token</th>
                           <th>Allowed Servers</th>
                           <th>Assigned Roles</th>
                           <th>Edit</th>
@@ -63,9 +65,6 @@
                               </span>
 
                             {% end %}
-                          </td>
-                          <td>
-                            <button data-toggle="tooltip" title="Show API Key" data-id="{{ user.api_token }}" type="button" class="btn btn-info show_button">Show</button>
                           </td>
                           <td id="server_list_{{user.user_id}}">
                               <ul id="{{user.user_id}}">
@@ -103,6 +102,7 @@
                   <div class="table-responsive">
                     <table class="table table-hover">
                       <thead>
+                        <!-- TODO: Translate the following -->
                         <tr class="rounded">
                           <th>Role</th>
                           <th>Allowed Servers</th>

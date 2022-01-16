@@ -10,6 +10,10 @@ from app.classes.minecraft.server_props import ServerProps
 from app.classes.web.websocket_helper import websocket_helper
 
 
+# To disable warning about unused import ; Users is imported from here in other places
+Users = Users
+
+
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger('peewee')
 peewee_logger.setLevel(logging.INFO)
@@ -39,19 +43,15 @@ class db_builder:
 
         username = default_data.get("username", 'admin')
         password = default_data.get("password", 'crafty')
-        #api_token = helper.random_string_generator(32)
         #
         #Users.insert({
         #    Users.username: username.lower(),
         #    Users.password: helper.encode_pass(password),
-        #    Users.api_token: api_token,
         #    Users.enabled: True,
         #    Users.superuser: True
         #}).execute()
         user_id = users_helper.add_user(username=username, password=password, email="default@example.com", superuser=True)
         #users_helper.update_user(user_id, user_crafty_data={"permissions_mask":"111", "server_quantity":[-1,-1,-1]} )
-
-        #console.info("API token is {}".format(api_token))
 
     @staticmethod
     def is_fresh_install():

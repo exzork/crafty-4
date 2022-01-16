@@ -5,6 +5,7 @@
   "language": "en_EN",
   "cookie_expire": 30,
   "cookie_secret": "random",
+  "apikey_secret": "random",
   "show_errors": true,
   "history_max_age": 7,
   "stats_update_frequency": 30,

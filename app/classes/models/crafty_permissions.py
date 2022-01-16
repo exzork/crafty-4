@@ -5,7 +5,8 @@ import datetime
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
-from app.classes.models.users import Users
+from app.classes.models.users import Users, ApiKeys
+from app.classes.shared.permission_helper import permission_helper
 
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger('peewee')
@@ -190,5 +191,19 @@ class Permissions_Crafty:
         user_crafty.created_server += 1
         User_Crafty.save(user_crafty)
         return user_crafty.created_server
+
+    @staticmethod
+    def get_api_key_permissions_list(key: ApiKeys):
+        user = key.user
+        if user.superuser and key.superuser:
+            return crafty_permissions.get_permissions_list()
+        else:
+            user_permissions_mask = crafty_permissions.get_crafty_permissions_mask(user.user_id)
+            key_permissions_mask: str = key.crafty_permissions
+            permissions_mask = permission_helper.combine_masks(user_permissions_mask, key_permissions_mask)
+            permissions_list = crafty_permissions.get_permissions(permissions_mask)
+            return permissions_list
+
+
 
 crafty_permissions = Permissions_Crafty()
