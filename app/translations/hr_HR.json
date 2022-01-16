@@ -342,5 +342,9 @@
     },
     "base": {
         "doesNotWorkWithoutJavascript": "<strong>Upozorenje: </strong>Crafty ne radi ispravno kada JavaScript nije omogućen!"
+    },
+    "apiKeys": {
+        "deleteKeyConfirmation": "Želite li izbrisati ovaj API ključ? Ova radnja je nepovratna.",
+        "deleteKeyConfirmationTitle": "Ukloniti API ključ ${keyId}?"
     }
 }
