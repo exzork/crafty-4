@@ -342,5 +342,9 @@
     },
     "base": {
         "doesNotWorkWithoutJavascript": "<strong>Warnung: </strong>Crafty funktioniert nicht richtig, wenn JavaScript nicht aktiviert ist!"
+    },
+   "apiKeys": {
+        "deleteKeyConfirmation": "Diesen API Schlüssel entfernen? Dies kann nicht rückgängig gemacht werden.",
+        "deleteKeyConfirmationTitle": "Folgenden API Schlüssel entfernen ${keyId}?"
     }
 }
