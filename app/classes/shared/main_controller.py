@@ -137,7 +137,6 @@ class Controller:
 
 
     def package_support_logs(self, exec_user):
-        time.sleep(5)
         websocket_helper.broadcast_user(exec_user['user_id'], 'notification', 'Preparing your support logs')
         tempDir = tempfile.mkdtemp()
         tempZipStorage = tempfile.mkdtemp()
@@ -254,6 +253,11 @@ class Controller:
         server_id = helper.create_uuid()
         server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
+        if helper.is_os_windows():
+            server_dir = helper.wtol_path(server_dir)
+            backup_path = helper.wtol_path(backup_path)
+            server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
 
         server_file = "{server}-{version}.jar".format(server=server, version=version)
         full_jar_path = os.path.join(server_dir, server_file)
@@ -279,7 +283,7 @@ class Controller:
 
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
-                                                                     full_jar_path)
+                                                                     +'"'+full_jar_path+'"')
         server_log_file = "{}/logs/latest.log".format(server_dir)
         server_stop = "stop"
 
@@ -310,6 +314,11 @@ class Controller:
         server_id = helper.create_uuid()
         new_server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
+        if helper.is_os_windows():
+            server_dir = helper.wtol_path(new_server_dir)
+            backup_path = helper.wtol_path(backup_path)
+            new_server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
 
         helper.ensure_dir_exists(new_server_dir)
         helper.ensure_dir_exists(backup_path)
@@ -327,9 +336,10 @@ class Controller:
                 f.close()
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
+
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
-                                                                     full_jar_path)
+                                                                     +'"'+full_jar_path+'"')
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"
 
@@ -341,6 +351,12 @@ class Controller:
         server_id = helper.create_uuid()
         new_server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
+        if helper.is_os_windows():
+            new_server_dir = helper.wtol_path(new_server_dir)
+            backup_path = helper.wtol_path(backup_path)
+            new_server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
+
         tempDir = helper.get_os_understandable_path(zip_path)
         helper.ensure_dir_exists(new_server_dir)
         helper.ensure_dir_exists(backup_path)
@@ -360,9 +376,10 @@ class Controller:
                 f.close()
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
+
         server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
-                                                                     full_jar_path)
+                                                                     +'"'+full_jar_path+'"')
         logger.debug('command: ' + server_command)
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"
@@ -376,6 +393,9 @@ class Controller:
         old_bu_path = server_data['backup_path']
         Server_Perms_Controller.backup_role_swap(old_server_id, new_server_id)
         backup_path = helper.validate_traversal(helper.backup_path, old_bu_path)
+        if helper.is_os_windows():
+            backup_path = helper.wtol_path(backup_path)
+            backup_path.replace(' ', '^ ')
         backup_path_components = list(backup_path.parts)
         backup_path_components[-1] = new_uuid
         new_bu_path = pathlib.PurePath(os.path.join(*backup_path_components))
@@ -386,6 +406,7 @@ class Controller:
 
     def register_server(self, name: str, server_uuid: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port: int):
         # put data in the db
+
         new_id = self.servers.create_server(name, server_uuid, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, server_port)
         if not helper.check_file_exists(os.path.join(server_dir, "crafty_managed.txt")):
             try:

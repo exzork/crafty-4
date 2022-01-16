@@ -180,6 +180,14 @@
         "cannotSee": "Not seeing everything?",
         "cannotSeeOnMobile": "Try clicking on a scheduled task for full details."
     },
+    "notify":{
+        "supportLogs": "Support Logs",
+        "activityLog": "Activity Logs",
+        "logout": "Logout",
+        "preparingLogs": " Please wait while we prepare your logs... We`ll send a notification when they`re ready. This may take a while for large deployments.",
+        "downloadLogs": "Download Support Logs?",
+        "finishedPreparing": "We've finished preparing your support logs. Please click download to download"
+    },
     "serverBackups": {
         "backupNow": "Backup Now!",
         "backupAtMidnight": "Auto-backup at midnight?",

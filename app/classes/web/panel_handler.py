@@ -264,28 +264,6 @@ class PanelHandler(BaseHandler):
         elif page == 'contribute':
             template = "panel/contribute.html"
 
-        elif page == "remove_server":
-            server_id = self.get_argument('id', None)
-
-            if not superuser:
-                self.redirect("/panel/error?error=Unauthorized access: not superuser")
-                return
-            elif server_id is None:
-                self.redirect("/panel/error?error=Invalid Server ID")
-                return
-
-            server_data = self.controller.get_server_data(server_id)
-            server_name = server_data['server_name']
-
-            self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Deleted server {} named {}".format(server_id, server_name),
-                                       server_id,
-                                       self.get_remote_ip())
-
-            self.controller.remove_server(server_id)
-            self.redirect("/panel/dashboard")
-            return
-
         elif page == 'dashboard':
             if superuser: # TODO: Figure out a better solution
                 try:
@@ -313,7 +291,10 @@ class PanelHandler(BaseHandler):
                         logger.error("Failed to get server waiting to start: {} ".format(e))
                         data['stats']['waiting_start'] = False
 
-            page_data['num_players'] = 0
+            try:
+                self.fetch_server_data(page_data)
+            except:
+                page_data['num_players'] = 0
 
             IOLoop.current().add_callback(self.fetch_server_data, page_data)
 
@@ -1093,7 +1074,7 @@ class PanelHandler(BaseHandler):
                         "interval": '',
                         "command": '',
                         #We'll base every interval off of a midnight start time.
-                        "start_time": '00:00',
+                        "start_time": '',
                         "command": command,
                         "cron_string": cron_string,
                         "enabled": enabled,
@@ -1213,7 +1194,7 @@ class PanelHandler(BaseHandler):
                         "interval": '',
                         "command": '',
                         #We'll base every interval off of a midnight start time.
-                        "start_time": '00:00',
+                        "start_time": '',
                         "command": command,
                         "cron_string": cron_string,
                         "enabled": enabled,

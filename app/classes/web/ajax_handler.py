@@ -415,6 +415,16 @@ class AjaxHandler(BaseHandler):
             server_id = self.get_argument('id', None)
             logger.info(
                 "Removing server from panel for server: {}".format(self.controller.servers.get_server_friendly_name(server_id)))
+
+            server_data = self.controller.get_server_data(server_id)
+            server_name = server_data['server_name']
+
+            self.controller.management.add_to_audit_log(exec_user_id,
+                                       "Deleted server {} named {}".format(server_id, server_name),
+                                       server_id,
+                                       self.get_remote_ip())
+                                       
+            self.tasks_manager.remove_all_server_tasks(server_id)
             self.controller.remove_server(server_id, False)
 
         elif page == "delete_server_files":
@@ -425,6 +435,16 @@ class AjaxHandler(BaseHandler):
             server_id = self.get_argument('id', None)
             logger.info(
                 "Removing server and all associated files for server: {}".format(self.controller.servers.get_server_friendly_name(server_id)))
+
+            server_data = self.controller.get_server_data(server_id)
+            server_name = server_data['server_name']
+
+            self.controller.management.add_to_audit_log(exec_user_id,
+                                       "Deleted server {} named {}".format(server_id, server_name),
+                                       server_id,
+                                       self.get_remote_ip())
+                                       
+            self.tasks_manager.remove_all_server_tasks(server_id)
             self.controller.remove_server(server_id, True)
 
     @tornado.web.authenticated

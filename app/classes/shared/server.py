@@ -119,6 +119,8 @@ class Server:
         self.restart_count = 0
         self.crash_watcher_schedule = None
         self.stats = stats
+        tz = get_localzone()
+        self.server_scheduler = BackgroundScheduler(timezone=str(tz))
         self.backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name=f"backup_{self.name}")
         self.is_backingup = False
 
@@ -144,8 +146,6 @@ class Server:
             logger.info("Scheduling server {} to start in {} seconds".format(self.name, delay))
             console.info("Scheduling server {} to start in {} seconds".format(self.name, delay))
 
-            tz = get_localzone()
-            self.server_scheduler = BackgroundScheduler(timezone=str(tz))
             self.server_scheduler.add_job(self.run_scheduled_server, 'interval', seconds=delay, id=str(self.server_id))
             self.server_scheduler.start()
 
@@ -300,7 +300,7 @@ class Server:
             logger.info("Server {} has crash detection enabled - starting watcher task".format(self.name))
             console.info("Server {} has crash detection enabled - starting watcher task".format(self.name))
 
-            self.crash_watcher_schedule = schedule.every(30).seconds.do(self.detect_crash).tag(self.name)
+            self.crash_watcher_schedule = self.server_scheduler.add_job(self.detect_crash, 'interval', seconds=30, id="crash_watcher")
             
     def check_internet_thread(self, user_id, user_lang):
         if user_id:

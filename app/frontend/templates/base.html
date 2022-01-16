@@ -21,6 +21,7 @@
 
     <!-- Plugin css for this page -->
     <link rel="stylesheet" href="/static/assets/vendors/jvectormap/jquery-jvectormap.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- End Plugin css for this page -->
 
     <!-- Layout styles -->
@@ -139,7 +140,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
 
     <script>
-
       $.extend($.fn.dataTable.defaults, {
         language: {% raw translate('datatables', 'i18n', data['lang']) %}
       })
@@ -247,8 +247,8 @@ if (webSocket) {
             if(x){
             x.remove()}
             bootbox.alert({
-              title: 'Download Support Logs?',
-              message: "We've finished preparing your support logs. Please click download to download",
+              title: "{{ translate('notify', 'downloadLogs', data['lang']) }}",
+              message: "{{ translate('notify', 'finishedPreparing', data['lang']) }}",
               buttons: {
         ok: {
             label: 'Download',
@@ -387,6 +387,19 @@ if (webSocket) {
       `
     }
     webSocket.on('notification', notify);
+
+    $(document).ready(function(){
+      $('#support_logs').click(function(){
+        var dialog = bootbox.dialog({
+          message: '<p class="text-center mb-0"><i class="fa fa-spin fa-cog"></i>{{ translate('notify', 'preparingLogs', data['lang']) }}</p>',
+          closeButton: false
+      });
+      setTimeout(function(){
+        location.href="/panel/support_logs";
+    }, 6000);
+
+  });
+});
 
     </script>
 
