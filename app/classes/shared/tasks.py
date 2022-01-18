@@ -85,9 +85,14 @@ class TasksManager:
             # select any commands waiting to be processed
             commands = management_helper.get_unactioned_commands()
             for c in commands:
-                svr = self.controller.get_server_obj(c['server_id']['server_id'])
-                user_id = c.get('user')['user_id']
-                command = c.get('command', None)
+                try:
+                    svr = self.controller.get_server_obj(c.server_id)
+                except:
+                    logger.error("Server value requested does note exist purging item from waiting commands.")
+                    management_helper.mark_command_complete(c.command_id)
+                    
+                user_id = c.user_id
+                command = c.command
 
                 if command == 'start_server':
                     svr.run_threaded_server(user_id)
@@ -105,7 +110,7 @@ class TasksManager:
                     svr.jar_update()
                 else:
                     svr.send_command(command)
-                management_helper.mark_command_complete(c.get('command_id', None))
+                management_helper.mark_command_complete(c.command_id)
 
             time.sleep(1)
 

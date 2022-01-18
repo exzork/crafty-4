@@ -484,7 +484,7 @@ class Server:
     def remove_watcher_thread(self):
         logger.info("Removing old crash detection watcher thread")
         console.info("Removing old crash detection watcher thread")
-        schedule.clear(self.name)
+        self.crash_watcher_schedule.remove(self.server_name)
 
     def agree_eula(self, user_id):
         file = os.path.join(self.server_path, 'eula.txt')
