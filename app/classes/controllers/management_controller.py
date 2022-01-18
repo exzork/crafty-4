@@ -45,6 +45,7 @@ class Management_Controller:
         # Example: Admin issued command start_server for server Survival
         management_helper.add_to_audit_log(user_id, "issued command {} for server {}".format(command, server_name),
                               server_id, remote_ip)
+        management_helper.add_command(server_id, user_id, remote_ip, command)
 
     @staticmethod
     def mark_command_complete(command_id=None):

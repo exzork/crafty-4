@@ -156,7 +156,7 @@ class helpers_management:
     @staticmethod
     def get_unactioned_commands():
         query = Commands.select().where(Commands.executed == 0)
-        return db_helper.return_rows(query)
+        return query
 
     @staticmethod
     def mark_command_complete(command_id=None):
