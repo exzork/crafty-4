@@ -17,6 +17,8 @@ import threading
 from cron_validator import CronValidator
 #TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
+import libgravatar
+import requests
 
 from tornado import locale, iostream
 from tornado.ioloop import IOLoop
@@ -244,6 +246,24 @@ class PanelHandler(BaseHandler):
             } if api_key is not None else None,
             'superuser': superuser
         }
+        if  helper.get_setting("allow_nsfw_profile_pictures"):
+            rating = "x"
+        else:
+            rating = "g"
+
+
+        #Get grvatar hash for profile pictures
+        if exec_user['email'] != 'default@example.com' or "":
+            g = libgravatar.Gravatar(libgravatar.sanitize_email(exec_user['email']))
+            url = g.get_image(size=80, default="404", force_default=False, rating=rating, filetype_extension=False, use_ssl=True) # + "?d=404"
+            if requests.head(url).status_code != 404:
+                profile_url = url
+            else:
+                profile_url = "/static/assets/images/faces-clipart/pic-3.png"
+        else:
+            profile_url = "/static/assets/images/faces-clipart/pic-3.png"
+
+        page_data['user_image'] = profile_url
 
         if page == 'unauthorized':
             template = "panel/denied.html"
