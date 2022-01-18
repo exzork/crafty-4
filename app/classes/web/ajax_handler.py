@@ -199,6 +199,14 @@ class AjaxHandler(BaseHandler):
 
             srv_obj = self.controller.get_server_obj(server_id)
 
+            if command == srv_obj.settings['stop_command']:
+                logger.info("Stop command detected as terminal input - intercepting. Starting Crafty's stop process for server with id: {}.".format(server_id))
+                self.controller.management.send_command(exec_user['user_id'], server_id, self.get_remote_ip(), 'stop_server')
+                command = None
+            elif command == 'restart':
+                logger.info("Restart command detected as terminal input - intercepting. Starting Crafty's stop process for server with id: {}.".format(server_id))
+                self.controller.management.send_command(exec_user['user_id'], server_id, self.get_remote_ip(), 'restart_server')
+                command = None
             if command:
                 if srv_obj.check_running():
                     srv_obj.send_command(command)
