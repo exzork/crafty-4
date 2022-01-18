@@ -387,7 +387,7 @@ class Server:
         if not self.check_running() and command.lower() != 'start':
             logger.warning("Server not running, unable to send command \"{}\"".format(command))
             return False
-
+            
         logger.debug("Sending command {} to server".format(command))
 
         # send it

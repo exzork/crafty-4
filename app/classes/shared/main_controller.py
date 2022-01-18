@@ -134,6 +134,8 @@ class Controller:
 
 
     def package_support_logs(self, exec_user):
+        #pausing so on screen notifications can run for user
+        time.sleep(7)
         websocket_helper.broadcast_user(exec_user['user_id'], 'notification', 'Preparing your support logs')
         tempDir = tempfile.mkdtemp()
         tempZipStorage = tempfile.mkdtemp()
