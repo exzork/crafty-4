@@ -28,13 +28,13 @@ class ServerHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self, page):
-        # name = tornado.escape.json_decode(self.current_user)
-        exec_user_data = json.loads(self.get_secure_cookie("user_data"))
-        exec_user_id = exec_user_data['user_id']
-        exec_user = self.controller.users.get_user_by_id(exec_user_id)
+        api_key, token_data, exec_user = self.current_user
+        superuser = exec_user['superuser']
+        if api_key is not None:
+            superuser = superuser and api_key.superuser
 
         exec_user_role = set()
-        if exec_user['superuser'] == 1:
+        if superuser:
             defined_servers = self.controller.list_defined_servers()
             exec_user_role.add("Super User")
             exec_user_crafty_permissions = self.controller.crafty_perms.list_defined_crafty_permissions()
@@ -42,8 +42,8 @@ class ServerHandler(BaseHandler):
             for role in self.controller.roles.get_all_roles():
                 list_roles.append(self.controller.roles.get_role(role.role_id))
         else:
-            exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user_id)
-            defined_servers = self.controller.servers.get_authorized_servers(exec_user_id)
+            exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user["user_id"])
+            defined_servers = self.controller.servers.get_authorized_servers(exec_user["user_id"])
             list_roles = []
             for r in exec_user['roles']:
                 role = self.controller.roles.get_role(r)
@@ -54,7 +54,7 @@ class ServerHandler(BaseHandler):
 
         page_data = {
             'version_data': helper.get_version_string(),
-            'user_data': exec_user_data,
+            'user_data': exec_user,
             'user_role' : exec_user_role,
             'roles' : list_roles,
             'user_crafty_permissions' : exec_user_crafty_permissions,
@@ -71,13 +71,21 @@ class ServerHandler(BaseHandler):
             'hosts_data': self.controller.management.get_latest_hosts_stats(),
             'menu_servers': defined_servers,
             'show_contribute': helper.get_setting("show_contribute_link", True),
-            'lang': self.controller.users.get_user_lang_by_id(exec_user_id)
+            'lang': self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
+            'api_key': {
+                'name': api_key.name,
+                'created': api_key.created,
+                'server_permissions': api_key.server_permissions,
+                'crafty_permissions': api_key.crafty_permissions,
+                'superuser': api_key.superuser
+            } if api_key is not None else None,
+            'superuser': superuser
         }
-        if exec_user['superuser'] == 1:
+        if superuser:
             page_data['roles'] = list_roles
 
         if page == "step1":
-            if not exec_user['superuser'] and not self.controller.crafty_perms.can_create_server(exec_user_id):
+            if not superuser and not self.controller.crafty_perms.can_create_server(exec_user["user_id"]):
                 self.redirect("/panel/error?error=Unauthorized access: not a server creator or server limit reached")
                 return
 
@@ -93,17 +101,17 @@ class ServerHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, page):
-
-        exec_user_data = json.loads(self.get_secure_cookie("user_data"))
-        exec_user_id = exec_user_data['user_id']
-        exec_user = self.controller.users.get_user_by_id(exec_user_id)
+        api_key, token_data, exec_user = self.current_user
+        superuser = exec_user['superuser']
+        if api_key is not None:
+            superuser = superuser and api_key.superuser
 
         template = "public/404.html"
         page_data = {
-            'version_data': "version_data_here",
-            'user_data': exec_user_data,
+            'version_data': "version_data_here", # TODO
+            'user_data': exec_user,
             'show_contribute': helper.get_setting("show_contribute_link", True),
-            'lang': self.controller.users.get_user_lang_by_id(exec_user_id)
+            'lang': self.controller.users.get_user_lang_by_id(exec_user["user_id"])
         }
 
         if page == "command":
@@ -151,11 +159,11 @@ class ServerHandler(BaseHandler):
 
                     return
 
-                self.controller.management.send_command(exec_user_data['user_id'], server_id, self.get_remote_ip(), command)
+                self.controller.management.send_command(exec_user['user_id'], server_id, self.get_remote_ip(), command)
 
         if page == "step1":
 
-            if not exec_user['superuser']:
+            if not superuser:
                 user_roles = self.controller.roles.get_all_roles()
             else:
                 user_roles = self.controller.roles.get_all_roles()
@@ -185,7 +193,7 @@ class ServerHandler(BaseHandler):
                     return
 
                 new_server_id = self.controller.import_jar_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
-                self.controller.management.add_to_audit_log(exec_user_data['user_id'],
+                self.controller.management.add_to_audit_log(exec_user['user_id'],
                                            "imported a jar server named \"{}\"".format(server_name), # Example: Admin imported a server named "old creative"
                                            new_server_id,
                                            self.get_remote_ip())
@@ -201,7 +209,7 @@ class ServerHandler(BaseHandler):
                 if new_server_id == "false":
                     self.redirect("/panel/error?error=Zip file not accessible! You can fix this permissions issue with sudo chown -R crafty:crafty {} And sudo chmod 2775 -R {}".format(import_server_path, import_server_path))
                     return
-                self.controller.management.add_to_audit_log(exec_user_data['user_id'],
+                self.controller.management.add_to_audit_log(exec_user['user_id'],
                                            "imported a zip server named \"{}\"".format(server_name), # Example: Admin imported a server named "old creative"
                                            new_server_id,
                                            self.get_remote_ip())
@@ -213,21 +221,21 @@ class ServerHandler(BaseHandler):
                     return
                 server_type, server_version = server_parts
                 # TODO: add server type check here and call the correct server add functions if not a jar
-                role_ids = self.controller.users.get_user_roles_id(exec_user_id)
+                role_ids = self.controller.users.get_user_roles_id(exec_user["user_id"])
                 new_server_id = self.controller.create_jar_server(server_type, server_version, server_name, min_mem, max_mem, port)
-                self.controller.management.add_to_audit_log(exec_user_data['user_id'],
+                self.controller.management.add_to_audit_log(exec_user['user_id'],
                                            "created a {} {} server named \"{}\"".format(server_version, str(server_type).capitalize(), server_name), # Example: Admin created a 1.16.5 Bukkit server named "survival"
                                            new_server_id,
                                            self.get_remote_ip())
 
             # These lines create a new Role for the Server with full permissions and add the user to it if he's not a superuser
             if len(captured_roles) == 0:
-                if not exec_user['superuser']:
+                if not superuser:
                     new_server_uuid = self.controller.servers.get_server_data_by_id(new_server_id).get("server_uuid")
                     role_id = self.controller.roles.add_role("Creator of Server with uuid={}".format(new_server_uuid))
                     self.controller.server_perms.add_role_server(new_server_id, role_id, "11111111")
-                    self.controller.users.add_role_to_user(exec_user_id, role_id)
-                    self.controller.crafty_perms.add_server_creation(exec_user_id)
+                    self.controller.users.add_role_to_user(exec_user["user_id"], role_id)
+                    self.controller.crafty_perms.add_server_creation(exec_user["user_id"])
 
             else:
                 for role in captured_roles:

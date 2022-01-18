@@ -1,4 +1,7 @@
 from tempfile import tempdir
+from typing import Dict, Optional, Any
+
+from app.classes.shared.authentication import authentication
 from app.classes.shared.translation import Translation
 import json
 import logging
@@ -15,8 +18,7 @@ from cron_validator import CronValidator
 #TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
 
-from tornado import locale
-from tornado import iostream
+from tornado import locale, iostream
 from tornado.ioloop import IOLoop
 from app.classes.shared.console import console
 from app.classes.shared.main_models import Users, installer
@@ -35,6 +37,129 @@ logger = logging.getLogger(__name__)
 
 
 class PanelHandler(BaseHandler):
+
+    def get_user_roles(self) -> Dict[str, list]:
+        user_roles = {}
+        for user in self.controller.users.get_all_users():
+            user_roles_list = self.controller.users.get_user_roles_names(user.user_id)
+            # user_servers = self.controller.servers.get_authorized_servers(user.user_id)
+            user_roles[user.user_id] = user_roles_list
+        return user_roles
+
+    def get_role_servers(self) -> set:
+        servers = set()
+        for server in self.controller.list_defined_servers():
+            argument = int(float(
+                bleach.clean(
+                    self.get_argument('server_{}_access'.format(server['server_id']), '0')
+                )
+            ))
+            if argument:
+                servers.add(server['server_id'])
+        return servers
+
+    def get_perms_quantity(self) -> (str, dict):
+        permissions_mask: str = "000"
+        server_quantity: dict = {}
+        for permission in self.controller.crafty_perms.list_defined_crafty_permissions():
+            argument = int(float(bleach.clean(
+                self.get_argument('permission_{}'.format(permission.name), '0')
+            )))
+            if argument:
+                permissions_mask = self.controller.crafty_perms.set_permission(permissions_mask, permission, argument)
+
+            q_argument = int(float(
+                bleach.clean(
+                    self.get_argument('quantity_{}'.format(permission.name), '0')
+                )
+            ))
+            if q_argument:
+                server_quantity[permission.name] = q_argument
+            else:
+                server_quantity[permission.name] = 0
+        return permissions_mask, server_quantity
+
+    def get_perms(self) -> str:
+        permissions_mask: str = "000"
+        for permission in self.controller.crafty_perms.list_defined_crafty_permissions():
+            argument = self.get_argument('permission_{}'.format(permission.name), None)
+            if argument is not None:
+                permissions_mask = self.controller.crafty_perms.set_permission(permissions_mask, permission,
+                                                                               1 if argument == '1' else 0)
+        return permissions_mask
+
+    def get_perms_server(self) -> str:
+        permissions_mask = "00000000"
+        for permission in self.controller.server_perms.list_defined_permissions():
+            argument = self.get_argument('permission_{}'.format(permission.name), None)
+            if argument is not None:
+                permissions_mask = self.controller.server_perms.set_permission(permissions_mask, permission,
+                                                                               1 if argument == '1' else 0)
+        return permissions_mask
+
+    def get_user_role_memberships(self) -> set:
+        roles = set()
+        for role in self.controller.roles.get_all_roles():
+            if self.get_argument('role_{}_membership'.format(role.role_id), None) == '1':
+                roles.add(role.role_id)
+        return roles
+
+    def download_file(self, name: str, file: str):
+        self.set_header('Content-Type', 'application/octet-stream')
+        self.set_header('Content-Disposition', 'attachment; filename=' + name)
+        chunk_size = 1024 * 1024 * 4  # 4 MiB
+
+        with open(file, 'rb') as f:
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    break
+                try:
+                    self.write(chunk)  # write the chunk to response
+                    self.flush()  # send the chunk to client
+                except iostream.StreamClosedError:
+                    # this means the client has closed the connection
+                    # so break the loop
+                    break
+                finally:
+                    # deleting the chunk is very important because
+                    # if many clients are downloading files at the
+                    # same time, the chunks in memory will keep
+                    # increasing and will eat up the RAM
+                    del chunk
+
+    def check_server_id(self) -> Optional[str]:
+        server_id = self.get_argument('id', None)
+
+        api_key, _, exec_user = self.current_user
+        superuser = exec_user['superuser']
+
+        # Commented out because there is no server access control for API keys, they just inherit from the host user
+        # if api_key is not None:
+        #     superuser = superuser and api_key.superuser
+
+        if server_id is None:
+            self.redirect("/panel/error?error=Invalid Server ID")
+            return None
+        else:
+            # Does this server exist?
+            if not self.controller.servers.server_id_exists(server_id):
+                self.redirect("/panel/error?error=Invalid Server ID")
+                return None
+
+            # Does the user have permission?
+            if not superuser: # TODO: Figure out a better solution
+                if api_key is not None:
+                    if not self.controller.servers.server_id_authorized_api_key(server_id, api_key):
+                        print(f'API key {api_key.name} (id: {api_key.token_id}) does not have permission')
+                        self.redirect("/panel/error?error=Invalid Server ID")
+                        return None
+                else:
+                    if not self.controller.servers.server_id_authorized(server_id, exec_user["user_id"]):
+                        print(f'User {exec_user["user_id"]} does not have permission')
+                        self.redirect("/panel/error?error=Invalid Server ID")
+                        return None
+        return server_id
 
     # Server fetching, spawned asynchronously 
     # TODO: Make the related front-end elements update with AJAX
@@ -56,36 +181,41 @@ class PanelHandler(BaseHandler):
 
     @tornado.web.authenticated
     async def get(self, page):
-        error = bleach.clean(self.get_argument('error', "WTF Error!"))
+        error = self.get_argument('error', "WTF Error!")
 
         template = "panel/denied.html"
 
         now = time.time()
         formatted_time = str(datetime.datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S'))
 
-        exec_user_data = json.loads(self.get_secure_cookie("user_data"))
-        exec_user_id = exec_user_data['user_id']
-        exec_user = self.controller.users.get_user_by_id(exec_user_id)
+        api_key, token_data, exec_user = self.current_user
+        superuser = exec_user['superuser']
+        if api_key is not None:
+            superuser = superuser and api_key.superuser
 
         exec_user_role = set()
-        if exec_user['superuser'] == 1:
+        if superuser: # TODO: Figure out a better solution
             defined_servers = self.controller.list_defined_servers()
             exec_user_role.add("Super User")
             exec_user_crafty_permissions = self.controller.crafty_perms.list_defined_crafty_permissions()
         else:
-            exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user_id)
+            if api_key is not None:
+                exec_user_crafty_permissions = self.controller.crafty_perms.get_api_key_permissions_list(api_key)
+            else:
+                exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(
+                    exec_user["user_id"])
             logger.debug(exec_user['roles'])
             for r in exec_user['roles']:
                 role = self.controller.roles.get_role(r)
                 exec_user_role.add(role['role_name'])
-            defined_servers = self.controller.servers.get_authorized_servers(exec_user_id)
+            defined_servers = self.controller.servers.get_authorized_servers(exec_user["user_id"])
 
-        page_data = {
+        page_data: Dict[str, Any] = {
             # todo: make this actually pull and compare version data
             'update_available': False,
             'serverTZ':get_localzone(),
             'version_data': helper.get_version_string(),
-            'user_data': exec_user_data,
+            'user_data': exec_user,
             'user_role' : exec_user_role,
             'user_crafty_permissions' : exec_user_crafty_permissions,
             'crafty_permissions': {
@@ -102,10 +232,18 @@ class PanelHandler(BaseHandler):
             'hosts_data': self.controller.management.get_latest_hosts_stats(),
             'show_contribute': helper.get_setting("show_contribute_link", True),
             'error': error,
-            'time': formatted_time
+            'time': formatted_time,
+            'lang': self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
+            'super_user': superuser,
+            'api_key': {
+                'name': api_key.name,
+                'created': api_key.created,
+                'server_permissions': api_key.server_permissions,
+                'crafty_permissions': api_key.crafty_permissions,
+                'superuser': api_key.superuser
+            } if api_key is not None else None,
+            'superuser': superuser
         }
-        page_data['lang'] = self.controller.users.get_user_lang_by_id(exec_user_id)
-        page_data['super_user'] = exec_user['superuser']
 
         if page == 'unauthorized':
             template = "panel/denied.html"
@@ -115,11 +253,11 @@ class PanelHandler(BaseHandler):
 
         elif page == 'credits':
             with open(helper.credits_cache) as republic_credits_will_do:
-                credits = json.load(republic_credits_will_do)
-                timestamp = credits["lastUpdate"] / 1000.0
-                page_data["patrons"] = credits["patrons"]
-                page_data["staff"] = credits["staff"]
-                page_data["translations"] = credits["translations"]
+                credits_dict: dict = json.load(republic_credits_will_do)
+                timestamp = credits_dict["lastUpdate"] / 1000.0
+                page_data["patrons"] = credits_dict["patrons"]
+                page_data["staff"] = credits_dict["staff"]
+                page_data["translations"] = credits_dict["translations"]
                 page_data["lastUpdate"] = str(datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S'))
             template = "panel/credits.html"
 
@@ -127,36 +265,30 @@ class PanelHandler(BaseHandler):
             template = "panel/contribute.html"
 
         elif page == 'dashboard':
-            if exec_user['superuser'] == 1:
+            if superuser: # TODO: Figure out a better solution
                 try:
                     page_data['servers'] = self.controller.servers.get_all_servers_stats()
                 except IndexError:
                     self.controller.stats.record_stats()
                     page_data['servers'] = self.controller.servers.get_all_servers_stats()
+            else:
+                try:
+                    user_auth = self.controller.servers.get_authorized_servers_stats(exec_user["user_id"])
+                except IndexError:
+                    self.controller.stats.record_stats()
+                    user_auth = self.controller.servers.get_authorized_servers_stats(exec_user["user_id"])
+                logger.debug(f"ASFR: {user_auth}")
+                page_data['servers'] = user_auth
+                page_data['server_stats']['running'] = len(
+                    list(filter(lambda x: x['stats']['running'], page_data['servers'])))
+                page_data['server_stats']['stopped'] = len(page_data['servers']) - page_data['server_stats']['running']
 
                 for data in page_data['servers']:
                     try:
-                        data['stats']['waiting_start'] = self.controller.servers.get_waiting_start(int(data['stats']['server_id']['server_id']))
-                    except:
-                        data['stats']['waiting_start'] = False
-            else:
-                try:
-                    user_auth = self.controller.servers.get_authorized_servers_stats(exec_user_id)
-                except IndexError:
-                    self.controller.stats.record_stats()
-                    user_auth = self.controller.servers.get_authorized_servers_stats(exec_user_id)
-                logger.debug("ASFR: {}".format(user_auth))
-                page_data['servers'] = user_auth
-                page_data['server_stats']['running'] = 0
-                page_data['server_stats']['stopped'] = 0
-                for data in page_data['servers']:
-                    if data['stats']['running']:
-                        page_data['server_stats']['running'] += 1
-                    else:
-                        page_data['server_stats']['stopped'] += 1
-                    try:
-                        page_data['stats']['waiting_start'] = self.controller.servers.get_waiting_start(int(data['stats']['server_id']['server_id']))
-                    except:
+                        data['stats']['waiting_start'] = self.controller.servers.get_waiting_start(
+                            str(data['stats']['server_id']['server_id']))
+                    except Exception as e:
+                        logger.error("Failed to get server waiting to start: {} ".format(e))
                         data['stats']['waiting_start'] = False
 
             try:
@@ -169,23 +301,10 @@ class PanelHandler(BaseHandler):
             template = "panel/dashboard.html"
 
         elif page == 'server_detail':
-            server_id = self.get_argument('id', None)
             subpage = bleach.clean(self.get_argument('subpage', ""))
 
-            if server_id is None:
-                self.redirect("/panel/error?error=Invalid Server ID")
-                return
-            else:
-                # does this server id exist?
-                if not self.controller.servers.server_id_exists(server_id):
-                    self.redirect("/panel/error?error=Invalid Server ID")
-                    return
-
-                if exec_user['superuser'] != 1:
-                    if not self.controller.servers.server_id_authorized(server_id, exec_user_id):
-                        if not self.controller.servers.server_id_authorized(int(server_id), exec_user_id):
-                            self.redirect("/panel/error?error=Invalid Server ID")
-                            return False
+            server_id = self.check_server_id()
+            if server_id is None: return
 
             valid_subpages = ['term', 'logs', 'backup', 'config', 'files', 'admin_controls', 'tasks']
 
@@ -200,7 +319,8 @@ class PanelHandler(BaseHandler):
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
             try:
                 page_data['waiting_start'] = self.controller.servers.get_waiting_start(server_id)
-            except:
+            except Exception as e:
+                logger.error("Failed to get server waiting to start: {} ".format(e))
                 page_data['waiting_start'] = False
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
             page_data['active_link'] = subpage
@@ -214,44 +334,44 @@ class PanelHandler(BaseHandler):
                 'Config': Enum_Permissions_Server.Config,
                 'Players': Enum_Permissions_Server.Players,
             }
-            page_data['user_permissions'] = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
+            page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
 
             if subpage == 'term':
                 if not page_data['permissions']['Terminal'] in page_data['user_permissions']:
-                    if not exec_user['superuser']:
+                    if not superuser:
                         self.redirect("/panel/error?error=Unauthorized access to Terminal")
                         return
 
             if subpage == 'logs':
                 if not page_data['permissions']['Logs'] in page_data['user_permissions']:
-                    if not exec_user['superuser']:
+                    if not superuser:
                         self.redirect("/panel/error?error=Unauthorized access to Logs")    
                         return     
 
 
             if subpage == 'tasks':
                 if not page_data['permissions']['Schedule'] in page_data['user_permissions']:
-                    if not exec_user['superuser']:
+                    if not superuser:
                         self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
                         return
                 page_data['schedules'] = management_helper.get_schedules_by_server(server_id)
 
             if subpage == 'config':
                 if not page_data['permissions']['Config'] in page_data['user_permissions']:
-                    if not exec_user['superuser']:
+                    if not superuser:
                         self.redirect("/panel/error?error=Unauthorized access Server Config")
                         return
 
             if subpage == 'files':
                 if not page_data['permissions']['Files'] in page_data['user_permissions']:
-                    if not exec_user['superuser']:
+                    if not superuser:
                         self.redirect("/panel/error?error=Unauthorized access Files")
                         return
 
 
             if subpage == "backup":
                 if not page_data['permissions']['Backup'] in page_data['user_permissions']:
-                    if not exec_user['superuser']:
+                    if not superuser:
                         self.redirect("/panel/error?error=Unauthorized access to Backups")
                         return
                 server_info = self.controller.servers.get_server_data_by_id(server_id)
@@ -284,7 +404,7 @@ class PanelHandler(BaseHandler):
                 return html
             if subpage == "admin_controls":
                 if not page_data['permissions']['Players'] in page_data['user_permissions']:
-                    if not exec_user['superuser']:
+                    if not superuser:
                         self.redirect("/panel/error?error=Unauthorized access")
                 page_data['banned_players'] = get_banned_players_html()
 
@@ -292,23 +412,11 @@ class PanelHandler(BaseHandler):
             template = "panel/server_{subpage}.html".format(subpage=subpage)
 
         elif page == 'download_backup':
-            server_id = self.get_argument('id', None)
             file = self.get_argument('file', "")
 
-            if server_id is None:
-                self.redirect("/panel/error?error=Invalid Server ID")
-                return
-            else:
-                # does this server id exist?
-                if not self.controller.servers.server_id_exists(server_id):
-                    self.redirect("/panel/error?error=Invalid Server ID")
-                    return
+            server_id = self.check_server_id()
+            if server_id is None: return
 
-                if exec_user['superuser'] != 1:
-                    #if not self.controller.servers.server_id_authorized(server_id, exec_user_id):
-                    if not self.controller.servers.server_id_authorized(int(server_id), exec_user_id):
-                        self.redirect("/panel/error?error=Invalid Server ID")
-                        return
 
             server_info = self.controller.servers.get_server_data_by_id(server_id)
             backup_file = os.path.abspath(os.path.join(helper.get_os_understandable_path(server_info["backup_path"]), file))
@@ -317,49 +425,17 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid path detected")
                 return
 
-            self.set_header('Content-Type', 'application/octet-stream')
-            self.set_header('Content-Disposition', 'attachment; filename=' + file)
-            chunk_size = 1024 * 1024 * 4 # 4 MiB
+            self.download_file(file, backup_file)
 
-            with open(backup_file, 'rb') as f:
-                while True:
-                    chunk = f.read(chunk_size)
-                    if not chunk:
-                        break
-                    try:
-                        self.write(chunk) # write the chunk to response
-                        self.flush() # send the chunk to client
-                    except iostream.StreamClosedError:
-                        # this means the client has closed the connection
-                        # so break the loop
-                        break
-                    finally:
-                        # deleting the chunk is very important because
-                        # if many clients are downloading files at the
-                        # same time, the chunks in memory will keep
-                        # increasing and will eat up the RAM
-                        del chunk
             self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
 
         elif page == 'backup_now':
-            server_id = self.get_argument('id', None)
+            server_id = self.check_server_id()
+            if server_id is None: return
 
-            if server_id is None:
-                self.redirect("/panel/error?error=Invalid Server ID")
-                return
-            else:
-                # does this server id exist?
-                if not self.controller.servers.server_id_exists(server_id):
-                    self.redirect("/panel/error?error=Invalid Server ID")
-                    return
+            server = self.controller.get_server_obj(server_id)
 
-                if exec_user['superuser'] != 1:
-                    #if not self.controller.servers.server_id_authorized(server_id, exec_user_id):
-                    if not self.controller.servers.server_id_authorized(int(server_id), exec_user_id):
-                        self.redirect("/panel/error?error=Invalid Server ID")
-                        return
-
-            server = self.controller.get_server_obj(server_id).backup_server()
+            server.backup_server()
             self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
 
         elif page == 'panel_config':
@@ -400,11 +476,10 @@ class PanelHandler(BaseHandler):
             for user in page_data['users']:
                 if user.user_id != exec_user['user_id']:
                     user.api_token = "********"
-            if exec_user['superuser']:
+            if superuser:
                 for user in self.controller.users.get_all_users():
-                    if user.superuser == 1:
-                        super_auth_servers = []
-                        super_auth_servers.append("Super User Access To All Servers")
+                    if user.superuser:
+                        super_auth_servers = ["Super User Access To All Servers"]
                         page_data['users'] = self.controller.users.get_all_users()
                         page_data['roles'] = self.controller.roles.get_all_roles()
                         page_data['auth-servers'][user.user_id] = super_auth_servers
@@ -419,7 +494,6 @@ class PanelHandler(BaseHandler):
             page_data['user']['email'] = ""
             page_data['user']['enabled'] = True
             page_data['user']['superuser'] = False
-            page_data['user']['api_token'] = "N/A"
             page_data['user']['created'] = "N/A"
             page_data['user']['last_login'] = "N/A"
             page_data['user']['last_ip'] = "N/A"
@@ -438,8 +512,8 @@ class PanelHandler(BaseHandler):
             page_data['permissions_list'] = set()
             page_data['quantity_server'] = self.controller.crafty_perms.list_all_crafty_permissions_quantity_limits()
             page_data['languages'] = []
-            page_data['languages'].append(self.controller.users.get_user_lang_by_id(exec_user_id))
-            if exec_user['superuser']:
+            page_data['languages'].append(self.controller.users.get_user_lang_by_id(exec_user["user_id"]))
+            if superuser:
                 page_data['super-disabled'] = ''
             else:
                 page_data['super-disabled'] = 'disabled'
@@ -464,8 +538,8 @@ class PanelHandler(BaseHandler):
                 'Config': Enum_Permissions_Server.Config,
                 'Players': Enum_Permissions_Server.Players,
             }
-            page_data['user_permissions'] = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
-            exec_user_server_permissions = self.controller.server_perms.get_user_permissions_list(exec_user_id, server_id)
+            page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
+            exec_user_server_permissions = self.controller.server_perms.get_user_permissions_list(exec_user["user_id"], server_id)
             page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
             page_data['new_schedule'] = True
@@ -484,7 +558,7 @@ class PanelHandler(BaseHandler):
             page_data['schedule']['interval_type'] = 'days'
 
             if not Enum_Permissions_Server.Schedule in exec_user_server_permissions:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
                     return
 
@@ -506,8 +580,8 @@ class PanelHandler(BaseHandler):
                 'Config': Enum_Permissions_Server.Config,
                 'Players': Enum_Permissions_Server.Players,
             }
-            page_data['user_permissions'] = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
-            exec_user_server_permissions = self.controller.server_perms.get_user_permissions_list(exec_user_id, server_id)
+            page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
+            exec_user_server_permissions = self.controller.server_perms.get_user_permissions_list(exec_user["user_id"], server_id)
             page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
             page_data['new_schedule'] = False
@@ -536,7 +610,7 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid server ID or Schedule ID")
                 
             if not Enum_Permissions_Server.Schedule in exec_user_server_permissions:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
                     return
 
@@ -561,7 +635,7 @@ class PanelHandler(BaseHandler):
             page_data['languages'] = []
             page_data['languages'].append(self.controller.users.get_user_lang_by_id(user_id))
             #checks if super user. If not we disable the button.
-            if exec_user['superuser'] and str(exec_user['user_id']) != str(user_id):
+            if superuser and str(exec_user['user_id']) != str(user_id):
                 page_data['super-disabled'] = ''
             else:
                 page_data['super-disabled'] = 'disabled'
@@ -575,7 +649,7 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
             elif Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
-                if str(user_id) != str(exec_user_id):
+                if str(user_id) != str(exec_user["user_id"]):
                     self.redirect("/panel/error?error=Unauthorized access: not a user editor")
                     return
 
@@ -591,14 +665,28 @@ class PanelHandler(BaseHandler):
                 page_data['user']['email'] = ""
             template = "panel/panel_edit_user.html"
 
+        elif page == "edit_user_apikeys":
+            user_id = self.get_argument('id', None)
+            page_data['user'] = self.controller.users.get_user_by_id(user_id)
+            page_data['api_keys'] = self.controller.users.get_user_api_keys(user_id)
+            # self.controller.crafty_perms.list_defined_crafty_permissions()
+            page_data['server_permissions_all'] = self.controller.server_perms.list_defined_permissions()
+            page_data['crafty_permissions_all'] = self.controller.crafty_perms.list_defined_crafty_permissions()
+
+            if user_id is None:
+                self.redirect("/panel/error?error=Invalid User ID")
+                return
+
+            template = "panel/panel_edit_user_apikeys.html"
+
         elif page == "remove_user":
             user_id = bleach.clean(self.get_argument('id', None))
             
-            if not exec_user['superuser'] and Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
+            if not superuser and Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return
 
-            elif str(exec_user_id) == str(user_id):
+            elif str(exec_user["user_id"]) == str(user_id):
                 self.redirect("/panel/error?error=Unauthorized access: you cannot delete yourself")
                 return
             elif user_id is None:
@@ -617,18 +705,13 @@ class PanelHandler(BaseHandler):
             self.controller.users.remove_user(user_id)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Removed user {} (UID:{})".format(target_user['username'], user_id),
+                                       f"Removed user {target_user['username']} (UID:{user_id})",
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
 
         elif page == "add_role":
-            user_roles = {}
-            for user in self.controller.users.get_all_users():
-                user_roles_list = self.controller.users.get_user_roles_names(user.user_id)
-                user_servers = self.controller.servers.get_authorized_servers(user.user_id)
-                data = {user.user_id: user_roles_list}
-                user_roles.update(data)
+            user_roles = self.get_user_roles()
             page_data['new_role'] = True
             page_data['role'] = {}
             page_data['role']['role_name'] = ""
@@ -649,14 +732,7 @@ class PanelHandler(BaseHandler):
             template = "panel/panel_edit_role.html"
 
         elif page == "edit_role":
-            auth_servers = {}
-
-            user_roles = {}
-            for user in self.controller.users.get_all_users():
-                user_roles_list = self.controller.users.get_user_roles_names(user.user_id)
-                user_servers = self.controller.servers.get_authorized_servers(user.user_id)
-                data = {user.user_id: user_roles_list}
-                user_roles.update(data)
+            user_roles = self.get_user_roles()
             page_data['new_role'] = False
             role_id = self.get_argument('id', None)
             page_data['role'] = self.controller.roles.get_role_with_servers(role_id)
@@ -678,7 +754,7 @@ class PanelHandler(BaseHandler):
         elif page == "remove_role":
             role_id = bleach.clean(self.get_argument('id', None))
 
-            if not exec_user['superuser']:
+            if not superuser:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return
             elif role_id is None:
@@ -694,7 +770,7 @@ class PanelHandler(BaseHandler):
             self.controller.roles.remove_role(role_id)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Removed role {} (RID:{})".format(target_role['role_name'], role_id),
+                                       f"Removed role {target_role['role_name']} (RID:{role_id})",
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
@@ -705,23 +781,11 @@ class PanelHandler(BaseHandler):
             template = "panel/activity_logs.html"
 
         elif page == 'download_file':
-            server_id = self.get_argument('id', None)
             file = helper.get_os_understandable_path(self.get_argument('path', ""))
             name = self.get_argument('name', "")
 
-            if server_id is None:
-                self.redirect("/panel/error?error=Invalid Server ID")
-                return
-            else:
-                # does this server id exist?
-                if not self.controller.servers.server_id_exists(server_id):
-                    self.redirect("/panel/error?error=Invalid Server ID")
-                    return
-
-                if exec_user['superuser'] != 1:
-                    if not self.controller.servers.server_id_authorized(int(server_id), exec_user_id):
-                        self.redirect("/panel/error?error=Invalid Server ID")
-                        return
+            server_id = self.check_server_id()
+            if server_id is None: return
 
             server_info = self.controller.servers.get_server_data_by_id(server_id)
 
@@ -730,34 +794,13 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid path detected")
                 return
 
-            self.set_header('Content-Type', 'application/octet-stream')
-            self.set_header('Content-Disposition', 'attachment; filename=' + name)
-            chunk_size = 1024 * 1024 * 4 # 4 MiB
-
-            with open(file, 'rb') as f:
-                while True:
-                    chunk = f.read(chunk_size)
-                    if not chunk:
-                        break
-                    try:
-                        self.write(chunk) # write the chunk to response
-                        self.flush() # send the chunk to client
-                    except iostream.StreamClosedError:
-                        # this means the client has closed the connection
-                        # so break the loop
-                        break
-                    finally:
-                        # deleting the chunk is very important because
-                        # if many clients are downloading files at the
-                        # same time, the chunks in memory will keep
-                        # increasing and will eat up the RAM
-                        del chunk
+            self.download_file(name, file)
             self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
 
         elif page == 'download_support_package':
             tempZipStorage = exec_user['support_logs']
             #We'll reset the support path for this user now.
-            self.controller.users.set_support_path(exec_user_id, "")
+            self.controller.users.set_support_path(exec_user["user_id"], "")
             
             self.set_header('Content-Type', 'application/octet-stream')
             self.set_header('Content-Disposition', 'attachment; filename=' + "support_logs.zip")
@@ -787,7 +830,7 @@ class PanelHandler(BaseHandler):
                 return
 
         elif page == "support_logs":
-            logger.info("Support logs requested. Packinging logs for user with ID: {}".format(exec_user_id))
+            logger.info("Support logs requested. Packinging logs for user with ID: {}".format(exec_user["user_id"]))
             logs_thread = threading.Thread(target=self.controller.package_support_logs, daemon=True, args=(exec_user,), name='{}_logs_thread'.format(exec_user['user_id']))
             logs_thread.start()
             self.redirect('/panel/dashboard')
@@ -805,9 +848,11 @@ class PanelHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, page):
-        exec_user_data = json.loads(self.get_secure_cookie("user_data"))
-        exec_user_id = exec_user_data['user_id']
-        exec_user = self.controller.users.get_user_by_id(exec_user_id)
+        api_key, token_data, exec_user = self.current_user
+        superuser = exec_user['superuser']
+        if api_key is not None:
+            superuser = superuser and api_key.superuser
+
         server_id = self.get_argument('id', None)
         permissions = {
                 'Commands': Enum_Permissions_Server.Commands,
@@ -819,28 +864,27 @@ class PanelHandler(BaseHandler):
                 'Config': Enum_Permissions_Server.Config,
                 'Players': Enum_Permissions_Server.Players,
             }
-        user_perms = self.controller.server_perms.get_server_permissions_foruser(exec_user_id, server_id)
+        user_perms = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
         exec_user_role = set()
-        if exec_user['superuser'] == 1:
-            defined_servers = self.controller.list_defined_servers()
+        if superuser:
+            # defined_servers = self.controller.list_defined_servers()
             exec_user_role.add("Super User")
             exec_user_crafty_permissions = self.controller.crafty_perms.list_defined_crafty_permissions()
         else:
-            exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user_id)
-            defined_servers = self.controller.servers.get_authorized_servers(exec_user_id)
+            exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(exec_user["user_id"])
+            # defined_servers = self.controller.servers.get_authorized_servers(exec_user["user_id"])
             for r in exec_user['roles']:
                 role = self.controller.roles.get_role(r)
                 exec_user_role.add(role['role_name'])
 
         if page == 'server_detail':
             if not permissions['Config'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Config")    
-                    return         
-            server_id = self.get_argument('id', None)
+                    return
             server_name = self.get_argument('server_name', None)
             server_obj = self.controller.servers.get_server_obj(server_id)
-            if exec_user['superuser']:
+            if superuser:
                 server_path = self.get_argument('server_path', None)
                 log_path = self.get_argument('log_path', None)
                 executable = self.get_argument('executable', None)
@@ -856,20 +900,11 @@ class PanelHandler(BaseHandler):
             auto_start = int(float(self.get_argument('auto_start', '0')))
             crash_detection = int(float(self.get_argument('crash_detection', '0')))
             logs_delete_after = int(float(self.get_argument('logs_delete_after', '0')))
-            subpage = self.get_argument('subpage', None)
+            # TODO: Add more modify options via the subpage parameter
+            # subpage = self.get_argument('subpage', None)
 
-            if not exec_user['superuser']:
-                if not self.controller.servers.server_id_authorized(server_id, exec_user_id):
-                    self.redirect("/panel/error?error=Unauthorized access: invalid server id")
-                    return
-            elif server_id is None:
-                self.redirect("/panel/error?error=Invalid Server ID")
-                return
-            else:
-                # does this server id exist?
-                if not self.controller.servers.server_id_exists(server_id):
-                    self.redirect("/panel/error?error=Invalid Server ID")
-                    return
+            server_id = self.check_server_id()
+            if server_id is None: return
 
             server_obj = self.controller.servers.get_server_obj(server_id)
             server_settings = self.controller.get_server_data(server_id)
@@ -879,7 +914,7 @@ class PanelHandler(BaseHandler):
                 execution_command = execution_command.replace(str(stale_executable), str(executable))
 
             server_obj.server_name = server_name
-            if exec_user['superuser']:
+            if superuser:
                 if helper.validate_traversal(helper.get_servers_root_dir(), server_path):
                     server_obj.path = server_path
                     server_obj.log_path = log_path
@@ -918,14 +953,14 @@ class PanelHandler(BaseHandler):
             logger.debug(self.request.arguments)
             server_id = self.get_argument('id', None)
             server_obj = self.controller.servers.get_server_obj(server_id)
-            if exec_user['superuser']:
+            if superuser:
                 backup_path = bleach.clean(self.get_argument('backup_path', None))
             else:
                 backup_path = server_obj.backup_path
             max_backups = bleach.clean(self.get_argument('max_backups', None))
 
             if not permissions['Backup'] in user_perms:
-                if not exec_user['superuser']:
+                if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access: User not authorized")
                 return
             elif server_id is None:
@@ -943,7 +978,7 @@ class PanelHandler(BaseHandler):
             self.controller.management.set_backup_config(server_id, max_backups=max_backups)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Edited server {}: updated backups".format(server_id),
+                                       f"Edited server {server_id}: updated backups",
                                        server_id,
                                        self.get_remote_ip())
             self.tasks_manager.reload_schedule_from_db()
@@ -1000,7 +1035,7 @@ class PanelHandler(BaseHandler):
             else:
                 one_time = False
                 
-            if not exec_user['superuser'] and not permissions['Backup'] in user_perms:
+            if not superuser and not permissions['Backup'] in user_perms:
                 self.redirect("/panel/error?error=Unauthorized access: User not authorized")
                 return
             elif server_id is None:
@@ -1120,7 +1155,7 @@ class PanelHandler(BaseHandler):
             else:
                 one_time = False
                 
-            if not exec_user['superuser'] and not permissions['Backup'] in user_perms:
+            if not superuser and not permissions['Backup'] in user_perms:
                 self.redirect("/panel/error?error=Unauthorized access: User not authorized")
                 return
             elif server_id is None:
@@ -1198,9 +1233,9 @@ class PanelHandler(BaseHandler):
             password1 = bleach.clean(self.get_argument('password1', None))
             email = bleach.clean(self.get_argument('email', "default@example.com"))
             enabled = int(float(self.get_argument('enabled', '0')))
-            regen_api = int(float(self.get_argument('regen_api', '0')))
-            lang = bleach.clean(self.get_argument('language'), 'en_EN')
-            if exec_user['superuser']:
+            lang = bleach.clean(self.get_argument('language'), helper.get_setting('language'))
+
+            if superuser:
                 #Checks if user is trying to change super user status of self. We don't want that. Automatically make them stay super user since we know they are.
                 if str(exec_user['user_id']) != str(user_id):
                     superuser = bleach.clean(self.get_argument('superuser', '0'))
@@ -1214,7 +1249,7 @@ class PanelHandler(BaseHandler):
                 superuser = False
 
             if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
-                if str(user_id) != str(exec_user_id):
+                if str(user_id) != str(exec_user["user_id"]):
                     self.redirect("/panel/error?error=Unauthorized access: not a user editor")
                     return
 
@@ -1226,8 +1261,7 @@ class PanelHandler(BaseHandler):
                 self.controller.users.update_user(user_id, user_data=user_data)
 
                 self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                           "Edited user {} (UID:{}) password".format(username,
-                                                                                                         user_id),
+                                           f"Edited user {username} (UID:{user_id}) password",
                                            server_id=0,
                                            source_ip=self.get_remote_ip())
                 self.redirect("/panel/panel_config")
@@ -1248,36 +1282,8 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Passwords must match")
                 return
 
-            roles = set()
-            for role in self.controller.roles.get_all_roles():
-                argument = int(float(
-                    bleach.clean(
-                        self.get_argument('role_{}_membership'.format(role.role_id), '0')
-                    )
-                ))
-                if argument:
-                    roles.add(role.role_id)
-
-            permissions_mask = "000"
-            server_quantity = {}
-            for permission in self.controller.crafty_perms.list_defined_crafty_permissions():
-                argument = int(float(
-                    bleach.clean(
-                        self.get_argument('permission_{}'.format(permission.name), '0')
-                    )
-                ))
-                if argument:
-                    permissions_mask = self.controller.crafty_perms.set_permission(permissions_mask, permission, argument)
-
-                q_argument = int(float(
-                    bleach.clean(
-                        self.get_argument('quantity_{}'.format(permission.name), '0')
-                    )
-                ))
-                if q_argument:
-                    server_quantity[permission.name] = q_argument
-                else:
-                    server_quantity[permission.name] = 0
+            roles = self.get_user_role_memberships()
+            permissions_mask, server_quantity = self.get_perms_quantity()
 
             # if email is None or "":
             #     email = "default@example.com"
@@ -1287,7 +1293,6 @@ class PanelHandler(BaseHandler):
                 "password": password0,
                 "email": email,
                 "enabled": enabled,
-                "regen_api": regen_api,
                 "roles": roles,
                 "lang": lang,
                 "superuser": superuser,
@@ -1299,10 +1304,61 @@ class PanelHandler(BaseHandler):
             self.controller.users.update_user(user_id, user_data=user_data, user_crafty_data=user_crafty_data)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Edited user {} (UID:{}) with roles {} and permissions {}".format(username, user_id, roles, permissions_mask),
+                                       f"Edited user {username} (UID:{user_id}) with roles {roles} and permissions {permissions_mask}",
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
+
+        elif page == "edit_user_apikeys":
+            user_id = self.get_argument('id', None)
+            name = self.get_argument('name', None)
+            superuser = self.get_argument('superuser', None) == '1'
+
+            if name is None or name == "":
+                self.redirect("/panel/error?error=Invalid API key name")
+                return
+            elif user_id is None:
+                self.redirect("/panel/error?error=Invalid User ID")
+                return
+            else:
+                # does this user id exist?
+                if not self.controller.users.user_id_exists(user_id):
+                    self.redirect("/panel/error?error=Invalid User ID")
+                    return
+
+            crafty_permissions_mask = self.get_perms()
+            server_permissions_mask = self.get_perms_server()
+
+            self.controller.users.add_user_api_key(name, user_id, superuser, crafty_permissions_mask, server_permissions_mask)
+
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
+                                                        f"Added API key {name} with crafty permissions {crafty_permissions_mask} and {server_permissions_mask} for user with UID: {user_id}",
+                                                        server_id=0,
+                                                        source_ip=self.get_remote_ip())
+            self.redirect(f"/panel/edit_user_apikeys?id={user_id}")
+
+        elif page == "get_token":
+            key_id = self.get_argument('id', None)
+
+            if key_id is None:
+                self.redirect("/panel/error?error=Invalid Key ID")
+                return
+            else:
+                key = self.controller.users.get_user_api_key(key_id)
+                # does this user id exist?
+                if key is None:
+                    self.redirect("/panel/error?error=Invalid Key ID")
+                    return
+
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
+                                                        f"Generated a new API token for the key {key.name} from user with UID: {key.user.user_id}",
+                                                        server_id=0,
+                                                        source_ip=self.get_remote_ip())
+
+            self.write(authentication.generate(key.user.user_id, {
+                'token_id': key.token_id
+            }))
+            self.finish()
 
 
         elif page == "add_user":
@@ -1314,8 +1370,8 @@ class PanelHandler(BaseHandler):
             password1 = bleach.clean(self.get_argument('password1', None))
             email  = bleach.clean(self.get_argument('email', "default@example.com"))
             enabled = int(float(self.get_argument('enabled', '0'))),
-            lang = bleach.clean(self.get_argument('lang', 'en_EN'))
-            if exec_user['superuser']:
+            lang = bleach.clean(self.get_argument('lang', helper.get_setting('language')))
+            if superuser:
                 superuser = bleach.clean(self.get_argument('superuser', '0'))
             else:
                 superuser = '0'
@@ -1340,36 +1396,8 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Passwords must match")
                 return
 
-            roles = set()
-            for role in self.controller.roles.get_all_roles():
-                argument = int(float(
-                    bleach.clean(
-                        self.get_argument('role_{}_membership'.format(role.role_id), '0')
-                    )
-                ))
-                if argument:
-                    roles.add(role.role_id)
-
-            permissions_mask = "000"
-            server_quantity = {}
-            for permission in self.controller.crafty_perms.list_defined_crafty_permissions():
-                argument = int(float(
-                    bleach.clean(
-                        self.get_argument('permission_{}'.format(permission.name), '0')
-                    )
-                ))
-                if argument:
-                    permissions_mask = self.controller.crafty_perms.set_permission(permissions_mask, permission, argument)
-
-                q_argument = int(float(
-                    bleach.clean(
-                        self.get_argument('quantity_{}'.format(permission.name), '0')
-                    )
-                ))
-                if q_argument:
-                    server_quantity[permission.name] = q_argument
-                else:
-                    server_quantity[permission.name] = 0
+            roles = self.get_user_role_memberships()
+            permissions_mask, server_quantity = self.get_perms_quantity()
 
             user_id = self.controller.users.add_user(username, password=password0, email=email, enabled=enabled, superuser=superuser)
             user_data = {
@@ -1411,25 +1439,8 @@ class PanelHandler(BaseHandler):
                     self.redirect("/panel/error?error=Invalid Role ID")
                     return
 
-            servers = set()
-            for server in self.controller.list_defined_servers():
-                argument = int(float(
-                    bleach.clean(
-                        self.get_argument('server_{}_access'.format(server['server_id']), '0')
-                    )
-                ))
-                if argument:
-                    servers.add(server['server_id'])
-
-            permissions_mask = "00000000"
-            for permission in self.controller.server_perms.list_defined_permissions():
-                argument = int(float(
-                    bleach.clean(
-                        self.get_argument('permission_{}'.format(permission.name), '0')
-                    )
-                ))
-                if argument:
-                    permissions_mask = self.controller.server_perms.set_permission(permissions_mask, permission, argument)
+            servers = self.get_role_servers()
+            permissions_mask = self.get_perms_server()
 
             role_data = {
                 "role_name": role_name,
@@ -1459,25 +1470,8 @@ class PanelHandler(BaseHandler):
                     self.redirect("/panel/error?error=Role exists")
                     return
 
-            servers = set()
-            for server in self.controller.list_defined_servers():
-                argument = int(float(
-                    bleach.clean(
-                        self.get_argument('server_{}_access'.format(server['server_id']), '0')
-                    )
-                ))
-                if argument:
-                    servers.add(server['server_id'])
-
-            permissions_mask = "00000000"
-            for permission in self.controller.server_perms.list_defined_permissions():
-                argument = int(float(
-                    bleach.clean(
-                        self.get_argument('permission_{}'.format(permission.name), '0')
-                    )
-                ))
-                if argument:
-                    permissions_mask = self.controller.server_perms.set_permission(permissions_mask, permission, argument)
+            servers = self.get_role_servers()
+            permissions_mask = self.get_perms_server()
 
             role_id = self.controller.roles.add_role(role_name)
             self.controller.roles.update_role(role_id, {"servers": servers}, permissions_mask)
@@ -1494,10 +1488,57 @@ class PanelHandler(BaseHandler):
 
         else:
             self.set_status(404)
-            page_data = {}
-            page_data['lang'] = locale.get("en_EN")
+            page_data = {'lang': helper.get_setting('language')}
             self.render(
                 "public/404.html",
                 translate=self.translator.translate,
                 data=page_data
+            )
+
+    @tornado.web.authenticated
+    def delete(self, page):
+        api_key, token_data, exec_user = self.current_user
+        superuser = exec_user['superuser']
+        if api_key is not None:
+            superuser = superuser and api_key.superuser
+
+        page_data = {
+            # todo: make this actually pull and compare version data
+            'update_available': False,
+            'version_data': helper.get_version_string(),
+            'user_data': exec_user,
+            'hosts_data': self.controller.management.get_latest_hosts_stats(),
+            'show_contribute': helper.get_setting("show_contribute_link", True),
+            'lang': self.controller.users.get_user_lang_by_id(exec_user["user_id"])
+        }
+
+        if page == "remove_apikey":
+            key_id = bleach.clean(self.get_argument('id', None))
+
+            if not superuser:
+                self.redirect("/panel/error?error=Unauthorized access: not superuser")
+                return
+            elif key_id is None or self.controller.users.get_user_api_key(key_id) is None:
+                self.redirect("/panel/error?error=Invalid Key ID")
+                return
+            else:
+                # does this user id exist?
+                target_key = self.controller.users.get_user_api_key(key_id)
+                if not target_key:
+                    self.redirect("/panel/error?error=Invalid Key ID")
+                    return
+
+            self.controller.users.delete_user_api_key(key_id)
+
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
+                                                        f"Removed API key {target_key} (ID: {key_id}) from user {exec_user['user_id']}",
+                                                        server_id=0,
+                                                        source_ip=self.get_remote_ip())
+            self.redirect("/panel/panel_config")
+        else:
+            self.set_status(404)
+            self.render(
+                "public/404.html",
+                data=page_data,
+                translate=self.translator.translate,
             )

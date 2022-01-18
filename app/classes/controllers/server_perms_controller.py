@@ -14,7 +14,7 @@ from app.classes.shared.console import console
 
 from app.classes.shared.main_models import db_helper
 from app.classes.models.server_permissions import  server_permissions, Enum_Permissions_Server
-from app.classes.models.users import users_helper
+from app.classes.models.users import users_helper, ApiKeys
 from app.classes.models.roles import roles_helper
 from app.classes.models.servers import servers_helper
 
@@ -40,11 +40,6 @@ class Server_Perms_Controller:
     @staticmethod
     def get_role_permissions(role_id):
         permissions_list = server_permissions.get_role_permissions_list(role_id)
-        return permissions_list
-
-    @staticmethod
-    def get_server_permissions_foruser(user_id, server_id):
-        permissions_list = server_permissions.get_user_permissions_list(user_id, server_id)
         return permissions_list
 
     @staticmethod
@@ -78,8 +73,30 @@ class Server_Perms_Controller:
         return server_permissions.get_role_permissions_list(role_id)
 
     @staticmethod
-    def get_user_permissions_list(user_id, server_id):
-        return server_permissions.get_user_permissions_list(user_id, server_id)
+    def get_user_id_permissions_list(user_id: str, server_id: str):
+        return server_permissions.get_user_id_permissions_list(user_id, server_id)
+
+    @staticmethod
+    def get_api_key_id_permissions_list(key_id: str, server_id: str):
+        key = users_helper.get_user_api_key(key_id)
+        return server_permissions.get_api_key_permissions_list(key, server_id)
+
+    @staticmethod
+    def get_api_key_permissions_list(key: ApiKeys, server_id: str):
+        return server_permissions.get_api_key_permissions_list(key, server_id)
+
+    @staticmethod
+    def get_user_id_permissions_list(user_id: str, server_id: str):
+        return server_permissions.get_user_id_permissions_list(user_id, server_id)
+
+    @staticmethod
+    def get_api_key_id_permissions_list(key_id: str, server_id: str):
+        key = users_helper.get_user_api_key(key_id)
+        return server_permissions.get_api_key_permissions_list(key, server_id)
+
+    @staticmethod
+    def get_api_key_permissions_list(key: ApiKeys, server_id: str):
+        return server_permissions.get_api_key_permissions_list(key, server_id)
 
     @staticmethod
     def get_authorized_servers_stats_from_roles(user_id):

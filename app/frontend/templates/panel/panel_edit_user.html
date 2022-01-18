@@ -45,6 +45,10 @@
               </li>
               {% if not data['new_user'] %}
               <li class="nav-item">
+                <a class="nav-link" href="/panel/edit_user_apikeys?id={{ data['user']['user_id'] }}" role="tab" aria-selected="false">
+                  <i class="fas fa-key"></i>API Keys</a>
+              </li>
+              <li class="nav-item">
                 <a class="nav-link" href="/panel/add_user?id={{ data['user']['user_id'] }}&subpage=other" role="tab" aria-selected="false">
                   <i class="fas fa-folder-tree"></i>Other</a>
               </li>
@@ -177,14 +181,6 @@
                           {% end %}
                         </label>
 
-                        <label for="regen_api" class="form-check-label ml-4 mb-4">
-                          {% if data['new_user'] %}
-                            <input type="checkbox" class="form-check-input" id="regen_api" name="regen_api" checked="" value="1" disabled >Regenerate API Key
-                          {% else %}
-                            <input type="checkbox" class="form-check-input" id="regen_api" name="regen_api" value="1">Regenerate API Key
-                          {% end %}
-                        </label>
-
                         <label for="superuser" class="form-check-label ml-4 mb-4">
                           {% if data['user']['superuser'] %}
                               <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser" name="superuser" checked="" value="1" {{ data['super-disabled'] }} >Super User
@@ -215,7 +211,7 @@
                               <br />
                               Last IP: {{ data['user']['last_ip'] }}
                               <br />
-                              API Key: {{ data['user']['api_token'] }}
+                              API Key: TODO! <!-- TODO -->
                               <br />
                           </p>
                         </blockquote>
