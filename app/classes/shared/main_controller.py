@@ -283,9 +283,14 @@ class Controller:
             logger.error("Unable to create required server files due to :{}".format(e))
             return False
 
-        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+        if helper.is_os_windows():
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
-                                                                     +'"'+full_jar_path+'"')
+                                                                     '"'+full_jar_path+'"')
+        else:
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     full_jar_path)
         server_log_file = "{}/logs/latest.log".format(server_dir)
         server_stop = "stop"
 
@@ -339,9 +344,14 @@ class Controller:
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
 
-        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+        if helper.is_os_windows():
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
-                                                                     +'"'+full_jar_path+'"')
+                                                                     '"'+full_jar_path+'"')
+        else:
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     full_jar_path)
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"
 
@@ -379,9 +389,14 @@ class Controller:
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
 
-        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+        if helper.is_os_windows():
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
-                                                                     +'"'+full_jar_path+'"')
+                                                                     '"'+full_jar_path+'"')
+        else:
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     full_jar_path)
         logger.debug('command: ' + server_command)
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"

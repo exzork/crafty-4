@@ -383,11 +383,18 @@ class Server:
             return False
 
     def send_command(self, command):
-        console.info("COMMAND TIME: {}".format(command))
         if not self.check_running() and command.lower() != 'start':
             logger.warning("Server not running, unable to send command \"{}\"".format(command))
             return False
-            
+        elif command.lower() == self.settings['stop_command']:
+            logger.info("Stop command detected as terminal input - intercepting. Starting Crafty's stop process for server with id: {}.".format(self.server_id))
+            self.stop_threaded_server()
+            return
+        elif command.lower() == 'restart':
+            logger.info("Restart command detected as terminal input - intercepting. Starting Crafty's restart process for server with id: {}".format(self.server_id))
+            self.restart_threaded_server()
+            return
+        console.info("COMMAND TIME: {}".format(command))
         logger.debug("Sending command {} to server".format(command))
 
         # send it

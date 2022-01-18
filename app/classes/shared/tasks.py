@@ -85,7 +85,6 @@ class TasksManager:
             # select any commands waiting to be processed
             commands = management_helper.get_unactioned_commands()
             for c in commands:
-
                 svr = self.controller.get_server_obj(c['server_id']['server_id'])
                 user_id = c.get('user')['user_id']
                 command = c.get('command', None)
