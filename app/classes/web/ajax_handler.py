@@ -427,7 +427,7 @@ class AjaxHandler(BaseHandler):
             server_data = self.controller.get_server_data(server_id)
             server_name = server_data['server_name']
 
-            self.controller.management.add_to_audit_log(exec_user_id,
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Deleted server {} named {}".format(server_id, server_name),
                                        server_id,
                                        self.get_remote_ip())
@@ -447,7 +447,7 @@ class AjaxHandler(BaseHandler):
             server_data = self.controller.get_server_data(server_id)
             server_name = server_data['server_name']
 
-            self.controller.management.add_to_audit_log(exec_user_id,
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        "Deleted server {} named {}".format(server_id, server_name),
                                        server_id,
                                        self.get_remote_ip())

@@ -200,7 +200,7 @@ class Controller:
 
     def get_server_data(self, server_id: str):
         for s in self.servers_list:
-            if s['server_id'] == server_id:
+            if str(s['server_id']) == str(server_id):
                 return s['server_data_obj']
 
         logger.warning("Unable to find server object for server id {}".format(server_id))
@@ -450,7 +450,7 @@ class Controller:
         for s in self.servers_list:
 
             # if this is the droid... im mean server we are looking for...
-            if s['server_id'] == server_id:
+            if str(s['server_id']) == str(server_id):
                 server_data = self.get_server_data(server_id)
                 server_name = server_data['server_name']
                 backup_dir = self.servers.get_server_data_by_id(server_id)['backup_path']
