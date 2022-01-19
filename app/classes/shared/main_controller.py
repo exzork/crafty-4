@@ -258,8 +258,8 @@ class Controller:
         if helper.is_os_windows():
             server_dir = helper.wtol_path(server_dir)
             backup_path = helper.wtol_path(backup_path)
-            server_dir.replace(' ', '` ')
-            backup_path.replace(' ', '` ')
+            server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
 
         server_file = "{server}-{version}.jar".format(server=server, version=version)
         full_jar_path = os.path.join(server_dir, server_file)
@@ -283,8 +283,12 @@ class Controller:
             logger.error("Unable to create required server files due to :{}".format(e))
             return False
 
-
-        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+        if helper.is_os_windows():
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     '"'+full_jar_path+'"')
+        else:
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
                                                                      full_jar_path)
         server_log_file = "{}/logs/latest.log".format(server_dir)
@@ -318,10 +322,10 @@ class Controller:
         new_server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
         if helper.is_os_windows():
-            server_dir = helper.wtol_path(new_server_dir)
+            new_server_dir = helper.wtol_path(new_server_dir)
             backup_path = helper.wtol_path(backup_path)
-            new_server_dir.replace(' ', '` ')
-            backup_path.replace(' ', '` ')
+            new_server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
 
         helper.ensure_dir_exists(new_server_dir)
         helper.ensure_dir_exists(backup_path)
@@ -340,7 +344,12 @@ class Controller:
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
 
-        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+        if helper.is_os_windows():
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     '"'+full_jar_path+'"')
+        else:
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
                                                                      full_jar_path)
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
@@ -357,8 +366,8 @@ class Controller:
         if helper.is_os_windows():
             new_server_dir = helper.wtol_path(new_server_dir)
             backup_path = helper.wtol_path(backup_path)
-            new_server_dir.replace(' ', '` ')
-            backup_path.replace(' ', '` ')
+            new_server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
 
         tempDir = helper.get_os_understandable_path(zip_path)
         helper.ensure_dir_exists(new_server_dir)
@@ -380,7 +389,12 @@ class Controller:
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
 
-        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+        if helper.is_os_windows():
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     '"'+full_jar_path+'"')
+        else:
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
                                                                      full_jar_path)
         logger.debug('command: ' + server_command)
@@ -398,7 +412,7 @@ class Controller:
         backup_path = helper.validate_traversal(helper.backup_path, old_bu_path)
         if helper.is_os_windows():
             backup_path = helper.wtol_path(backup_path)
-            backup_path.replace(' ', '` ')
+            backup_path.replace(' ', '^ ')
         backup_path_components = list(backup_path.parts)
         backup_path_components[-1] = new_uuid
         new_bu_path = pathlib.PurePath(os.path.join(*backup_path_components))
