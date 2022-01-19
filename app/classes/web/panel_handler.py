@@ -130,7 +130,7 @@ class PanelHandler(BaseHandler):
                     # increasing and will eat up the RAM
                     del chunk
 
-    def check_server_id(self) -> Optional[str]:
+    def check_server_id(self):
         server_id = self.get_argument('id', None)
 
         api_key, _, exec_user = self.current_user
