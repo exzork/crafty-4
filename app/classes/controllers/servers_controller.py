@@ -100,9 +100,7 @@ class Servers_Controller:
     @staticmethod
     def get_authorized_servers_stats(user_id):
         server_data = []
-        print('test 1')
         authorized_servers = Servers_Controller.get_authorized_servers(user_id)
-        print('test 2')
 
         for s in authorized_servers:
             latest = servers_helper.get_latest_server_stats(s.get('server_id'))
@@ -137,11 +135,10 @@ class Servers_Controller:
 
     @staticmethod
     def server_id_authorized(server_id_a, user_id):
-        print("Server id authorized: ")
         user_roles = users_helper.user_role_query(user_id)
         for role in user_roles:
             for server_id_b in server_permissions.get_role_servers_from_role_id(role.role_id):
-                if server_id_a == server_id_b:
+                if str(server_id_a) == str(server_id_b.server_id):
                     return True
         return False
 

@@ -172,7 +172,7 @@ class Permissions_Servers:
         if user.superuser:
             permissions_mask = '1' * len(server_permissions.get_permissions_list())
         else:
-            roles_list = users_helper.get_user_roles_id(user['user_id'])
+            roles_list = users_helper.get_user_roles_id(user.user_id)
             role_server = Role_Servers.select().where(Role_Servers.role_id.in_(roles_list)).where(Role_Servers.server_id == server_id).execute()
             permissions_mask = role_server[0].permissions
         return permissions_mask
