@@ -163,7 +163,10 @@ class Controller:
         for server in auth_servers:
             final_path = os.path.join(server_path, str(server['server_name']))
             os.mkdir(final_path)
-            shutil.copy(server['log_path'], final_path)
+            try:
+                shutil.copy(server['log_path'], final_path)
+            except Exception as e:
+                logger.warning("Failed to copy file with error: {}".format(e))
         #Copy crafty logs to archive dir
         full_log_name = os.path.join(crafty_path, 'logs')
         shutil.copytree(os.path.join(self.project_root, 'logs'), full_log_name)
