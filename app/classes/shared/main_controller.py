@@ -170,7 +170,7 @@ class Controller:
         tempZipStorage += '.zip'
         websocket_helper.broadcast_user(exec_user['user_id'], 'send_logs_bootbox', {
                 })
-        
+
         self.users.set_support_path(exec_user['user_id'], tempZipStorage)
 
     @staticmethod
@@ -281,9 +281,9 @@ class Controller:
             logger.error("Unable to create required server files due to :{}".format(e))
             return False
 
-        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+        server_command = 'java -Xms{}M -Xmx{}M -jar "{}" nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
-                                                                     +'"'+full_jar_path+'"')
+                                                                     full_jar_path)
         server_log_file = "{}/logs/latest.log".format(server_dir)
         server_stop = "stop"
 
@@ -451,7 +451,7 @@ class Controller:
                     if helper.check_path_exists(self.servers.get_server_data_by_id(server_id)['backup_path']):
                         shutil.rmtree(helper.get_os_understandable_path(self.servers.get_server_data_by_id(server_id)['backup_path']))
 
-                
+
                 #Cleanup scheduled tasks
                 try:
                     helpers_management.delete_scheduled_task_by_server(server_id)
