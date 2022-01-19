@@ -1,4 +1,5 @@
 from datetime import timedelta
+from http import server
 import os
 import sys
 import json
@@ -79,7 +80,7 @@ class TasksManager:
         logger.info("Reload from DB called. Current enabled schedules: ")
         for item in jobs:
             logger.info("JOB: {}".format(item))
-    
+
     def command_watcher(self):
         while True:
             # select any commands waiting to be processed
@@ -270,8 +271,7 @@ class TasksManager:
         logger.info("Scheduling Serverjars.com cache refresh service every 12 hours")
         self.scheduler.add_job(server_jar_obj.refresh_cache, 'interval', hours=12, id="serverjars")
 
-    @staticmethod
-    def realtime():
+    def realtime(self):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
@@ -296,7 +296,42 @@ class TasksManager:
                         'mem_percent': host_stats.get('mem_percent'),
                         'mem_usage': host_stats.get('mem_usage')
                     })
-            time.sleep(4)
+
+            servers = self.controller.servers_list
+            servers_ping = []
+            for srv in servers:
+                server_data = srv.get('server_data_obj', False)
+                if server_data:
+                    server_id = server_data.get('server_id', False)
+                    srv['raw_ping_result'] = self.controller.stats.get_raw_server_stats(server_id)
+                    if ("{}".format(srv['raw_ping_result'].get('icon')) == "b''"):
+                        srv['raw_ping_result']['icon'] = False
+                    servers_ping.append({
+                        'id': srv['raw_ping_result'].get('id'),
+                        'started': srv['raw_ping_result'].get('started'),
+                        'running': srv['raw_ping_result'].get('running'),
+                        'cpu': srv['raw_ping_result'].get('cpu'),
+                        'mem': srv['raw_ping_result'].get('mem'),
+                        'mem_percent': srv['raw_ping_result'].get('mem_percent'),
+                        'world_name': srv['raw_ping_result'].get('world_name'),
+                        'world_size': srv['raw_ping_result'].get('world_size'),
+                        'server_port': srv['raw_ping_result'].get('server_port'),
+                        'int_ping_results': srv['raw_ping_result'].get('int_ping_results'),
+                        'online': srv['raw_ping_result'].get('online'),
+                        'max': srv['raw_ping_result'].get('max'),
+                        'players': srv['raw_ping_result'].get('players'),
+                        'desc': srv['raw_ping_result'].get('desc'),
+                        'version': srv['raw_ping_result'].get('version'),
+                        'icon': srv['raw_ping_result'].get('icon')
+                    })
+
+            if (len(servers_ping) > 0) & (len(websocket_helper.clients) > 0):
+                #TODO websocket_helper.broadcast_page('/panel/dashboard', 'update_server_status', servers)
+                try:
+                    websocket_helper.broadcast_page('/status', 'update_server_status', servers_ping)
+                except:
+                    console.warning("Can't broadcast server status to websocket")
+            time.sleep(5)
 
     def log_watcher(self):
         self.controller.servers.check_for_old_logs()
