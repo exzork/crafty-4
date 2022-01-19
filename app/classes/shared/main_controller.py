@@ -163,7 +163,10 @@ class Controller:
         for server in auth_servers:
             final_path = os.path.join(server_path, str(server['server_name']))
             os.mkdir(final_path)
-            shutil.copy(server['log_path'], final_path)
+            try:
+                shutil.copy(server['log_path'], final_path)
+            except Exception as e:
+                logger.warning("Failed to copy file with error: {}".format(e))
         #Copy crafty logs to archive dir
         full_log_name = os.path.join(crafty_path, 'logs')
         shutil.copytree(os.path.join(self.project_root, 'logs'), full_log_name)
@@ -197,7 +200,7 @@ class Controller:
 
     def get_server_data(self, server_id: str):
         for s in self.servers_list:
-            if s['server_id'] == server_id:
+            if str(s['server_id']) == str(server_id):
                 return s['server_data_obj']
 
         logger.warning("Unable to find server object for server id {}".format(server_id))
@@ -447,7 +450,7 @@ class Controller:
         for s in self.servers_list:
 
             # if this is the droid... im mean server we are looking for...
-            if s['server_id'] == server_id:
+            if str(s['server_id']) == str(server_id):
                 server_data = self.get_server_data(server_id)
                 server_name = server_data['server_name']
                 backup_dir = self.servers.get_server_data_by_id(server_id)['backup_path']
