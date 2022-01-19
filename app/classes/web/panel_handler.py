@@ -904,7 +904,13 @@ class PanelHandler(BaseHandler):
             server_obj = self.controller.servers.get_server_obj(server_id)
             if superuser:
                 server_path = self.get_argument('server_path', None)
+                if helper.is_os_windows():
+                    server_path = helper.wtol_path(server_path)
+                    server_path.replace(' ', '^ ')
                 log_path = self.get_argument('log_path', None)
+                if helper.is_os_windows():
+                    log_path = helper.wtol_path(log_path)
+                    log_path.replace(' ', '^ ')
                 executable = self.get_argument('executable', None)
                 execution_command = self.get_argument('execution_command', None)
                 server_ip = self.get_argument('server_ip', None)
@@ -973,6 +979,9 @@ class PanelHandler(BaseHandler):
             server_obj = self.controller.servers.get_server_obj(server_id)
             if superuser:
                 backup_path = bleach.clean(self.get_argument('backup_path', None))
+                if helper.is_os_windows():
+                    backup_path = helper.wtol_path(backup_path)
+                    backup_path.replace(' ', '^ ')
             else:
                 backup_path = server_obj.backup_path
             max_backups = bleach.clean(self.get_argument('max_backups', None))
