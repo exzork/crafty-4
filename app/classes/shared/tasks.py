@@ -161,7 +161,12 @@ class TasksManager:
         for schedule in schedules:
             if schedule.cron_string != "":
                 cron = schedule.cron_string.split(' ')
-                self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
+                try:
+                    self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
+                except Exception as e:
+                    console.error("Failed to schedule task with error: {}.".format(e))
+                    console.warning("Removing failed task from DB.")
+                    management_helper.delete_scheduled_task(schedule.schedule_id)
             else:
                 if schedule.interval_type == 'hours':
                     self.scheduler.add_job(management_helper.add_command, 'cron', minute = 0,  hour = '*/'+str(schedule.interval), id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
@@ -186,7 +191,7 @@ class TasksManager:
                     self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
                 except Exception as e:
                     console.error("Failed to schedule task with error: {}.".format(e))
-                    console.info("Removing failed task from DB.")
+                    console.warning("Removing failed task from DB.")
                     management_helper.delete_scheduled_task(sch_id)
             else:
                 if job_data['interval_type'] == 'hours':

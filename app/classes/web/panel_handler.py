@@ -559,7 +559,6 @@ class PanelHandler(BaseHandler):
                 'Players': Enum_Permissions_Server.Players,
             }
             page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
-            exec_user_server_permissions = self.controller.server_perms.get_user_permissions_list(exec_user["user_id"], server_id)
             page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
             page_data['new_schedule'] = True
@@ -577,7 +576,7 @@ class PanelHandler(BaseHandler):
             page_data['schedule']['difficulty'] = "basic"
             page_data['schedule']['interval_type'] = 'days'
 
-            if not Enum_Permissions_Server.Schedule in exec_user_server_permissions:
+            if not Enum_Permissions_Server.Schedule in page_data['user_permissions']:
                 if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
                     return
@@ -601,7 +600,6 @@ class PanelHandler(BaseHandler):
                 'Players': Enum_Permissions_Server.Players,
             }
             page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
-            exec_user_server_permissions = self.controller.server_perms.get_user_permissions_list(exec_user["user_id"], server_id)
             page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
             page_data['new_schedule'] = False
@@ -629,7 +627,7 @@ class PanelHandler(BaseHandler):
             if sch_id == None or server_id == None:
                 self.redirect("/panel/error?error=Invalid server ID or Schedule ID")
                 
-            if not Enum_Permissions_Server.Schedule in exec_user_server_permissions:
+            if not Enum_Permissions_Server.Schedule in page_data['user_permissions']:
                 if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
                     return
