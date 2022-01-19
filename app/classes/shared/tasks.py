@@ -306,6 +306,7 @@ class TasksManager:
                     srv['raw_ping_result'] = self.controller.stats.get_raw_server_stats(server_id)
                     if ("{}".format(srv['raw_ping_result'].get('icon')) == "b''"):
                         srv['raw_ping_result']['icon'] = False
+
                     servers_ping.append({
                         'id': srv['raw_ping_result'].get('id'),
                         'started': srv['raw_ping_result'].get('started'),
@@ -326,8 +327,8 @@ class TasksManager:
                     })
 
             if (len(servers_ping) > 0) & (len(websocket_helper.clients) > 0):
-                #TODO websocket_helper.broadcast_page('/panel/dashboard', 'update_server_status', servers)
                 try:
+                    websocket_helper.broadcast_page('/panel/dashboard', 'update_server_status', servers_ping)
                     websocket_helper.broadcast_page('/status', 'update_server_status', servers_ping)
                 except:
                     console.warning("Can't broadcast server status to websocket")

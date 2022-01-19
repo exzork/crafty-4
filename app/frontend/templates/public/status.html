@@ -91,14 +91,11 @@
   }
 
   function update_one_server_status(server) {
-    server_name = document.getElementById('server_name_' + server.id).get;
     server_players = document.getElementById('server_players_' + server.id);
     server_motd = document.getElementById('server_motd_' + server.id);
     server_version = document.getElementById('server_version_' + server.id);
     server_online_status = document.getElementById('server_online_status_' + server.id);
-    server_no_data = document.getElementById('server_players_' + server.id);
 
-    console.log("Received Data : " + server.id + ": " + server.world_name);
     /* TODO Update each element */
     if (server.int_ping_results) {
 
@@ -146,7 +143,6 @@
   }
 
   function update_servers_status(data) {
-    console.log(data);
     for (server of data) {
       update_one_server_status(server);
     }
@@ -157,7 +153,10 @@
     console.log("ready!");
     display_motd()
 
-    webSocket.on('update_server_status', update_servers_status);
+    if (webSocket)
+    {
+      webSocket.on('update_server_status', update_servers_status);
+    }
   }());
 </script>
 
