@@ -6,13 +6,20 @@ upstream crafty {
 }
 
 server {
-    listen 80 default_server;
+    listen 80;
+    server_name <DOMAIN>;
+    if ($host !~* ^<SUBDOMAIN>\.<EXAMPLE>\.com$ ) {
+        return 444;
+    }
     rewrite ^(.*) https://$host$1 permanent;
 }
 
 server {
     listen 443 ssl;
     server_name <DOMAIN>;
+    if ($host !~* ^<SUBDOMAIN>\.<EXAMPLE>\.com$ ) {
+        return 444;
+    }
     ssl_certificate <CERIFICATE_LOCATION>;
     ssl_certificate_key <KEYFILE_LOCATION>;
     location / {
