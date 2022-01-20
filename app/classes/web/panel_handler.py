@@ -882,7 +882,6 @@ class PanelHandler(BaseHandler):
                 'Config': Enum_Permissions_Server.Config,
                 'Players': Enum_Permissions_Server.Players,
             }
-        user_perms = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
         exec_user_role = set()
         if superuser:
             # defined_servers = self.controller.list_defined_servers()
@@ -896,7 +895,7 @@ class PanelHandler(BaseHandler):
                 exec_user_role.add(role['role_name'])
 
         if page == 'server_detail':
-            if not permissions['Config'] in user_perms:
+            if not permissions['Config'] in self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id):
                 if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Config")    
                     return
@@ -986,7 +985,7 @@ class PanelHandler(BaseHandler):
                 backup_path = server_obj.backup_path
             max_backups = bleach.clean(self.get_argument('max_backups', None))
 
-            if not permissions['Backup'] in user_perms:
+            if not permissions['Backup'] in self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id):
                 if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access: User not authorized")
                 return
@@ -1062,7 +1061,7 @@ class PanelHandler(BaseHandler):
             else:
                 one_time = False
                 
-            if not superuser and not permissions['Backup'] in user_perms:
+            if not superuser and not permissions['Backup'] in self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id):
                 self.redirect("/panel/error?error=Unauthorized access: User not authorized")
                 return
             elif server_id is None:
@@ -1182,7 +1181,7 @@ class PanelHandler(BaseHandler):
             else:
                 one_time = False
                 
-            if not superuser and not permissions['Backup'] in user_perms:
+            if not superuser and not permissions['Backup'] in self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id):
                 self.redirect("/panel/error?error=Unauthorized access: User not authorized")
                 return
             elif server_id is None:
