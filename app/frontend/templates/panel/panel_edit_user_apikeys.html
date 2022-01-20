@@ -15,7 +15,7 @@
         <div class="col-12">
             <div class="page-header">
                 <h4 class="page-title">
-                    Edit User API Keys - {{ data['user']['user_id'] }}
+                    {{ translate('apiKeys', 'pageTitle', data['lang']) }} - {{ data['user']['user_id'] }}
                     <br/>
                     <small>UID: {{ data['user']['user_id'] }}</small>
                 </h4>
@@ -35,13 +35,13 @@
                             <a class="nav-link" href="/panel/edit_user?id={{ data['user']['user_id'] }}&subpage=config"
                                role="tab"
                                aria-selected="false">
-                                <i class="fas fa-cogs"></i>Config</a>
+                                <i class="fas fa-cogs"></i>{{ translate('apiKeys', 'config', data['lang']) }}</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" href="/panel/edit_user_apikeys?id={{ data['user']['user_id'] }}"
                                role="tab"
                                aria-selected="true">
-                                <i class="fas fa-key"></i>API Keys</a>
+                                <i class="fas fa-key"></i>{{ translate('apiKeys', 'apiKeys', data['lang']) }}</a>
                         </li>
                     </ul>
 
@@ -49,7 +49,7 @@
                         <div class="col-md-7 col-sm-12">
                             <div class="card">
                                 <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                                    <h4 class="card-title"><i class="fas fa-key"></i> API Keys</h4>
+                                    <h4 class="card-title"><i class="fas fa-key"></i>{{ translate('apiKeys', 'apiKeys', data['lang']) }}</h4>
                                 </div>
                                 <div class="card-body">
                                     <div class="form-group">
@@ -58,11 +58,11 @@
                                                 <thead>
                                                 <tr class="rounded">
                                                     <!--<th>ID</th>-->
-                                                    <th>Name</th>
-                                                    <th>Created</th>
-                                                    <th>Superuser</th>
-                                                    <th>Permissions</th>
-                                                    <th>Buttons</th>
+                                                    <th>{{ translate('apiKeys', 'name', data['lang']) }}</th>
+                                                    <th>{{ translate('apiKeys', 'created', data['lang']) }}</th>
+                                                    <th>{{ translate('apiKeys', 'superUser', data['lang']) }}</th>
+                                                    <th>{{ translate('apiKeys', 'perms', data['lang']) }}</th>
+                                                    <th>{{ translate('apiKeys', 'buttons', data['lang']) }}</th>
                                                 </tr>
                                                 </thead>
                                                 <tbody>
@@ -74,16 +74,16 @@
                                                     <td>
                                                         {% if apikey.superuser %}
                                                         <span class="text-success">
-                                <i class="fas fa-check-square"></i> Yes
+                                <i class="fas fa-check-square"></i> {{ translate('apiKeys', 'yes', data['lang']) }}
                               </span>
                                                         {% else %}
                                                         <span class="text-danger">
-                                <i class="far fa-times-square"></i> No
+                                <i class="far fa-times-square"></i> {{ translate('apiKeys', 'no', data['lang']) }}
                               </span>
                                                         {% end %}
                                                     </td>
-                                                    <td>Server: {{ apikey.server_permissions }}
-                                                        Crafty: {{ apikey.crafty_permissions }}</td>
+                                                    <td>{{ translate('apiKeys', 'server', data['lang']) }} {{ apikey.server_permissions }}
+                                                        {{ translate('apiKeys', 'crafty', data['lang']) }} {{ apikey.crafty_permissions }}</td>
                                                     <td>
                                                         <button
                                                                 class="btn btn-danger delete-api-key"
@@ -94,7 +94,7 @@
                                                                 class="btn btn-outline-primary get-a-token"
                                                                 data-key-id="{{ apikey.token_id }}"
                                                                 data-key-name="{{ apikey.name }}"
-                                                        >Get a token
+                                                        >{{ translate('apiKeys', 'getToken', data['lang']) }}
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -110,7 +110,7 @@
                         <div class="col-md-5 col-sm-12">
                             <div class="card">
                                 <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                                    <h4 class="card-title"><i class="fas fa-plus"></i> Create new API key</h4>
+                                    <h4 class="card-title"><i class="fas fa-plus"></i> {{ translate('apiKeys', 'createNew', data['lang']) }}</h4>
                                 </div>
                                 <div class="card-body">
                                     <form id="user_form" class="forms-sample" method="post"
@@ -119,9 +119,8 @@
                                         <input type="hidden" name="id" value="{{ data['user']['user_id'] }}">
 
                                         <div class="form-group">
-                                            <label class="form-label" for="username">Name <small
-                                                    class="text-muted ml-1"> - What you wish to
-                                                call this API key</small> </label>
+                                            <label class="form-label" for="username">{{ translate('apiKeys', 'name', data['lang']) }}<small
+                                                    class="text-muted ml-1"> - {{ translate('apiKeys', 'nameDesc', data['lang']) }}</small> </label>
                                             <input type="text" class="form-control" name="name" id="name"
                                                    placeholder="API Key">
                                         </div>
@@ -129,8 +128,8 @@
                                         <table class="table table-hover mb-3">
                                             <thead>
                                             <tr class="rounded">
-                                                <th>Permission Name</th>
-                                                <th>Authorized ?</th>
+                                                <th>{{ translate('apiKeys', 'permName', data['lang']) }}</th>
+                                                <th>{{ translate('apiKeys', 'auth', data['lang']) }}</th>
                                             </tr>
                                             </thead>
                                             <tbody>
