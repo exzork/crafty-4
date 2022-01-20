@@ -12,6 +12,7 @@ from app.classes.shared.console import console
 from app.classes.models.servers import Servers
 from app.classes.minecraft.server_props import ServerProps
 from app.classes.web.websocket_helper import websocket_helper
+from app.classes.models.server_permissions import server_permissions
 
 logger = logging.getLogger(__name__)
 
@@ -190,7 +191,6 @@ class ServerJars:
             except Exception as e:
                 logger.error("Unable to save jar to {path} due to error:{error}".format(path=path, error=e))
                 pass
-        websocket_helper.broadcast('notification', "Executable download finished for server named: " + name)
         
 
         return False

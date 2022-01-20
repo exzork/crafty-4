@@ -7,7 +7,7 @@ from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.models.servers import Servers
 from app.classes.models.roles import Roles
-from app.classes.models.users import users_helper, ApiKeys, Users
+from app.classes.models.users import User_Roles, users_helper, ApiKeys, Users
 from app.classes.shared.permission_helper import permission_helper
 
 logger = logging.getLogger(__name__)
@@ -176,6 +176,21 @@ class Permissions_Servers:
             role_server = Role_Servers.select().where(Role_Servers.role_id.in_(roles_list)).where(Role_Servers.server_id == server_id).execute()
             permissions_mask = role_server[0].permissions
         return permissions_mask
+
+    @staticmethod
+    def get_server_user_list(server_id):
+        final_users = []
+        server_roles = Role_Servers.select().where(Role_Servers.server_id == server_id)
+        super_users = Users.select().where(Users.superuser == True)
+        for role in server_roles:
+            users = User_Roles.select().where(User_Roles.role_id == role.role_id)
+            for user in users:
+                if user.user_id.user_id not in final_users:
+                        final_users.append(user.user_id.user_id)
+        for suser in super_users:
+            if suser.user_id not in final_users:
+                final_users.append(suser.user_id)
+        return final_users
 
     @staticmethod
     def get_user_id_permissions_list(user_id, server_id: str):
