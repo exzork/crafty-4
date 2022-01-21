@@ -1,7 +1,6 @@
 {% extends ../public_base.html %}
 
 {% block meta %}
-  <meta http-equiv="refresh" content="30">
 {% end %}
 
 {% block title %}Crafty Controller - {{ translate('dashboard', 'dashboard', data['lang']) }}{% end %}
@@ -24,40 +23,49 @@
       <tbody>
         {% for server in data['servers'] %}
         <tr>
-          <td>
+          <td id="server_name_{{ server['stats']['server_id']['server_id'] }}">
             <i class="fas fa-server"></i>
-              {{ server['server_data']['server_name'] }}
+            {{ server['server_data']['server_name'] }}
           </td>
-            {% if server['stats']['int_ping_results'] != 'False' %}
-          <td>
-              {{ server['stats']['online'] }} / {{ server['stats']['max'] }} {{ translate('dashboard', 'max', data['lang']) }}<br />
+          {% if server['stats']['int_ping_results'] != 'False' %}
+          <td id="server_players_{{ server['stats']['server_id']['server_id'] }}">
+            {{ server['stats']['online'] }} / {{ server['stats']['max'] }} {{ translate('dashboard', 'max',
+            data['lang']) }}<br />
           </td>
-          <td>
-              {% if server['stats']['desc'] != 'False' %}
-                {% if server['raw_ping_result']['icon'] %}
-                <img src="data:image/png;base64,{% raw server['raw_ping_result']['icon'] %}"  alt="icon"/>
-                {% else %}
-                <img src="/static/assets/images/pack.png" alt="icon" />
-                {% end %}
-                <span id="input_motd_{{ server['stats']['server_id']['server_id'] }}" class="input_motd">{{ server['stats']['desc'] }}</span> <br />
-              {% end %}
-          </td>
-          <td>
-              {% if server['stats']['version'] != 'False' %}
-                {{ server['stats']['version'] }}
-              {% end %}
-          </td>
+          <td id="server_motd_{{ server['stats']['server_id']['server_id'] }}">
+            {% if server['stats']['desc'] != 'False' %}
+            {% if server['raw_ping_result']['icon'] %}
+            <img src="data:image/png;base64,{% raw server['raw_ping_result']['icon'] %}" alt="icon" />
             {% else %}
-          <td colspan="3">
-              <!-- TODO: translate the following text -->
-            <span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Crafty can't get infos from this Server </span>
-          </td>
+            <img src="/static/assets/images/pack.png" alt="icon" />
             {% end %}
-          <td>
+            <span id="input_motd_{{ server['stats']['server_id']['server_id'] }}" class="input_motd">{{
+              server['stats']['desc'] }}</span> <br />
+            {% end %}
+          </td>
+          <td id="server_version_{{ server['stats']['server_id']['server_id'] }}">
+            {% if server['stats']['version'] != 'False' %}
+            {{ server['stats']['version'] }}
+            {% end %}
+          </td>
+          {% else %}
+          <td id="server_players_{{ server['stats']['server_id']['server_id'] }}">
+            <span class="text-warning"><i class="fas fa-exclamation-triangle"></i></span>
+          </td>
+          <td id="server_motd_{{ server['stats']['server_id']['server_id'] }}">
+            <span class="text-warning">Crafty can't get infos from this Server </span>
+          </td>
+          <td id="server_version_{{ server['stats']['server_id']['server_id'] }}">
+            <span class="text-warning"><i class="fas fa-question"></i></i></span>
+          </td>
+          {% end %}
+          <td id="server_online_status_{{ server['stats']['server_id']['server_id'] }}">
             {% if server['stats']['running'] %}
-            <span class="text-success"><i class="fas fa-signal"></i>  {{ translate('dashboard', 'online', data['lang']) }}</span>
+            <span class="text-success"><i class="fas fa-signal"></i> {{ translate('dashboard', 'online', data['lang'])
+              }}</span>
             {% else %}
-            <span class="text-danger"><i class="fas fa-ban"></i>  {{ translate('dashboard', 'offline', data['lang']) }}</span>
+            <span class="text-danger"><i class="fas fa-ban"></i> {{ translate('dashboard', 'offline', data['lang'])
+              }}</span>
             {% end %}
           </td>
         </tr>
@@ -73,14 +81,83 @@
 
 {% block js %}
 
-    <script src="/static/assets/js/motd.js"></script>
-    <script>
-      $(document).ready(function () {
-        var all_motds = Array.from(document.getElementsByClassName('input_motd'));
-        for (element of all_motds) {
-          initParser(element.id, element.id);
-        };
-      }());
-    </script>
+<script src="/static/assets/js/motd.js"></script>
+<script>
+  function display_motd() {
+    var all_motds = Array.from(document.getElementsByClassName('input_motd'));
+    for (element of all_motds) {
+      initParser(element.id, element.id);
+    };
+  }
+
+  function update_one_server_status(server) {
+    server_players = document.getElementById('server_players_' + server.id);
+    server_motd = document.getElementById('server_motd_' + server.id);
+    server_version = document.getElementById('server_version_' + server.id);
+    server_online_status = document.getElementById('server_online_status_' + server.id);
+
+    /* TODO Update each element */
+    if (server.int_ping_results) {
+
+      /* Update Players */
+      if (server.players)
+      {
+        server_players.innerHTML = server.online + ` / ` + server.max + ` {{ translate('dashboard', 'max', data['lang']) }}<br />`
+      }
+
+      /* Update Motd */
+      var motd = "";
+      if (server.desc) {
+        if (server.icon) {
+          motd = `<img src="data:image/png;base64,` + server.icon + `" alt="icon" /> `;
+        }
+        else {
+          motd = `<img src="/static/assets/images/pack.png" alt="icon" /> `;
+        }
+
+        motd = motd + `<span id="input_motd_` + server.id + `" class="input_motd">` + server.desc + `</span> <br />`;
+        server_motd.innerHTML = motd;
+      }
+
+      /* Version */
+      if (server.version)
+      {
+        server_version.innerHTML = server.version
+      }
+    }
+    else {
+      server_players.innerHTML = `<span class="text-warning"><i class="fas fa-exclamation-triangle"></i></span>`;
+      server_motd.innerHTML = `<span class="text-warning">Crafty can't get infos from this Server </span>`;
+      server_version.innerHTML = `<span class="text-warning"><i class="fas fa-question"></i></i></span>`
+    }
+
+    /* Update Online Status */
+    var online_status = "";
+    if (server.running) {
+      online_status = `<span class="text-success"><i class="fas fa-signal"></i> {{ translate('dashboard', 'online', data['lang'])}}</span>`;
+    }
+    else {
+      online_status = `<span class="text-danger"><i class="fas fa-ban"></i> {{ translate('dashboard', 'offline', data['lang'])}}</span>`;
+    }
+    server_online_status.innerHTML = online_status;
+  }
+
+  function update_servers_status(data) {
+    for (server of data) {
+      update_one_server_status(server);
+    }
+    display_motd();
+  }
+
+  $(document).ready(function () {
+    console.log("ready!");
+    display_motd()
+
+    if (webSocket)
+    {
+      webSocket.on('update_server_status', update_servers_status);
+    }
+  }());
+</script>
 
 {% end %}

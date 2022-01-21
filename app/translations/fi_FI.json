@@ -133,6 +133,7 @@
     "serverStats": {
         "online": "Päällä",
         "offline": "Pois päältä",
+        "starting": "Myöhästynyt lähtö",
         "serverStatus": "Palvelimen tila",
         "serverStarted": "Palvelin käynnistyi",
         "serverUptime": "Palvelimen käyttöaika",

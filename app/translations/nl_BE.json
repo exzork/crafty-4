@@ -122,6 +122,7 @@
     "serverStats": {
         "online": "Online",
         "offline": "Offline",
+        "starting": "Vertraagde start",
         "serverStatus": "Server Status",
         "serverStarted": "Server gestart",
         "serverUptime": "Server Uptime",
