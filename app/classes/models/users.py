@@ -175,6 +175,15 @@ class helper_users:
             Users.update(up_data).where(Users.user_id == user_id).execute()
 
     @staticmethod
+    def get_super_user_list():
+        final_users = []
+        super_users = Users.select().where(Users.superuser == True)
+        for suser in super_users:
+            if suser.user_id not in final_users:
+                final_users.append(suser.user_id)
+        return final_users
+
+    @staticmethod
     def remove_user(user_id):
         with database.atomic():
             User_Roles.delete().where(User_Roles.user_id == user_id).execute()

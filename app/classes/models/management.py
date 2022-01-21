@@ -9,6 +9,8 @@ from app.classes.shared.main_models import db_helper
 from app.classes.models.users import Users, users_helper
 from app.classes.models.servers import Servers, servers_helper
 from app.classes.web.websocket_helper import websocket_helper
+from app.classes.models.server_permissions import server_permissions
+import time
 
 
 logger = logging.getLogger(__name__)
@@ -156,7 +158,7 @@ class helpers_management:
     @staticmethod
     def get_unactioned_commands():
         query = Commands.select().where(Commands.executed == 0)
-        return db_helper.return_rows(query)
+        return query
 
     @staticmethod
     def mark_command_complete(command_id=None):
@@ -181,7 +183,9 @@ class helpers_management:
 
         audit_msg = "{} {}".format(str(user_data['username']).capitalize(), log_msg)
 
-        websocket_helper.broadcast('notification', audit_msg)
+        server_users = server_permissions.get_server_user_list(server_id)
+        for user in server_users:
+            websocket_helper.broadcast_user(user,'notification', audit_msg)
 
         Audit_Log.insert({
             Audit_Log.user_name: user_data['username'],

@@ -15,13 +15,13 @@
       <div class="page-header">
         {% if data['new_user'] %}
           <h4 class="page-title">
-            New User
+            {{ translate('userConfig', 'pageTitleNew', data['lang']) }}
               <br />
               <small>UID: N/A</small>
           </h4>
         {% else %}
           <h4 class="page-title">
-            Edit User - {{ data['user']['user_id'] }}
+            {{ translate('userConfig', 'pageTitle', data['lang']) }} - {{ data['user']['user_id'] }}
               <br />
               <small>UID: {{ data['user']['user_id'] }}</small>
           </h4>
@@ -40,16 +40,12 @@
             <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
               <li class="nav-item">
                 <a class="nav-link active" href="/panel/{{ 'add_user' if data['new_user'] else 'edit_user' }}?id={{ data['user']['user_id'] }}&subpage=config" role="tab" aria-selected="true">
-                  <i class="fas fa-cogs"></i>Config</a>
+                  <i class="fas fa-cogs"></i> {{ translate('userConfig', 'config', data['lang']) }} - {{ data['user']['user_id'] }}</a>
               </li>
               {% if not data['new_user'] %}
               <li class="nav-item">
                 <a class="nav-link" href="/panel/edit_user_apikeys?id={{ data['user']['user_id'] }}" role="tab" aria-selected="false">
-                  <i class="fas fa-key"></i>API Keys</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="/panel/add_user?id={{ data['user']['user_id'] }}&subpage=other" role="tab" aria-selected="false">
-                  <i class="fas fa-folder-tree"></i>Other</a>
+                  <i class="fas fa-key"></i>{{ translate('userConfig', 'apiKey', data['lang']) }} - {{ data['user']['user_id'] }}</a>
               </li>
               {% end %}
             </ul>
@@ -68,27 +64,27 @@
 
                       <div class="card">
                         <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                          <h4 class="card-title"><i class="fas fa-user"></i> User Settings</h4>
+                          <h4 class="card-title"><i class="fas fa-user"></i> {{ translate('userConfig', 'userSettings', data['lang']) }} - {{ data['user']['user_id'] }}</h4>
                         </div>
                         <div class="card-body">
                           <div class="form-group">
-                            <label class="form-label" for="username">User Name <small class="text-muted ml-1"> - What you wish to call this user</small> </label>
+                            <label class="form-label" for="username">{{ translate('userConfig', 'userName', data['lang']) }} - {{ data['user']['user_id'] }}<small class="text-muted ml-1"> - {{ translate('userConfig', 'userNameDesc', data['lang']) }} - {{ data['user']['user_id'] }}</small> </label>
                             <input type="text" class="form-control" name="username" id="username" value="{{ data['user']['username']  }}" placeholder="User Name" >
                           </div>
                           <div class="form-group">
-                            <label class="form-label" for="password0">Password <small class="text-muted ml-1"> - leave blank to don't change</small> </label>
+                            <label class="form-label" for="password0">{{ translate('userConfig', 'password', data['lang']) }} - {{ data['user']['user_id'] }}<small class="text-muted ml-1"> - {{ translate('userConfig', 'leaveBlank', data['lang']) }} - {{ data['user']['user_id'] }}</small> </label>
                             <input type="password" class="form-control" name="password0" id="password0" value="" placeholder="Password" >
                           </div>
                           <div class="form-group">
-                            <label class="form-label" for="password1">Repeat Password <small class="text-muted ml-1"> - leave blank to don't change</small> </label>
+                            <label class="form-label" for="password1">{{ translate('userConfig', 'repeat', data['lang']) }} - {{ data['user']['user_id'] }} <small class="text-muted ml-1"> - {{ translate('userConfig', 'leaveBlank', data['lang']) }} - {{ data['user']['user_id'] }}</small> </label>
                             <input type="password" class="form-control" name="password1" id="password1" value="" placeholder="Repeat Password" >
                           </div>
                           <div class="form-group">
-                            <label class="form-label" for="email">Gravatar Email <small class="text-muted ml-1"> - for the profile picture. this is not required. crafty will never make use of user emails. User emails are strictly for Gravatar</small> </label>
+                            <label class="form-label" for="email">{{ translate('userConfig', 'gravEmail', data['lang']) }} - {{ data['user']['user_id'] }}<small class="text-muted ml-1"> - {{ translate('userConfig', 'gravDesc', data['lang']) }} - {{ data['user']['user_id'] }}</small> </label>
                             <input type="email" class="form-control" name="email" id="email" value="{{ data['user']['email'] }}" placeholder="Gravatar Email" >
                           </div>
                           <div class="form-group">
-                            <label class="form-label" for="language">User Language:</label>
+                            <label class="form-label" for="language">{{ translate('userConfig', 'userLang', data['lang']) }}</label>
                             <select class="form-select form-control form-control-lg select-css" id="language" name="language" form="user_form">
                             {% for lang in data['languages'] %}
                               <option value="{{lang}}">{{lang}}</option>
@@ -100,7 +96,7 @@
 
                       <div class="card">
                         <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                          <h4 class="card-title"><i class="fas fa-user-tag"></i> Roles <small class="text-muted ml-1"> - the roles this user is a member of</small></h4>
+                          <h4 class="card-title"><i class="fas fa-user-tag"></i> {{ translate('userConfig', 'userRoles', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('userConfig', 'userRolesDesc', data['lang']) }}</small></h4>
                         </div>
                         <div class="card-body">
                           <div class="form-group">
@@ -108,8 +104,8 @@
                               <table class="table table-hover">
                                 <thead>
                                   <tr class="rounded">
-                                    <th>Role Name</th>
-                                    <th>Member?</th>
+                                    <th>{{ translate('userConfig', 'roleName', data['lang']) }}</th>
+                                    <th>{{ translate('userConfig', 'member', data['lang']) }}</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -137,7 +133,7 @@
 
                       <div class="card">
                         <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                          <h4 class="card-title"><i class="fas fa-user-lock"></i> Crafty Permissions <small class="text-muted ml-1"> - permissions this user has on Crafty Controller </small></h4>
+                          <h4 class="card-title"><i class="fas fa-user-lock"></i> {{ translate('userConfig', 'craftyPerms', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('userConfig', 'craftyPermDesc', data['lang']) }}permissions this user has on Crafty Controller </small></h4>
                         </div>
                         <div class="card-body">
                           <div class="form-group">
@@ -145,9 +141,9 @@
                               <table class="table table-hover">
                                 <thead>
                                   <tr class="rounded">
-                                    <th>Permission Name</th>
-                                    <th>Authorized ?</th>
-                                    <th>Number of Uses Allowed (-1=No Limit)</th>
+                                    <th>{{ translate('userConfig', 'permName', data['lang']) }}</th>
+                                    <th>{{ translate('userConfig', 'auth', data['lang']) }}</th>
+                                    <th>{{ translate('userConfig', 'uses', data['lang']) }}</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -174,17 +170,17 @@
                       <div class="form-check-flat">
                         <label for="enabled" class="form-check-label ml-4 mb-4">
                           {% if data['user']['enabled'] %}
-                              <input type="checkbox" class="form-check-input" id="enabled" name="enabled" checked="" value="1">Enabled
+                              <input type="checkbox" class="form-check-input" id="enabled" name="enabled" checked="" value="1">{{ translate('userConfig', 'enabled', data['lang']) }}
                           {% else %}
-                              <input type="checkbox" class="form-check-input" id="enabled" name="enabled" value="1">Enabled
+                              <input type="checkbox" class="form-check-input" id="enabled" name="enabled" value="1">{{ translate('userConfig', 'enabled', data['lang']) }}
                           {% end %}
                         </label>
 
                         <label for="superuser" class="form-check-label ml-4 mb-4">
                           {% if data['user']['superuser'] %}
-                              <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser" name="superuser" checked="" value="1" {{ data['super-disabled'] }} >Super User
+                              <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser" name="superuser" checked="" value="1" {{ data['super-disabled'] }} >{{ translate('userConfig', 'super', data['lang']) }}
                           {% else %}
-                              <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser" name="superuser" {{ data['super-disabled'] }} value="1" >Super User
+                              <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser" name="superuser" {{ data['super-disabled'] }} value="1" >{{ translate('userConfig', 'super', data['lang']) }}
                           {% end %}
                         </label>
 
@@ -198,19 +194,17 @@
                 <div class="col-md-6 col-sm-12">
                     <div class="card">
                       <div class="card-body">
-                        <h4 class="card-title"><i class="fas fa-user-cog"></i> User Config Area</h4>
-                        <p class="card-description"> Here is where you can change the configuration of your user</p>
+                        <h4 class="card-title"><i class="fas fa-user-cog"></i> {{ translate('userConfig', 'configArea', data['lang']) }}</h4>
+                        <p class="card-description"> {{ translate('userConfig', 'configAreaDesc', data['lang']) }}</p>
                         <blockquote class="blockquote">
                           <p class="mb-0">
-                              Created: {{ str(data['user']['created']) }}
+                            {{ translate('userConfig', 'created', data['lang']) }} {{ str(data['user']['created']) }}
                               <br />
-                              Last login: {{ str(data['user']['last_login']) }}
+                              {{ translate('userConfig', 'lastLogin', data['lang']) }} {{ str(data['user']['last_login']) }}
                               <br />
-                              Last update: {{ str(data['user']['last_update']) }}
+                              {{ translate('userConfig', 'lastUpdate', data['lang']) }} {{ str(data['user']['last_update']) }}
                               <br />
-                              Last IP: {{ data['user']['last_ip'] }}
-                              <br />
-                              API Key: TODO! <!-- TODO -->
+                              {{ translate('userConfig', 'lastIP', data['lang']) }} {{ data['user']['last_ip'] }}
                               <br />
                           </p>
                         </blockquote>
@@ -218,13 +212,13 @@
                     </div>
                     <div class="text-center">
                         {% if data['new_user'] %}
-                            <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i> Delete User</a><br />
-                            <small>You cannot delete something that does not yet exist</small>
+                            <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i>{{ translate('userConfig', 'deleteUserB', data['lang']) }}</a><br />
+                            <small>{{ translate('userConfig', 'notExist', data['lang']) }}</small>
                         {% elif data['user']['superuser'] %}
-                            <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i> Delete User</a><br />
-                            <small>You cannot delete a superuser</small>
+                            <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i> {{ translate('userConfig', 'deleteUserB', data['lang']) }}</a><br />
+                            <small>{{ translate('userConfig', 'delSuper', data['lang']) }}</small>
                         {% else %}
-                            <button class="btn btn-sm btn-danger delete-user"><i class="fas fa-trash"></i> Delete User</a>
+                            <button class="btn btn-sm btn-danger delete-user"><i class="fas fa-trash"></i> {{ translate('userConfig', 'deleteUserB', data['lang']) }}</a>
                         {% end %}
 
                     </div>
@@ -251,8 +245,8 @@
     console.log("User to delete is {{ data['user']['username']  }}");
 
     bootbox.confirm({
-        title: "{% raw translate('usersConfig', 'deleteUser', data['lang']) %}"+"{{ data['user']['username']  }}",
-        message: "{{ translate('usersConfig', 'confirmDelete', data['lang']) }}",
+        title: "{% raw translate('userConfig', 'deleteUser', data['lang']) %}"+"{{ data['user']['username']  }}",
+        message: "{{ translate('userConfig', 'confirmDelete', data['lang']) }}",
         buttons: {
             cancel: {
                 label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'

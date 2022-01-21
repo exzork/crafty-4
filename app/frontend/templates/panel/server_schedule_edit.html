@@ -202,9 +202,9 @@ try{
 }catch{
   console.log("no element named {{ data['schedule']['action'] }}")
 }
+  ifDays();
   yesnoCheck();
   basicAdvanced();
-  ifDays();
   if("{{ data['schedule']['enabled']  }}" == 'True'){
     document.getElementById('enabled').checked = true;
   }else{

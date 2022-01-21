@@ -26,6 +26,7 @@ logger = logging.getLogger('apscheduler')
 
 try:
     from apscheduler.schedulers.background import BackgroundScheduler
+    from apscheduler.triggers.cron import CronTrigger
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
@@ -52,8 +53,8 @@ class TasksManager:
         self.controller = controller
         self.tornado = Webserver(controller, self)
 
-        tz = get_localzone()
-        self.scheduler = BackgroundScheduler(timezone=str(tz))
+        self.tz = get_localzone()
+        self.scheduler = BackgroundScheduler(timezone=str(self.tz))
 
         self.users_controller = Users_Controller()
 
@@ -86,10 +87,14 @@ class TasksManager:
             # select any commands waiting to be processed
             commands = management_helper.get_unactioned_commands()
             for c in commands:
-
-                svr = self.controller.get_server_obj(c['server_id']['server_id'])
-                user_id = c.get('user')['user_id']
-                command = c.get('command', None)
+                try:
+                    svr = self.controller.get_server_obj(c.server_id)
+                except:
+                    logger.error("Server value requested does note exist purging item from waiting commands.")
+                    management_helper.mark_command_complete(c.command_id)
+                    
+                user_id = c.user_id
+                command = c.command
 
                 if command == 'start_server':
                     svr.run_threaded_server(user_id)
@@ -107,7 +112,7 @@ class TasksManager:
                     svr.jar_update()
                 else:
                     svr.send_command(command)
-                management_helper.mark_command_complete(c.get('command_id', None))
+                management_helper.mark_command_complete(c.command_id)
 
             time.sleep(1)
 
@@ -154,11 +159,19 @@ class TasksManager:
         schedules = management_helper.get_schedules_enabled()
         self.scheduler.add_listener(self.schedule_watcher, mask=EVENT_JOB_EXECUTED)
         #self.scheduler.add_job(self.scheduler.print_jobs, 'interval', seconds=10, id='-1')
+
         #load schedules from DB
         for schedule in schedules:
             if schedule.cron_string != "":
-                cron = schedule.cron_string.split(' ')
-                self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
+                try:
+                    self.scheduler.add_job(management_helper.add_command, CronTrigger.from_crontab(schedule.cron_string, timezone=str(self.tz)), id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
+                except Exception as e:
+                    console.error("Failed to schedule task with error: {}.".format(e))
+                    console.warning("Removing failed task from DB.")
+                    logger.error("Failed to schedule task with error: {}.".format(e))
+                    logger.warning("Removing failed task from DB.")
+                    #remove items from DB if task fails to add to apscheduler
+                    management_helper.delete_scheduled_task(schedule.schedule_id)
             else:
                 if schedule.interval_type == 'hours':
                     self.scheduler.add_job(management_helper.add_command, 'cron', minute = 0,  hour = '*/'+str(schedule.interval), id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
@@ -178,12 +191,14 @@ class TasksManager:
         sch_id = management_helper.create_scheduled_task(job_data['server_id'], job_data['action'], job_data['interval'], job_data['interval_type'], job_data['start_time'], job_data['command'], "None", job_data['enabled'], job_data['one_time'], job_data['cron_string'])
         if job_data['enabled']:
             if job_data['cron_string'] != "":
-                cron = job_data['cron_string'].split(' ')
                 try:
-                    self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+                    self.scheduler.add_job(management_helper.add_command, CronTrigger.from_crontab(job_data['cron_string'], timezone=str(self.tz)), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
                 except Exception as e:
                     console.error("Failed to schedule task with error: {}.".format(e))
-                    console.info("Removing failed task from DB.")
+                    console.warning("Removing failed task from DB.")
+                    logger.error("Failed to schedule task with error: {}.".format(e))
+                    logger.warning("Removing failed task from DB.")
+                    #remove items from DB if task fails to add to apscheduler
                     management_helper.delete_scheduled_task(sch_id)
             else:
                 if job_data['interval_type'] == 'hours':

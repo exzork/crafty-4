@@ -137,6 +137,8 @@ class Controller:
 
 
     def package_support_logs(self, exec_user):
+        #pausing so on screen notifications can run for user
+        time.sleep(7)
         websocket_helper.broadcast_user(exec_user['user_id'], 'notification', 'Preparing your support logs')
         tempDir = tempfile.mkdtemp()
         tempZipStorage = tempfile.mkdtemp()
@@ -161,7 +163,10 @@ class Controller:
         for server in auth_servers:
             final_path = os.path.join(server_path, str(server['server_name']))
             os.mkdir(final_path)
-            shutil.copy(server['log_path'], final_path)
+            try:
+                shutil.copy(server['log_path'], final_path)
+            except Exception as e:
+                logger.warning("Failed to copy file with error: {}".format(e))
         #Copy crafty logs to archive dir
         full_log_name = os.path.join(crafty_path, 'logs')
         shutil.copytree(os.path.join(self.project_root, 'logs'), full_log_name)
@@ -195,7 +200,7 @@ class Controller:
 
     def get_server_data(self, server_id: str):
         for s in self.servers_list:
-            if s['server_id'] == server_id:
+            if str(s['server_id']) == str(server_id):
                 return s['server_data_obj']
 
         logger.warning("Unable to find server object for server id {}".format(server_id))
@@ -281,7 +286,12 @@ class Controller:
             logger.error("Unable to create required server files due to :{}".format(e))
             return False
 
-        server_command = 'java -Xms{}M -Xmx{}M -jar "{}" nogui'.format(helper.float_to_string(min_mem),
+        if helper.is_os_windows():
+            server_command = 'java -Xms{}M -Xmx{}M -jar "{}" nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     full_jar_path)
+        else:
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
                                                                      full_jar_path)
         server_log_file = "{}/logs/latest.log".format(server_dir)
@@ -315,7 +325,7 @@ class Controller:
         new_server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
         if helper.is_os_windows():
-            server_dir = helper.wtol_path(new_server_dir)
+            new_server_dir = helper.wtol_path(new_server_dir)
             backup_path = helper.wtol_path(backup_path)
             new_server_dir.replace(' ', '^ ')
             backup_path.replace(' ', '^ ')
@@ -337,9 +347,14 @@ class Controller:
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
 
-        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+        if helper.is_os_windows():
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
-                                                                     +'"'+full_jar_path+'"')
+                                                                     '"'+full_jar_path+'"')
+        else:
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     full_jar_path)
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"
 
@@ -377,9 +392,14 @@ class Controller:
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
 
-        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+        if helper.is_os_windows():
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
-                                                                     +'"'+full_jar_path+'"')
+                                                                     '"'+full_jar_path+'"')
+        else:
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     full_jar_path)
         logger.debug('command: ' + server_command)
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
         server_stop = "stop"
@@ -430,7 +450,7 @@ class Controller:
         for s in self.servers_list:
 
             # if this is the droid... im mean server we are looking for...
-            if s['server_id'] == server_id:
+            if str(s['server_id']) == str(server_id):
                 server_data = self.get_server_data(server_id)
                 server_name = server_data['server_name']
                 backup_dir = self.servers.get_server_data_by_id(server_id)['backup_path']

@@ -25,6 +25,7 @@ from app.classes.models.management import management_helper
 from app.classes.web.websocket_helper import websocket_helper
 from app.classes.shared.translation import translation
 from app.classes.models.users import users_helper
+from app.classes.models.server_permissions import server_permissions
 
 logger = logging.getLogger(__name__)
 
@@ -383,11 +384,10 @@ class Server:
             return False
 
     def send_command(self, command):
-        console.info("COMMAND TIME: {}".format(command))
         if not self.check_running() and command.lower() != 'start':
             logger.warning("Server not running, unable to send command \"{}\"".format(command))
             return False
-
+        console.info("COMMAND TIME: {}".format(command))
         logger.debug("Sending command {} to server".format(command))
 
         # send it
@@ -477,7 +477,7 @@ class Server:
     def remove_watcher_thread(self):
         logger.info("Removing old crash detection watcher thread")
         console.info("Removing old crash detection watcher thread")
-        schedule.clear(self.name)
+        self.crash_watcher_schedule.remove(self.server_name)
 
     def agree_eula(self, user_id):
         file = os.path.join(self.server_path, 'eula.txt')
@@ -610,7 +610,9 @@ class Server:
                 if len(websocket_helper.clients) > 0:
                     # There are clients
                     self.check_update()
-                    websocket_helper.broadcast('notification', "Executable update finished for " + self.name)
+                    server_users = server_permissions.get_server_user_list(self.server_id)
+                    for user in server_users:
+                        websocket_helper.broadcast_user(user, 'notification', "Executable update finished for " + self.name)
                     time.sleep(3)
                     websocket_helper.broadcast_page('/panel/server_detail', 'update_button_status', {
                         'isUpdating': self.check_update(),
@@ -619,15 +621,18 @@ class Server:
                     })
                     websocket_helper.broadcast_page('/panel/dashboard', 'send_start_reload', {
                     })
-                websocket_helper.broadcast('notification', "Executable update finished for "+self.name)
+                server_users = server_permissions.get_server_user_list(self.server_id)
+                for user in server_users:
+                    websocket_helper.broadcast_user(user, 'notification', "Executable update finished for "+self.name)
 
                 management_helper.add_to_audit_log_raw('Alert', '-1', self.server_id, "Executable update finished for "+self.name, self.settings['server_ip'])
                 if wasStarted:
                     self.start_server()
             elif not downloaded and not self.is_backingup:
                 time.sleep(5)
-                servers_helper.set_update(self.server_id, False)
-                websocket_helper.broadcast('notification',
+                server_users = server_permissions.get_server_user_list(self.server_id)
+                for user in server_users:
+                    websocket_helper.broadcast_user(user,'notification',
                                            "Executable update failed for " + self.name + ". Check log file for details.")
                 logger.error("Executable download failed.")
             pass

@@ -17,6 +17,8 @@ import threading
 from cron_validator import CronValidator
 #TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
+import libgravatar
+import requests
 
 from tornado import locale, iostream
 from tornado.ioloop import IOLoop
@@ -128,7 +130,7 @@ class PanelHandler(BaseHandler):
                     # increasing and will eat up the RAM
                     del chunk
 
-    def check_server_id(self) -> Optional[str]:
+    def check_server_id(self):
         server_id = self.get_argument('id', None)
 
         api_key, _, exec_user = self.current_user
@@ -244,6 +246,24 @@ class PanelHandler(BaseHandler):
             } if api_key is not None else None,
             'superuser': superuser
         }
+        if  helper.get_setting("allow_nsfw_profile_pictures"):
+            rating = "x"
+        else:
+            rating = "g"
+
+
+        #Get grvatar hash for profile pictures
+        if exec_user['email'] != 'default@example.com' or "":
+            g = libgravatar.Gravatar(libgravatar.sanitize_email(exec_user['email']))
+            url = g.get_image(size=80, default="404", force_default=False, rating=rating, filetype_extension=False, use_ssl=True) # + "?d=404"
+            if requests.head(url).status_code != 404:
+                profile_url = url
+            else:
+                profile_url = "/static/assets/images/faces-clipart/pic-3.png"
+        else:
+            profile_url = "/static/assets/images/faces-clipart/pic-3.png"
+
+        page_data['user_image'] = profile_url
 
         if page == 'unauthorized':
             template = "panel/denied.html"
@@ -539,7 +559,6 @@ class PanelHandler(BaseHandler):
                 'Players': Enum_Permissions_Server.Players,
             }
             page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
-            exec_user_server_permissions = self.controller.server_perms.get_user_permissions_list(exec_user["user_id"], server_id)
             page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
             page_data['new_schedule'] = True
@@ -557,7 +576,7 @@ class PanelHandler(BaseHandler):
             page_data['schedule']['difficulty'] = "basic"
             page_data['schedule']['interval_type'] = 'days'
 
-            if not Enum_Permissions_Server.Schedule in exec_user_server_permissions:
+            if not Enum_Permissions_Server.Schedule in page_data['user_permissions']:
                 if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
                     return
@@ -581,7 +600,6 @@ class PanelHandler(BaseHandler):
                 'Players': Enum_Permissions_Server.Players,
             }
             page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
-            exec_user_server_permissions = self.controller.server_perms.get_user_permissions_list(exec_user["user_id"], server_id)
             page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
             page_data['new_schedule'] = False
@@ -609,7 +627,7 @@ class PanelHandler(BaseHandler):
             if sch_id == None or server_id == None:
                 self.redirect("/panel/error?error=Invalid server ID or Schedule ID")
                 
-            if not Enum_Permissions_Server.Schedule in exec_user_server_permissions:
+            if not Enum_Permissions_Server.Schedule in page_data['user_permissions']:
                 if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
                     return
@@ -864,7 +882,6 @@ class PanelHandler(BaseHandler):
                 'Config': Enum_Permissions_Server.Config,
                 'Players': Enum_Permissions_Server.Players,
             }
-        user_perms = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
         exec_user_role = set()
         if superuser:
             # defined_servers = self.controller.list_defined_servers()
@@ -878,7 +895,7 @@ class PanelHandler(BaseHandler):
                 exec_user_role.add(role['role_name'])
 
         if page == 'server_detail':
-            if not permissions['Config'] in user_perms:
+            if not permissions['Config'] in self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id):
                 if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access to Config")    
                     return
@@ -886,7 +903,13 @@ class PanelHandler(BaseHandler):
             server_obj = self.controller.servers.get_server_obj(server_id)
             if superuser:
                 server_path = self.get_argument('server_path', None)
+                if helper.is_os_windows():
+                    server_path.replace(' ', '^ ')
+                    server_path = helper.wtol_path(server_path)
                 log_path = self.get_argument('log_path', None)
+                if helper.is_os_windows():
+                    log_path.replace(' ', '^ ')
+                    log_path = helper.wtol_path(log_path)
                 executable = self.get_argument('executable', None)
                 execution_command = self.get_argument('execution_command', None)
                 server_ip = self.get_argument('server_ip', None)
@@ -955,11 +978,14 @@ class PanelHandler(BaseHandler):
             server_obj = self.controller.servers.get_server_obj(server_id)
             if superuser:
                 backup_path = bleach.clean(self.get_argument('backup_path', None))
+                if helper.is_os_windows():
+                    backup_path.replace(' ', '^ ')
+                    backup_path = helper.wtol_path(backup_path)
             else:
                 backup_path = server_obj.backup_path
             max_backups = bleach.clean(self.get_argument('max_backups', None))
 
-            if not permissions['Backup'] in user_perms:
+            if not permissions['Backup'] in self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id):
                 if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access: User not authorized")
                 return
@@ -1035,7 +1061,7 @@ class PanelHandler(BaseHandler):
             else:
                 one_time = False
                 
-            if not superuser and not permissions['Backup'] in user_perms:
+            if not superuser and not permissions['Backup'] in self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id):
                 self.redirect("/panel/error?error=Unauthorized access: User not authorized")
                 return
             elif server_id is None:
@@ -1155,7 +1181,7 @@ class PanelHandler(BaseHandler):
             else:
                 one_time = False
                 
-            if not superuser and not permissions['Backup'] in user_perms:
+            if not superuser and not permissions['Backup'] in self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id):
                 self.redirect("/panel/error?error=Unauthorized access: User not authorized")
                 return
             elif server_id is None:
