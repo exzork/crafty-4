@@ -123,6 +123,7 @@
     "serverStats": {
         "online": "En línea",
         "offline": "Desconectado",
+        "starting": "Inicio-retrasado",
         "serverStatus": "Estado del Servidor",
         "serverStarted": "Servidor Iniciado",
         "serverUptime": "Actividad del Servidor",

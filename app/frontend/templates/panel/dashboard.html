@@ -257,6 +257,13 @@
 
 <script src="/static/assets/js/motd.js"></script>
 <script>
+  function display_motd() {
+    var all_motds = Array.from(document.getElementsByClassName('input_motd'));
+    for (element of all_motds) {
+      initParser(element.id, element.id);
+    };
+  }
+
   $(document).ready(function () {
     $('[data-toggle="popover"]').popover();
     if ($(window).width() < 1000) {
@@ -292,12 +299,11 @@
       success: function (data) {
         console.log("got response:");
         console.log(data);
-        setTimeout(function () {
+        /*setTimeout(function () {
           if (command != 'start_server') {
             location.reload();
           }
-        }, 10000);
-
+        }, 10000);*/
       }
     });
   }
@@ -313,10 +319,9 @@
       success: function (data) {
         console.log("got response:");
         console.log(data);
-        setTimeout(function () {
+        /*setTimeout(function () {
           location.reload();
-        }, 10000);
-
+        }, 10000);*/
       }
     });
   }

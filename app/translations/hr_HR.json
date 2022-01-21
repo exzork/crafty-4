@@ -122,6 +122,7 @@
     "serverStats": {
         "online": "Na mreži",
         "offline": "Izvan mreže",
+        "starting": "Odgođeno pokretanje",
         "serverStatus": "Status poslužitelja",
         "serverStarted": "Poslužitelj pokrenut",
         "serverUptime": "Vrijeme rada poslužitelja",

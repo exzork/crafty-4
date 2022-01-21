@@ -325,6 +325,32 @@ class TasksManager:
                         'version': srv['raw_ping_result'].get('version'),
                         'icon': srv['raw_ping_result'].get('icon')
                     })
+                    if (len(websocket_helper.clients) > 0):
+                        websocket_helper.broadcast_page_params(
+                            '/panel/server_detail',
+                            {
+                                'id': str(server_id)
+                            },
+                            'update_server_details',
+                            {
+                                'id': srv['raw_ping_result'].get('id'),
+                                'started': srv['raw_ping_result'].get('started'),
+                                'running': srv['raw_ping_result'].get('running'),
+                                'cpu': srv['raw_ping_result'].get('cpu'),
+                                'mem': srv['raw_ping_result'].get('mem'),
+                                'mem_percent': srv['raw_ping_result'].get('mem_percent'),
+                                'world_name': srv['raw_ping_result'].get('world_name'),
+                                'world_size': srv['raw_ping_result'].get('world_size'),
+                                'server_port': srv['raw_ping_result'].get('server_port'),
+                                'int_ping_results': srv['raw_ping_result'].get('int_ping_results'),
+                                'online': srv['raw_ping_result'].get('online'),
+                                'max': srv['raw_ping_result'].get('max'),
+                                'players': srv['raw_ping_result'].get('players'),
+                                'desc': srv['raw_ping_result'].get('desc'),
+                                'version': srv['raw_ping_result'].get('version'),
+                                'icon': srv['raw_ping_result'].get('icon')
+                            }
+                        )
 
             if (len(servers_ping) > 0) & (len(websocket_helper.clients) > 0):
                 try:

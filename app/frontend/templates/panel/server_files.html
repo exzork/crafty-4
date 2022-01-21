@@ -1,7 +1,6 @@
 {% extends ../base.html %}
 
 {% block meta %}
-<!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
 {% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails', data['lang']) }}{% end %}
@@ -557,7 +556,7 @@
     xmlHttpRequest.addEventListener('error', (e) => {
       console.error('Error while uploading file', file.name + '.', 'Event:', e)
     }, false);
-    
+
     xmlHttpRequest.send(file);
   }
 
@@ -637,7 +636,7 @@
         }
   });
 
-  
+
 
   var fileList = document.getElementById("files");
   fileList.addEventListener("change", function (e) {
@@ -672,7 +671,7 @@
           }catch{
             document.getElementById('files-tree').innerHTML = text;
           }
-          
+
 
           document.getElementsByClassName('files-tree-title')[0].setAttribute('data-path', serverDir);
           document.getElementsByClassName('files-tree-title')[0].setAttribute('data-name', 'Files');
@@ -724,7 +723,7 @@
           setTimeout(function () {setTreeViewContext()}, 1000);
 
           var toggler = document.getElementById(path);
-  
+
             if (toggler.classList.contains('files-tree-title')){
             document.getElementById(path+"span").addEventListener("click", function caretListener() {
               document.getElementById(path+"ul").classList.toggle("d-block");

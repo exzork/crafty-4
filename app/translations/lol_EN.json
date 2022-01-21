@@ -123,6 +123,7 @@
     "serverStats": {
         "online": "Turnd on",
         "offline": "Turnd off",
+        "starting": "I waitz b4 I start",
         "serverStatus": "Servr Status",
         "serverStarted": "Servr Started",
         "serverUptime": "How longz servr been awaek",

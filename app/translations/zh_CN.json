@@ -123,6 +123,7 @@
     "serverStats": {
         "online": "运行中",
         "offline": "已停止",
+        "starting": "延迟启动",
         "serverStatus": "服务器状态",
         "serverStarted": "服务器已启动",
         "serverUptime": "服务器正常运行时间",
