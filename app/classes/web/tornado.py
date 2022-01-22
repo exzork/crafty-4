@@ -116,6 +116,7 @@ class Webserver:
 
         tornado.template.Loader('.')
 
+        # TODO: Remove because we don't and won't use
         tornado.locale.set_default_locale('en_EN')
 
         handler_args = {"controller": self.controller, "tasks_manager": self.tasks_manager, "translator": translation}

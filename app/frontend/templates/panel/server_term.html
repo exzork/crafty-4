@@ -1,7 +1,6 @@
 {% extends ../base.html %}
 
 {% block meta %}
-<!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
 {% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails', data['lang']) }}{% end %}
@@ -10,14 +9,14 @@
 
 <div class="content-wrapper">
 
-    <!-- Page Title Header Starts-->
+  <!-- Page Title Header Starts-->
   <div class="row page-title-header">
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
           {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{ data['server_stats']['server_id']['server_name'] }}
-            <br />
-            <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
+          <br />
+          <small>UUID: {{ data['server_stats']['server_id']['server_uuid'] }}</small>
         </h4>
       </div>
     </div>
@@ -25,66 +24,67 @@
   </div>
   <!-- Page Title Header Ends-->
 
- {% include "parts/details_stats.html %}
+  {% include "parts/details_stats.html %}
 
   <div class="row">
 
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-            {% include "parts/server_controls_list.html %}
-            
-            <div class="col-md-12">
-              <div class="input-group">
-                <div id="virt_console" class="" style="width: 100%; font-size: .8em; padding: 5px 10px; border: 1px solid #383e5d; background-color:#2a2c44;height:500px; overflow: scroll;"></div>
-              </div>
-              <br />
+          {% include "parts/server_controls_list.html %}
 
-              <div style="gap: 0.5rem;" class="input-group flex-wrap">
-                <input style="min-width: 10rem;" type="text" class="form-control" id="server_command" name="server_command" placeholder="{{ translate('serverTerm', 'commandInput', data['lang']) }}" autofocus="">
-                <span class="input-group-btn ml-5">
-                  <button id="submit" class="btn btn-sm btn-info" type="button">{{ translate('serverTerm', 'sendCommand', data['lang']) }}</button>
-                </span>
-              </div>
-              {% if data['permissions']['Commands'] in data['user_permissions'] %}
-              {% if data['server_stats']['updating']%}
-                <div id="update_control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
-                <button onclick="" id="start-btn" style="max-width: 7rem;" class="btn btn-warning m-1 flex-grow-1 disabled">{{ translate('serverTerm', 'updating', data['lang']) }}</button>
-                <button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1 disabled">{% raw translate('serverTerm', 'restart', data['lang']) %}</button>
-                <button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate('serverTerm', 'stop', data['lang']) }}</button>
-              </div>
-              {% elif data['waiting_start'] %}
-              <div id="control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
-                <button onclick="" id="start-btn" style="max-width: 7rem; white-space: nowrap;" class="btn btn-secondary m-1 flex-grow-1 disabled" data-toggle="tooltip" title="{{ translate('serverTerm', 'delay-explained', data['lang'])}}">{{ translate('serverTerm', 'starting', data['lang']) }}</button>
-                <button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1 disabled">{% raw translate('serverTerm', 'restart', data['lang']) %}</button>
-                <button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate('serverTerm', 'stop', data['lang']) }}</button>
-                </div>
-              {% else %}
-              <div id="control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
-                <button onclick="send_command(server_id, 'start_server');" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate('serverTerm', 'start', data['lang']) }}</button>
-                <button onclick="send_command(server_id, 'restart_server');" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate('serverTerm', 'restart', data['lang']) %}</button>
-                <button onclick="send_command(server_id, 'stop_server');" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1">{{ translate('serverTerm', 'stop', data['lang']) }}</button>
-              </div>
-              {% end %}
-              {% end %}
+          <div class="col-md-12">
+            <div class="input-group">
+              <div id="virt_console" class="" style="width: 100%; font-size: .8em; padding: 5px 10px; border: 1px solid #383e5d; background-color:#2a2c44;height:500px; overflow: scroll;"></div>
             </div>
+            <br />
 
+            <div style="gap: 0.5rem;" class="input-group flex-wrap">
+              <input style="min-width: 10rem;" type="text" class="form-control" id="server_command" name="server_command" placeholder="{{ translate('serverTerm', 'commandInput', data['lang']) }}" autofocus="">
+              <span class="input-group-btn ml-5">
+                <button id="submit" class="btn btn-sm btn-info" type="button">{{ translate('serverTerm', 'sendCommand',
+                  data['lang']) }}</button>
+              </span>
+            </div>
+            {% if data['permissions']['Commands'] in data['user_permissions'] %}
+            {% if data['server_stats']['updating']%}
+            <div id="update_control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
+              <button onclick="" id="start-btn" style="max-width: 7rem;" class="btn btn-warning m-1 flex-grow-1 disabled">{{ translate('serverTerm', 'updating', data['lang']) }}</button>
+              <button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1 disabled">{% raw translate('serverTerm', 'restart', data['lang']) %}</button>
+              <button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate('serverTerm', 'stop', data['lang']) }}</button>
+            </div>
+            {% elif data['waiting_start'] %}
+            <div id="control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
+              <button onclick="" id="start-btn" style="max-width: 7rem; white-space: nowrap;" class="btn btn-secondary m-1 flex-grow-1 disabled" data-toggle="tooltip" title="{{ translate('serverTerm', 'delay-explained', data['lang'])}}">{{ translate('serverTerm', 'starting', data['lang']) }}</button>
+              <button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1 disabled">{% raw translate('serverTerm', 'restart', data['lang']) %}</button>
+              <button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate('serverTerm', 'stop', data['lang']) }}</button>
+            </div>
+            {% else %}
+            <div id="control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
+              <button onclick="send_command(server_id, 'start_server');" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate('serverTerm', 'start', data['lang']) }}</button>
+              <button onclick="send_command(server_id, 'restart_server');" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate('serverTerm', 'restart', data['lang']) %}</button>
+              <button onclick="send_command(server_id, 'stop_server');" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1">{{ translate('serverTerm', 'stop', data['lang']) }}</button>
+            </div>
+            {% end %}
+            {% end %}
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 <style>
-                    #virt_console::-webkit-scrollbar {
-                      display: none;
-                  }
+  #virt_console::-webkit-scrollbar {
+    display: none;
+  }
 
-                  /* Hide scrollbar for IE, Edge and Firefox */
-                  #virt_console {
-                    -ms-overflow-style: none;  /* IE and Edge */
-                    scrollbar-width: none;  /* Firefox */
-                  }
-
+  /* Hide scrollbar for IE, Edge and Firefox */
+  #virt_console {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
 </style>
 <!-- content-wrapper ends -->
 
@@ -93,188 +93,182 @@
 {% block js %}
 <script>
 
-    function send_command (server_id, command){
-              if (command == 'start_server'){
-            startBtn.setAttribute('disabled', 'disabled');
-            restartBtn.removeAttribute('disabled');
-            stopBtn.removeAttribute('disabled');
-          }
-          if (command == 'stop_server'){
-            startBtn.removeAttribute('disabled');
-      restartBtn.setAttribute('disabled', 'disabled');
-      stopBtn.setAttribute('disabled', 'disabled');
-          }
-      <!--  this getCookie function is in base.html-->
-      var token = getCookie("_xsrf");
-
-      $.ajax({
-        type: "POST",
-        headers: {'X-XSRFToken': token},
-        url: '/server/command?command=' + command + '&id=' + server_id,
-        success: function(data){
-          console.log("got response:");
-          console.log(data);
-          setTimeout(function(){
-          if (command != 'start_server'){
-            location.reload();
-          }
-          }, 10000);
-
-        }
-      });
-    }
-     if (webSocket) {
-    webSocket.on('update_button_status', function (updateButton) {
-      if (updateButton.isUpdating){
-        if(updateButton.server_id == '{{ data['server_stats']['server_id']['server_id'] }}') {
-        console.log(updateButton.isUpdating)
-        document.getElementById('control_buttons').innerHTML = '<button onclick="" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "updating", data['lang']) }}</button><button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data['lang']) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data['lang']) }}</button>';
-        }
-      }
-      else{
-        if (updateButton.server_id == '{{ data['server_stats']['server_id']['server_id'] }}') {
-        window.location.reload()
-        document.getElementById('update_control_buttons').innerHTML = '<button onclick="send_command(server_id, "start_server");" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "start", data['lang']) }}</button><button onclick="send_command(server_id, "restart_server");" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data['lang']) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data['lang']) }}</button>';
-        }  
-      }
-    });
-  }
-    // Convert running to lower case (example: 'True' converts to 'true') and
-    // then to boolean via JSON.parse()
-    let online = JSON.parse('{{ data['server_stats']['running'] }}'.toLowerCase());
-
-    let startBtn = document.querySelector('#start-btn');
-    let restartBtn = document.querySelector('#restart-btn');
-    let stopBtn = document.querySelector('#stop-btn');
-
-    {% if data['permissions']['Commands'] in data['user_permissions'] %}
-    if (online) {
+  function send_command(server_id, command) {
+    if (command == 'start_server') {
       startBtn.setAttribute('disabled', 'disabled');
       restartBtn.removeAttribute('disabled');
       stopBtn.removeAttribute('disabled');
-    } else {
+    }
+    if (command == 'stop_server') {
       startBtn.removeAttribute('disabled');
       restartBtn.setAttribute('disabled', 'disabled');
       stopBtn.setAttribute('disabled', 'disabled');
     }
-    {% end %}
+    //<!--  this getCookie function is in base.html-->
+    var token = getCookie("_xsrf");
 
-    let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
-
-    function get_server_log(){
-        $.ajax({
-            type: 'GET',
-            url: '/ajax/server_log?id={{ data['server_stats']['server_id']['server_id'] }}',
-            dataType: 'text',
-            success: function (data) {
-                console.log('Got Log From Server')
-                $('#virt_console').html(data);
-                scrollConsole();
-              },
-        });
-    }
-
-
-
-    function new_line_handler(data) {
-        $('#virt_console').append(data.line)
-        const elem = document.getElementById('virt_console');
-        const scrollDiff = (elem.scrollHeight - elem.scrollTop) - elem.clientHeight;
-        if (!$("#stop_scroll").is(':checked') && scrollDiff < 450) {
-          scrollConsole()
-        }
-    }
-
-    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
-    function getCookie(name) {
-        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
-        return r ? r[1] : undefined;
-    }
-
-    $( document ).ready(function() {
-        console.log( "ready!" );
-        get_server_log()
-
-        webSocket.on('vterm_new_line', new_line_handler)
-    });
-
-    $('#server_command').on('keydown', function (e) {
-            if (e.which == 13){
-                $(this).attr("disabled", "disabled"); //Disable textbox to prevent multiple submit
-                send_command_to_server()
-                $(this).removeAttr("disabled"); //Enable the textbox again if needed.
-                $(this).focus();
-            }
-            else if (e.which == 38) {
-              e.preventDefault();
-              $('#server_command').val(cmdHistory.getPrev());
-          } else if (e.which == 40) {
-              e.preventDefault();
-              $('#server_command').val(cmdHistory.getNext());
-          }
-
-   });
-
-    $("#submit").click(function(e) {
-        e.preventDefault();
-        send_command_to_server();
-
-    });
-
-    function scrollConsole(){
-        var logview = $('#virt_console');
-        if(logview.length)
-           logview.scrollTop(logview[0].scrollHeight - logview.height());
-    }
-
-
-    function send_command_to_server(){
-        var server_command = $("#server_command").val()
-        console.log(server_command)
-        
-        cmdHistory.push(server_command);
-
-        var token = getCookie("_xsrf")
-
-        data_to_send = { command :server_command,  }
-
-        console.log('sending command: ' + server_command)
-        $.ajax({
-          type: "POST",
-          headers: {'X-XSRFToken': token},
-          url: '/ajax/send_command?id={{ data['server_stats']['server_id']['server_id'] }}',
-          data: data_to_send,
-          success: function(data){
-            console.log("got response:");
-            console.log(data);
-            $("#server_command").val('')
-          },
-        });
-    }
-
-    
-    const cmdHistory = {
-      history: [],
-      current: 0,
-      push: function(cmd) {
-          this.history.push(cmd);
-          this.current = this.history.length - 1;
-      },
-      getPrev: function() {
-          const prevCommand = this.history[this.current];
-          this.current--;
-          if (this.current < 0) this.current = 0;
-          return prevCommand;
-      },
-      getNext: function() {
-          this.current++;
-          if (this.current > (this.history.length - 1)) {
-              this.current = (this.history.length - 1);
-              return '';
-          }
-          const nextCommand = this.history[this.current];
-          return nextCommand;
+    $.ajax({
+      type: "POST",
+      headers: { 'X-XSRFToken': token },
+      url: '/server/command?command=' + command + '&id=' + server_id,
+      success: function (data) {
+        console.log("got response:");
+        console.log(data);
       }
+    });
+  }
+  if (webSocket) {
+    webSocket.on('update_button_status', function (updateButton) {
+      if (updateButton.isUpdating) {
+        if (updateButton.server_id == '{{ data['server_stats']['server_id']['server_id'] }}') {
+      console.log(updateButton.isUpdating)
+      document.getElementById('control_buttons').innerHTML = '<button onclick="" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "updating", data['lang']) }}</button><button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data['lang']) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data['lang']) }}</button>';
+    }
+  }
+  else {
+    if (updateButton.server_id == '{{ data['server_stats']['server_id']['server_id'] }}') {
+      window.location.reload()
+      document.getElementById('update_control_buttons').innerHTML = '<button onclick="send_command(server_id, "start_server");" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "start", data['lang']) }}</button><button onclick="send_command(server_id, "restart_server");" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data['lang']) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data['lang']) }}</button>';
+    }
+  }
+    });
+  }
+  // Convert running to lower case (example: 'True' converts to 'true') and
+  // then to boolean via JSON.parse()
+  let online = JSON.parse('{{ data['server_stats']['running'] }}'.toLowerCase());
+
+  let startBtn = document.querySelector('#start-btn');
+  let restartBtn = document.querySelector('#restart-btn');
+  let stopBtn = document.querySelector('#stop-btn');
+
+  {% if data['permissions']['Commands'] in data['user_permissions'] %}
+  if (online) {
+    startBtn.setAttribute('disabled', 'disabled');
+    restartBtn.removeAttribute('disabled');
+    stopBtn.removeAttribute('disabled');
+  } else {
+    startBtn.removeAttribute('disabled');
+    restartBtn.setAttribute('disabled', 'disabled');
+    stopBtn.setAttribute('disabled', 'disabled');
+  }
+  {% end %}
+
+  let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
+
+  function get_server_log() {
+    $.ajax({
+      type: 'GET',
+      url: '/ajax/server_log?id={{ data['server_stats']['server_id']['server_id'] }}',
+      dataType: 'text',
+      success: function (data) {
+        console.log('Got Log From Server')
+        $('#virt_console').html(data);
+        scrollConsole();
+      },
+    });
+  }
+
+
+
+  function new_line_handler(data) {
+    $('#virt_console').append(data.line)
+    const elem = document.getElementById('virt_console');
+    const scrollDiff = (elem.scrollHeight - elem.scrollTop) - elem.clientHeight;
+    if (!$("#stop_scroll").is(':checked') && scrollDiff < 450) {
+      scrollConsole()
+    }
+  }
+
+  //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+  function getCookie(name) {
+    var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+    return r ? r[1] : undefined;
+  }
+
+  $(document).ready(function () {
+    console.log("ready!");
+    get_server_log()
+
+    webSocket.on('vterm_new_line', new_line_handler)
+  });
+
+  $('#server_command').on('keydown', function (e) {
+    if (e.which == 13) {
+      $(this).attr("disabled", "disabled"); //Disable textbox to prevent multiple submit
+      send_command_to_server()
+      $(this).removeAttr("disabled"); //Enable the textbox again if needed.
+      $(this).focus();
+    }
+    else if (e.which == 38) {
+      e.preventDefault();
+      $('#server_command').val(cmdHistory.getPrev());
+    } else if (e.which == 40) {
+      e.preventDefault();
+      $('#server_command').val(cmdHistory.getNext());
+    }
+
+  });
+
+  $("#submit").click(function (e) {
+    e.preventDefault();
+    send_command_to_server();
+
+  });
+
+  function scrollConsole() {
+    var logview = $('#virt_console');
+    if (logview.length)
+      logview.scrollTop(logview[0].scrollHeight - logview.height());
+  }
+
+
+  function send_command_to_server() {
+    var server_command = $("#server_command").val()
+    console.log(server_command)
+
+    cmdHistory.push(server_command);
+
+    var token = getCookie("_xsrf")
+
+    data_to_send = { command: server_command, }
+
+    console.log('sending command: ' + server_command)
+    $.ajax({
+      type: "POST",
+      headers: { 'X-XSRFToken': token },
+      url: '/ajax/send_command?id={{ data['server_stats']['server_id']['server_id'] }}',
+      data: data_to_send,
+      success: function (data) {
+        console.log("got response:");
+        console.log(data);
+        $("#server_command").val('')
+      },
+    });
+  }
+
+
+  const cmdHistory = {
+    history: [],
+    current: 0,
+    push: function (cmd) {
+      this.history.push(cmd);
+      this.current = this.history.length - 1;
+    },
+    getPrev: function () {
+      const prevCommand = this.history[this.current];
+      this.current--;
+      if (this.current < 0) this.current = 0;
+      return prevCommand;
+    },
+    getNext: function () {
+      this.current++;
+      if (this.current > (this.history.length - 1)) {
+        this.current = (this.history.length - 1);
+        return '';
+      }
+      const nextCommand = this.history[this.current];
+      return nextCommand;
+    }
   }
 </script>
 

@@ -31,10 +31,6 @@ class Management_Controller:
     def get_latest_hosts_stats():
         return management_helper.get_latest_hosts_stats()
 
-    @staticmethod
-    def new_api_token():
-        return management_helper.new_api_token()
-
     #************************************************************************************************
     #                                   Commands Methods
     #************************************************************************************************
@@ -44,13 +40,11 @@ class Management_Controller:
 
     @staticmethod
     def send_command(user_id, server_id, remote_ip, command):
-
         server_name = servers_helper.get_server_friendly_name(server_id)
 
         # Example: Admin issued command start_server for server Survival
         management_helper.add_to_audit_log(user_id, "issued command {} for server {}".format(command, server_name),
                               server_id, remote_ip)
-                              
         management_helper.add_command(server_id, user_id, remote_ip, command)
 
     @staticmethod

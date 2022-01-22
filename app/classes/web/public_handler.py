@@ -7,6 +7,7 @@ import requests
 import tornado.web
 import tornado.escape
 
+from app.classes.shared.authentication import authentication
 from app.classes.shared.helpers import Helpers, helper
 from app.classes.web.base_handler import BaseHandler
 from app.classes.shared.console import console
@@ -27,7 +28,7 @@ except ModuleNotFoundError as e:
 
 class PublicHandler(BaseHandler):
 
-    def set_current_user(self, user):
+    def set_current_user(self, user_id: str = None):
 
         expire_days = helper.get_setting('cookie_expire')
 
@@ -35,8 +36,8 @@ class PublicHandler(BaseHandler):
         if not expire_days:
             expire_days = "5"
 
-        if user:
-            self.set_secure_cookie("user", tornado.escape.json_encode(user), expires_days=int(expire_days))
+        if user_id is not None:
+            self.set_cookie("token", authentication.generate(user_id), expires_days=int(expire_days))
         else:
             self.clear_cookie("user")
 
@@ -45,12 +46,7 @@ class PublicHandler(BaseHandler):
         error = bleach.clean(self.get_argument('error', "Invalid Login!"))
         error_msg = bleach.clean(self.get_argument('error_msg', ''))
 
-        page_data = {
-            'version': helper.get_version_string(),
-            'error': error
-            }
-            
-        page_data['lang'] = tornado.locale.get("en_EN")
+        page_data = {'version': helper.get_version_string(), 'error': error, 'lang': helper.get_setting('language')}
 
         # sensible defaults
         template = "public/404.html"
@@ -112,7 +108,7 @@ class PublicHandler(BaseHandler):
 
             # Valid Login
             if login_result:
-                self.set_current_user(entered_username)
+                self.set_current_user(user_data.user_id)
                 logger.info("User: {} Logged in from IP: {}".format(user_data, self.get_remote_ip()))
 
                 # record this login
@@ -123,32 +119,6 @@ class PublicHandler(BaseHandler):
 
                 # log this login
                 self.controller.management.add_to_audit_log(user_data.user_id, "Logged in", 0, self.get_remote_ip())
-
-                if  helper.get_setting("allow_nsfw_profile_pictures"):
-                    rating = "x"
-                else:
-                    rating = "g"
-
-
-                #Get grvatar hash for profile pictures
-                if user_data.email != 'default@example.com' or "":
-                    g = libgravatar.Gravatar(libgravatar.sanitize_email(user_data.email))
-                    url = g.get_image(size=80, default="404", force_default=False, rating=rating, filetype_extension=False, use_ssl=True) # + "?d=404"
-                    if requests.head(url).status_code != 404:
-                        profile_url = url
-                    else:
-                        profile_url = "/static/assets/images/faces-clipart/pic-3.png"
-                else:
-                    profile_url = "/static/assets/images/faces-clipart/pic-3.png"
-                cookie_data = {
-                    "username": user_data.username,
-                    "user_id": user_data.user_id,
-                    "email": user_data.email,
-                    "profile_url": profile_url,
-                    "account_type": user_data.superuser,
-                }
-
-                self.set_secure_cookie('user_data', json.dumps(cookie_data))
 
                 next_page = "/panel/dashboard"
                 self.redirect(next_page)

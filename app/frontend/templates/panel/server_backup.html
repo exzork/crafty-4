@@ -1,7 +1,6 @@
 {% extends ../base.html %}
 
 {% block meta %}
-<!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
 {% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails', data['lang']) }}{% end %}
@@ -65,7 +64,7 @@
                     <div class="card">
                       <div class="card-body">
                         <h4 class="card-title">{{ translate('serverBackups', 'currentBackups', data['lang']) }}</h4>
-                        
+
                       </div>
                     </div>
                     <div class="text-center">
@@ -231,7 +230,7 @@
                 }
             });
         });
-        
+
       $( ".restore_button" ).click(function() {
         var file_to_restore = $(this).data("file");
 

@@ -1,14 +1,11 @@
-import os
-import secrets
-import threading
-import tornado.web
-import tornado.escape 
 import logging
+import re
 
 from app.classes.web.base_handler import BaseHandler
 
 log = logging.getLogger(__name__)
 
+bearer_pattern = re.compile(r'^Bearer', flags=re.IGNORECASE)
 
 class ApiHandler(BaseHandler):
     
@@ -16,7 +13,7 @@ class ApiHandler(BaseHandler):
         # Define a standardized response 
         self.set_status(status)
         self.write(data)
-    
+
     def access_denied(self, user, reason=''):
         if reason: reason = ' because ' + reason
         log.info("User %s from IP %s was denied access to the API route " + self.request.path + reason, user, self.get_remote_ip())
@@ -28,8 +25,14 @@ class ApiHandler(BaseHandler):
     def authenticate_user(self) -> bool:
         try:
             log.debug("Searching for specified token")
-            # TODO: YEET THIS
-            user_data = self.controller.users.get_user_by_api_token(self.get_argument('token'))
+
+            api_token = self.get_argument('token', '')
+            if api_token is None and self.request.headers.get('Authorization'):
+                api_token = bearer_pattern.sub('', self.request.headers.get('Authorization'))
+            elif api_token is None:
+                api_token = self.get_cookie('token')
+            user_data = self.controller.users.get_user_by_api_token(api_token)
+
             log.debug("Checking results")
             if user_data:
                 # Login successful! Check perms
@@ -40,11 +43,11 @@ class ApiHandler(BaseHandler):
             else:
                 logging.debug("Auth unsuccessful")
                 self.access_denied("unknown", "the user provided an invalid token")
-                return
+                return False
         except Exception as e:
             log.warning("An error occured while authenticating an API user: %s", e)
             self.access_denied("unknown"), "an error occured while authenticating the user"
-            return
+            return False
 
 
 class ServersStats(ApiHandler):

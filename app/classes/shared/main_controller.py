@@ -3,6 +3,8 @@ import pathlib
 import time
 import logging
 import sys
+from typing import Union
+
 from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.models.users import helper_users
 from peewee import DoesNotExist
@@ -18,21 +20,22 @@ from app.classes.web.websocket_helper import websocket_helper
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 
-#Importing Models
-from app.classes.models.crafty_permissions import crafty_permissions, Enum_Permissions_Crafty
+# Importing Models
 from app.classes.models.servers import servers_helper
-#Importing Controllers
+from app.classes.shared.console import console
+from app.classes.shared.helpers import helper
+from app.classes.shared.server import Server
+from app.classes.minecraft.server_props import ServerProps
+from app.classes.minecraft.serverjars import server_jar_obj
+from app.classes.minecraft.stats import Stats
+
+# Importing Controllers
 from app.classes.controllers.crafty_perms_controller import Crafty_Perms_Controller
 from app.classes.controllers.management_controller import Management_Controller
 from app.classes.controllers.users_controller import Users_Controller
 from app.classes.controllers.roles_controller import Roles_Controller
 from app.classes.controllers.server_perms_controller import Server_Perms_Controller
 from app.classes.controllers.servers_controller import Servers_Controller
-
-from app.classes.shared.server import Server
-from app.classes.minecraft.server_props import ServerProps
-from app.classes.minecraft.serverjars import server_jar_obj
-from app.classes.minecraft.stats import Stats
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +137,8 @@ class Controller:
 
 
     def package_support_logs(self, exec_user):
-        time.sleep(5)
+        #pausing so on screen notifications can run for user
+        time.sleep(7)
         websocket_helper.broadcast_user(exec_user['user_id'], 'notification', 'Preparing your support logs')
         tempDir = tempfile.mkdtemp()
         tempZipStorage = tempfile.mkdtemp()
@@ -159,7 +163,10 @@ class Controller:
         for server in auth_servers:
             final_path = os.path.join(server_path, str(server['server_name']))
             os.mkdir(final_path)
-            shutil.copy(server['log_path'], final_path)
+            try:
+                shutil.copy(server['log_path'], final_path)
+            except Exception as e:
+                logger.warning("Failed to copy file with error: {}".format(e))
         #Copy crafty logs to archive dir
         full_log_name = os.path.join(crafty_path, 'logs')
         shutil.copytree(os.path.join(self.project_root, 'logs'), full_log_name)
@@ -168,12 +175,12 @@ class Controller:
         tempZipStorage += '.zip'
         websocket_helper.broadcast_user(exec_user['user_id'], 'send_logs_bootbox', {
                 })
-        
+
         self.users.set_support_path(exec_user['user_id'], tempZipStorage)
 
     @staticmethod
     def add_system_user():
-        helper_users.add_user("system", helper.random_string_generator(64), "default@example.com", helper_users.new_api_token(), False, False)
+        helper_users.add_user("system", helper.random_string_generator(64), "default@example.com", False, False)
 
     def get_server_settings(self, server_id):
         for s in self.servers_list:
@@ -183,17 +190,17 @@ class Controller:
         logger.warning("Unable to find server object for server id {}".format(server_id))
         return False
 
-    def get_server_obj(self, server_id):
+    def get_server_obj(self, server_id: Union[str, int]) -> Union[bool, Server]:
         for s in self.servers_list:
-            if int(s['server_id']) == int(server_id):
+            if str(s['server_id']) == str(server_id):
                 return s['server_obj']
 
         logger.warning("Unable to find server object for server id {}".format(server_id))
-        return False
+        return False  # TODO: Change to None
 
-    def get_server_data(self, server_id):
+    def get_server_data(self, server_id: str):
         for s in self.servers_list:
-            if int(s['server_id']) == int(server_id):
+            if str(s['server_id']) == str(server_id):
                 return s['server_data_obj']
 
         logger.warning("Unable to find server object for server id {}".format(server_id))
@@ -251,6 +258,11 @@ class Controller:
         server_id = helper.create_uuid()
         server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
+        if helper.is_os_windows():
+            server_dir = helper.wtol_path(server_dir)
+            backup_path = helper.wtol_path(backup_path)
+            server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
 
         server_file = "{server}-{version}.jar".format(server=server, version=version)
         full_jar_path = os.path.join(server_dir, server_file)
@@ -274,7 +286,12 @@ class Controller:
             logger.error("Unable to create required server files due to :{}".format(e))
             return False
 
-        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+        if helper.is_os_windows():
+            server_command = 'java -Xms{}M -Xmx{}M -jar "{}" nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     full_jar_path)
+        else:
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
                                                                      full_jar_path)
         server_log_file = "{}/logs/latest.log".format(server_dir)
@@ -307,6 +324,11 @@ class Controller:
         server_id = helper.create_uuid()
         new_server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
+        if helper.is_os_windows():
+            new_server_dir = helper.wtol_path(new_server_dir)
+            backup_path = helper.wtol_path(backup_path)
+            new_server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
 
         helper.ensure_dir_exists(new_server_dir)
         helper.ensure_dir_exists(backup_path)
@@ -324,7 +346,13 @@ class Controller:
                 f.close()
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
-        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+
+        if helper.is_os_windows():
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     '"'+full_jar_path+'"')
+        else:
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
                                                                      full_jar_path)
         server_log_file = "{}/logs/latest.log".format(new_server_dir)
@@ -338,6 +366,12 @@ class Controller:
         server_id = helper.create_uuid()
         new_server_dir = os.path.join(helper.servers_dir, server_id)
         backup_path = os.path.join(helper.backup_path, server_id)
+        if helper.is_os_windows():
+            new_server_dir = helper.wtol_path(new_server_dir)
+            backup_path = helper.wtol_path(backup_path)
+            new_server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
+
         tempDir = helper.get_os_understandable_path(zip_path)
         helper.ensure_dir_exists(new_server_dir)
         helper.ensure_dir_exists(backup_path)
@@ -357,7 +391,13 @@ class Controller:
                 f.close()
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
-        server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+
+        if helper.is_os_windows():
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
+                                                                     helper.float_to_string(max_mem),
+                                                                     '"'+full_jar_path+'"')
+        else:
+            server_command = 'java -Xms{}M -Xmx{}M -jar {} nogui'.format(helper.float_to_string(min_mem),
                                                                      helper.float_to_string(max_mem),
                                                                      full_jar_path)
         logger.debug('command: ' + server_command)
@@ -373,6 +413,9 @@ class Controller:
         old_bu_path = server_data['backup_path']
         Server_Perms_Controller.backup_role_swap(old_server_id, new_server_id)
         backup_path = helper.validate_traversal(helper.backup_path, old_bu_path)
+        if helper.is_os_windows():
+            backup_path = helper.wtol_path(backup_path)
+            backup_path.replace(' ', '^ ')
         backup_path_components = list(backup_path.parts)
         backup_path_components[-1] = new_uuid
         new_bu_path = pathlib.PurePath(os.path.join(*backup_path_components))
@@ -383,6 +426,7 @@ class Controller:
 
     def register_server(self, name: str, server_uuid: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port: int):
         # put data in the db
+
         new_id = self.servers.create_server(name, server_uuid, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, server_port)
         if not helper.check_file_exists(os.path.join(server_dir, "crafty_managed.txt")):
             try:
@@ -406,7 +450,7 @@ class Controller:
         for s in self.servers_list:
 
             # if this is the droid... im mean server we are looking for...
-            if int(s['server_id']) == int(server_id):
+            if str(s['server_id']) == str(server_id):
                 server_data = self.get_server_data(server_id)
                 server_name = server_data['server_name']
                 backup_dir = self.servers.get_server_data_by_id(server_id)['backup_path']
@@ -427,7 +471,7 @@ class Controller:
                     if helper.check_path_exists(self.servers.get_server_data_by_id(server_id)['backup_path']):
                         shutil.rmtree(helper.get_os_understandable_path(self.servers.get_server_data_by_id(server_id)['backup_path']))
 
-                
+
                 #Cleanup scheduled tasks
                 try:
                     helpers_management.delete_scheduled_task_by_server(server_id)

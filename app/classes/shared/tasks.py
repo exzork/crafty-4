@@ -1,4 +1,5 @@
 from datetime import timedelta
+from http import server
 import os
 import sys
 import json
@@ -25,6 +26,7 @@ logger = logging.getLogger('apscheduler')
 
 try:
     from apscheduler.schedulers.background import BackgroundScheduler
+    from apscheduler.triggers.cron import CronTrigger
 
 except ModuleNotFoundError as e:
     logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
@@ -51,8 +53,8 @@ class TasksManager:
         self.controller = controller
         self.tornado = Webserver(controller, self)
 
-        tz = get_localzone()
-        self.scheduler = BackgroundScheduler(timezone=str(tz))
+        self.tz = get_localzone()
+        self.scheduler = BackgroundScheduler(timezone=str(self.tz))
 
         self.users_controller = Users_Controller()
 
@@ -79,16 +81,20 @@ class TasksManager:
         logger.info("Reload from DB called. Current enabled schedules: ")
         for item in jobs:
             logger.info("JOB: {}".format(item))
-    
+
     def command_watcher(self):
         while True:
             # select any commands waiting to be processed
             commands = management_helper.get_unactioned_commands()
             for c in commands:
-
-                svr = self.controller.get_server_obj(c['server_id']['server_id'])
-                user_id = c.get('user')['user_id']
-                command = c.get('command', None)
+                try:
+                    svr = self.controller.get_server_obj(c.server_id)
+                except:
+                    logger.error("Server value requested does note exist purging item from waiting commands.")
+                    management_helper.mark_command_complete(c.command_id)
+                    
+                user_id = c.user_id
+                command = c.command
 
                 if command == 'start_server':
                     svr.run_threaded_server(user_id)
@@ -106,7 +112,7 @@ class TasksManager:
                     svr.jar_update()
                 else:
                     svr.send_command(command)
-                management_helper.mark_command_complete(c.get('command_id', None))
+                management_helper.mark_command_complete(c.command_id)
 
             time.sleep(1)
 
@@ -153,11 +159,19 @@ class TasksManager:
         schedules = management_helper.get_schedules_enabled()
         self.scheduler.add_listener(self.schedule_watcher, mask=EVENT_JOB_EXECUTED)
         #self.scheduler.add_job(self.scheduler.print_jobs, 'interval', seconds=10, id='-1')
+
         #load schedules from DB
         for schedule in schedules:
             if schedule.cron_string != "":
-                cron = schedule.cron_string.split(' ')
-                self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
+                try:
+                    self.scheduler.add_job(management_helper.add_command, CronTrigger.from_crontab(schedule.cron_string, timezone=str(self.tz)), id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
+                except Exception as e:
+                    console.error("Failed to schedule task with error: {}.".format(e))
+                    console.warning("Removing failed task from DB.")
+                    logger.error("Failed to schedule task with error: {}.".format(e))
+                    logger.warning("Removing failed task from DB.")
+                    #remove items from DB if task fails to add to apscheduler
+                    management_helper.delete_scheduled_task(schedule.schedule_id)
             else:
                 if schedule.interval_type == 'hours':
                     self.scheduler.add_job(management_helper.add_command, 'cron', minute = 0,  hour = '*/'+str(schedule.interval), id=str(schedule.schedule_id), args=[schedule.server_id, self.users_controller.get_id_by_name('system'), '127.0.0.1', schedule.command])
@@ -177,12 +191,14 @@ class TasksManager:
         sch_id = management_helper.create_scheduled_task(job_data['server_id'], job_data['action'], job_data['interval'], job_data['interval_type'], job_data['start_time'], job_data['command'], "None", job_data['enabled'], job_data['one_time'], job_data['cron_string'])
         if job_data['enabled']:
             if job_data['cron_string'] != "":
-                cron = job_data['cron_string'].split(' ')
                 try:
-                    self.scheduler.add_job(management_helper.add_command, 'cron', minute = cron[0],  hour = cron[1], day = cron[2], month = cron[3], day_of_week = cron[4], id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
+                    self.scheduler.add_job(management_helper.add_command, CronTrigger.from_crontab(job_data['cron_string'], timezone=str(self.tz)), id=str(sch_id), args=[job_data['server_id'], self.users_controller.get_id_by_name('system'), '127.0.0.1', job_data['command']])
                 except Exception as e:
                     console.error("Failed to schedule task with error: {}.".format(e))
-                    console.info("Removing failed task from DB.")
+                    console.warning("Removing failed task from DB.")
+                    logger.error("Failed to schedule task with error: {}.".format(e))
+                    logger.warning("Removing failed task from DB.")
+                    #remove items from DB if task fails to add to apscheduler
                     management_helper.delete_scheduled_task(sch_id)
             else:
                 if job_data['interval_type'] == 'hours':
@@ -197,13 +213,19 @@ class TasksManager:
             for item in jobs:
                 logger.info("JOB: {}".format(item))
 
+    def remove_all_server_tasks(self, server_id):
+        schedules = management_helper.get_schedules_by_server(server_id)
+        for schedule in schedules:
+            self.remove_job(schedule.schedule_id)
+
     def remove_job(self, sch_id):
         job = management_helper.get_scheduled_task_model(sch_id)
         management_helper.delete_scheduled_task(sch_id)
         if job.enabled:
             self.scheduler.remove_job(str(sch_id))
+            logger.info("Job with ID {} was deleted.".format(sch_id))
         else:
-            logger.info("Job with ID {} was deleted from DB, but was not enabled. Not going to try removing something that doesn't exist from active schedules.")
+            logger.info("Job with ID {} was deleted from DB, but was not enabled. Not going to try removing something that doesn't exist from active schedules.".format(sch_id))
 
     def update_job(self, sch_id, job_data):
         management_helper.update_scheduled_task(sch_id, job_data)
@@ -264,8 +286,7 @@ class TasksManager:
         logger.info("Scheduling Serverjars.com cache refresh service every 12 hours")
         self.scheduler.add_job(server_jar_obj.refresh_cache, 'interval', hours=12, id="serverjars")
 
-    @staticmethod
-    def realtime():
+    def realtime(self):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
@@ -290,7 +311,69 @@ class TasksManager:
                         'mem_percent': host_stats.get('mem_percent'),
                         'mem_usage': host_stats.get('mem_usage')
                     })
-            time.sleep(4)
+
+            servers = self.controller.servers_list
+            servers_ping = []
+            for srv in servers:
+                server_data = srv.get('server_data_obj', False)
+                if server_data:
+                    server_id = server_data.get('server_id', False)
+                    srv['raw_ping_result'] = self.controller.stats.get_raw_server_stats(server_id)
+                    if ("{}".format(srv['raw_ping_result'].get('icon')) == "b''"):
+                        srv['raw_ping_result']['icon'] = False
+
+                    servers_ping.append({
+                        'id': srv['raw_ping_result'].get('id'),
+                        'started': srv['raw_ping_result'].get('started'),
+                        'running': srv['raw_ping_result'].get('running'),
+                        'cpu': srv['raw_ping_result'].get('cpu'),
+                        'mem': srv['raw_ping_result'].get('mem'),
+                        'mem_percent': srv['raw_ping_result'].get('mem_percent'),
+                        'world_name': srv['raw_ping_result'].get('world_name'),
+                        'world_size': srv['raw_ping_result'].get('world_size'),
+                        'server_port': srv['raw_ping_result'].get('server_port'),
+                        'int_ping_results': srv['raw_ping_result'].get('int_ping_results'),
+                        'online': srv['raw_ping_result'].get('online'),
+                        'max': srv['raw_ping_result'].get('max'),
+                        'players': srv['raw_ping_result'].get('players'),
+                        'desc': srv['raw_ping_result'].get('desc'),
+                        'version': srv['raw_ping_result'].get('version'),
+                        'icon': srv['raw_ping_result'].get('icon')
+                    })
+                    if (len(websocket_helper.clients) > 0):
+                        websocket_helper.broadcast_page_params(
+                            '/panel/server_detail',
+                            {
+                                'id': str(server_id)
+                            },
+                            'update_server_details',
+                            {
+                                'id': srv['raw_ping_result'].get('id'),
+                                'started': srv['raw_ping_result'].get('started'),
+                                'running': srv['raw_ping_result'].get('running'),
+                                'cpu': srv['raw_ping_result'].get('cpu'),
+                                'mem': srv['raw_ping_result'].get('mem'),
+                                'mem_percent': srv['raw_ping_result'].get('mem_percent'),
+                                'world_name': srv['raw_ping_result'].get('world_name'),
+                                'world_size': srv['raw_ping_result'].get('world_size'),
+                                'server_port': srv['raw_ping_result'].get('server_port'),
+                                'int_ping_results': srv['raw_ping_result'].get('int_ping_results'),
+                                'online': srv['raw_ping_result'].get('online'),
+                                'max': srv['raw_ping_result'].get('max'),
+                                'players': srv['raw_ping_result'].get('players'),
+                                'desc': srv['raw_ping_result'].get('desc'),
+                                'version': srv['raw_ping_result'].get('version'),
+                                'icon': srv['raw_ping_result'].get('icon')
+                            }
+                        )
+
+            if (len(servers_ping) > 0) & (len(websocket_helper.clients) > 0):
+                try:
+                    websocket_helper.broadcast_page('/panel/dashboard', 'update_server_status', servers_ping)
+                    websocket_helper.broadcast_page('/status', 'update_server_status', servers_ping)
+                except:
+                    console.warning("Can't broadcast server status to websocket")
+            time.sleep(5)
 
     def log_watcher(self):
         self.controller.servers.check_for_old_logs()

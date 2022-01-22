@@ -123,6 +123,7 @@
     "serverStats": {
         "online": "En Ligne",
         "offline": "Hors Ligne",
+        "starting": "Démarrage en cours",
         "serverStatus": "Statut du Serveur",
         "serverStarted": "Serveur Démarré",
         "serverUptime": "Serveur Disponible depuis",
@@ -346,5 +347,9 @@
     },
     "base": {
         "doesNotWorkWithoutJavascript": "<strong>Attention: </strong>Crafty ne fonctionne pas correctement si JavaScript n'est pas activé !"
+    },
+    "apiKeys": {
+        "deleteKeyConfirmation": "Es-tu sûr de vouloir supprimer cette clé API? Tu ne pourras plus revenir en arrière.",
+        "deleteKeyConfirmationTitle": "Supprimer la clé API ${keyId}?"
     }
 }

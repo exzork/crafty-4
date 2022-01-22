@@ -18,6 +18,7 @@ from app.classes.shared.server import Server
 from app.classes.minecraft.server_props import ServerProps
 from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.minecraft.stats import Stats
+from app.classes.models.users import ApiKeys
 
 logger = logging.getLogger(__name__)
 
@@ -70,3 +71,7 @@ class Crafty_Perms_Controller:
     @staticmethod
     def add_server_creation(user_id):
         return crafty_permissions.add_server_creation(user_id)
+
+    @staticmethod
+    def get_api_key_permissions_list(key: ApiKeys):
+        return crafty_permissions.get_api_key_permissions_list(key)

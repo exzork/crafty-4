@@ -1,0 +1,252 @@
+{% extends ../base.html %}
+
+{% block meta %}
+{% end %}
+
+{% block title %}Crafty Controller - Edit User API Keys{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+    <div class="row page-title-header">
+        <div class="col-12">
+            <div class="page-header">
+                <h4 class="page-title">
+                    {{ translate('apiKeys', 'pageTitle', data['lang']) }} - {{ data['user']['user_id'] }}
+                    <br/>
+                    <small>UID: {{ data['user']['user_id'] }}</small>
+                </h4>
+            </div>
+        </div>
+
+    </div>
+    <!-- Page Title Header Ends-->
+
+    <div class="row">
+
+        <div class="col-sm-12 grid-margin">
+            <div class="card">
+                <div class="card-body  pt-0">
+                    <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/panel/edit_user?id={{ data['user']['user_id'] }}&subpage=config"
+                               role="tab"
+                               aria-selected="false">
+                                <i class="fas fa-cogs"></i>{{ translate('apiKeys', 'config', data['lang']) }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/panel/edit_user_apikeys?id={{ data['user']['user_id'] }}"
+                               role="tab"
+                               aria-selected="true">
+                                <i class="fas fa-key"></i>{{ translate('apiKeys', 'apiKeys', data['lang']) }}</a>
+                        </li>
+                    </ul>
+
+                    <div class="row">
+                        <div class="col-md-7 col-sm-12">
+                            <div class="card">
+                                <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                                    <h4 class="card-title"><i class="fas fa-key"></i>{{ translate('apiKeys', 'apiKeys', data['lang']) }}</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                <tr class="rounded">
+                                                    <!--<th>ID</th>-->
+                                                    <th>{{ translate('apiKeys', 'name', data['lang']) }}</th>
+                                                    <th>{{ translate('apiKeys', 'created', data['lang']) }}</th>
+                                                    <th>{{ translate('apiKeys', 'superUser', data['lang']) }}</th>
+                                                    <th>{{ translate('apiKeys', 'perms', data['lang']) }}</th>
+                                                    <th>{{ translate('apiKeys', 'buttons', data['lang']) }}</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for apikey in data['api_keys'] %}
+                                                <tr>
+                                                    <!--<td>{-{ apikey.token_id }-}</td>-->
+                                                    <td>{{ apikey.name }}</td>
+                                                    <td>{{ apikey.created.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                                                    <td>
+                                                        {% if apikey.superuser %}
+                                                        <span class="text-success">
+                                <i class="fas fa-check-square"></i> {{ translate('apiKeys', 'yes', data['lang']) }}
+                              </span>
+                                                        {% else %}
+                                                        <span class="text-danger">
+                                <i class="far fa-times-square"></i> {{ translate('apiKeys', 'no', data['lang']) }}
+                              </span>
+                                                        {% end %}
+                                                    </td>
+                                                    <td>{{ translate('apiKeys', 'server', data['lang']) }} {{ apikey.server_permissions }}
+                                                        {{ translate('apiKeys', 'crafty', data['lang']) }} {{ apikey.crafty_permissions }}</td>
+                                                    <td>
+                                                        <button
+                                                                class="btn btn-danger delete-api-key"
+                                                                data-key-id="{{ apikey.token_id }}"
+                                                                data-key-name="{{ apikey.name }}"
+                                                        >{{ translate('panelConfig', 'delete', data['lang']) }}</button>
+                                                        <button
+                                                                class="btn btn-outline-primary get-a-token"
+                                                                data-key-id="{{ apikey.token_id }}"
+                                                                data-key-name="{{ apikey.name }}"
+                                                        >{{ translate('apiKeys', 'getToken', data['lang']) }}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                {% end %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-5 col-sm-12">
+                            <div class="card">
+                                <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                                    <h4 class="card-title"><i class="fas fa-plus"></i> {{ translate('apiKeys', 'createNew', data['lang']) }}</h4>
+                                </div>
+                                <div class="card-body">
+                                    <form id="user_form" class="forms-sample" method="post"
+                                          action="/panel/edit_user_apikeys">
+                                        {% raw xsrf_form_html() %}
+                                        <input type="hidden" name="id" value="{{ data['user']['user_id'] }}">
+
+                                        <div class="form-group">
+                                            <label class="form-label" for="username">{{ translate('apiKeys', 'name', data['lang']) }}<small
+                                                    class="text-muted ml-1"> - {{ translate('apiKeys', 'nameDesc', data['lang']) }}</small> </label>
+                                            <input type="text" class="form-control" name="name" id="name"
+                                                   placeholder="API Key">
+                                        </div>
+
+                                        <table class="table table-hover mb-3">
+                                            <thead>
+                                            <tr class="rounded">
+                                                <th>{{ translate('apiKeys', 'permName', data['lang']) }}</th>
+                                                <th>{{ translate('apiKeys', 'auth', data['lang']) }}</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for permission in data['server_permissions_all'] %}
+                                            <tr>
+                                                <td><label
+                                                        for="permission_{{ permission.name }}">{{ permission.name }}</label>
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox" class=""
+                                                           id="permission_{{ permission.name }}"
+                                                           name="permission_{{ permission.name }}" value="1">
+                                                </td>
+                                            </tr>
+                                            {% end %}
+                                            {% for permission in data['crafty_permissions_all'] %}
+                                            <tr>
+                                                <td><label
+                                                        for="permission_{{ permission.name }}">{{ permission.name }}</label>
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox" class=""
+                                                           id="permission_{{ permission.name }}"
+                                                           name="permission_{{ permission.name }}" value="1">
+                                                </td>
+                                            </tr>
+                                            {% end %}
+
+                                            </tbody>
+                                        </table>
+
+                                        <label for="superuser">Superuser</label>
+                                        <input type="checkbox" class="" id="superuser"
+                                               name="superuser" value="1">
+
+                                        <br/>
+
+                                        <button type="submit" class="btn btn-success mr-2"><i class="fas fa-plus"></i>
+                                            Create
+                                        </button>
+                                        <button type="reset" class="btn btn-light"><i
+                                                class="fas fa-undo-alt"></i> {{ translate('panelConfig', 'cancel', data['lang']) }}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+<script>
+
+
+    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+    function getCookie(name) {
+        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+        return r ? r[1] : undefined;
+    }
+
+    $(document).ready(function () {
+        console.log("ready!");
+        $('.delete-api-key').click(function () {
+            var keyId = $(this).data("key-id");
+            var keyName = $(this).data("key-name");
+            bootbox.confirm({
+                title: `Remove API key ${keyName}?`,
+                message: "Do you want to delete this API key? This cannot be undone.",
+                buttons: {
+                    cancel: {
+                        label: '<i class="fas fa-times"></i> {{ translate("panelConfig", "cancel", data['lang']) }}'
+                    },
+                    confirm: {
+                        label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm", data['lang']) }}'
+                    }
+                },
+                callback: function (result) {
+                    var token = getCookie("_xsrf")
+                    $.ajax({
+                        type: "DELETE",
+                        headers: {'X-XSRFToken': token},
+                        url: '/panel/remove_apikey?id=' + keyId,
+                        success: function (data) {
+                            location.reload();
+                        },
+                    });
+                }
+            });
+        })
+        $('.get-a-token').click(function () {
+            var keyId = $(this).data("key-id");
+            var keyName = $(this).data("key-name");
+            var token = getCookie("_xsrf")
+            $.ajax({
+                type: "POST",
+                headers: {'X-XSRFToken': token},
+                url: '/panel/get_token?id=' + keyId,
+                success: function (data) {
+                    bootbox.alert({
+                        title: `API token for ${keyName}`,
+                        message: `Here is an API token for ${keyName}:\n<pre style="white-space: pre-wrap;color:white;word-break:break-all;background: grey;border-radius: 5px;">${data}</pre>`
+                    });
+                },
+            });
+        })
+    });
+
+
+</script>
+
+{% end %}

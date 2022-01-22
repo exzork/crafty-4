@@ -1,10 +1,9 @@
 {% extends ../base.html %}
 
 {% block meta %}
-<!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
-{% block title %}Crafty Controller - Panel Config{% end %}
+{% block title %}Crafty Controller - {{ translate('panelConfig', 'pageTitle', data['lang']) }}{% end %}
 
 {% block content %}
 
@@ -14,7 +13,8 @@
   <div class="row page-title-header">
     <div class="col-12">
       <div class="page-header">
-        <h4 class="page-title">Panel Config</h4>
+          <!-- TODO: Translate the following -->
+        <h4 class="page-title">{{ translate('panelConfig', 'pageTitle', data['lang']) }}</h4>
       </div>
     </div>
 
@@ -30,22 +30,23 @@
             <div class="col-md-12 col-lg-12 grid-margin stretch-card">
               <div class="card">
                 <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                      <h4 class="card-title"><i class="fas fa-users"></i> Users</h4>
+                      <h4 class="card-title"><i class="fas fa-users"></i> {{ translate('panelConfig', 'users', data['lang']) }}</h4>
                       <span class="too_small" title="{{ translate('dashboard', 'cannotSee', data['lang']) }}", data-content="{{ translate('dashboard', 'cannotSeeOnMobile2', data['lang']) }}", data-placement="top"></span>
 
-                  <div><a class="nav-link" href="/panel/add_user"><i class="fas fa-plus-circle"></i> &nbsp; Add New User</a></div>
+                  <!-- TODO: Translate the following -->
+                  <div><a class="nav-link" href="/panel/add_user"><i class="fas fa-plus-circle"></i> &nbsp; {{ translate('panelConfig', 'newUser', data['lang']) }}</a></div>
                 </div>
                 <div class="card-body">
                   <div class="table-responsive">
                     <table class="table table-hover">
                       <thead>
+                        <!-- TODO: Translate the following -->
                         <tr class="rounded">
-                          <th>User</th>
-                          <th>Enabled</th>
-                          <th>API Token</th>
-                          <th>Allowed Servers</th>
-                          <th>Assigned Roles</th>
-                          <th>Edit</th>
+                          <th>{{ translate('panelConfig', 'user', data['lang']) }}</th>
+                          <th>{{ translate('panelConfig', 'enabled', data['lang']) }}</th>
+                          <th>{{ translate('panelConfig', 'allowedServers', data['lang']) }}</th>
+                          <th>{{ translate('panelConfig', 'assignedRoles', data['lang']) }}</th>
+                          <th>{{ translate('panelConfig', 'edit', data['lang']) }}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -63,9 +64,6 @@
                               </span>
 
                             {% end %}
-                          </td>
-                          <td>
-                            <button data-toggle="tooltip" title="Show API Key" data-id="{{ user.api_token }}" type="button" class="btn btn-info show_button">Show</button>
                           </td>
                           <td id="server_list_{{user.user_id}}">
                               <ul id="{{user.user_id}}">
@@ -95,19 +93,20 @@
             <div class="col-md-12 col-lg-12 grid-margin stretch-card">
               <div class="card">
                 <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                  <h4 class="card-title"><i class="fas fa-user-tag"></i> Roles</h4>
+                  <h4 class="card-title"><i class="fas fa-user-tag"></i> {{ translate('panelConfig', 'roles', data['lang']) }}</h4>
                     <span class="too_small2" title="{{ translate('dashboard', 'cannotSee', data['lang']) }}", data-content="{{ translate('dashboard', 'cannotSeeOnMobile2', data['lang']) }}", data-placement="top"></span>
-                  <div><a class="nav-link" href="/panel/add_role"><i class="fas fa-plus-circle"></i> &nbsp; Add New Role</a></div>
+                  <div><a class="nav-link" href="/panel/add_role"><i class="fas fa-plus-circle"></i> &nbsp; {{ translate('panelConfig', 'newRole', data['lang']) }}</a></div>
                 </div>
                 <div class="card-body">
                   <div class="table-responsive">
                     <table class="table table-hover">
                       <thead>
+                        <!-- TODO: Translate the following -->
                         <tr class="rounded">
-                          <th>Role</th>
-                          <th>Allowed Servers</th>
-                          <th>Role Users</th>
-                          <th>Edit</th>
+                          <th>{{ translate('panelConfig', 'role', data['lang']) }}</th>
+                          <th>{{ translate('panelConfig', 'allowedServers', data['lang']) }}</th>
+                          <th>{{ translate('panelConfig', 'roleUsers', data['lang']) }}</th>
+                          <th>{{ translate('panelConfig', 'edit', data['lang']) }}</th>
                         </tr>
                       </thead>
                       <tbody>

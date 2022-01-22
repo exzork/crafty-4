@@ -20,6 +20,7 @@ MAX_STREAMED_SIZE = 1024 * 1024 * 1024
 @tornado.web.stream_request_body
 class UploadHandler(tornado.web.RequestHandler):
 
+    # noinspection PyAttributeOutsideInit
     def initialize(self, controller: Controller=None, tasks_manager=None, translator=None):
         self.controller = controller
         self.tasks_manager = tasks_manager
@@ -27,8 +28,19 @@ class UploadHandler(tornado.web.RequestHandler):
 
     def prepare(self):
         self.do_upload = True
-        user_data = json.loads(self.get_secure_cookie('user_data'))
-        user_id = user_data['user_id']
+        api_key, token_data, exec_user = self.current_user
+        superuser = exec_user['superuser']
+        if api_key is not None:
+            superuser = superuser and api_key.superuser
+        user_id = exec_user['user_id']
+
+        if superuser:
+            exec_user_crafty_permissions = self.controller.crafty_perms.list_defined_crafty_permissions()
+        elif api_key is not None:
+            exec_user_crafty_permissions = self.controller.crafty_perms.get_api_key_permissions_list(api_key)
+        else:
+            exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(
+                exec_user["user_id"])
 
         server_id = self.request.headers.get('X-ServerId', None)
 
@@ -42,8 +54,7 @@ class UploadHandler(tornado.web.RequestHandler):
             console.warning('Server ID not found in upload handler call')
             self.do_upload = False
 
-        user_permissions = self.controller.server_perms.get_user_permissions_list(user_id, server_id)
-        if Enum_Permissions_Server.Files not in user_permissions:
+        if Enum_Permissions_Server.Files not in exec_user_crafty_permissions:
             logger.warning(f'User {user_id} tried to upload a file to {server_id} without permissions!')
             console.warning(f'User {user_id} tried to upload a file to {server_id} without permissions!')
             self.do_upload = False
