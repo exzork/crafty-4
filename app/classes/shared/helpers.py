@@ -253,11 +253,13 @@ class Helpers:
             (r'(\[.+?/INFO\])', r'<span class="mc-log-info">\1</span>'),
             (r'(\[.+?/WARN\])', r'<span class="mc-log-warn">\1</span>'),
             (r'(\[.+?/ERROR\])', r'<span class="mc-log-error">\1</span>'),
-            (r'(\w+?\[/\d+?\.\d+?\.\d+?\.\d+?\:\d+?\])', r'<span class="mc-log-keyword">\1</span>'),
-            (r'\[(\d\d:\d\d:\d\d)\]', r'<span class="mc-log-time">[\1]</span>'),
+            (r'(\[.+?/FATAL\])', r'<span class="mc-log-fatal">\1</span>'),
+            (r'(\w+?\[/\d+?\.\d+?\.\d+?\.\d+?\:\d+?\])', r'<span class="mc-log-keyword">\1 </span>'),
+            (r'\[(\d\d:\d\d:\d\d)\]', r'<span class="mc-log-time">[\1] </span>'),
             (r'(\[.+? INFO\])', r'<span class="mc-log-info">\1</span>'),
             (r'(\[.+? WARN\])', r'<span class="mc-log-warn">\1</span>'),
             (r'(\[.+? ERROR\])', r'<span class="mc-log-error">\1</span>')
+            (r'(\[.+? FATAL\])', r'<span class="mc-log-fatal">\1</span>')
         ]
 
         # highlight users keywords
