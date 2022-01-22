@@ -290,8 +290,15 @@ class Server:
                 websocket_helper.broadcast_user(user_id, 'send_start_error', {
                     'error': translation.translate('error', 'portReminder', user_lang).format(self.name, loc_server_port)
                 })
+                server_users = server_permissions.get_server_user_list(self.server_id)
+                for user in server_users:
+                    if user != user_id:
+                        websocket_helper.broadcast_user(user, 'send_start_reload', {
+                })
             else:
-                websocket_helper.broadcast_user(user_id, 'send_start_reload', {
+                server_users = server_permissions.get_server_user_list(self.server_id)
+                for user in server_users:
+                    websocket_helper.broadcast_user(user, 'send_start_reload', {
                 })
         else:
             logger.warning("Server PID {} died right after starting - is this a server config issue?".format(self.process.pid))
@@ -353,8 +360,13 @@ class Server:
 
         # massive resetting of variables
         self.cleanup_server_object()
+        server_users = server_permissions.get_server_user_list(self.server_id)
 
         self.stats.record_stats()
+
+        for user in server_users:
+            websocket_helper.broadcast_user(user, 'send_start_reload', {
+                })
 
     def restart_threaded_server(self, user_id):
         # if not already running, let's just start
