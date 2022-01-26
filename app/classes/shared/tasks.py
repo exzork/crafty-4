@@ -453,7 +453,7 @@ class TasksManager:
                             'players': srv['raw_ping_result'].get('players'),
                             'desc': srv['raw_ping_result'].get('desc'),
                             'version': srv['raw_ping_result'].get('version'),
-                            'icon': srv['raw_ping_result'].get('icon')
+                            'icon': None
                         })
                         if len(websocket_helper.clients) > 0:
                             websocket_helper.broadcast_user_page_params(
@@ -478,7 +478,7 @@ class TasksManager:
                                     'players': srv['raw_ping_result'].get('players'),
                                     'desc': srv['raw_ping_result'].get('desc'),
                                     'version': srv['raw_ping_result'].get('version'),
-                                    'icon': srv['raw_ping_result'].get('icon')
+                                    'icon': None
                                 }
                             )
 
