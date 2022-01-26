@@ -84,6 +84,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    helper.ensure_logging_setup()
+
     setup_logging(debug=args.verbose)
 
     # setting up the logger object
