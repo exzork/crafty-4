@@ -8,7 +8,6 @@ from app.classes.shared.helpers import helper
 
 logger = logging.getLogger(__name__)
 
-
 class Translation:
     def __init__(self):
         self.translations_path = os.path.join(helper.root_dir, 'app', 'translations')
@@ -55,8 +54,8 @@ class Translation:
             try:
                 translated_page = data[page]
             except KeyError:
-                logger.error('Translation File Error: page {} does not exist for lang {}'.format(page, language))
-                console.error('Translation File Error: page {} does not exist for lang {}'.format(page, language))
+                logger.error(f'Translation File Error: page {page} does not exist for lang {language}')
+                console.error(f'Translation File Error: page {page} does not exist for lang {language}')
                 return None
 
             try:

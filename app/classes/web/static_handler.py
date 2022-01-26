@@ -1,9 +1,5 @@
+from typing import ( Optional )
 import tornado.web
-from typing import (
-    Optional
-)
-
-from app.classes.shared.console import console
 
 class CustomStaticHandler(tornado.web.StaticFileHandler):
     def validate_absolute_path(self, root: str, absolute_path: str) -> Optional[str]:

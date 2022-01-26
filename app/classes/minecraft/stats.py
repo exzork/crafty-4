@@ -1,16 +1,15 @@
 import os
 import json
-import time
-import psutil
 import logging
 import datetime
 import base64
+import psutil
 
+from app.classes.models.management import Host_Stats
+from app.classes.models.servers import Server_Stats, servers_helper
 
 from app.classes.shared.helpers import helper
 from app.classes.minecraft.mc_ping import ping
-from app.classes.models.management import Host_Stats
-from app.classes.models.servers import Server_Stats, servers_helper
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +63,6 @@ class Stats:
 
             real_cpu = round(p.cpu_percent(interval=0.5) / psutil.cpu_count(), 2)
 
-            process_start_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(p.create_time()))
-
             # this is a faster way of getting data for a process
             with p.oneshot():
                 process_stats = {
@@ -76,7 +73,7 @@ class Stats:
             return process_stats
 
         except Exception as e:
-            logger.error("Unable to get process details for pid: {} due to error: {}".format(process_pid, e))
+            logger.error(f"Unable to get process details for pid: {process_pid} due to error: {e}")
 
             # Dummy Data
             process_stats = {
@@ -119,13 +116,13 @@ class Stats:
         total_size = 0
 
         # do a scan of the directories in the server path.
-        for root, dirs, files in os.walk(world_path, topdown=False):
+        for root, dirs, _files in os.walk(world_path, topdown=False):
 
             # for each directory we find
             for name in dirs:
 
                 # if the directory name is "region"
-                if name == "region":
+                if str(name) == "region":
                     # log it!
                     logger.debug("Path %s is called region. Getting directory size", os.path.join(root, name))
 
@@ -144,14 +141,14 @@ class Stats:
             online_stats = json.loads(ping_obj.players)
 
         except Exception as e:
-            logger.info("Unable to read json from ping_obj: {}".format(e))
-            pass
+            logger.info(f"Unable to read json from ping_obj: {e}")
+
 
         try:
             server_icon = base64.encodebytes(ping_obj.icon)
         except  Exception as e:
             server_icon = False
-            logger.info("Unable to read the server icon : {}".format(e))
+            logger.info(f"Unable to read the server icon : {e}")
 
         ping_data = {
             'online': online_stats.get("online", 0),
@@ -168,18 +165,18 @@ class Stats:
 
         server = servers_helper.get_server_data_by_id(server_id)
 
-        logger.info("Getting players for server {}".format(server))
+        logger.info(f"Getting players for server {server}")
 
         # get our settings and data dictionaries
-        server_settings = server.get('server_settings', {})
-        server_data = server.get('server_data_obj', {})
+        # server_settings = server.get('server_settings', {})
+        # server_data = server.get('server_data_obj', {})
 
 
         # TODO: search server properties file for possible override of 127.0.0.1
         internal_ip = server['server_ip']
         server_port = server['server_port']
 
-        logger.debug("Pinging {} on port {}".format(internal_ip, server_port))
+        logger.debug("Pinging {internal_ip} on port {server_port}")
         int_mc_ping = ping(internal_ip, int(server_port))
 
         ping_data = {}
@@ -205,7 +202,7 @@ class Stats:
             server = servers_helper.get_server_data_by_id(server_id)
 
 
-            logger.debug('Getting stats for server: {}'.format(server_id))
+            logger.debug(f'Getting stats for server: {server_id}')
 
             # get our server object, settings and data dictionaries
             server_obj = s.get('server_obj', None)
@@ -223,8 +220,9 @@ class Stats:
             # TODO: search server properties file for possible override of 127.0.0.1
             internal_ip = server['server_ip']
             server_port = server['server_port']
+            server = s.get('server_name', f"ID#{server_id}")
 
-            logger.debug("Pinging server '{}' on {}:{}".format(s.get('server_name', "ID#{}".format(server_id)), internal_ip, server_port))
+            logger.debug("Pinging server '{server}' on {internal_ip}:{server_port}")
             int_mc_ping = ping(internal_ip, int(server_port))
 
             int_data = False
@@ -263,7 +261,7 @@ class Stats:
         server_stats = {}
         server = self.controller.get_server_obj(server_id)
 
-        logger.debug('Getting stats for server: {}'.format(server_id))
+        logger.debug(f'Getting stats for server: {server_id}')
 
         # get our server object, settings and data dictionaries
         server_obj = self.controller.get_server_obj(server_id)
@@ -285,7 +283,7 @@ class Stats:
         server_port = server_settings.get('server-port', "25565")
 
 
-        logger.debug("Pinging server '{}' on {}:{}".format(server.name, internal_ip, server_port))
+        logger.debug(f"Pinging server '{server.name}' on {internal_ip}:{server_port}")
         int_mc_ping = ping(internal_ip, int(server_port))
 
         int_data = False

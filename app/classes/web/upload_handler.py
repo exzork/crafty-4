@@ -1,16 +1,20 @@
-from app.classes.shared.main_controller import Controller
+import logging
+import os
+import time
+
 import tornado.options
 import tornado.web
 import tornado.httpserver
-from tornado.options import options
-from app.classes.models.server_permissions import Enum_Permissions_Server
+
 from app.classes.shared.helpers import helper
-from app.classes.web.websocket_helper import websocket_helper
 from app.classes.shared.console import console
-import logging
-import os
-import json
-import time
+from app.classes.shared.main_controller import Controller
+
+from app.classes.web.websocket_helper import websocket_helper
+from app.classes.web.base_handler import BaseHandler
+
+from app.classes.models.server_permissions import Enum_Permissions_Server
+
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +22,7 @@ logger = logging.getLogger(__name__)
 MAX_STREAMED_SIZE = 1024 * 1024 * 1024
 
 @tornado.web.stream_request_body
-class UploadHandler(tornado.web.RequestHandler):
+class UploadHandler(BaseHandler):
 
     # noinspection PyAttributeOutsideInit
     def initialize(self, controller: Controller=None, tasks_manager=None, translator=None):
@@ -28,19 +32,21 @@ class UploadHandler(tornado.web.RequestHandler):
 
     def prepare(self):
         self.do_upload = True
+        # pylint: disable=unused-variable
         api_key, token_data, exec_user = self.current_user
+        server_id = self.get_argument('server_id', None)
         superuser = exec_user['superuser']
         if api_key is not None:
             superuser = superuser and api_key.superuser
         user_id = exec_user['user_id']
 
         if superuser:
-            exec_user_crafty_permissions = self.controller.crafty_perms.list_defined_crafty_permissions()
+            exec_user_server_permissions = self.controller.server_perms.list_defined_permissions()
         elif api_key is not None:
-            exec_user_crafty_permissions = self.controller.crafty_perms.get_api_key_permissions_list(api_key)
+            exec_user_server_permissions = self.controller.server_perms.get_api_key_permissions_list(api_key, server_id)
         else:
-            exec_user_crafty_permissions = self.controller.crafty_perms.get_crafty_permissions_list(
-                exec_user["user_id"])
+            exec_user_server_permissions = self.controller.server_perms.get_user_id_permissions_list(
+                exec_user["user_id"], server_id)
 
         server_id = self.request.headers.get('X-ServerId', None)
 
@@ -54,7 +60,7 @@ class UploadHandler(tornado.web.RequestHandler):
             console.warning('Server ID not found in upload handler call')
             self.do_upload = False
 
-        if Enum_Permissions_Server.Files not in exec_user_crafty_permissions:
+        if Enum_Permissions_Server.Files not in exec_user_server_permissions:
             logger.warning(f'User {user_id} tried to upload a file to {server_id} without permissions!')
             console.warning(f'User {user_id} tried to upload a file to {server_id} without permissions!')
             self.do_upload = False
@@ -73,7 +79,7 @@ class UploadHandler(tornado.web.RequestHandler):
             try:
                 self.f = open(full_path, "wb")
             except Exception as e:
-                logger.error("Upload failed with error: {}".format(e))
+                logger.error(f"Upload failed with error: {e}")
                 self.do_upload = False
         # If max_body_size is not set, you cannot upload files > 100MB
         self.request.connection.set_max_body_size(MAX_STREAMED_SIZE)
@@ -94,6 +100,6 @@ class UploadHandler(tornado.web.RequestHandler):
                 websocket_helper.broadcast('close_upload_box', 'error')
             self.finish('error')
 
-    def data_received(self, data):
+    def data_received(self, chunk):
         if self.do_upload:
-            self.f.write(data)
+            self.f.write(chunk)

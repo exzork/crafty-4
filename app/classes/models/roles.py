@@ -1,4 +1,3 @@
-import os
 import sys
 import logging
 import datetime
@@ -11,14 +10,12 @@ peewee_logger = logging.getLogger('peewee')
 peewee_logger.setLevel(logging.INFO)
 
 try:
-    from peewee import *
+    from peewee import SqliteDatabase, Model, CharField, DoesNotExist, AutoField, DateTimeField
     from playhouse.shortcuts import model_to_dict
-    from enum import Enum
-    import yaml
 
 except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name))
+    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
+    console.critical(f"Import Error: Unable to load {e.name} module")
     sys.exit(1)
 
 database = SqliteDatabase(helper.db_path, pragmas={
@@ -45,7 +42,7 @@ class helper_roles:
     @staticmethod
     def get_all_roles():
         query = Roles.select()
-        return query  
+        return query
 
     @staticmethod
     def get_roleid_by_name(role_name):
@@ -81,5 +78,5 @@ class helper_roles:
         if not roles_helper.get_role(role_id):
             return False
         return True
-    
+
 roles_helper = helper_roles()

@@ -1,29 +1,15 @@
-from app.classes.controllers.roles_controller import Roles_Controller
 import os
-import time
 import logging
 import json
-import sys
-import yaml
-import asyncio
-import shutil
-import tempfile
-import zipfile
-from distutils import dir_util
 
-from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
-
-from app.classes.shared.main_models import db_helper
 from app.classes.models.servers import servers_helper
-from app.classes.models.roles import roles_helper
 from app.classes.models.users import users_helper, ApiKeys
 from app.classes.models.server_permissions import server_permissions, Enum_Permissions_Server
 
-from app.classes.shared.server import Server
-from app.classes.minecraft.server_props import ServerProps
-from app.classes.minecraft.serverjars import server_jar_obj
-from app.classes.minecraft.stats import Stats
+from app.classes.shared.helpers import helper
+from app.classes.shared.main_models import db_helper
+
+from app.classes.controllers.roles_controller import Roles_Controller
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +19,26 @@ class Servers_Controller:
     #                                   Generic Servers Methods
     #************************************************************************************************
     @staticmethod
-    def create_server(name: str, server_uuid: str, server_dir: str, backup_path: str, server_command: str, server_file: str, server_log_file: str, server_stop: str, server_port=25565):
-        return servers_helper.create_server(name, server_uuid, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, server_port)
+    def create_server(
+        name: str,
+        server_uuid: str,
+        server_dir: str,
+        backup_path: str,
+        server_command: str,
+        server_file: str,
+        server_log_file: str,
+        server_stop: str,
+        server_port=25565):
+        return servers_helper.create_server(
+            name,
+            server_uuid,
+            server_dir,
+            backup_path,
+            server_command,
+            server_file,
+            server_log_file,
+            server_stop,
+            server_port)
 
     @staticmethod
     def get_server_obj(server_id):
@@ -183,7 +187,7 @@ class Servers_Controller:
         path = os.path.join(server_path, 'banned-players.json')
 
         try:
-            with open(helper.get_os_understandable_path(path)) as file:
+            with open(helper.get_os_understandable_path(path), encoding='utf-8') as file:
                 content = file.read()
                 file.close()
         except Exception as ex:
@@ -210,4 +214,3 @@ class Servers_Controller:
                 if helper.check_file_exists(log_file_path) and \
                         helper.is_file_older_than_x_days(log_file_path, logs_delete_after):
                     os.remove(log_file_path)
-

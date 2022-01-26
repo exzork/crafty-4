@@ -1,42 +1,33 @@
-from tempfile import tempdir
-from typing import Dict, Optional, Any
-
-from app.classes.shared.authentication import authentication
-from app.classes.shared.translation import Translation
-import json
-import logging
-import tornado.web
-import tornado.escape
-import bleach
 import time
 import datetime
 import os
-import shutil
-import tempfile
+from typing import Dict, Any, Tuple
+import json
+import logging
 import threading
-from cron_validator import CronValidator
-#TZLocal is set as a hidden import on win pipeline
-from tzlocal import get_localzone
+import bleach
 import libgravatar
 import requests
 
-from tornado import locale, iostream
+import tornado.web
+import tornado.escape
+from tornado import iostream
 from tornado.ioloop import IOLoop
-from app.classes.shared.console import console
-from app.classes.shared.main_models import Users, installer
+
+#TZLocal is set as a hidden import on win pipeline
+from tzlocal import get_localzone
+from cron_validator import CronValidator
+
+from app.classes.models.server_permissions import Enum_Permissions_Server
+from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
+from app.classes.models.management import management_helper
+
+from app.classes.shared.authentication import authentication
+from app.classes.shared.helpers import helper
 
 from app.classes.web.base_handler import BaseHandler
 
-from app.classes.models.servers import Servers
-from app.classes.models.server_permissions import Enum_Permissions_Server, Permissions_Servers
-from app.classes.models.crafty_permissions import Enum_Permissions_Crafty, Permissions_Crafty
-from app.classes.models.management import management_helper
-
-from app.classes.shared.helpers import helper
-from app.classes.web.websocket_helper import WebSocketHelper
-
 logger = logging.getLogger(__name__)
-
 
 class PanelHandler(BaseHandler):
 
@@ -53,26 +44,26 @@ class PanelHandler(BaseHandler):
         for server in self.controller.list_defined_servers():
             argument = int(float(
                 bleach.clean(
-                    self.get_argument('server_{}_access'.format(server['server_id']), '0')
+                    self.get_argument(f"server_{server['server_id']}_access", '0')
                 )
             ))
             if argument:
                 servers.add(server['server_id'])
         return servers
 
-    def get_perms_quantity(self) -> (str, dict):
+    def get_perms_quantity(self) -> Tuple[str, dict]:
         permissions_mask: str = "000"
         server_quantity: dict = {}
         for permission in self.controller.crafty_perms.list_defined_crafty_permissions():
             argument = int(float(bleach.clean(
-                self.get_argument('permission_{}'.format(permission.name), '0')
+                self.get_argument(f'permission_{permission.name}', '0')
             )))
             if argument:
                 permissions_mask = self.controller.crafty_perms.set_permission(permissions_mask, permission, argument)
 
             q_argument = int(float(
                 bleach.clean(
-                    self.get_argument('quantity_{}'.format(permission.name), '0')
+                    self.get_argument(f'quantity_{permission.name}', '0')
                 )
             ))
             if q_argument:
@@ -84,7 +75,7 @@ class PanelHandler(BaseHandler):
     def get_perms(self) -> str:
         permissions_mask: str = "000"
         for permission in self.controller.crafty_perms.list_defined_crafty_permissions():
-            argument = self.get_argument('permission_{}'.format(permission.name), None)
+            argument = self.get_argument(f'permission_{permission.name}', None)
             if argument is not None:
                 permissions_mask = self.controller.crafty_perms.set_permission(permissions_mask, permission,
                                                                                1 if argument == '1' else 0)
@@ -93,7 +84,7 @@ class PanelHandler(BaseHandler):
     def get_perms_server(self) -> str:
         permissions_mask = "00000000"
         for permission in self.controller.server_perms.list_defined_permissions():
-            argument = self.get_argument('permission_{}'.format(permission.name), None)
+            argument = self.get_argument(f'permission_{permission.name}', None)
             if argument is not None:
                 permissions_mask = self.controller.server_perms.set_permission(permissions_mask, permission,
                                                                                1 if argument == '1' else 0)
@@ -102,13 +93,13 @@ class PanelHandler(BaseHandler):
     def get_user_role_memberships(self) -> set:
         roles = set()
         for role in self.controller.roles.get_all_roles():
-            if self.get_argument('role_{}_membership'.format(role.role_id), None) == '1':
+            if self.get_argument(f'role_{role.role_id}_membership', None) == '1':
                 roles.add(role.role_id)
         return roles
 
     def download_file(self, name: str, file: str):
         self.set_header('Content-Type', 'application/octet-stream')
-        self.set_header('Content-Disposition', 'attachment; filename=' + name)
+        self.set_header('Content-Disposition', f'attachment; filename={name}')
         chunk_size = 1024 * 1024 * 4  # 4 MiB
 
         with open(file, 'rb') as f:
@@ -163,7 +154,7 @@ class PanelHandler(BaseHandler):
                         return None
         return server_id
 
-    # Server fetching, spawned asynchronously 
+    # Server fetching, spawned asynchronously
     # TODO: Make the related front-end elements update with AJAX
     def fetch_server_data(self, page_data):
         total_players = 0
@@ -176,8 +167,8 @@ class PanelHandler(BaseHandler):
                 data = json.loads(s['int_ping_results'])
                 s['int_ping_results'] = data
             except Exception as e:
-                logger.error("Failed server data for page with error: {} ".format(e))
-        
+                logger.error(f"Failed server data for page with error: {e}")
+
         return page_data
 
 
@@ -190,6 +181,7 @@ class PanelHandler(BaseHandler):
         now = time.time()
         formatted_time = str(datetime.datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S'))
 
+        # pylint: disable=unused-variable
         api_key, token_data, exec_user = self.current_user
         superuser = exec_user['superuser']
         if api_key is not None:
@@ -272,7 +264,7 @@ class PanelHandler(BaseHandler):
             template = "public/error.html"
 
         elif page == 'credits':
-            with open(helper.credits_cache) as republic_credits_will_do:
+            with open(helper.credits_cache, encoding='utf-8') as republic_credits_will_do:
                 credits_dict: dict = json.load(republic_credits_will_do)
                 timestamp = credits_dict["lastUpdate"] / 1000.0
                 page_data["patrons"] = credits_dict["patrons"]
@@ -308,7 +300,7 @@ class PanelHandler(BaseHandler):
                         data['stats']['waiting_start'] = self.controller.servers.get_waiting_start(
                             str(data['stats']['server_id']['server_id']))
                     except Exception as e:
-                        logger.error("Failed to get server waiting to start: {} ".format(e))
+                        logger.error(f"Failed to get server waiting to start: {e}")
                         data['stats']['waiting_start'] = False
 
             try:
@@ -324,14 +316,15 @@ class PanelHandler(BaseHandler):
             subpage = bleach.clean(self.get_argument('subpage', ""))
 
             server_id = self.check_server_id()
-            if server_id is None: return
+            if server_id is None:
+                return
 
             valid_subpages = ['term', 'logs', 'backup', 'config', 'files', 'admin_controls', 'tasks']
 
             if subpage not in valid_subpages:
                 logger.debug('not a valid subpage')
                 subpage = 'term'
-            logger.debug('Subpage: "{}"'.format(subpage))
+            logger.debug(f'Subpage: "{subpage}"')
 
             server = self.controller.get_server_obj(server_id)
             # server_data isn't needed since the server_stats also pulls server data
@@ -340,7 +333,7 @@ class PanelHandler(BaseHandler):
             try:
                 page_data['waiting_start'] = self.controller.servers.get_waiting_start(server_id)
             except Exception as e:
-                logger.error("Failed to get server waiting to start: {} ".format(e))
+                logger.error(f"Failed to get server waiting to start: {e}")
                 page_data['waiting_start'] = False
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
             page_data['active_link'] = subpage
@@ -365,8 +358,8 @@ class PanelHandler(BaseHandler):
             if subpage == 'logs':
                 if not page_data['permissions']['Logs'] in page_data['user_permissions']:
                     if not superuser:
-                        self.redirect("/panel/error?error=Unauthorized access to Logs")    
-                        return     
+                        self.redirect("/panel/error?error=Unauthorized access to Logs")
+                        return
 
 
             if subpage == 'tasks':
@@ -413,13 +406,13 @@ class PanelHandler(BaseHandler):
                     """
                 html = ""
                 for player in banned_players:
-                    html += """
+                    html += f"""
                     <li class="playerItem banned">
-                        <h3>{}</h3>
-                        <span>Banned by {} for reason: {}</span>
-                        <button onclick="send_command_to_server('pardon {}')" type="button" class="btn btn-danger">Unban</button>
+                        <h3>{player['name']}</h3>
+                        <span>Banned by {player['source']} for reason: {player['reason']}</span>
+                        <button onclick="send_command_to_server('pardon {player['name']}')" type="button" class="btn btn-danger">Unban</button>
                     </li>
-                    """.format(player['name'], player['source'], player['reason'], player['name'])
+                    """
 
                 return html
             if subpage == "admin_controls":
@@ -428,14 +421,14 @@ class PanelHandler(BaseHandler):
                         self.redirect("/panel/error?error=Unauthorized access")
                 page_data['banned_players'] = get_banned_players_html()
 
-            # template = "panel/server_details.html"
-            template = "panel/server_{subpage}.html".format(subpage=subpage)
+            template = f"panel/server_{subpage}.html"
 
         elif page == 'download_backup':
             file = self.get_argument('file', "")
 
             server_id = self.check_server_id()
-            if server_id is None: return
+            if server_id is None:
+                return
 
 
             server_info = self.controller.servers.get_server_data_by_id(server_id)
@@ -447,16 +440,17 @@ class PanelHandler(BaseHandler):
 
             self.download_file(file, backup_file)
 
-            self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
+            self.redirect(f"/panel/server_detail?id={server_id}&subpage=backup")
 
         elif page == 'backup_now':
             server_id = self.check_server_id()
-            if server_id is None: return
+            if server_id is None:
+                return
 
             server = self.controller.get_server_obj(server_id)
 
             server.backup_server()
-            self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
+            self.redirect(f"/panel/server_detail?id={server_id}&subpage=backup")
 
         elif page == 'panel_config':
             auth_servers = {}
@@ -543,7 +537,7 @@ class PanelHandler(BaseHandler):
                         page_data['languages'].append(file.split('.')[0])
 
             template = "panel/panel_edit_user.html"
-        
+
         elif page == "add_schedule":
             server_id = self.get_argument('id', None)
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
@@ -607,7 +601,8 @@ class PanelHandler(BaseHandler):
             page_data['schedule']['server_id'] = server_id
             page_data['schedule']['schedule_id'] = schedule.schedule_id
             page_data['schedule']['action'] = schedule.action
-            #we check here to see if the command is any of the default ones. We do not want a user changing to a custom command and seeing our command there.
+            # We check here to see if the command is any of the default ones.
+            # We do not want a user changing to a custom command and seeing our command there.
             if schedule.action != 'start' or schedule.action != 'stop' or schedule.action != 'restart' or schedule.action != 'backup':
                 page_data['schedule']['command'] = schedule.command
             else:
@@ -624,9 +619,9 @@ class PanelHandler(BaseHandler):
                 difficulty = 'advanced'
             page_data['schedule']['difficulty'] = difficulty
 
-            if sch_id == None or server_id == None:
+            if sch_id is None or server_id is None:
                 self.redirect("/panel/error?error=Invalid server ID or Schedule ID")
-                
+
             if not Enum_Permissions_Server.Schedule in page_data['user_permissions']:
                 if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
@@ -657,7 +652,7 @@ class PanelHandler(BaseHandler):
                 page_data['super-disabled'] = ''
             else:
                 page_data['super-disabled'] = 'disabled'
-            
+
             for file in sorted(os.listdir(os.path.join(helper.root_dir, 'app', 'translations'))):
                 if file.endswith('.json'):
                     if file != str(page_data['languages'][0] + '.json'):
@@ -699,7 +694,7 @@ class PanelHandler(BaseHandler):
 
         elif page == "remove_user":
             user_id = bleach.clean(self.get_argument('id', None))
-            
+
             if not superuser and Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return
@@ -803,7 +798,8 @@ class PanelHandler(BaseHandler):
             name = self.get_argument('name', "")
 
             server_id = self.check_server_id()
-            if server_id is None: return
+            if server_id is None:
+                return
 
             server_info = self.controller.servers.get_server_data_by_id(server_id)
 
@@ -813,13 +809,13 @@ class PanelHandler(BaseHandler):
                 return
 
             self.download_file(name, file)
-            self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
+            self.redirect(f"/panel/server_detail?id={server_id}&subpage=files")
 
         elif page == 'download_support_package':
             tempZipStorage = exec_user['support_logs']
             #We'll reset the support path for this user now.
             self.controller.users.set_support_path(exec_user["user_id"], "")
-            
+
             self.set_header('Content-Type', 'application/octet-stream')
             self.set_header('Content-Disposition', 'attachment; filename=' + "support_logs.zip")
             chunk_size = 1024 * 1024 * 4 # 4 MiB
@@ -848,8 +844,11 @@ class PanelHandler(BaseHandler):
                 return
 
         elif page == "support_logs":
-            logger.info("Support logs requested. Packinging logs for user with ID: {}".format(exec_user["user_id"]))
-            logs_thread = threading.Thread(target=self.controller.package_support_logs, daemon=True, args=(exec_user,), name='{}_logs_thread'.format(exec_user['user_id']))
+            logger.info(f"Support logs requested. Packinging logs for user with ID: {exec_user['user_id']}")
+            logs_thread = threading.Thread(target=self.controller.package_support_logs,
+                                           daemon=True,
+                                           args=(exec_user,),
+                                           name=f"{exec_user['user_id']}_logs_thread")
             logs_thread.start()
             self.redirect('/panel/dashboard')
             return
@@ -866,6 +865,7 @@ class PanelHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, page):
+        # pylint: disable=unused-variable
         api_key, token_data, exec_user = self.current_user
         superuser = exec_user['superuser']
         if api_key is not None:
@@ -897,7 +897,7 @@ class PanelHandler(BaseHandler):
         if page == 'server_detail':
             if not permissions['Config'] in self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id):
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access to Config")    
+                    self.redirect("/panel/error?error=Unauthorized access to Config")
                     return
             server_name = self.get_argument('server_name', None)
             server_obj = self.controller.servers.get_server_obj(server_id)
@@ -923,14 +923,13 @@ class PanelHandler(BaseHandler):
             auto_start = int(float(self.get_argument('auto_start', '0')))
             crash_detection = int(float(self.get_argument('crash_detection', '0')))
             logs_delete_after = int(float(self.get_argument('logs_delete_after', '0')))
-            # TODO: Add more modify options via the subpage parameter
             # subpage = self.get_argument('subpage', None)
 
             server_id = self.check_server_id()
-            if server_id is None: return
+            if server_id is None:
+                return
 
             server_obj = self.controller.servers.get_server_obj(server_id)
-            server_settings = self.controller.get_server_data(server_id)
             stale_executable = server_obj.executable
             #Compares old jar name to page data being passed. If they are different we replace the executable name in the
             if str(stale_executable) != str(executable):
@@ -966,11 +965,11 @@ class PanelHandler(BaseHandler):
             self.controller.refresh_server_settings(server_id)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Edited server {} named {}".format(server_id, server_name),
+                                       f"Edited server {server_id} named {server_name}",
                                        server_id,
                                        self.get_remote_ip())
 
-            self.redirect("/panel/server_detail?id={}&subpage=config".format(server_id))
+            self.redirect(f"/panel/server_detail?id={server_id}&subpage=config")
 
         if page == "server_backup":
             logger.debug(self.request.arguments)
@@ -1008,9 +1007,9 @@ class PanelHandler(BaseHandler):
                                        server_id,
                                        self.get_remote_ip())
             self.tasks_manager.reload_schedule_from_db()
-            self.redirect("/panel/server_detail?id={}&subpage=backup".format(server_id))
+            self.redirect(f"/panel/server_detail?id={server_id}&subpage=backup")
 
-        
+
         if page == "new_schedule":
             server_id = bleach.clean(self.get_argument('id', None))
             difficulty = bleach.clean(self.get_argument('difficulty', None))
@@ -1022,7 +1021,7 @@ class PanelHandler(BaseHandler):
                 interval_type = bleach.clean(self.get_argument('interval_type', None))
                 #only check for time if it's number of days
                 if interval_type == "days":
-                    time = bleach.clean(self.get_argument('time', None))
+                    sch_time = bleach.clean(self.get_argument('time', None))
                 if action == "command":
                     command = bleach.clean(self.get_argument('command', None))
                 elif action == "start":
@@ -1039,7 +1038,7 @@ class PanelHandler(BaseHandler):
                 try:
                     CronValidator.parse(cron_string)
                 except Exception as e:
-                    self.redirect("/panel/error?error=INVALID FORMAT: Invalid Cron Format. {}".format(e))
+                    self.redirect(f"/panel/error?error=INVALID FORMAT: Invalid Cron Format. {e}")
                     return
                 action = bleach.clean(self.get_argument('action', None))
                 if action == "command":
@@ -1060,8 +1059,9 @@ class PanelHandler(BaseHandler):
                 one_time = True
             else:
                 one_time = False
-                
-            if not superuser and not permissions['Backup'] in self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id):
+
+            if not superuser and not permissions['Backup'] in self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"],
+            server_id):
                 self.redirect("/panel/error?error=Unauthorized access: User not authorized")
                 return
             elif server_id is None:
@@ -1072,13 +1072,6 @@ class PanelHandler(BaseHandler):
                 if not self.controller.servers.server_id_exists(server_id):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
-                minute = datetime.datetime.now().minute
-                hour = datetime.datetime.now().hour
-                if minute < 10:
-                    minute = '0' + str(minute)
-                if hour < 10:
-                    hour = '0'+str(hour)
-                current_time = str(hour)+':'+str(minute)
 
                 if interval_type == "days":
                     job_data = {
@@ -1087,18 +1080,17 @@ class PanelHandler(BaseHandler):
                         "interval_type": interval_type,
                         "interval": interval,
                         "command": command,
-                        "start_time": time,
+                        "start_time": sch_time,
                         "enabled": enabled,
                         "one_time": one_time,
                         "cron_string": ''
                     }
                 elif difficulty == "advanced":
-                        job_data = {
+                    job_data = {
                         "server_id": server_id,
                         "action": action,
                         "interval_type": '',
                         "interval": '',
-                        "command": '',
                         #We'll base every interval off of a midnight start time.
                         "start_time": '',
                         "command": command,
@@ -1123,11 +1115,11 @@ class PanelHandler(BaseHandler):
                 self.tasks_manager.schedule_job(job_data)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Edited server {}: added scheduled job".format(server_id),
+                                       f"Edited server {server_id}: added scheduled job",
                                        server_id,
                                        self.get_remote_ip())
             self.tasks_manager.reload_schedule_from_db()
-            self.redirect("/panel/server_detail?id={}&subpage=tasks".format(server_id))
+            self.redirect(f"/panel/server_detail?id={server_id}&subpage=tasks")
 
 
         if page == "edit_schedule":
@@ -1141,7 +1133,7 @@ class PanelHandler(BaseHandler):
                 interval_type = bleach.clean(self.get_argument('interval_type', None))
                 #only check for time if it's number of days
                 if interval_type == "days":
-                    time = bleach.clean(self.get_argument('time', None))
+                    sch_time = bleach.clean(self.get_argument('time', None))
                 if action == "command":
                     command = bleach.clean(self.get_argument('command', None))
                 elif action == "start":
@@ -1159,7 +1151,7 @@ class PanelHandler(BaseHandler):
                 try:
                     CronValidator.parse(cron_string)
                 except Exception as e:
-                    self.redirect("/panel/error?error=INVALID FORMAT: Invalid Cron Format. {}".format(e))
+                    self.redirect(f"/panel/error?error=INVALID FORMAT: Invalid Cron Format. {e}")
                     return
                 action = bleach.clean(self.get_argument('action', None))
                 if action == "command":
@@ -1180,8 +1172,9 @@ class PanelHandler(BaseHandler):
                 one_time = True
             else:
                 one_time = False
-                
-            if not superuser and not permissions['Backup'] in self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id):
+
+            if not superuser and not permissions['Backup'] in self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"],
+            server_id):
                 self.redirect("/panel/error?error=Unauthorized access: User not authorized")
                 return
             elif server_id is None:
@@ -1192,13 +1185,6 @@ class PanelHandler(BaseHandler):
                 if not self.controller.servers.server_id_exists(server_id):
                     self.redirect("/panel/error?error=Invalid Server ID")
                     return
-                minute = datetime.datetime.now().minute
-                hour = datetime.datetime.now().hour
-                if minute < 10:
-                    minute = '0' + str(minute)
-                if hour < 10:
-                    hour = '0'+str(hour)
-                current_time = str(hour)+':'+str(minute)
 
                 if interval_type == "days":
                     job_data = {
@@ -1207,18 +1193,17 @@ class PanelHandler(BaseHandler):
                         "interval_type": interval_type,
                         "interval": interval,
                         "command": command,
-                        "start_time": time,
+                        "start_time": sch_time,
                         "enabled": enabled,
                         "one_time": one_time,
                         "cron_string": ''
                     }
                 elif difficulty == "advanced":
-                        job_data = {
+                    job_data = {
                         "server_id": server_id,
                         "action": action,
                         "interval_type": '',
                         "interval": '',
-                        "command": '',
                         #We'll base every interval off of a midnight start time.
                         "start_time": '',
                         "command": command,
@@ -1243,11 +1228,11 @@ class PanelHandler(BaseHandler):
                 self.tasks_manager.update_job(sch_id, job_data)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Edited server {}: updated schedule".format(server_id),
+                                       f"Edited server {server_id}: updated schedule",
                                        server_id,
                                        self.get_remote_ip())
             self.tasks_manager.reload_schedule_from_db()
-            self.redirect("/panel/server_detail?id={}&subpage=tasks".format(server_id))
+            self.redirect(f"/panel/server_detail?id={server_id}&subpage=tasks")
 
 
         elif page == "edit_user":
@@ -1262,7 +1247,8 @@ class PanelHandler(BaseHandler):
             lang = bleach.clean(self.get_argument('language'), helper.get_setting('language'))
 
             if superuser:
-                #Checks if user is trying to change super user status of self. We don't want that. Automatically make them stay super user since we know they are.
+                #Checks if user is trying to change super user status of self. We don't want that.
+                # Automatically make them stay super user since we know they are.
                 if str(exec_user['user_id']) != str(user_id):
                     superuser = bleach.clean(self.get_argument('superuser', '0'))
                 else:
@@ -1358,7 +1344,8 @@ class PanelHandler(BaseHandler):
             self.controller.users.add_user_api_key(name, user_id, superuser, crafty_permissions_mask, server_permissions_mask)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                                        f"Added API key {name} with crafty permissions {crafty_permissions_mask} and {server_permissions_mask} for user with UID: {user_id}",
+                                                        f"Added API key {name} with crafty permissions {crafty_permissions_mask}" +
+                                                        f" and {server_permissions_mask} for user with UID: {user_id}",
                                                         server_id=0,
                                                         source_ip=self.get_remote_ip())
             self.redirect(f"/panel/edit_user_apikeys?id={user_id}")
@@ -1389,13 +1376,14 @@ class PanelHandler(BaseHandler):
 
         elif page == "add_user":
             if bleach.clean(self.get_argument('username', None)).lower() == 'system':
-                self.redirect("/panel/error?error=Unauthorized access: username system is reserved for the Crafty system. Please choose a different username.")
+                self.redirect("/panel/error?error=Unauthorized access: username system is reserved for the Crafty system." +
+                              " Please choose a different username.")
                 return
             username = bleach.clean(self.get_argument('username', None))
             password0 = bleach.clean(self.get_argument('password0', None))
             password1 = bleach.clean(self.get_argument('password1', None))
             email  = bleach.clean(self.get_argument('email', "default@example.com"))
-            enabled = int(float(self.get_argument('enabled', '0'))),
+            enabled = int(float(self.get_argument('enabled', '0')))
             lang = bleach.clean(self.get_argument('lang', helper.get_setting('language')))
             if superuser:
                 superuser = bleach.clean(self.get_argument('superuser', '0'))
@@ -1404,7 +1392,7 @@ class PanelHandler(BaseHandler):
             if superuser == '1':
                 superuser = True
             else:
-                superuser = False            
+                superuser = False
 
             if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
                 self.redirect("/panel/error?error=Unauthorized access: not a user editor")
@@ -1437,11 +1425,11 @@ class PanelHandler(BaseHandler):
             self.controller.users.update_user(user_id, user_data=user_data, user_crafty_data=user_crafty_data)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Added user {} (UID:{})".format(username, user_id),
+                                       f"Added user {username} (UID:{user_id})",
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Edited user {} (UID:{}) with roles {}".format(username, user_id, roles),
+                                       f"Edited user {username} (UID:{user_id}) with roles {roles}",
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
@@ -1475,7 +1463,7 @@ class PanelHandler(BaseHandler):
             self.controller.roles.update_role(role_id, role_data=role_data, permissions_mask=permissions_mask)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Edited role {} (RID:{}) with servers {}".format(role_name, role_id, servers),
+                                       f"Edited role {role_name} (RID:{role_id}) with servers {servers}",
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
@@ -1503,11 +1491,11 @@ class PanelHandler(BaseHandler):
             self.controller.roles.update_role(role_id, {"servers": servers}, permissions_mask)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Added role {} (RID:{})".format(role_name, role_id),
+                                       f"Added role {role_name} (RID:{role_id})",
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Edited role {} (RID:{}) with servers {}".format(role_name, role_id, servers),
+                                       f"Edited role {role_name} (RID:{role_id}) with servers {servers}",
                                        server_id=0,
                                        source_ip=self.get_remote_ip())
             self.redirect("/panel/panel_config")
@@ -1523,6 +1511,7 @@ class PanelHandler(BaseHandler):
 
     @tornado.web.authenticated
     def delete(self, page):
+        # pylint: disable=unused-variable
         api_key, token_data, exec_user = self.current_user
         superuser = exec_user['superuser']
         if api_key is not None:

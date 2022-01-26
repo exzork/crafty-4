@@ -1,24 +1,7 @@
-import os
-import time
 import logging
-import sys
-import yaml
-import asyncio
-import shutil
-import tempfile
-import zipfile
-from distutils import dir_util
-
-from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
 
 from app.classes.models.management import management_helper
 from app.classes.models.servers import servers_helper
-
-from app.classes.shared.server import Server
-from app.classes.minecraft.server_props import ServerProps
-from app.classes.minecraft.serverjars import server_jar_obj
-from app.classes.minecraft.stats import Stats
 
 logger = logging.getLogger(__name__)
 
@@ -43,14 +26,13 @@ class Management_Controller:
         server_name = servers_helper.get_server_friendly_name(server_id)
 
         # Example: Admin issued command start_server for server Survival
-        management_helper.add_to_audit_log(user_id, "issued command {} for server {}".format(command, server_name),
-                              server_id, remote_ip)
+        management_helper.add_to_audit_log(user_id, f"issued command {command} for server {server_name}", server_id, remote_ip)
         management_helper.add_command(server_id, user_id, remote_ip, command)
 
     @staticmethod
     def mark_command_complete(command_id=None):
         return management_helper.mark_command_complete(command_id)
-            
+
     #************************************************************************************************
     #                                   Audit_Log Methods
     #************************************************************************************************
@@ -71,7 +53,16 @@ class Management_Controller:
     #************************************************************************************************
     @staticmethod
     def create_scheduled_task(server_id, action, interval, interval_type, start_time, command, comment=None, enabled=True):
-        return management_helper.create_scheduled_task(server_id, action, interval, interval_type, start_time, command, comment, enabled)
+        return management_helper.create_scheduled_task(
+                                                       server_id,
+                                                       action,
+                                                       interval,
+                                                       interval_type,
+                                                       start_time,
+                                                       command,
+                                                       comment,
+                                                       enabled
+                                                      )
 
     @staticmethod
     def delete_scheduled_task(schedule_id):

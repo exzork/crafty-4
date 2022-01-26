@@ -3,10 +3,6 @@ import sys
 import json
 import asyncio
 import logging
-import threading
-
-from app.classes.shared.console import console
-from app.classes.shared.helpers import helper
 
 logger = logging.getLogger(__name__)
 
@@ -26,17 +22,17 @@ try:
     from app.classes.web.api_handler import ServersStats, NodeStats
     from app.classes.web.websocket_handler import SocketHandler
     from app.classes.web.static_handler import CustomStaticHandler
-    from app.classes.shared.translation import translation
     from app.classes.web.upload_handler import UploadHandler
     from app.classes.web.http_handler import HTTPHandler, HTTPHandlerPage
     from app.classes.web.status_handler import StatusHandler
+    from app.classes.shared.translation import translation
+    from app.classes.shared.console import console
+    from app.classes.shared.helpers import helper
 
 except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e, e.name))
-    console.critical("Import Error: Unable to load {} module".format(e, e.name))
+    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
+    console.critical(f"Import Error: Unable to load {e.name} module")
     sys.exit(1)
-
-
 
 class Webserver:
 
@@ -48,7 +44,6 @@ class Webserver:
         self.tasks_manager = tasks_manager
         self._asyncio_patch()
 
-
     @staticmethod
     def log_function(handler):
 
@@ -57,6 +52,7 @@ class Webserver:
             'Method': handler.request.method,
             'URL': handler.request.uri,
             'Remote_IP': handler.request.remote_ip,
+            # pylint: disable=consider-using-f-string
             'Elapsed_Time': '%.2fms' % (handler.request.request_time() * 1000)
         }
 
@@ -74,12 +70,12 @@ class Webserver:
         """
         logger.debug("Checking if asyncio patch is required")
         if sys.platform.startswith("win") and sys.version_info >= (3, 8):
+            # pylint: disable=reimported,import-outside-toplevel,redefined-outer-name
             import asyncio
             try:
                 from asyncio import WindowsSelectorEventLoopPolicy
             except ImportError:
-                logger.debug("asyncio patch isn't required")
-                pass  # Can't assign a policy which doesn't exist.
+                logger.debug("asyncio patch isn't required") # Can't assign a policy which doesn't exist.
             else:
                 if not isinstance(asyncio.get_event_loop_policy(), WindowsSelectorEventLoopPolicy):
                     asyncio.set_event_loop_policy(WindowsSelectorEventLoopPolicy())
@@ -92,7 +88,7 @@ class Webserver:
 
         http_port = helper.get_setting('http_port')
         https_port = helper.get_setting('https_port')
-        
+
         debug_errors = helper.get_setting('show_errors')
         cookie_secret = helper.get_setting('cookie_secret')
 
@@ -110,7 +106,7 @@ class Webserver:
             'keyfile': os.path.join(helper.config_dir, 'web', 'certs', 'commander.key.pem'),
         }
 
-        logger.info("Starting Web Server on ports http:{} https:{}".format(http_port, https_port))
+        logger.info(f"Starting Web Server on ports http:{http_port} https:{https_port}")
 
         asyncio.set_event_loop(asyncio.new_event_loop())
 
@@ -176,8 +172,8 @@ class Webserver:
         self.HTTPS_Server = tornado.httpserver.HTTPServer(app, ssl_options=cert_objects)
         self.HTTPS_Server.listen(https_port)
 
-        logger.info("https://{}:{} is up and ready for connections.".format(helper.get_local_ip(), https_port))
-        console.info("https://{}:{} is up and ready for connections.".format(helper.get_local_ip(), https_port))
+        logger.info(f"https://{helper.get_local_ip()}:{https_port} is up and ready for connections.")
+        console.info(f"https://{helper.get_local_ip()}:{https_port} is up and ready for connections.")
 
         console.info("Server Init Complete: Listening For Connections:")
 

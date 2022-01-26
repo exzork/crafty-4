@@ -221,10 +221,10 @@
                   </td>
                   <td id="server_running_status_{{server['server_data']['server_id']}}">
                     {% if server['stats']['running'] %}
-                    <i class="fas fa-thumbs-up"></i> <span class="text-success">{{ translate('dashboard', 'online',
+                    <span class="text-success"><i class="fas fa-signal"></i>  {{ translate('dashboard', 'online',
                       data['lang']) }}</span>
                     {% else %}
-                    <i class="fas fa-thumbs-down"></i> <span class="text-danger">{{ translate('dashboard', 'offline',
+                     <span class="text-danger"><i class="fas fa-ban"></i> {{ translate('dashboard', 'offline',
                       data['lang']) }}</span>
                     {% end %}
                   </td>

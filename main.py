@@ -1,4 +1,3 @@
-from cmd import Cmd
 import os
 import sys
 import json
@@ -6,19 +5,23 @@ import time
 import argparse
 import logging.config
 import signal
-import threading
-from app.classes.controllers.management_controller import Management_Controller
-
-""" Our custom classes / pip packages """
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
+if helper.check_file_exists('/.dockerenv'):
+    console.cyan("Docker environment detected!")
+else:
+    if helper.checkRoot():
+        console.critical("Root detected. Root/Admin access denied. Run Crafty again with non-elevated permissions.")
+        time.sleep(5)
+        console.critical("Crafty shutting down. Root/Admin access denied.")
+        sys.exit(0)
+# pylint: disable=wrong-import-position
 from app.classes.shared.main_models import installer, database
-
 from app.classes.shared.tasks import TasksManager
 from app.classes.shared.main_controller import Controller
 from app.classes.shared.migration import MigrationManager
 
-from app.classes.shared.cmd import MainPrompt
+from app.classes.shared.command import MainPrompt
 
 
 def do_intro():
@@ -47,7 +50,7 @@ def setup_logging(debug=True):
 
     if os.path.exists(logging_config_file):
         # open our logging config file
-        with open(logging_config_file, 'rt') as f:
+        with open(logging_config_file, 'rt', encoding='utf-8') as f:
             logging_config = json.load(f)
             if debug:
                 logging_config['loggers']['']['level'] = 'DEBUG'
@@ -56,11 +59,11 @@ def setup_logging(debug=True):
 
     else:
         logging.basicConfig(level=logging.DEBUG)
-        logging.warning("Unable to read logging config from {}".format(logging_config_file))
-        console.critical("Unable to read logging config from {}".format(logging_config_file))
+        logging.warning(f"Unable to read logging config from {logging_config_file}")
+        console.critical(f"Unable to read logging config from {logging_config_file}")
 
 
-""" Our Main Starter """
+# Our Main Starter
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Crafty Controller - A Server Management System")
 
@@ -81,21 +84,11 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if helper.check_file_exists('/.dockerenv'):
-        console.cyan("Docker environment detected!")
-    else:
-        if helper.checkRoot():
-            console.critical("Root detected. Root/Admin access denied. Run Crafty again with non-elevated permissions.")
-            time.sleep(5)
-            console.critical("Crafty shutting down. Root/Admin access denied.")
-            sys.exit(0)
-    helper.ensure_logging_setup()
-
     setup_logging(debug=args.verbose)
 
     # setting up the logger object
     logger = logging.getLogger(__name__)
-    console.cyan("Logging set to: {} ".format(logger.level))
+    console.cyan(f"Logging set to: {logger.level}")
 
     # print our pretty start message
     do_intro()
@@ -106,13 +99,14 @@ if __name__ == '__main__':
 
     migration_manager = MigrationManager(database)
     migration_manager.up() # Automatically runs migrations
-    
+
     # do our installer stuff
     fresh_install = installer.is_fresh_install()
 
     if fresh_install:
         console.debug("Fresh install detected")
-        console.warning("We have detected a fresh install. Please be sure to forward Crafty's port, {}, through your router/firewall if you would like to be able to access Crafty remotely.".format(helper.get_setting('https_port')))
+        console.warning("We have detected a fresh install. Please be sure to forward Crafty's port, " +
+        f"{helper.get_setting('https_port')}, through your router/firewall if you would like to be able to access Crafty remotely.")
         installer.default_settings()
     else:
         console.debug("Existing install detected")
@@ -144,7 +138,8 @@ if __name__ == '__main__':
     console.info("Checking Internet. This may take a minute.")
 
     if not helper.check_internet():
-            console.warning("We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited.")
+        console.warning("We have detected the machine running Crafty has no connection to the internet. " +
+        "Client connections to the server may be limited.")
 
     if not controller.check_system_user():
         controller.add_system_user()
@@ -154,7 +149,7 @@ if __name__ == '__main__':
     project_root = os.path.dirname(__file__)
     controller.set_project_root(project_root)
 
-    def sigterm_handler(signum, current_stack_frame):
+    def sigterm_handler():
         print() # for newline
         logger.info("Recieved SIGTERM, stopping Crafty")
         console.info("Recieved SIGTERM, stopping Crafty")

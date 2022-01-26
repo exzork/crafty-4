@@ -1,4 +1,3 @@
-import os
 import sys
 import json
 import threading
@@ -9,19 +8,15 @@ from datetime import datetime
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
-from app.classes.models.servers import Servers
-from app.classes.minecraft.server_props import ServerProps
-from app.classes.web.websocket_helper import websocket_helper
-from app.classes.models.server_permissions import server_permissions
 
 logger = logging.getLogger(__name__)
 
 try:
     import requests
 
-except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name))
+except ModuleNotFoundError as err:
+    logger.critical(f"Import Error: Unable to load {err.name} module", exc_info=True)
+    console.critical(f"Import Error: Unable to load {err.name} module")
     sys.exit(1)
 
 
@@ -31,7 +26,7 @@ class ServerJars:
         self.base_url = "https://serverjars.com"
 
     def _get_api_result(self, call_url: str):
-        full_url = "{base}{call_url}".format(base=self.base_url, call_url=call_url)
+        full_url = f"{self.base_url}{call_url}"
 
         try:
             r = requests.get(full_url, timeout=2)
@@ -39,20 +34,20 @@ class ServerJars:
             if r.status_code not in [200, 201]:
                 return {}
         except Exception as e:
-            logger.error("Unable to connect to serverjar.com api due to error: {}".format(e))
+            logger.error(f"Unable to connect to serverjar.com api due to error: {e}")
             return {}
 
         try:
             api_data = json.loads(r.content)
         except Exception as e:
-            logger.error("Unable to parse serverjar.com api result due to error: {}".format(e))
+            logger.error(f"Unable to parse serverjar.com api result due to error: {e}")
             return {}
 
         api_result = api_data.get('status')
         api_response = api_data.get('response', {})
 
         if api_result != "success":
-            logger.error("Api returned a failed status: {}".format(api_result))
+            logger.error(f"Api returned a failed status: {api_result}")
             return {}
 
         return api_response
@@ -62,11 +57,11 @@ class ServerJars:
         cache_file = helper.serverjar_cache
         cache = {}
         try:
-            with open(cache_file, "r") as f:
+            with open(cache_file, "r", encoding='utf-8') as f:
                 cache = json.load(f)
 
         except Exception as e:
-            logger.error("Unable to read serverjars.com cache file: {}".format(e))
+            logger.error(f"Unable to read serverjars.com cache file: {e}")
 
         return cache
 
@@ -100,7 +95,7 @@ class ServerJars:
     def _check_api_alive(self):
         logger.info("Checking serverjars.com API status")
 
-        check_url = "{base}/api/fetchTypes".format(base=self.base_url)
+        check_url = f"{self.base_url}/api/fetchTypes"
         try:
             r = requests.get(check_url, timeout=2)
 
@@ -108,7 +103,7 @@ class ServerJars:
                 logger.info("Serverjars.com API is alive")
                 return True
         except Exception as e:
-            logger.error("Unable to connect to serverjar.com api due to error: {}".format(e))
+            logger.error(f"Unable to connect to serverjar.com api due to error: {e}")
             return {}
 
         logger.error("unable to contact serverjars.com api")
@@ -154,15 +149,15 @@ class ServerJars:
 
             # save our cache
             try:
-                with open(cache_file, "w") as f:
+                with open(cache_file, "w", encoding='utf-8') as f:
                     f.write(json.dumps(data, indent=4))
                     logger.info("Cache file refreshed")
 
             except Exception as e:
-                logger.error("Unable to update serverjars.com cache file: {}".format(e))
+                logger.error(f"Unable to update serverjars.com cache file: {e}")
 
     def _get_jar_details(self, jar_type='servers'):
-        url = '/api/fetchAll/{type}'.format(type=jar_type)
+        url = f'/api/fetchAll/{jar_type}'
         response = self._get_api_result(url)
         temp = []
         for v in response:
@@ -175,12 +170,12 @@ class ServerJars:
         response = self._get_api_result(url)
         return response
 
-    def download_jar(self, server, version, path, name):
-        update_thread = threading.Thread(target=self.a_download_jar, daemon=True, name="exe_download", args=(server, version, path, name))
+    def download_jar(self, server, version, path):
+        update_thread = threading.Thread(target=self.a_download_jar, daemon=True, args=(server, version, path))
         update_thread.start()
 
-    def a_download_jar(self, server, version, path, name):
-        fetch_url = "{base}/api/fetchJar/{server}/{version}".format(base=self.base_url, server=server, version=version)
+    def a_download_jar(self, server, version, path):
+        fetch_url = f"{self.base_url}/api/fetchJar/{server}/{version}"
 
         # open a file stream
         with requests.get(fetch_url, timeout=2, stream=True) as r:
@@ -189,9 +184,7 @@ class ServerJars:
                     shutil.copyfileobj(r.raw, output)
 
             except Exception as e:
-                logger.error("Unable to save jar to {path} due to error:{error}".format(path=path, error=e))
-                pass
-        
+                logger.error(f"Unable to save jar to {path} due to error:{e}")
 
         return False
 

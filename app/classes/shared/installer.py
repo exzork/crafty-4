@@ -1,7 +1,6 @@
 import sys
 import subprocess
 
-
 class install:
 
     @staticmethod
@@ -20,6 +19,5 @@ class install:
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", 'requirements.txt'])
         print("Crafty has installed it's dependencies, please restart Crafty")
         sys.exit(0)
-
 
 installer = install()

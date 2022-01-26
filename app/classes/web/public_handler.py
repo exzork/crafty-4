@@ -1,19 +1,13 @@
-from re import X
 import sys
-import json
-import libgravatar
 import logging
-import requests
-import tornado.web
-import tornado.escape
 
 from app.classes.shared.authentication import authentication
-from app.classes.shared.helpers import Helpers, helper
-from app.classes.web.base_handler import BaseHandler
+from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.shared.main_models import fn
 
 from app.classes.models.users import Users
+from app.classes.web.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +15,9 @@ try:
     import bleach
 
 except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name))
+    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
+    console.critical(f"Import Error: Unable to load {e.name} module")
     sys.exit(1)
-
 
 class PublicHandler(BaseHandler):
 
@@ -86,22 +79,24 @@ class PublicHandler(BaseHandler):
             entered_username = bleach.clean(self.get_argument('username'))
             entered_password = bleach.clean(self.get_argument('password'))
 
+            # pylint: disable=no-member
             user_data = Users.get_or_none(fn.Lower(Users.username) == entered_username.lower())
+
 
             # if we don't have a user
             if not user_data:
-                error_msg = "Inncorrect username or password. Please try again."               
+                error_msg = "Incorrect username or password. Please try again."
                 self.clear_cookie("user")
                 self.clear_cookie("user_data")
-                self.redirect('/public/login?error_msg={}'.format(error_msg))
+                self.redirect(f'/public/login?error_msg={error_msg}')
                 return
 
             # if they are disabled
             if not user_data.enabled:
-                error_msg = "User account disabled. Please contact your system administrator for more info."  
+                error_msg = "User account disabled. Please contact your system administrator for more info."
                 self.clear_cookie("user")
                 self.clear_cookie("user_data")
-                self.redirect('/public/login?error_msg={}'.format(error_msg))
+                self.redirect(f'/public/login?error_msg={error_msg}')
                 return
 
             login_result = helper.verify_pass(entered_password, user_data.password)
@@ -109,7 +104,7 @@ class PublicHandler(BaseHandler):
             # Valid Login
             if login_result:
                 self.set_current_user(user_data.user_id)
-                logger.info("User: {} Logged in from IP: {}".format(user_data, self.get_remote_ip()))
+                logger.info(f"User: {user_data} Logged in from IP: {self.get_remote_ip()}")
 
                 # record this login
                 q = Users.select().where(Users.username == entered_username.lower()).get()
@@ -128,7 +123,6 @@ class PublicHandler(BaseHandler):
                 error_msg = "Inncorrect username or password. Please try again."
                 # log this failed login attempt
                 self.controller.management.add_to_audit_log(user_data.user_id, "Tried to log in", 0, self.get_remote_ip())
-                self.redirect('/public/login?error_msg={}'.format(error_msg))
+                self.redirect(f'/public/login?error_msg={error_msg}')
         else:
             self.redirect("/public/login")
-

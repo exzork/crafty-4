@@ -1,8 +1,8 @@
 class CraftyException(Exception):
-	pass
+    pass
 
 class DatabaseException(CraftyException):
-	pass
+    pass
 
 class SchemaError(DatabaseException):
-	pass
+    pass

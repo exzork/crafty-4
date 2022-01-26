@@ -1,28 +1,26 @@
-import os
 import sys
 import logging
-import datetime
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
+from app.classes.shared.permission_helper import permission_helper
+
 from app.classes.models.servers import Servers
 from app.classes.models.roles import Roles
 from app.classes.models.users import User_Roles, users_helper, ApiKeys, Users
-from app.classes.shared.permission_helper import permission_helper
+
 
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger('peewee')
 peewee_logger.setLevel(logging.INFO)
 
 try:
-    from peewee import *
-    from playhouse.shortcuts import model_to_dict
+    from peewee import SqliteDatabase, Model, ForeignKeyField, CharField, CompositeKey, JOIN
     from enum import Enum
-    import yaml
 
 except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name))
+    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
+    console.critical(f"Import Error: Unable to load {e.name} module")
     sys.exit(1)
 
 database = SqliteDatabase(helper.db_path, pragmas={
@@ -118,7 +116,8 @@ class Permissions_Servers:
 
     @staticmethod
     def add_role_server(server_id, role_id, rs_permissions="00000000"):
-        servers = Role_Servers.insert({Role_Servers.server_id: server_id, Role_Servers.role_id: role_id, Role_Servers.permissions: rs_permissions}).execute()
+        servers = Role_Servers.insert({Role_Servers.server_id: server_id, Role_Servers.role_id: role_id,
+            Role_Servers.permissions: rs_permissions}).execute()
         return servers
 
     @staticmethod
@@ -181,12 +180,13 @@ class Permissions_Servers:
     def get_server_user_list(server_id):
         final_users = []
         server_roles = Role_Servers.select().where(Role_Servers.server_id == server_id)
+        # pylint: disable=singleton-comparison
         super_users = Users.select().where(Users.superuser == True)
         for role in server_roles:
             users = User_Roles.select().where(User_Roles.role_id == role.role_id)
             for user in users:
                 if user.user_id.user_id not in final_users:
-                        final_users.append(user.user_id.user_id)
+                    final_users.append(user.user_id.user_id)
         for suser in super_users:
             if suser.user_id not in final_users:
                 final_users.append(suser.user_id)

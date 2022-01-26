@@ -1,28 +1,16 @@
-import os
-import time
 import logging
-import sys
 from typing import Optional
 
-import yaml
-import asyncio
-import shutil
-import tempfile
-import zipfile
-from distutils import dir_util
-
 from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
-
-from app.classes.models.users import Users, users_helper
 from app.classes.shared.authentication import authentication
+
+from app.classes.models.users import users_helper
 from app.classes.models.crafty_permissions import crafty_permissions, Enum_Permissions_Crafty
-from app.classes.models.management import management_helper
 
 logger = logging.getLogger(__name__)
 
 class Users_Controller:
-    
+
     #************************************************************************************************
     #                                   Users Methods
     #************************************************************************************************
@@ -60,7 +48,6 @@ class Users_Controller:
         up_data = {}
         added_roles = set()
         removed_roles = set()
-        removed_servers = set()
         for key in user_data:
             if key == "user_id":
                 continue
@@ -74,7 +61,7 @@ class Users_Controller:
                 up_data[key] = user_data[key]
         up_data['last_update'] = helper.get_time_as_string()
         up_data['lang'] = user_data['lang']
-        logger.debug("user: {} +role:{} -role:{}".format(user_data, added_roles, removed_roles))
+        logger.debug(f"user: {user_data} +role:{added_roles} -role:{removed_roles}")
         for role in added_roles:
             users_helper.get_or_create(user_id=user_id, role_id=role)
             permissions_mask = user_crafty_data.get('permissions_mask', '000')
@@ -90,9 +77,14 @@ class Users_Controller:
                 limit_user_creation = 0
                 limit_role_creation = 0
 
-            crafty_permissions.add_or_update_user(user_id, permissions_mask, limit_server_creation, limit_user_creation, limit_role_creation)
+            crafty_permissions.add_or_update_user(
+                user_id,
+                permissions_mask,
+                limit_server_creation,
+                limit_user_creation,
+                limit_role_creation)
 
-            users_helper.delete_user_roles(user_id, removed_roles)
+        users_helper.delete_user_roles(user_id, removed_roles)
 
         users_helper.update_user(user_id, up_data)
 
@@ -121,7 +113,7 @@ class Users_Controller:
     # ************************************************************************************************
     #                                   User Roles Methods
     # ************************************************************************************************
-        
+
     @staticmethod
     def get_user_roles_id(user_id):
         return users_helper.get_user_roles_id(user_id)
@@ -137,7 +129,7 @@ class Users_Controller:
     @staticmethod
     def add_user_roles(user):
         return users_helper.add_user_roles(user)
-        
+
     @staticmethod
     def user_role_query(user_id):
         return users_helper.user_role_query(user_id)

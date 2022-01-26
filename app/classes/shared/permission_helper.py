@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class PermissionHelper:
     @staticmethod
     def both_have_perm(a: str, b: str, permission_tested: Enum):
