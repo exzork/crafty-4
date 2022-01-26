@@ -392,17 +392,15 @@ class MigrationManager():
         """
         Reads a migration from a file.
         """
-        call_params = {}
         if helper.is_os_windows() and sys.version_info >= (3, 0):
             # if system is windows - force utf-8 encoding
-            call_params['encoding'] = 'utf-8'
-        with open(os.path.join(helper.migration_dir, name + '.py'), **call_params, encoding='utf-8') as f:
-            code = f.read()
-            scope = {}
-            code = compile(code, '<string>', 'exec', dont_inherit=True)
-            # pylint: disable=exec-used
-            exec(code, scope, None)
-            return scope.get('migrate', lambda m, d: None), scope.get('rollback', lambda m, d: None)
+            with open(os.path.join(helper.migration_dir, name + '.py'), encoding='utf-8') as f:
+                code = f.read()
+                scope = {}
+                code = compile(code, '<string>', 'exec', dont_inherit=True)
+                # pylint: disable=exec-used
+                exec(code, scope, None)
+                return scope.get('migrate', lambda m, d: None), scope.get('rollback', lambda m, d: None)
 
     def up_one(self, name: str, migrator: Migrator,
                fake: bool = False, rollback: bool = False) -> str:
