@@ -77,8 +77,10 @@ class WebSocketHelper:
 
     def broadcast_with_fn(self, filter_fn, event_type: str, data):
         clients = list(filter(filter_fn, self.clients))
-
-        logger.debug(f"Sending to {len(clients)} out of {len(self.clients)} clients: {json.dumps({'event': event_type, 'data': data})}")
+        try:
+            logger.debug(f"Sending to {len(clients)} out of {len(self.clients)} clients: {json.dumps({'event': event_type, 'data': data})}")
+        except:
+            logger.debug("Our logging statement actually just farted line 83 websocket helper.")
 
         for client in clients:
             try:
