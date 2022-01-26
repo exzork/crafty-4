@@ -1,28 +1,16 @@
-import os
 import sys
 import cmd
 import time
 import threading
 import logging
 
-from app.classes.shared.tasks import TasksManager
-
-logger = logging.getLogger(__name__)
-
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
+
 from app.classes.web.websocket_helper import websocket_helper
 
-try:
-    import requests
-
-except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name))
-    sys.exit(1)
-
-
-class MainPrompt(cmd.Cmd, object):
+logger = logging.getLogger(__name__)
+class MainPrompt(cmd.Cmd):
 
     def __init__(self, tasks_manager, migration_manager):
         super().__init__()
@@ -30,16 +18,17 @@ class MainPrompt(cmd.Cmd, object):
         self.migration_manager = migration_manager
 
     # overrides the default Prompt
-    prompt = "Crafty Controller v{} > ".format(helper.get_version_string())
+    prompt = f"Crafty Controller v{helper.get_version_string()} > "
 
     @staticmethod
     def emptyline():
         pass
 
+    #pylint: disable=unused-argument
     def do_exit(self, line):
         self.tasks_manager._main_graceful_exit()
         self.universal_exit()
-    
+
     def do_migrations(self, line):
         if line == 'up':
             self.migration_manager.up()
@@ -52,9 +41,9 @@ class MainPrompt(cmd.Cmd, object):
         elif line == 'diff':
             console.info(self.migration_manager.diff)
         elif line == 'info':
-            console.info('Done: {}'.format(self.migration_manager.done))
-            console.info('FS:   {}'.format(self.migration_manager.todo))
-            console.info('Todo: {}'.format(self.migration_manager.diff))
+            console.info(f'Done: {self.migration_manager.done}')
+            console.info(f'FS:   {self.migration_manager.todo}')
+            console.info(f'Todo: {self.migration_manager.diff}')
         elif line.startswith('add '):
             migration_name = line[len('add '):]
             self.migration_manager.create(migration_name, False)

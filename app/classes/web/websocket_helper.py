@@ -1,19 +1,9 @@
 import json
 import logging
-import sys, threading, asyncio
 
 from app.classes.shared.console import console
 
 logger = logging.getLogger(__name__)
-
-
-try:
-    import tornado.ioloop
-
-except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e, e.name))
-    console.critical("Import Error: Unable to load {} module".format(e, e.name))
-    sys.exit(1)
 
 class WebSocketHelper:
     def __init__(self):
@@ -21,22 +11,23 @@ class WebSocketHelper:
 
     def add_client(self, client):
         self.clients.add(client)
-    
+
     def remove_client(self, client):
         self.clients.remove(client)
 
+    # pylint: disable=no-self-use
     def send_message(self, client, event_type: str, data):
         if client.check_auth():
             message = str(json.dumps({'event': event_type, 'data': data}))
             client.write_message_helper(message)
 
     def broadcast(self, event_type: str, data):
-        logger.debug('Sending to {} clients: {}'.format(len(self.clients), json.dumps({'event': event_type, 'data': data})))
+        logger.debug(f"Sending to {len(self.clients)} clients: {json.dumps({'event': event_type, 'data': data})}")
         for client in self.clients:
             try:
                 self.send_message(client, event_type, data)
             except Exception as e:
-                logger.exception('Error catched while sending WebSocket message to {}'.format(client.get_remote_ip()))
+                logger.exception(f'Error caught while sending WebSocket message to {client.get_remote_ip()} {e}')
 
     def broadcast_page(self, page: str, event_type: str, data):
         def filter_fn(client):
@@ -72,7 +63,7 @@ class WebSocketHelper:
             return True
 
         self.broadcast_with_fn(filter_fn, event_type, data)
-    
+
     def broadcast_page_params(self, page: str, params: dict, event_type: str, data):
         def filter_fn(client):
             if client.page != page:
@@ -87,14 +78,14 @@ class WebSocketHelper:
     def broadcast_with_fn(self, filter_fn, event_type: str, data):
         clients = list(filter(filter_fn, self.clients))
 
-        logger.debug('Sending to {} out of {} clients: {}'.format(len(clients), len(self.clients), json.dumps({'event': event_type, 'data': data})))
+        logger.debug(f"Sending to {len(clients)} out of {len(self.clients)} clients: {json.dumps({'event': event_type, 'data': data})}")
 
         for client in clients:
             try:
                 self.send_message(client, event_type, data)
             except Exception as e:
-                logger.exception('Error catched while sending WebSocket message to {}'.format(client.get_remote_ip()))
-    
+                logger.exception(f'Error catched while sending WebSocket message to {client.get_remote_ip()} {e}')
+
     def disconnect_all(self):
         console.info('Disconnecting WebSocket clients')
         for client in self.clients:

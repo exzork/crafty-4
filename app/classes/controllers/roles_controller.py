@@ -1,25 +1,10 @@
-import os
-import time
 import logging
-import sys
-import yaml
-import asyncio
-import shutil
-import tempfile
-import zipfile
-from distutils import dir_util
-
-from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
 
 from app.classes.models.roles import roles_helper
 from app.classes.models.server_permissions import server_permissions
 from app.classes.models.users import users_helper
 
-from app.classes.shared.server import Server
-from app.classes.minecraft.server_props import ServerProps
-from app.classes.minecraft.serverjars import server_jar_obj
-from app.classes.minecraft.stats import Stats
+from app.classes.shared.helpers import helper
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +30,6 @@ class Roles_Controller:
         base_data = Roles_Controller.get_role_with_servers(role_id)
         up_data = {}
         added_servers = set()
-        edited_servers = set()
         removed_servers = set()
         for key in role_data:
             if key == "role_id":
@@ -56,7 +40,7 @@ class Roles_Controller:
             elif base_data[key] != role_data[key]:
                 up_data[key] = role_data[key]
         up_data['last_update'] = helper.get_time_as_string()
-        logger.debug("role: {} +server:{} -server{}".format(role_data, added_servers, removed_servers))
+        logger.debug(f"role: {role_data} +server:{added_servers} -server{removed_servers}")
         for server in added_servers:
             server_permissions.get_or_create(role_id, server, permissions_mask)
         for server in base_data['servers']:

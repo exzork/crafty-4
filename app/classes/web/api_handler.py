@@ -8,20 +8,21 @@ log = logging.getLogger(__name__)
 bearer_pattern = re.compile(r'^Bearer', flags=re.IGNORECASE)
 
 class ApiHandler(BaseHandler):
-    
+
     def return_response(self, status: int, data: dict):
-        # Define a standardized response 
+        # Define a standardized response
         self.set_status(status)
         self.write(data)
 
     def access_denied(self, user, reason=''):
-        if reason: reason = ' because ' + reason
+        if reason:
+            reason = ' because ' + reason
         log.info("User %s from IP %s was denied access to the API route " + self.request.path + reason, user, self.get_remote_ip())
         self.finish(self.return_response(403, {
             'error':'ACCESS_DENIED',
             'info':'You were denied access to the requested resource'
         }))
-    
+
     def authenticate_user(self) -> bool:
         try:
             log.debug("Searching for specified token")
@@ -36,8 +37,8 @@ class ApiHandler(BaseHandler):
             log.debug("Checking results")
             if user_data:
                 # Login successful! Check perms
-                log.info("User {} has authenticated to API".format(user_data['username']))
-                # TODO: Role check 
+                log.info(f"User {user_data['username']} has authenticated to API")
+                # TODO: Role check
 
                 return True # This is to set the "authenticated"
             else:
@@ -46,7 +47,10 @@ class ApiHandler(BaseHandler):
                 return False
         except Exception as e:
             log.warning("An error occured while authenticating an API user: %s", e)
-            self.access_denied("unknown"), "an error occured while authenticating the user"
+            self.finish(self.return_response(403, {
+                'error':'ACCESS_DENIED',
+                'info':'An error occured while authenticating the user'
+            }))
             return False
 
 
@@ -54,7 +58,9 @@ class ServersStats(ApiHandler):
     def get(self):
         """Get details about all servers"""
         authenticated = self.authenticate_user()
-        if not authenticated: return
+        if not authenticated:
+            return
+
         # Get server stats
         # TODO Check perms
         self.finish(self.write({"servers": self.controller.stats.get_servers_stats()}))
@@ -64,7 +70,9 @@ class NodeStats(ApiHandler):
     def get(self):
         """Get stats for particular node"""
         authenticated = self.authenticate_user()
-        if not authenticated: return
+        if not authenticated:
+            return
+
         # Get node stats
         node_stats = self.controller.stats.get_node_stats()
         node_stats.pop("servers")

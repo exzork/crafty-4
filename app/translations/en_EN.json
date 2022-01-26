@@ -281,7 +281,9 @@
         "noDeleteFiles": "No, just remove from panel",
         "sendingDelete": "Deleting Server",
         "bePatientDelete": "Please be patient while we remove your server from the Crafty panel. This screen will close in a few moments.",
-        "bePatientDeleteFiles" : "Please be patient while we remove your server from the Crafty panel and delete all files. This screen will close in a few moments."
+        "bePatientDeleteFiles" : "Please be patient while we remove your server from the Crafty panel and delete all files. This screen will close in a few moments.",
+        "crashTime": "Crash Timeout",
+        "crashTimeDesc": "How long should we wait before we consider your server as crashed?"
     },
     "serverConfigHelp": {
         "title": "Server Config Area",

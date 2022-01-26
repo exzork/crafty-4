@@ -23,9 +23,11 @@ server {
     ssl_certificate <CERIFICATE_LOCATION>;
     ssl_certificate_key <KEYFILE_LOCATION>;
     location / {
+        #This is important for websockets
         proxy_http_version 1.1;
         proxy_redirect off;
 
+        #These are important for websockets. They are required for crafty to function properly.
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $http_connection;
         proxy_set_header X-Forwarded-Proto https;

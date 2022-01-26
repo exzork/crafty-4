@@ -1,11 +1,10 @@
-from app.classes.shared.helpers import Helpers
 import struct
 import socket
 import base64
 import json
-import sys
 import os
 import logging.config
+
 from app.classes.shared.console import console
 
 logger = logging.getLogger(__name__)
@@ -41,7 +40,7 @@ class Server:
                         if "obfuscated" in e.keys():
                             lines.append(get_code_format("obfuscated"))
                         if "color" in e.keys():
-                            lines.append(get_code_format(e['color']))                        
+                            lines.append(get_code_format(e['color']))
                         #Then append the text
                         if "text" in e.keys():
                             if e['text'] == '\n':
@@ -101,13 +100,13 @@ def get_code_format(format_name):
         if format_name in data.keys():
             return data.get(format_name)
         else:
-            logger.error("Format MOTD Error: format name {} does not exist".format(format_name))
-            console.error("Format MOTD Error: format name {} does not exist".format(format_name))
+            logger.error(f"Format MOTD Error: format name {format_name} does not exist")
+            console.error(f"Format MOTD Error: format name {format_name} does not exist")
             return ""
 
     except Exception as e:
-        logger.critical("Config File Error: Unable to read {} due to {}".format(format_file, e))
-        console.critical("Config File Error: Unable to read {} due to {}".format(format_file, e))
+        logger.critical(f"Config File Error: Unable to read {format_file} due to {e}")
+        console.critical(f"Config File Error: Unable to read {format_file} due to {e}")
 
     return ""
 
@@ -126,15 +125,14 @@ def ping(ip, port):
             j += 1
             if j > 5:
                 raise ValueError('var_int too big')
-            if not (k & 0x80):
+            if not k & 0x80:
                 return i
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         sock.connect((ip, port))
 
-    except socket.error as err:
-        pass
+    except socket.error:
         return False
 
     try:
@@ -163,7 +161,7 @@ def ping(ip, port):
                 return False
 
             data += chunk
-        logger.debug("Server reports this data on ping: {}".format(data))
+        logger.debug(f"Server reports this data on ping: {data}")
         return Server(json.loads(data))
     finally:
         sock.close()

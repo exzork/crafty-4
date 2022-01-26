@@ -9,12 +9,11 @@ try:
     from termcolor import colored
 
 except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    print("Import Error: Unable to load {} module".format(e.name))
+    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
+    print(f"Import Error: Unable to load {e.name} module")
     from app.classes.shared.installer import installer
     installer.do_install()
     sys.exit(1)
-
 
 class Console:
 
@@ -49,28 +48,27 @@ class Console:
 
     def debug(self, message):
         dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        self.magenta("[+] Crafty: {} - DEBUG:\t{}".format(dt, message))
+        self.magenta(f"[+] Crafty: {dt} - DEBUG:\t{message}")
 
     def info(self, message):
         dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        self.white("[+] Crafty: {} - INFO:\t{}".format(dt, message))
+        self.white(f"[+] Crafty: {dt} - INFO:\t{message}")
 
     def warning(self, message):
         dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        self.cyan("[+] Crafty: {} - WARNING:\t{}".format(dt, message))
+        self.cyan(f"[+] Crafty: {dt} - WARNING:\t{message}")
 
     def error(self, message):
         dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        self.yellow("[+] Crafty: {} - ERROR:\t{}".format(dt, message))
+        self.yellow(f"[+] Crafty: {dt} - ERROR:\t{message}")
 
     def critical(self, message):
         dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        self.red("[+] Crafty: {} - CRITICAL:\t{}".format(dt, message))
+        self.red(f"[+] Crafty: {dt} - CRITICAL:\t{message}")
 
     def help(self, message):
         dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        self.green("[+] Crafty: {} - HELP:\t{}".format(dt, message))
+        self.green(f"[+] Crafty: {dt} - HELP:\t{message}")
 
 
 console = Console()
-

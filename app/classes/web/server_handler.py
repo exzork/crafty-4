@@ -3,14 +3,14 @@ import json
 import logging
 import os
 import shutil
+import libgravatar
+import requests
 
+from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.web.base_handler import BaseHandler
 from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
 from app.classes.minecraft.serverjars import server_jar_obj
-from app.classes.shared.helpers import helper
-import libgravatar
-import requests
 
 
 logger = logging.getLogger(__name__)
@@ -21,8 +21,8 @@ try:
     import bleach
 
 except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name))
+    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
+    console.critical(f"Import Error: Unable to load {e.name} module")
     sys.exit(1)
 
 
@@ -30,6 +30,7 @@ class ServerHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self, page):
+        # pylint: disable=unused-variable
         api_key, token_data, exec_user = self.current_user
         superuser = exec_user['superuser']
         if api_key is not None:
@@ -120,6 +121,7 @@ class ServerHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, page):
+        # pylint: disable=unused-variable
         api_key, token_data, exec_user = self.current_user
         superuser = exec_user['superuser']
         if api_key is not None:
@@ -152,7 +154,7 @@ class ServerHandler(BaseHandler):
                     name_counter = 1
                     while is_name_used(new_server_name):
                         name_counter += 1
-                        new_server_name = server_data.get('server_name') + " (Copy {})".format(name_counter)
+                        new_server_name = server_data.get('server_name') + f" (Copy {name_counter})"
 
                     new_server_uuid = helper.create_uuid()
                     while os.path.exists(os.path.join(helper.servers_dir, new_server_uuid)):
@@ -167,12 +169,17 @@ class ServerHandler(BaseHandler):
                     new_server_command = str(server_data.get('execution_command')).replace(server_uuid, new_server_uuid)
                     new_executable = server_data.get('executable')
                     new_server_log_file = str(helper.get_os_understandable_path(server_data.get('log_path'))).replace(server_uuid, new_server_uuid)
-                    auto_start = server_data.get('auto_start')
-                    auto_start_delay = server_data.get('auto_start_delay')
-                    crash_detection = server_data.get('crash_detection')
                     server_port = server_data.get('server_port')
 
-                    self.controller.servers.create_server(new_server_name, new_server_uuid, new_server_path, "", new_server_command, new_executable, new_server_log_file, stop_command, server_port)
+                    self.controller.servers.create_server(new_server_name,
+                                                          new_server_uuid,
+                                                          new_server_path,
+                                                          "",
+                                                          new_server_command,
+                                                          new_executable,
+                                                          new_server_log_file,
+                                                          stop_command,
+                                                          server_port)
 
                     self.controller.init_all_servers()
 
@@ -198,7 +205,7 @@ class ServerHandler(BaseHandler):
             captured_roles = []
             for role in user_roles:
                 if bleach.clean(self.get_argument(str(role), '')) == "on":
-                        captured_roles.append(role)
+                    captured_roles.append(role)
 
             if not server_name:
                 self.redirect("/panel/error?error=Server name cannot be empty!")
@@ -213,7 +220,7 @@ class ServerHandler(BaseHandler):
 
                 new_server_id = self.controller.import_jar_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
                 self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                           "imported a jar server named \"{}\"".format(server_name), # Example: Admin imported a server named "old creative"
+                                           f"imported a jar server named \"{server_name}\"", # Example: Admin imported a server named "old creative"
                                            new_server_id,
                                            self.get_remote_ip())
             elif import_type == 'import_zip':
@@ -226,10 +233,11 @@ class ServerHandler(BaseHandler):
 
                 new_server_id = self.controller.import_zip_server(server_name, zip_path, import_server_jar, min_mem, max_mem, port)
                 if new_server_id == "false":
-                    self.redirect("/panel/error?error=Zip file not accessible! You can fix this permissions issue with sudo chown -R crafty:crafty {} And sudo chmod 2775 -R {}".format(import_server_path, import_server_path))
+                    self.redirect("/panel/error?error=Zip file not accessible! You can fix this permissions issue with" +
+                                  f"sudo chown -R crafty:crafty {import_server_path} And sudo chmod 2775 -R {import_server_path}")
                     return
                 self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                           "imported a zip server named \"{}\"".format(server_name), # Example: Admin imported a server named "old creative"
+                                           f"imported a zip server named \"{server_name}\"", # Example: Admin imported a server named "old creative"
                                            new_server_id,
                                            self.get_remote_ip())
                 #deletes temp dir
@@ -243,7 +251,8 @@ class ServerHandler(BaseHandler):
                 role_ids = self.controller.users.get_user_roles_id(exec_user["user_id"])
                 new_server_id = self.controller.create_jar_server(server_type, server_version, server_name, min_mem, max_mem, port)
                 self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                           "created a {} {} server named \"{}\"".format(server_version, str(server_type).capitalize(), server_name), # Example: Admin created a 1.16.5 Bukkit server named "survival"
+                                           f"created a {server_version} {str(server_type).capitalize()} server named \"{server_name}\"",
+                                           # Example: Admin created a 1.16.5 Bukkit server named "survival"
                                            new_server_id,
                                            self.get_remote_ip())
 
@@ -251,7 +260,7 @@ class ServerHandler(BaseHandler):
             if len(captured_roles) == 0:
                 if not superuser:
                     new_server_uuid = self.controller.servers.get_server_data_by_id(new_server_id).get("server_uuid")
-                    role_id = self.controller.roles.add_role("Creator of Server with uuid={}".format(new_server_uuid))
+                    role_id = self.controller.roles.add_role(f"Creator of Server with uuid={new_server_uuid}")
                     self.controller.server_perms.add_role_server(new_server_id, role_id, "11111111")
                     self.controller.users.add_role_to_user(exec_user["user_id"], role_id)
                     self.controller.crafty_perms.add_server_creation(exec_user["user_id"])
@@ -264,8 +273,11 @@ class ServerHandler(BaseHandler):
             self.controller.stats.record_stats()
             self.redirect("/panel/dashboard")
 
-        self.render(
-            template,
-            data=page_data,
-            translate=self.translator.translate,
-        )
+        try:
+            self.render(
+                template,
+                data=page_data,
+                translate=self.translator.translate,
+            )
+        except RuntimeError:
+            self.redirect('/panel/dashboard')

@@ -1,8 +1,7 @@
-import os
 import sys
 import logging
 import datetime
-from typing import Optional, List, Union
+from typing import Optional, Union
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
@@ -14,14 +13,12 @@ peewee_logger = logging.getLogger('peewee')
 peewee_logger.setLevel(logging.INFO)
 
 try:
-    from peewee import *
+    from peewee import SqliteDatabase, Model, ForeignKeyField, CharField, AutoField, DateTimeField, BooleanField, CompositeKey, DoesNotExist, JOIN
     from playhouse.shortcuts import model_to_dict
-    from enum import Enum
-    import yaml
 
 except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name))
+    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
+    console.critical(f"Import Error: Unable to load {e.name} module")
     sys.exit(1)
 
 database = SqliteDatabase(helper.db_path, pragmas={
@@ -58,7 +55,7 @@ class ApiKeys(Model):
     token_id = AutoField()
     name = CharField(default='', unique=True, index=True)
     created = DateTimeField(default=datetime.datetime.now)
-    user = ForeignKeyField(Users, backref='api_token', index=True)
+    user_id = ForeignKeyField(Users, backref='api_token', index=True)
     server_permissions = CharField(default='00000000')
     crafty_permissions = CharField(default='000')
     superuser = BooleanField(default=False)
@@ -138,10 +135,12 @@ class helper_users:
             #logger.debug("user: ({}) {}".format(user_id, {}))
             return {}
 
+    @staticmethod
     def check_system_user(user_id):
         try:
-            Users.get(Users.user_id == user_id).user_id == user_id
-            return True
+            result = Users.get(Users.user_id == user_id).user_id == user_id
+            if result:
+                return True
         except:
             return False
 
@@ -177,6 +176,7 @@ class helper_users:
     @staticmethod
     def get_super_user_list():
         final_users = []
+        # pylint: disable=singleton-comparison
         super_users = Users.select().where(Users.superuser == True)
         for suser in super_users:
             if suser.user_id not in final_users:
@@ -233,7 +233,7 @@ class helper_users:
 
     @staticmethod
     def add_user_roles(user: Union[dict, Users]):
-        if type(user) == dict:
+        if isinstance(user, dict):
             user_id = user['user_id']
         else:
             user_id = user.user_id
@@ -246,7 +246,7 @@ class helper_users:
         for r in roles_query:
             roles.add(r.role_id.role_id)
 
-        if type(user) == dict:
+        if isinstance(user, dict):
             user['roles'] = roles
         else:
             user.roles = roles
@@ -283,7 +283,12 @@ class helper_users:
         return ApiKeys.get(ApiKeys.token_id == key_id)
 
     @staticmethod
-    def add_user_api_key(name: str, user_id: str, superuser: bool = False, server_permissions_mask: Optional[str] = None, crafty_permissions_mask: Optional[str] = None):
+    def add_user_api_key(
+         name: str,
+         user_id: str,
+         superuser: bool = False,
+         server_permissions_mask: Optional[str] = None,
+         crafty_permissions_mask: Optional[str] = None):
         return ApiKeys.insert({
             ApiKeys.name: name,
             ApiKeys.user_id: user_id,

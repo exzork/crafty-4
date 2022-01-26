@@ -1,14 +1,15 @@
 import logging
-import tornado.web
-import bleach
 from typing import (
     Union,
     List,
     Optional, Tuple, Dict, Any
 )
+import tornado.web
+import bleach
 
 from app.classes.shared.authentication import authentication
 from app.classes.shared.main_controller import Controller
+
 from app.classes.models.users import ApiKeys
 
 logger = logging.getLogger(__name__)
@@ -38,10 +39,10 @@ class BaseHandler(tornado.web.RequestHandler):
     def autobleach(self, name, text):
         for r in self.redactables:
             if r in name:
-                logger.debug("Auto-bleaching {}: {}".format(name, "[**REDACTED**]"))
+                logger.debug(f"Auto-bleaching {name}: [**REDACTED**]")
                 break
             else:
-                logger.debug("Auto-bleaching {}: {}".format(name, text))
+                logger.debug(f"Auto-bleaching {name}: {text}")
         if type(text) in self.nobleach:
             logger.debug("Auto-bleaching - bypass type")
             return text

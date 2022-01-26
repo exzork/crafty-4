@@ -1,4 +1,3 @@
-import os
 import sys
 import logging
 import datetime
@@ -6,26 +5,24 @@ import datetime
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.shared.main_models import db_helper
-from app.classes.models.users import Users, users_helper
-from app.classes.models.servers import Servers, servers_helper
-from app.classes.web.websocket_helper import websocket_helper
-from app.classes.models.server_permissions import server_permissions
-import time
 
+from app.classes.models.users import Users, users_helper
+from app.classes.models.servers import Servers
+from app.classes.models.server_permissions import server_permissions
+
+from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger('peewee')
 peewee_logger.setLevel(logging.INFO)
 
 try:
-    from peewee import *
+    from peewee import SqliteDatabase, Model, ForeignKeyField, CharField, IntegerField, DateTimeField, FloatField, TextField, AutoField, BooleanField
     from playhouse.shortcuts import model_to_dict
-    from enum import Enum
-    import yaml
 
 except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name))
+    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
+    console.critical(f"Import Error: Unable to load {e.name} module")
     sys.exit(1)
 
 database = SqliteDatabase(helper.db_path, pragmas={
@@ -140,7 +137,7 @@ class helpers_management:
     #************************************************************************************************
     @staticmethod
     def get_latest_hosts_stats():
-        query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()
+        query = Host_Stats.select().order_by(Host_Stats).get()
         return model_to_dict(query)
 
     #************************************************************************************************
@@ -163,7 +160,7 @@ class helpers_management:
     @staticmethod
     def mark_command_complete(command_id=None):
         if command_id is not None:
-            logger.debug("Marking Command {} completed".format(command_id))
+            logger.debug(f"Marking Command {command_id} completed")
             Commands.update({
                 Commands.executed: True
             }).where(Commands.command_id == command_id).execute()
@@ -178,10 +175,10 @@ class helpers_management:
 
     @staticmethod
     def add_to_audit_log(user_id, log_msg, server_id=None, source_ip=None):
-        logger.debug("Adding to audit log User:{} - Message: {} ".format(user_id, log_msg))
+        logger.debug(f"Adding to audit log User:{user_id} - Message: {log_msg} ")
         user_data = users_helper.get_user(user_id)
 
-        audit_msg = "{} {}".format(str(user_data['username']).capitalize(), log_msg)
+        audit_msg = f"{str(user_data['username']).capitalize()} {log_msg}"
 
         server_users = server_permissions.get_server_user_list(server_id)
         for user in server_users:
@@ -209,7 +206,17 @@ class helpers_management:
     #                                  Schedules Methods
     #************************************************************************************************
     @staticmethod
-    def create_scheduled_task(server_id, action, interval, interval_type, start_time, command, comment=None, enabled=True, one_time=False, cron_string='* * * * *'):
+    def create_scheduled_task(
+        server_id,
+        action,
+        interval,
+        interval_type,
+        start_time,
+        command,
+        comment=None,
+        enabled=True,
+        one_time=False,
+        cron_string='* * * * *'):
         sch_id = Schedules.insert({
             Schedules.server_id: server_id,
             Schedules.action: action,
@@ -236,11 +243,11 @@ class helpers_management:
 
     @staticmethod
     def delete_scheduled_task_by_server(server_id):
-         Schedules.delete().where(Schedules.server_id == int(server_id)).execute()
+        Schedules.delete().where(Schedules.server_id == int(server_id)).execute()
 
     @staticmethod
     def get_scheduled_task(schedule_id):
-        return model_to_dict(Schedules.get(Schedules.schedule_id == schedule_id)).execute()
+        return model_to_dict(Schedules.get(Schedules.schedule_id == schedule_id))
 
     @staticmethod
     def get_scheduled_task_model(schedule_id):
@@ -256,7 +263,7 @@ class helpers_management:
 
     @staticmethod
     def get_schedules_enabled():
-        return Schedules.select().where(Schedules.enabled == True).execute()
+        return Schedules.select().where(Schedules.enabled is True).execute()
 
     #************************************************************************************************
     #                                   Backups Methods
@@ -282,12 +289,10 @@ class helpers_management:
 
     @staticmethod
     def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None):
-        logger.debug("Updating server {} backup config with {}".format(server_id, locals()))
+        logger.debug(f"Updating server {server_id} backup config with {locals()}")
         try:
-            row = Backups.select().where(Backups.server_id == server_id).join(Servers)[0]
             new_row = False
             conf = {}
-            schd = {}
         except IndexError:
             conf = {
                 "directories": None,
@@ -304,13 +309,13 @@ class helpers_management:
                 else:
                     u1 = 0
                 u2 = Backups.update(conf).where(Backups.server_id == server_id).execute()
-            logger.debug("Updating existing backup record.  {}+{} rows affected".format(u1, u2))
+            logger.debug(f"Updating existing backup record.  {u1}+{u2} rows affected")
         else:
             with database.atomic():
                 conf["server_id"] = server_id
                 if backup_path is not None:
-                    u = Servers.update(backup_path=backup_path).where(Servers.server_id == server_id)
-                b = Backups.create(**conf)
+                    Servers.update(backup_path=backup_path).where(Servers.server_id == server_id)
+                Backups.create(**conf)
             logger.debug("Creating new backup record.")
 
 

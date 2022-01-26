@@ -1,24 +1,17 @@
-import json
-import logging
-import tempfile
-import threading
-from typing import Container
-import zipfile
-
-import tornado.web
-import tornado.escape
-import bleach
 import os
 import shutil
 import html
 import re
-from app.classes.models.users import helper_users
+import logging
+import tornado.web
+import tornado.escape
+import bleach
 
 from app.classes.shared.console import console
-from app.classes.shared.main_models import Users, installer
-from app.classes.web.base_handler import BaseHandler
 from app.classes.shared.helpers import helper
 from app.classes.shared.server import ServerOutBuf
+
+from app.classes.web.base_handler import BaseHandler
 from app.classes.models.server_permissions import Enum_Permissions_Server
 
 logger = logging.getLogger(__name__)
@@ -67,7 +60,7 @@ class AjaxHandler(BaseHandler):
                 return
 
             if not server_data['log_path']:
-                logger.warning("Log path not found in server_log ajax call ({})".format(server_id))
+                logger.warning(f"Log path not found in server_log ajax call ({server_id})")
 
             if full_log:
                 log_lines = helper.get_setting('max_log_lines')
@@ -81,12 +74,11 @@ class AjaxHandler(BaseHandler):
                     d = re.sub('(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)|(> )', '', d)
                     d = re.sub('[A-z]{2}\b\b', '', d)
                     line = helper.log_colors(html.escape(d))
-                    self.write('{}<br />'.format(line))
+                    self.write(f'{line}<br />')
                     # self.write(d.encode("utf-8"))
 
                 except Exception as e:
-                    logger.warning("Skipping Log Line due to error: {}".format(e))
-                    pass
+                    logger.warning(f"Skipping Log Line due to error: {e}")
 
         elif page == "announcements":
             data = helper.get_announcements()
@@ -97,20 +89,22 @@ class AjaxHandler(BaseHandler):
             file_path = helper.get_os_understandable_path(self.get_argument('file_path', None))
             server_id = self.get_argument('id', None)
 
-            if not self.check_server_id(server_id, 'get_file'): return
-            else: server_id = bleach.clean(server_id)
+            if not self.check_server_id(server_id, 'get_file'):
+                return
+            else:
+                server_id = bleach.clean(server_id)
 
             if not helper.in_path(helper.get_os_understandable_path(self.controller.servers.get_server_data_by_id(server_id)['path']), file_path)\
                 or not helper.check_file_exists(os.path.abspath(file_path)):
-                logger.warning("Invalid path in get_file ajax call ({})".format(file_path))
-                console.warning("Invalid path in get_file ajax call ({})".format(file_path))
+                logger.warning(f"Invalid path in get_file ajax call ({file_path})")
+                console.warning(f"Invalid path in get_file ajax call ({file_path})")
                 return
 
 
             error = None
 
             try:
-                with open(file_path) as file:
+                with open(file_path, encoding='utf-8') as file:
                     file_contents = file.read()
             except UnicodeDecodeError:
                 file_contents = ''
@@ -126,14 +120,16 @@ class AjaxHandler(BaseHandler):
             server_id = self.get_argument('id', None)
             path = self.get_argument('path', None)
 
-            if not self.check_server_id(server_id, 'get_tree'): return
-            else: server_id = bleach.clean(server_id)
+            if not self.check_server_id(server_id, 'get_tree'):
+                return
+            else:
+                server_id = bleach.clean(server_id)
 
             if helper.validate_traversal(self.controller.servers.get_server_data_by_id(server_id)['path'], path):
                 self.write(helper.get_os_understandable_path(path) + '\n' +
                         helper.generate_tree(path))
             self.finish()
-        
+
         elif page == "get_zip_tree":
             server_id = self.get_argument('id', None)
             path = self.get_argument('path', None)
@@ -149,13 +145,15 @@ class AjaxHandler(BaseHandler):
             self.write(helper.get_os_understandable_path(path) + '\n' +
                         helper.generate_zip_dir(path))
             self.finish()
-        
+
         elif page == "get_dir":
             server_id = self.get_argument('id', None)
             path = self.get_argument('path', None)
 
-            if not self.check_server_id(server_id, 'get_tree'): return
-            else: server_id = bleach.clean(server_id)
+            if not self.check_server_id(server_id, 'get_tree'):
+                return
+            else:
+                server_id = bleach.clean(server_id)
 
             if helper.validate_traversal(self.controller.servers.get_server_data_by_id(server_id)['path'], path):
                 self.write(helper.get_os_understandable_path(path) + '\n' +
@@ -182,12 +180,6 @@ class AjaxHandler(BaseHandler):
                 'Players': Enum_Permissions_Server.Players,
             }
         user_perms = self.controller.server_perms.get_user_id_permissions_list(exec_user['user_id'], server_id)
-        error = bleach.clean(self.get_argument('error', "WTF Error!"))
-
-        page_data = {
-            'user_data': exec_user,
-            'error': error
-        }
 
         if page == "send_command":
             command = self.get_body_argument('command', default=None, strip=True)
@@ -200,59 +192,68 @@ class AjaxHandler(BaseHandler):
             srv_obj = self.controller.get_server_obj(server_id)
 
             if command == srv_obj.settings['stop_command']:
-                logger.info("Stop command detected as terminal input - intercepting. Starting Crafty's stop process for server with id: {}.".format(server_id))
+                logger.info("Stop command detected as terminal input - intercepting." +
+                            f"Starting Crafty's stop process for server with id: {server_id}")
                 self.controller.management.send_command(exec_user['user_id'], server_id, self.get_remote_ip(), 'stop_server')
                 command = None
             elif command == 'restart':
-                logger.info("Restart command detected as terminal input - intercepting. Starting Crafty's stop process for server with id: {}.".format(server_id))
+                logger.info("Restart command detected as terminal input - intercepting." +
+                            f"Starting Crafty's stop process for server with id: {server_id}")
                 self.controller.management.send_command(exec_user['user_id'], server_id, self.get_remote_ip(), 'restart_server')
                 command = None
             if command:
                 if srv_obj.check_running():
                     srv_obj.send_command(command)
 
-            self.controller.management.add_to_audit_log(exec_user['user_id'], "Sent command to {} terminal: {}".format(self.controller.servers.get_server_friendly_name(server_id), command), server_id, self.get_remote_ip())
+            self.controller.management.add_to_audit_log(exec_user['user_id'],
+                                        f"Sent command to {self.controller.servers.get_server_friendly_name(server_id)} terminal: {command}",
+                                        server_id,
+                                        self.get_remote_ip())
 
         elif page == "create_file":
             if not permissions['Files'] in user_perms:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access to Files")    
-                    return             
+                    self.redirect("/panel/error?error=Unauthorized access to Files")
+                    return
             file_parent = helper.get_os_understandable_path(self.get_body_argument('file_parent', default=None, strip=True))
             file_name = self.get_body_argument('file_name', default=None, strip=True)
             file_path = os.path.join(file_parent, file_name)
             server_id = self.get_argument('id', None)
 
-            if not self.check_server_id(server_id, 'create_file'): return
-            else: server_id = bleach.clean(server_id)
+            if not self.check_server_id(server_id, 'create_file'):
+                return
+            else:
+                server_id = bleach.clean(server_id)
 
             if not helper.in_path(helper.get_os_understandable_path(self.controller.servers.get_server_data_by_id(server_id)['path']), file_path) \
                 or helper.check_file_exists(os.path.abspath(file_path)):
-                logger.warning("Invalid path in create_file ajax call ({})".format(file_path))
-                console.warning("Invalid path in create_file ajax call ({})".format(file_path))
+                logger.warning(f"Invalid path in create_file ajax call ({file_path})")
+                console.warning(f"Invalid path in create_file ajax call ({file_path})")
                 return
 
             # Create the file by opening it
-            with open(file_path, 'w') as file_object:
+            with open(file_path, 'w', encoding='utf-8') as file_object:
                 file_object.close()
 
         elif page == "create_dir":
             if not permissions['Files'] in user_perms:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access to Files")    
-                    return 
+                    self.redirect("/panel/error?error=Unauthorized access to Files")
+                    return
             dir_parent = helper.get_os_understandable_path(self.get_body_argument('dir_parent', default=None, strip=True))
             dir_name = self.get_body_argument('dir_name', default=None, strip=True)
             dir_path = os.path.join(dir_parent, dir_name)
             server_id = self.get_argument('id', None)
 
-            if not self.check_server_id(server_id, 'create_dir'): return
-            else: server_id = bleach.clean(server_id)
+            if not self.check_server_id(server_id, 'create_dir'):
+                return
+            else:
+                server_id = bleach.clean(server_id)
 
             if not helper.in_path(helper.get_os_understandable_path(self.controller.servers.get_server_data_by_id(server_id)['path']), dir_path) \
                 or helper.check_path_exists(os.path.abspath(dir_path)):
-                logger.warning("Invalid path in create_dir ajax call ({})".format(dir_path))
-                console.warning("Invalid path in create_dir ajax call ({})".format(dir_path))
+                logger.warning(f"Invalid path in create_dir ajax call ({dir_path})")
+                console.warning(f"Invalid path in create_dir ajax call ({dir_path})")
                 return
             # Create the directory
             os.mkdir(dir_path)
@@ -260,25 +261,25 @@ class AjaxHandler(BaseHandler):
         elif page == "unzip_file":
             if not permissions['Files'] in user_perms:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access to Files")    
-                    return 
+                    self.redirect("/panel/error?error=Unauthorized access to Files")
+                    return
             server_id = self.get_argument('id', None)
             path = helper.get_os_understandable_path(self.get_argument('path', None))
             helper.unzipFile(path)
-            self.redirect("/panel/server_detail?id={}&subpage=files".format(server_id))
+            self.redirect(f"/panel/server_detail?id={server_id}&subpage=files")
             return
 
         elif page == "kill":
             if not permissions['Commands'] in user_perms:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access to Commands")    
-                    return 
+                    self.redirect("/panel/error?error=Unauthorized access to Commands")
+                    return
             server_id = self.get_argument('id', None)
             svr = self.controller.get_server_obj(server_id)
             try:
                 svr.kill()
             except Exception as e:
-                logger.error("Could not find PID for requested termsig. Full error: {}".format(e))
+                logger.error(f"Could not find PID for requested termsig. Full error: {e}")
             return
         elif page == "eula":
             server_id = self.get_argument('id', None)
@@ -288,8 +289,8 @@ class AjaxHandler(BaseHandler):
         elif page == "restore_backup":
             if not permissions['Backup'] in user_perms:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access to Backups")    
-                    return 
+                    self.redirect("/panel/error?error=Unauthorized access to Backups")
+                    return
             server_id = bleach.clean(self.get_argument('id', None))
             zip_name = bleach.clean(self.get_argument('zip_file', None))
             svr_obj = self.controller.servers.get_server_obj(server_id)
@@ -297,7 +298,11 @@ class AjaxHandler(BaseHandler):
             backup_path = svr_obj.backup_path
             if helper.validate_traversal(backup_path, zip_name):
                 tempDir = helper.unzip_backup_archive(backup_path, zip_name)
-                new_server = self.controller.import_zip_server(svr_obj.server_name, tempDir, server_data['executable'], '1', '2', server_data['server_port'])
+                new_server = self.controller.import_zip_server(svr_obj.server_name,
+                                                               tempDir,
+                                                               server_data['executable'],
+                                                               '1', '2',
+                                                               server_data['server_port'])
                 new_server_id = new_server
                 new_server = self.controller.get_server_data(new_server)
                 self.controller.rename_backup_dir(server_id, new_server_id, new_server['server_uuid'])
@@ -308,7 +313,7 @@ class AjaxHandler(BaseHandler):
             path = self.get_argument('path', None)
             helper.unzipServer(path, exec_user['user_id'])
             return
-                
+
 
     @tornado.web.authenticated
     def delete(self, page):
@@ -335,12 +340,12 @@ class AjaxHandler(BaseHandler):
         if page == "del_file":
             if not permissions['Files'] in user_perms:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access to Files")    
-                    return            
+                    self.redirect("/panel/error?error=Unauthorized access to Files")
+                    return
             file_path = helper.get_os_understandable_path(self.get_body_argument('file_path', default=None, strip=True))
             server_id = self.get_argument('id', None)
 
-            console.warning("delete {} for server {}".format(file_path, server_id))
+            console.warning(f"Delete {file_path} for server {server_id}")
 
             if not self.check_server_id(server_id, 'del_file'):
                 return
@@ -350,8 +355,8 @@ class AjaxHandler(BaseHandler):
             if not (helper.in_path(helper.get_os_understandable_path(server_info['path']), file_path) \
                 or helper.in_path(helper.get_os_understandable_path(server_info['backup_path']), file_path)) \
                 or not helper.check_file_exists(os.path.abspath(file_path)):
-                logger.warning("Invalid path in del_file ajax call ({})".format(file_path))
-                console.warning("Invalid path in del_file ajax call ({})".format(file_path))
+                logger.warning(f"Invalid path in del_file ajax call ({file_path})")
+                console.warning(f"Invalid path in del_file ajax call ({file_path})")
                 return
 
             # Delete the file
@@ -359,7 +364,7 @@ class AjaxHandler(BaseHandler):
 
         if page == "del_task":
             if not permissions['Schedule'] in user_perms:
-                self.redirect("/panel/error?error=Unauthorized access to Tasks")   
+                self.redirect("/panel/error?error=Unauthorized access to Tasks")
             else:
                 sch_id = self.get_argument('schedule_id', '-404')
                 self.tasks_manager.remove_job(sch_id)
@@ -367,12 +372,12 @@ class AjaxHandler(BaseHandler):
         if page == "del_backup":
             if not permissions['Backup'] in user_perms:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access to Backups")    
-                    return            
+                    self.redirect("/panel/error?error=Unauthorized access to Backups")
+                    return
             file_path = helper.get_os_understandable_path(self.get_body_argument('file_path', default=None, strip=True))
             server_id = self.get_argument('id', None)
 
-            console.warning("delete {} for server {}".format(file_path, server_id))
+            console.warning(f"Delete {file_path} for server {server_id}")
 
             if not self.check_server_id(server_id, 'del_file'):
                 return
@@ -382,8 +387,8 @@ class AjaxHandler(BaseHandler):
             if not (helper.in_path(helper.get_os_understandable_path(server_info['path']), file_path) \
                 or helper.in_path(helper.get_os_understandable_path(server_info['backup_path']), file_path)) \
                 or not helper.check_file_exists(os.path.abspath(file_path)):
-                logger.warning("Invalid path in del_file ajax call ({})".format(file_path))
-                console.warning("Invalid path in del_file ajax call ({})".format(file_path))
+                logger.warning(f"Invalid path in del_file ajax call ({file_path})")
+                console.warning(f"Invalid path in del_file ajax call ({file_path})")
                 return
 
             # Delete the file
@@ -393,21 +398,23 @@ class AjaxHandler(BaseHandler):
         elif page == "del_dir":
             if not permissions['Files'] in user_perms:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access to Files")    
-                    return              
+                    self.redirect("/panel/error?error=Unauthorized access to Files")
+                    return
             dir_path = helper.get_os_understandable_path(self.get_body_argument('dir_path', default=None, strip=True))
             server_id = self.get_argument('id', None)
 
-            console.warning("delete {} for server {}".format(dir_path, server_id))
+            console.warning(f"Delete {dir_path} for server {server_id}")
 
-            if not self.check_server_id(server_id, 'del_dir'): return
-            else: server_id = bleach.clean(server_id)
+            if not self.check_server_id(server_id, 'del_dir'):
+                return
+            else:
+                server_id = bleach.clean(server_id)
 
             server_info = self.controller.servers.get_server_data_by_id(server_id)
             if not helper.in_path(helper.get_os_understandable_path(server_info['path']), dir_path) \
                 or not helper.check_path_exists(os.path.abspath(dir_path)):
-                logger.warning("Invalid path in del_file ajax call ({})".format(dir_path))
-                console.warning("Invalid path in del_file ajax call ({})".format(dir_path))
+                logger.warning(f"Invalid path in del_file ajax call ({dir_path})")
+                console.warning(f"Invalid path in del_file ajax call ({dir_path})")
                 return
 
             # Delete the directory
@@ -418,40 +425,38 @@ class AjaxHandler(BaseHandler):
         elif page == "delete_server":
             if not permissions['Config'] in user_perms:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access to Config")    
-                    return              
+                    self.redirect("/panel/error?error=Unauthorized access to Config")
+                    return
             server_id = self.get_argument('id', None)
-            logger.info(
-                "Removing server from panel for server: {}".format(self.controller.servers.get_server_friendly_name(server_id)))
+            logger.info(f"Removing server from panel for server: {self.controller.servers.get_server_friendly_name(server_id)}")
 
             server_data = self.controller.get_server_data(server_id)
             server_name = server_data['server_name']
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Deleted server {} named {}".format(server_id, server_name),
+                                       f"Deleted server {server_id} named {server_name}",
                                        server_id,
                                        self.get_remote_ip())
-                                       
+
             self.tasks_manager.remove_all_server_tasks(server_id)
             self.controller.remove_server(server_id, False)
 
         elif page == "delete_server_files":
             if not permissions['Config'] in user_perms:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access to Config")    
-                    return              
+                    self.redirect("/panel/error?error=Unauthorized access to Config")
+                    return
             server_id = self.get_argument('id', None)
-            logger.info(
-                "Removing server and all associated files for server: {}".format(self.controller.servers.get_server_friendly_name(server_id)))
+            logger.info(f"Removing server and all associated files for server: {self.controller.servers.get_server_friendly_name(server_id)}")
 
             server_data = self.controller.get_server_data(server_id)
             server_name = server_data['server_name']
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
-                                       "Deleted server {} named {}".format(server_id, server_name),
+                                       f"Deleted server {server_id} named {server_name}",
                                        server_id,
                                        self.get_remote_ip())
-                                       
+
             self.tasks_manager.remove_all_server_tasks(server_id)
             self.controller.remove_server(server_id, True)
 
@@ -477,36 +482,40 @@ class AjaxHandler(BaseHandler):
         if page == "save_file":
             if not permissions['Files'] in user_perms:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access to Files")    
-                    return             
+                    self.redirect("/panel/error?error=Unauthorized access to Files")
+                    return
             file_contents = self.get_body_argument('file_contents', default=None, strip=True)
             file_path = helper.get_os_understandable_path(self.get_body_argument('file_path', default=None, strip=True))
             server_id = self.get_argument('id', None)
 
-            if not self.check_server_id(server_id, 'save_file'): return
-            else: server_id = bleach.clean(server_id)
+            if not self.check_server_id(server_id, 'save_file'):
+                return
+            else:
+                server_id = bleach.clean(server_id)
 
             if not helper.in_path(helper.get_os_understandable_path(self.controller.servers.get_server_data_by_id(server_id)['path']), file_path)\
                 or not helper.check_file_exists(os.path.abspath(file_path)):
-                logger.warning("Invalid path in save_file ajax call ({})".format(file_path))
-                console.warning("Invalid path in save_file ajax call ({})".format(file_path))
+                logger.warning(f"Invalid path in save_file ajax call ({file_path})")
+                console.warning(f"Invalid path in save_file ajax call ({file_path})")
                 return
 
             # Open the file in write mode and store the content in file_object
-            with open(file_path, 'w') as file_object:
+            with open(file_path, 'w', encoding='utf-8') as file_object:
                 file_object.write(file_contents)
 
         elif page == "rename_item":
             if not permissions['Files'] in user_perms:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access to Files")    
-                    return  
+                    self.redirect("/panel/error?error=Unauthorized access to Files")
+                    return
             item_path = helper.get_os_understandable_path(self.get_body_argument('item_path', default=None, strip=True))
             new_item_name = self.get_body_argument('new_item_name', default=None, strip=True)
             server_id = self.get_argument('id', None)
 
-            if not self.check_server_id(server_id, 'rename_item'): return
-            else: server_id = bleach.clean(server_id)
+            if not self.check_server_id(server_id, 'rename_item'):
+                return
+            else:
+                server_id = bleach.clean(server_id)
 
             if item_path is None or new_item_name is None:
                 logger.warning("Invalid path(s) in rename_item ajax call")
@@ -515,16 +524,17 @@ class AjaxHandler(BaseHandler):
 
             if not helper.in_path(helper.get_os_understandable_path(self.controller.servers.get_server_data_by_id(server_id)['path']), item_path) \
                 or not helper.check_path_exists(os.path.abspath(item_path)):
-                logger.warning("Invalid old name path in rename_item ajax call ({})".format(server_id))
-                console.warning("Invalid old name path in rename_item ajax call ({})".format(server_id))
+                logger.warning(f"Invalid old name path in rename_item ajax call ({server_id})")
+                console.warning(f"Invalid old name path in rename_item ajax call ({server_id})")
                 return
 
             new_item_path = os.path.join(os.path.split(item_path)[0], new_item_name)
 
-            if not helper.in_path(helper.get_os_understandable_path(self.controller.servers.get_server_data_by_id(server_id)['path']), new_item_path) \
+            if not helper.in_path(helper.get_os_understandable_path(self.controller.servers.get_server_data_by_id(server_id)['path']),
+                                                                    new_item_path) \
                 or helper.check_path_exists(os.path.abspath(new_item_path)):
-                logger.warning("Invalid new name path in rename_item ajax call ({})".format(server_id))
-                console.warning("Invalid new name path in rename_item ajax call ({})".format(server_id))
+                logger.warning(f"Invalid new name path in rename_item ajax call ({server_id})")
+                console.warning(f"Invalid new name path in rename_item ajax call ({server_id})")
                 return
 
             # RENAME
@@ -532,15 +542,15 @@ class AjaxHandler(BaseHandler):
 
     def check_server_id(self, server_id, page_name):
         if server_id is None:
-            logger.warning("Server ID not defined in {} ajax call ({})".format(page_name, server_id))
-            console.warning("Server ID not defined in {} ajax call ({})".format(page_name, server_id))
+            logger.warning(f"Server ID not defined in {page_name} ajax call ({server_id})")
+            console.warning(f"Server ID not defined in {page_name} ajax call ({server_id})")
             return
         else:
             server_id = bleach.clean(server_id)
 
             # does this server id exist?
             if not self.controller.servers.server_id_exists(server_id):
-                logger.warning("Server ID not found in {} ajax call ({})".format(page_name, server_id))
-                console.warning("Server ID not found in {} ajax call ({})".format(page_name, server_id))
+                logger.warning(f"Server ID not found in {page_name} ajax call ({server_id})")
+                console.warning(f"Server ID not found in {page_name} ajax call ({server_id})")
                 return
         return True
