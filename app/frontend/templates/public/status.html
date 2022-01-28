@@ -146,12 +146,10 @@
     for (server of data) {
       update_one_server_status(server);
     }
-    display_motd();
   }
 
   $(document).ready(function () {
     console.log("ready!");
-    display_motd()
 
     if (webSocket)
     {

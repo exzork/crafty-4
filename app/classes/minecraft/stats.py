@@ -260,6 +260,8 @@ class Stats:
 
         server_stats = {}
         server = self.controller.get_server_obj(server_id)
+        server_dt = servers_helper.get_server_data_by_id(server_id)
+
 
         logger.debug(f'Getting stats for server: {server_id}')
 
@@ -279,8 +281,8 @@ class Stats:
         # TODO: search server properties file for possible override of 127.0.0.1
         #internal_ip =   server['server_ip']
         #server_port = server['server_port']
-        internal_ip = server_data.get('server_ip', "127.0.0.1")
-        server_port = server_settings.get('server-port', "25565")
+        internal_ip = server_dt['server_ip']
+        server_port = server_dt['server_port']
 
 
         logger.debug(f"Pinging server '{server.name}' on {internal_ip}:{server_port}")

@@ -147,6 +147,10 @@ class Servers_Controller:
         return False
 
     @staticmethod
+    def is_crashed(server_id):
+        return servers_helper.is_crashed(server_id)
+
+    @staticmethod
     def server_id_authorized_api_key(server_id: str, api_key: ApiKeys) -> bool:
         # TODO
         return Servers_Controller.server_id_authorized(server_id, api_key.user.user_id)

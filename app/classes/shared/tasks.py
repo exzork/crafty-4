@@ -16,6 +16,7 @@ from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.models.management import management_helper
 from app.classes.controllers.users_controller import Users_Controller
 from app.classes.controllers.servers_controller import Servers_Controller
+from app.classes.models.servers import servers_helper
 
 logger = logging.getLogger('apscheduler')
 
@@ -425,7 +426,10 @@ class TasksManager:
                     })
 
             for user in Users_Controller.get_all_users():
+                total_players = 0
+                max_players = 0
                 servers_ping = []
+                players_ping = {}
                 if user.superuser:
                     servers = Servers_Controller.get_all_servers_stats()
                 else:
@@ -434,8 +438,6 @@ class TasksManager:
                     if srv:
                         server_id = srv['server_data']['server_id']
                         srv['raw_ping_result'] = self.controller.stats.get_raw_server_stats(server_id)
-                        if f"{srv['raw_ping_result'].get('icon')}" == "b''":
-                            srv['raw_ping_result']['icon'] = False
 
                         servers_ping.append({
                             'id': srv['raw_ping_result'].get('id'),
@@ -453,7 +455,7 @@ class TasksManager:
                             'players': srv['raw_ping_result'].get('players'),
                             'desc': srv['raw_ping_result'].get('desc'),
                             'version': srv['raw_ping_result'].get('version'),
-                            'icon': None
+                            'crashed': servers_helper.is_crashed(server_id),
                         })
                         if len(websocket_helper.clients) > 0:
                             websocket_helper.broadcast_user_page_params(
@@ -478,9 +480,16 @@ class TasksManager:
                                     'players': srv['raw_ping_result'].get('players'),
                                     'desc': srv['raw_ping_result'].get('desc'),
                                     'version': srv['raw_ping_result'].get('version'),
-                                    'icon': None
+                                    'crashed': servers_helper.is_crashed(server_id),
                                 }
                             )
+                        total_players += int(srv['raw_ping_result'].get('online'))
+                        max_players += int(srv['raw_ping_result'].get('max'))
+                players_ping = {
+                        'total_players': total_players,
+                        'max_players': max_players
+                    }
+                websocket_helper.broadcast_user_page('/panel/dashboard', user.user_id, 'update_player_status', players_ping)
 
                 if (len(servers_ping) > 0) & (len(websocket_helper.clients) > 0):
                     try:

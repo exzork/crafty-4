@@ -115,8 +115,12 @@ class Server:
         self.stats = stats
         tz = get_localzone()
         self.server_scheduler = BackgroundScheduler(timezone=str(tz))
+        self.server_scheduler.start()
         self.backup_thread = threading.Thread(target=self.a_backup_server, daemon=True, name=f"backup_{self.name}")
         self.is_backingup = False
+        #Reset crash and update at initialization
+        servers_helper.server_crash_reset(self.server_id)
+        servers_helper.set_update(self.server_id, False)
 
     def reload_server_settings(self):
         server_data = servers_helper.get_server_data_by_id(self.server_id)
@@ -141,7 +145,6 @@ class Server:
             console.info(f"Scheduling server {self.name} to start in {delay} seconds")
 
             self.server_scheduler.add_job(self.run_scheduled_server, 'interval', seconds=delay, id=str(self.server_id))
-            self.server_scheduler.start()
 
     def run_scheduled_server(self):
         console.info(f"Starting server ID: {self.server_id} - {self.name}")
@@ -262,6 +265,7 @@ class Server:
         threading.Thread(target=out_buf.check, daemon=True, name=f'{self.server_id}_virtual_terminal').start()
 
         self.is_crashed = False
+        servers_helper.server_crash_reset(self.server_id)
 
         self.start_time = str(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
 
@@ -269,6 +273,7 @@ class Server:
             logger.info(f"Server {self.name} running with PID {self.process.pid}")
             console.info(f"Server {self.name} running with PID {self.process.pid}")
             self.is_crashed = False
+            servers_helper.server_crash_reset(self.server_id)
             self.stats.record_stats()
             check_internet_thread = threading.Thread(
                 target=self.check_internet_thread, daemon=True, args=(user_id, user_lang, ), name=f"{self.name}_Internet")
@@ -299,7 +304,7 @@ class Server:
             logger.info(f"Server {self.name} has crash detection enabled - starting watcher task")
             console.info(f"Server {self.name} has crash detection enabled - starting watcher task")
 
-            self.server_scheduler.add_job(self.detect_crash, 'interval', seconds=30, id="c_{self.server_id}")
+            self.server_scheduler.add_job(self.detect_crash, 'interval', seconds=30, id=f"c_{self.server_id}")
 
     def check_internet_thread(self, user_id, user_lang):
         if user_id:
@@ -317,6 +322,9 @@ class Server:
     def stop_server(self):
         if self.settings['stop_command']:
             self.send_command(self.settings['stop_command'])
+            #remove crash detection watcher
+            logger.info(f"Removing crash watcher for server {self.name}")
+            self.server_scheduler.remove_job('c_' + str(self.server_id))
         else:
             #windows will need to be handled separately for Ctrl+C
             self.process.terminate()
@@ -398,8 +406,9 @@ class Server:
 
     def crash_detected(self, name):
 
+        print("crash detected")
         # clear the old scheduled watcher task
-        self.remove_watcher_thread()
+        self.server_scheduler.remove_job("c_"+str(self.server_id))
 
         # the server crashed, or isn't found - so let's reset things.
         logger.warning(f"The server {name} seems to have vanished unexpectedly, did it crash?")
@@ -449,6 +458,7 @@ class Server:
         if running:
             return
 
+        servers_helper.sever_crashed(self.server_id)
         # if we haven't tried to restart more 3 or more times
         if self.restart_count <= 3:
 
@@ -464,12 +474,12 @@ class Server:
             logger.critical(f"Server {self.name} has been restarted {self.restart_count} times. It has crashed, not restarting.")
             console.critical(f"Server {self.name} has been restarted {self.restart_count} times. It has crashed, not restarting.")
 
-            # set to 99 restart attempts so this elif is skipped next time. (no double logging)
-            self.restart_count = 99
+            self.restart_count = 0
             self.is_crashed = True
+            servers_helper.sever_crashed(self.server_id)
 
             # cancel the watcher task
-            self.remove_watcher_thread()
+            self.server_scheduler.remove_job("c_"+str(self.server_id))
 
     def remove_watcher_thread(self):
         logger.info("Removing old crash detection watcher thread")
