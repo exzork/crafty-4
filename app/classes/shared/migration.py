@@ -1,3 +1,4 @@
+# pylint: skip-file
 from datetime import datetime
 import logging
 import typing as t
