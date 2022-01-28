@@ -73,6 +73,7 @@ class Server_Stats(Model):
     updating = BooleanField(default=False)
     waiting_start = BooleanField(default=False)
     first_run = BooleanField(default=True)
+    crashed = BooleanField(default=False)
 
 
     class Meta:
@@ -179,6 +180,25 @@ class helper_servers:
         return True
 
     @staticmethod
+    def sever_crashed(server_id):
+        with database.atomic():
+            Server_Stats.update(crashed=True).where(Server_Stats.server_id == server_id).execute()
+
+    @staticmethod
+    def server_crash_reset(server_id):
+        with database.atomic():
+            Server_Stats.update(crashed=False).where(Server_Stats.server_id == server_id).execute()
+
+    @staticmethod
+    def is_crashed(server_id):
+        svr = Server_Stats.select().where(Server_Stats.server_id == server_id).get()
+        #pylint: disable=singleton-comparison
+        if svr.crashed == True:
+            return True
+        else:
+            return False
+
+    @staticmethod
     def set_update(server_id, value):
         try:
             #Checks if server even exists
@@ -190,8 +210,8 @@ class helper_servers:
 
     @staticmethod
     def get_update_status(server_id):
-        waiting_start = Server_Stats.select().where(Server_Stats.server_id == server_id).get()
-        return waiting_start.waiting_start
+        update_status = Server_Stats.select().where(Server_Stats.server_id == server_id).get()
+        return update_status.updating
 
     @staticmethod
     def set_first_run(server_id):

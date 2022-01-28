@@ -16,6 +16,7 @@ from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.models.management import management_helper
 from app.classes.controllers.users_controller import Users_Controller
 from app.classes.controllers.servers_controller import Servers_Controller
+from app.classes.models.servers import servers_helper
 
 logger = logging.getLogger('apscheduler')
 
@@ -454,6 +455,7 @@ class TasksManager:
                             'players': srv['raw_ping_result'].get('players'),
                             'desc': srv['raw_ping_result'].get('desc'),
                             'version': srv['raw_ping_result'].get('version'),
+                            'crashed': servers_helper.is_crashed(server_id),
                         })
                         if len(websocket_helper.clients) > 0:
                             websocket_helper.broadcast_user_page_params(
@@ -478,6 +480,7 @@ class TasksManager:
                                     'players': srv['raw_ping_result'].get('players'),
                                     'desc': srv['raw_ping_result'].get('desc'),
                                     'version': srv['raw_ping_result'].get('version'),
+                                    'crashed': servers_helper.is_crashed(server_id),
                                 }
                             )
                         total_players += int(srv['raw_ping_result'].get('online'))

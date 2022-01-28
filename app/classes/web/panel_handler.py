@@ -295,13 +295,15 @@ class PanelHandler(BaseHandler):
                     list(filter(lambda x: x['stats']['running'], page_data['servers'])))
                 page_data['server_stats']['stopped'] = len(page_data['servers']) - page_data['server_stats']['running']
 
-                for data in page_data['servers']:
-                    try:
-                        data['stats']['waiting_start'] = self.controller.servers.get_waiting_start(
-                            str(data['stats']['server_id']['server_id']))
-                    except Exception as e:
-                        logger.error(f"Failed to get server waiting to start: {e}")
-                        data['stats']['waiting_start'] = False
+            for data in page_data['servers']:
+                data['stats']['crashed'] = self.controller.servers.is_crashed(
+                        str(data['stats']['server_id']['server_id']))
+                try:
+                    data['stats']['waiting_start'] = self.controller.servers.get_waiting_start(
+                        str(data['stats']['server_id']['server_id']))
+                except Exception as e:
+                    logger.error(f"Failed to get server waiting to start: {e}")
+                    data['stats']['waiting_start'] = False
 
             try:
                 self.fetch_server_data(page_data)
@@ -348,6 +350,7 @@ class PanelHandler(BaseHandler):
                 'Players': Enum_Permissions_Server.Players,
             }
             page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
+            page_data['server_stats']['crashed'] = self.controller.servers.is_crashed(server_id)
 
             if subpage == 'term':
                 if not page_data['permissions']['Terminal'] in page_data['user_permissions']:
