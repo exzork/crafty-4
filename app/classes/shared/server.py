@@ -562,7 +562,7 @@ class Server:
         update_thread.start()
 
     def check_update(self):
-        
+
         if servers_helper.get_server_stats_by_id(self.server_id)['updating']:
             return True
         else:
