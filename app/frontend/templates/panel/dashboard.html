@@ -222,6 +222,9 @@
                     {% if server['stats']['running'] %}
                     <span class="text-success"><i class="fas fa-signal"></i>  {{ translate('dashboard', 'online',
                       data['lang']) }}</span>
+                    {% elif server['stats']['crashed'] %}
+                      <span class="text-danger"><i class="fas fa-exclamation-triangle"></i>  {{ translate('dashboard', 'crashed',
+                        data['lang']) }}</span>
                     {% else %}
                      <span class="text-warning"><i class="fas fa-ban"></i> {{ translate('dashboard', 'offline',
                       data['lang']) }}</span>
@@ -411,7 +414,11 @@
       online_status = `<span class="text-success"><i class="fas fa-signal"></i> {{ translate('dashboard', 'online', data['lang'])}}</span>`;
     }
     else {
+      if (server.crashed){
+        online_status = `<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang'])}}</span>`
+      }else{
       online_status = `<span class="text-warning"><i class="fas fa-ban"></i> {{ translate('dashboard', 'offline', data['lang'])}}</span>`;
+      }
     }
     server_online_status.innerHTML = online_status;
   }

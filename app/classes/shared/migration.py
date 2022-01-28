@@ -5,7 +5,7 @@ import sys
 import os
 import re
 from functools import wraps
-# pylint: disable=no-name-in-module
+
 from functools import cached_property
 
 from app.classes.shared.helpers import helper
@@ -22,8 +22,9 @@ try:
     )
 
 except ModuleNotFoundError as e:
-    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
-    console.critical(f"Import Error: Unable to load {e.name} module")
+    logger.critical("Import Error: Unable to load {} module".format(
+        e.name), exc_info=True)
+    console.critical("Import Error: Unable to load {} module".format(e.name))
     sys.exit(1)
 
 MIGRATE_TABLE = 'migratehistory'
@@ -76,7 +77,7 @@ def get_model(method):
 
 
 # noinspection PyProtectedMember
-class Migrator():
+class Migrator(object):
     def __init__(self, database: t.Union[peewee.Database, peewee.Proxy]):
         """
         Initializes the migrator
@@ -103,7 +104,7 @@ class Migrator():
         """
         Cleans the operations.
         """
-        self.operations = []
+        self.operations = list()
 
     def sql(self, sql: str, *params):
         """
@@ -277,7 +278,7 @@ class Migrator():
 
 
 # noinspection PyProtectedMember
-class MigrationManager():
+class MigrationManager(object):
     filemask = re.compile(r"[\d]+_[^\.]+\.py$")
 
     def __init__(self, database: t.Union[peewee.Database, peewee.Proxy]):
@@ -285,7 +286,7 @@ class MigrationManager():
         Initializes the migration manager.
         """
         if not isinstance(database, (peewee.Database, peewee.Proxy)):
-            raise RuntimeError(f'Invalid database: {database}')
+            raise RuntimeError('Invalid database: {}'.format(database))
         self.database = database
 
     @cached_property
@@ -293,7 +294,6 @@ class MigrationManager():
         """
         Initialize and cache the MigrationHistory model.
         """
-        #pylint: disable=no-member
         MigrateHistory._meta.database = self.database
         MigrateHistory._meta.table_name = 'migratehistory'
         MigrateHistory._meta.schema = None
@@ -305,7 +305,6 @@ class MigrationManager():
         """
         Scans migrations in the database.
         """
-        # pylint: disable=no-member
         return [mm.name for mm in self.model.select().order_by(self.model.id)]
 
     @property
@@ -314,7 +313,8 @@ class MigrationManager():
         Scans migrations in the file system.
         """
         if not os.path.exists(helper.migration_dir):
-            logger.warning(f'Migration directory: {helper.migration_dir} does not exist.')
+            logger.warning('Migration directory: {} does not exist.'.format(
+                helper.migration_dir))
             os.makedirs(helper.migration_dir)
         return sorted(f[:-3] for f in os.listdir(helper.migration_dir) if self.filemask.match(f))
 
@@ -343,7 +343,7 @@ class MigrationManager():
         name = datetime.utcnow().strftime('%Y%m%d%H%M%S') + '_' + name
         filename = name + '.py'
         path = os.path.join(helper.migration_dir, filename)
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, 'w') as f:
             f.write(MIGRATE_TEMPLATE.format(
                 migrate=migrate, rollback=rollback, name=filename))
 
@@ -357,14 +357,13 @@ class MigrationManager():
         if auto:
             raise NotImplementedError
 
-        logger.info(f'Creating migration "{name}"')
+        logger.info('Creating migration "{}"'.format(name))
         name = self.compile(name, migrate, rollback)
-        logger.info(f'Migration has been created as "{name}"')
+        logger.info('Migration has been created as "{}"'.format(name))
         return name
 
     def clear(self):
         """Clear migrations."""
-        # pylint: disable=no-member
         self.model.delete().execute()
 
     def up(self, name: t.Optional[str] = None):
@@ -381,6 +380,7 @@ class MigrationManager():
             console.info('There is nothing to migrate')
             return done
 
+        migrator = self.migrator
         for mname in diff:
             done.append(self.up_one(mname, self.migrator))
             if name and name == mname:
@@ -392,15 +392,14 @@ class MigrationManager():
         """
         Reads a migration from a file.
         """
-        call_params = {}
+        call_params = dict()
         if helper.is_os_windows() and sys.version_info >= (3, 0):
             # if system is windows - force utf-8 encoding
             call_params['encoding'] = 'utf-8'
-        with open(os.path.join(helper.migration_dir, name + '.py'), **call_params, encoding='utf-8') as f:
+        with open(os.path.join(helper.migration_dir, name + '.py'), **call_params) as f:
             code = f.read()
             scope = {}
             code = compile(code, '<string>', 'exec', dont_inherit=True)
-            # pylint: disable=exec-used
             exec(code, scope, None)
             return scope.get('migrate', lambda m, d: None), scope.get('rollback', lambda m, d: None)
 
@@ -417,26 +416,24 @@ class MigrationManager():
                 return name
             with self.database.transaction():
                 if rollback:
-                    logger.info(f'Rolling back "{name}"')
+                    logger.info('Rolling back "{}"'.format(name))
                     rollback_fn(migrator, self.database)
                     migrator.run()
-                    # pylint: disable=no-member
                     self.model.delete().where(self.model.name == name).execute()
                 else:
-                    logger.info(f'Migrate "{name}"')
+                    logger.info('Migrate "{}"'.format(name))
                     migrate_fn(migrator, self.database)
                     migrator.run()
                     if name not in self.done:
-                        # pylint: disable=no-member
                         self.model.create(name=name)
 
-                logger.info(f'Done "{name}"')
+                logger.info('Done "{}"'.format(name))
                 return name
 
         except Exception:
             self.database.rollback()
             operation_name = 'Rollback' if rollback else 'Migration'
-            logger.exception(f'{operation_name} failed: {name}')
+            logger.exception('{} failed: {}'.format(operation_name, name))
             raise
 
     def down(self):
@@ -450,4 +447,4 @@ class MigrationManager():
 
         migrator = self.migrator
         self.up_one(name, migrator, False, True)
-        logger.warning(f'Rolled back migration: {name}')
+        logger.warning('Rolled back migration: {}'.format(name))
