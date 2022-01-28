@@ -8,10 +8,15 @@
             <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-success">{{ translate('serverStats', 'online', data['lang']) }}</span><br />
             <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started">{{ data['server_stats']['started'] }} ({{ translate('serverStats', 'serverTime', data['lang']) }})</span><br />
             <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime">{{ translate('serverStats', 'errorCalculatingUptime', data['lang']) }}</span>
+            {% elif data['server_stats']['crashed'] %}
+            <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-danger"> <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}</span><br />
+            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started" class="text-danger"> <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}</span><br />
+            <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime" class="text-danger"> <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}</span>
             {% else %}
-            <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-danger">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
-            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started" class="text-danger">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
-            <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime" class="text-danger">{{ translate('serverStats', 'offline', data['lang']) }}</span>
+            <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
+            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started" class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
+            <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime" class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span>
+            <p>{{ data['server_stats']['crashed'] }}</p>
             {% end %}
             <br>
             <b>{{ translate('serverStats', 'serverTimeZone', data['lang']) }}:</b> <span class="text-info">{{ data['serverTZ'] }}</span>
@@ -161,14 +166,25 @@
     }
     else
     {
-      server_status.setAttribute("class", "text-danger");
+      if (server.crashed){
+        server_status.setAttribute("class", "text-danger");
+        server_status.innerHTML = `<i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}`;
+        server_started.setAttribute("class", "text-danger");
+        server_started.innerHTML = `<i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}`;
+        clearInterval(uptimeLoop);
+        uptimeLoop = null;
+        server_uptime.setAttribute("class", "text-danger");
+        server_uptime.innerHTML = `<i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}`;
+      }else{
+      server_status.setAttribute("class", "text-warning");
       server_status.innerHTML = `{{ translate('serverStats', 'offline', data['lang']) }}`;
-      server_started.setAttribute("class", "text-danger");
+      server_started.setAttribute("class", "text-warning");
       server_started.innerHTML = `{{ translate('serverStats', 'offline', data['lang']) }}`;
       clearInterval(uptimeLoop);
       uptimeLoop = null;
-      server_uptime.setAttribute("class", "text-danger");
+      server_uptime.setAttribute("class", "text-warning");
       server_uptime.innerHTML = `{{ translate('serverStats', 'offline', data['lang']) }}`;
+      }
     }
 
     server_cpu.innerHTML = server.cpu + ` %`;

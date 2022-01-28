@@ -19,6 +19,7 @@ else:
 from app.classes.shared.main_models import installer, database
 from app.classes.shared.tasks import TasksManager
 from app.classes.shared.main_controller import Controller
+# pylint: disable=no-name-in-module
 from app.classes.shared.migration import MigrationManager
 
 from app.classes.shared.command import MainPrompt
