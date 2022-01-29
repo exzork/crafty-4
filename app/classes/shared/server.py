@@ -46,10 +46,6 @@ class ServerOutBuf:
         ServerOutBuf.lines[self.server_id] = []
         self.lsi = 0
 
-    def clear_term(self):
-        self.line_buffer = ''
-        ServerOutBuf.lines[self.server_id] = []
-
     def process_byte(self, char):
         if char == os.linesep[self.lsi]:
             self.lsi += 1
