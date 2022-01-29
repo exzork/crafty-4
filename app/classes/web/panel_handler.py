@@ -358,9 +358,6 @@ class PanelHandler(BaseHandler):
                     if not superuser:
                         self.redirect("/panel/error?error=Unauthorized access to Terminal")
                         return
-                server_obj = Servers_Controller.get_server_obj(server_id)
-                if page_data['server_stats']['running']:
-                    server_obj.clear_term()
 
             if subpage == 'logs':
                 if not page_data['permissions']['Logs'] in page_data['user_permissions']:
