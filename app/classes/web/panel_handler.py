@@ -17,6 +17,7 @@ from tornado.ioloop import IOLoop
 #TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
 from cron_validator import CronValidator
+from app.classes.controllers.servers_controller import Servers_Controller
 
 from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
@@ -357,6 +358,9 @@ class PanelHandler(BaseHandler):
                     if not superuser:
                         self.redirect("/panel/error?error=Unauthorized access to Terminal")
                         return
+                server_obj = Servers_Controller.get_server_obj(server_id)
+                if page_data['server_stats']['running']:
+                    server_obj.clear_term()
 
             if subpage == 'logs':
                 if not page_data['permissions']['Logs'] in page_data['user_permissions']:
