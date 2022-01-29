@@ -17,6 +17,7 @@ from app.classes.models.management import management_helper
 from app.classes.controllers.users_controller import Users_Controller
 from app.classes.controllers.servers_controller import Servers_Controller
 from app.classes.models.servers import servers_helper
+from app.classes.models.users import users_helper
 
 logger = logging.getLogger('apscheduler')
 
@@ -373,6 +374,8 @@ class TasksManager:
         if not event.exception:
             if str(event.job_id).isnumeric():
                 task = management_helper.get_scheduled_task_model(int(event.job_id))
+                management_helper.add_to_audit_log_raw('system', users_helper.get_user_id_by_name('system'), task.server_id,
+                    f"Task with id {task.schedule_id} completed successfully", '127.0.0.1')
                 if task.one_time:
                     self.remove_job(task.schedule_id)
                     logger.info("one time task detected. Deleting...")

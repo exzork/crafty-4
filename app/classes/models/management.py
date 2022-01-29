@@ -1,3 +1,4 @@
+from http import server
 import sys
 import logging
 import datetime
@@ -291,10 +292,10 @@ class helpers_management:
     @staticmethod
     def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None):
         logger.debug(f"Updating server {server_id} backup config with {locals()}")
-        try:
+        if Backups.select().where(Backups.server_id == server_id).count() != 0:
             new_row = False
             conf = {}
-        except IndexError:
+        else:
             conf = {
                 "directories": None,
                 "max_backups": 0,
