@@ -46,6 +46,10 @@ class ServerOutBuf:
         ServerOutBuf.lines[self.server_id] = []
         self.lsi = 0
 
+    def clear_term(self):
+        self.line_buffer = ''
+        ServerOutBuf.lines[self.server_id] = []
+
     def process_byte(self, char):
         if char == os.linesep[self.lsi]:
             self.lsi += 1
@@ -76,7 +80,7 @@ class ServerOutBuf:
                 break
 
     def new_line_handler(self, new_line):
-        new_line = re.sub('(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)|(> )', '', new_line)
+        new_line = re.sub('(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)', ' ', new_line)
         new_line = re.sub('[A-z]{2}\b\b', '', new_line)
         highlighted = helper.log_colors(html.escape(new_line))
 
