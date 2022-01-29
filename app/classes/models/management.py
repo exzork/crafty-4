@@ -263,7 +263,8 @@ class helpers_management:
 
     @staticmethod
     def get_schedules_enabled():
-        return Schedules.select().where(Schedules.enabled is True).execute()
+        #pylint: disable=singleton-comparison
+        return Schedules.select().where(Schedules.enabled == True).execute()
 
     #************************************************************************************************
     #                                   Backups Methods
