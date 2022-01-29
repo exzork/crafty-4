@@ -195,7 +195,7 @@ class helpers_management:
         #deletes records when they're more than 100
         ordered = Audit_Log.select().order_by(+Audit_Log.created)
         for item in ordered:
-            if Audit_Log.select().count() > 100:
+            if Audit_Log.select().count() > 300:
                 Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
             else:
                 return
@@ -212,7 +212,7 @@ class helpers_management:
         #deletes records when they're more than 100
         ordered = Audit_Log.select().order_by(+Audit_Log.created)
         for item in ordered:
-            if Audit_Log.select().count() > 100:
+            if Audit_Log.select().count() > 300:
                 Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
             else:
                 return
