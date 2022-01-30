@@ -191,6 +191,14 @@ class helpers_management:
             Audit_Log.log_msg: audit_msg,
             Audit_Log.source_ip: source_ip
         }).execute()
+        #todo make this user configurable
+        #deletes records when they're more than 100
+        ordered = Audit_Log.select().order_by(+Audit_Log.created)
+        for item in ordered:
+            if Audit_Log.select().count() > 300:
+                Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
+            else:
+                return
 
     @staticmethod
     def add_to_audit_log_raw(user_name, user_id, server_id, log_msg, source_ip):
@@ -201,7 +209,13 @@ class helpers_management:
             Audit_Log.log_msg: log_msg,
             Audit_Log.source_ip: source_ip
         }).execute()
-
+        #deletes records when they're more than 100
+        ordered = Audit_Log.select().order_by(+Audit_Log.created)
+        for item in ordered:
+            if Audit_Log.select().count() > 300:
+                Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
+            else:
+                return
     #************************************************************************************************
     #                                  Schedules Methods
     #************************************************************************************************
@@ -291,10 +305,10 @@ class helpers_management:
     @staticmethod
     def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None):
         logger.debug(f"Updating server {server_id} backup config with {locals()}")
-        try:
+        if Backups.select().where(Backups.server_id == server_id).count() != 0:
             new_row = False
             conf = {}
-        except IndexError:
+        else:
             conf = {
                 "directories": None,
                 "max_backups": 0,

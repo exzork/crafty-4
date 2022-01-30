@@ -322,9 +322,10 @@ class Server:
     def stop_server(self):
         if self.settings['stop_command']:
             self.send_command(self.settings['stop_command'])
-            #remove crash detection watcher
-            logger.info(f"Removing crash watcher for server {self.name}")
-            self.server_scheduler.remove_job('c_' + str(self.server_id))
+            if self.settings['crash_detection']:
+                #remove crash detection watcher
+                logger.info(f"Removing crash watcher for server {self.name}")
+                self.server_scheduler.remove_job('c_' + str(self.server_id))
         else:
             #windows will need to be handled separately for Ctrl+C
             self.process.terminate()
@@ -408,7 +409,7 @@ class Server:
 
         print("crash detected")
         # clear the old scheduled watcher task
-        self.server_scheduler.remove_job("c_"+str(self.server_id))
+        self.server_scheduler.remove_job(f"c_{self.server_id}")
 
         # the server crashed, or isn't found - so let's reset things.
         logger.warning(f"The server {name} seems to have vanished unexpectedly, did it crash?")

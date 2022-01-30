@@ -17,7 +17,6 @@ from tornado.ioloop import IOLoop
 #TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
 from cron_validator import CronValidator
-from app.classes.controllers.servers_controller import Servers_Controller
 
 from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
@@ -452,6 +451,10 @@ class PanelHandler(BaseHandler):
                 return
 
             server = self.controller.get_server_obj(server_id)
+            management_helper.add_to_audit_log_raw(
+                self.controller.users.get_user_by_id(exec_user['user_id'])['username'], exec_user['user_id'], server_id,
+                f"Backup now executed for server {server_id} ",
+                source_ip=self.get_remote_ip())
 
             server.backup_server()
             self.redirect(f"/panel/server_detail?id={server_id}&subpage=backup")
