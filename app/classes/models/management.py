@@ -1,4 +1,3 @@
-from http import server
 import sys
 import logging
 import datetime
