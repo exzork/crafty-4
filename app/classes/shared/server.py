@@ -313,6 +313,22 @@ class Server:
                     'error': translation.translate('error', 'internet', user_lang)
                 })
 
+    def stop_crash_detection(self):
+        #This is only used if the crash detection settings change while the server is running.
+        if self.check_running():
+            logger.info(f"Detected crash detection shut off for server {self.name}")
+            try:
+                self.server_scheduler.remove_job('c_' + str(self.server_id))
+            except:
+                logger.error(f"Removing crash watcher for server {self.name} failed. Assuming it was never started.")
+
+    def start_crash_detection(self):
+        #This is only used if the crash detection settings change while the server is running.
+        if self.check_running():
+            logger.info(f"Server {self.name} has crash detection enabled - starting watcher task")
+            console.info(f"Server {self.name} has crash detection enabled - starting watcher task")
+            self.server_scheduler.add_job(self.detect_crash, 'interval', seconds=30, id=f"c_{self.server_id}")
+
     def stop_threaded_server(self):
         self.stop_server()
 
@@ -325,7 +341,10 @@ class Server:
             if self.settings['crash_detection']:
                 #remove crash detection watcher
                 logger.info(f"Removing crash watcher for server {self.name}")
-                self.server_scheduler.remove_job('c_' + str(self.server_id))
+                try:
+                    self.server_scheduler.remove_job('c_' + str(self.server_id))
+                except:
+                    logger.error(f"Removing crash watcher for server {self.name} failed. Assuming it was never started.")
         else:
             #windows will need to be handled separately for Ctrl+C
             self.process.terminate()

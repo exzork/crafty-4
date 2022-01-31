@@ -179,6 +179,15 @@ class Controller:
         logger.warning(f"Unable to find server object for server id {server_id}")
         return False
 
+    def crash_detection(self, server_obj):
+        svr = self.get_server_obj(server_obj.server_id)
+        #start or stop crash detection depending upon user preference
+        #The below functions check to see if the server is running. They only execute if it's running.
+        if server_obj.crash_detection == 1:
+            svr.start_crash_detection()
+        else:
+            svr.stop_crash_detection()
+
     def get_server_obj(self, server_id: Union[str, int]) -> Union[bool, Server]:
         for s in self.servers_list:
             if str(s['server_id']) == str(server_id):

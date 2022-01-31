@@ -968,6 +968,7 @@ class PanelHandler(BaseHandler):
             server_obj.crash_detection = crash_detection
             server_obj.logs_delete_after = logs_delete_after
             self.controller.servers.update_server(server_obj)
+            self.controller.crash_detection(server_obj)
 
             self.controller.refresh_server_settings(server_id)
 
