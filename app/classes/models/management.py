@@ -194,8 +194,11 @@ class helpers_management:
         #deletes records when they're more than 100
         ordered = Audit_Log.select().order_by(+Audit_Log.created)
         for item in ordered:
-            #configurable through app/config/config.json
-            if Audit_Log.select().count() > helper.get_setting('max_audit_entries'):
+            if not helper.get_setting('max_audit_entries'):
+                max_entries = 300
+            else:
+                max_entries = helper.get_setting('max_audit_entries')
+            if Audit_Log.select().count() > max_entries:
                 Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
             else:
                 return
@@ -213,7 +216,11 @@ class helpers_management:
         ordered = Audit_Log.select().order_by(+Audit_Log.created)
         for item in ordered:
             #configurable through app/config/config.json
-            if Audit_Log.select().count() > helper.get_setting('max_audit_entries'):
+            if not helper.get_setting('max_audit_entries'):
+                max_entries = 300
+            else:
+                max_entries = helper.get_setting('max_audit_entries')
+            if Audit_Log.select().count() > max_entries:
                 Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
             else:
                 return
