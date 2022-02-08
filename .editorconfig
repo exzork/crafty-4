@@ -1,0 +1,16 @@
+# https://editorconfig.org
+
+root = true
+
+[*.{js,py,html}]
+charset = utf-8
+insert_final_newline = true
+# end_of_line = lf
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+[*.{js,html}]
+indent_style = space
+indent_size = 2
