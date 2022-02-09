@@ -47,8 +47,17 @@
           <img src="/static/assets/images/logo_small.svg" alt="logo" /> </a>
       </div>
       <div class="navbar-menu-wrapper d-flex align-items-center">
+        <style>
+        body:not(.sidebar-icon-only) .navbar-toggler .mdi-chevron-double-right {
+            display: none;
+        }
+        body.sidebar-icon-only .navbar-toggler .mdi-chevron-double-left {
+            display: none;
+        }
+        </style>
         <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
-          <span class="mdi mdi-menu"></span>
+          <span class="mdi mdi-chevron-double-left"></span>
+          <span class="mdi mdi-chevron-double-right"></span>
         </button>
 
         {% include notify.html %}
