@@ -264,13 +264,25 @@ class PanelHandler(BaseHandler):
             template = "public/error.html"
 
         elif page == 'credits':
-            with open(helper.credits_cache, encoding='utf-8') as republic_credits_will_do:
-                credits_dict: dict = json.load(republic_credits_will_do)
+            with open(helper.credits_cache, encoding='utf-8') as credits_default_local:
+                try:
+                    remote = requests.get('https://craftycontrol.com/credits', allow_redirects=True)
+                    credits_dict: dict = remote.json()
+                    if not credits_dict["staff"]:
+                        logger.error("Issue with upstream Staff, using local.")
+                        credits_dict: dict = json.load(credits_default_local)
+                except:
+                    logger.error("Request to credits bucket failed, using local.")
+                    credits_dict: dict = json.load(credits_default_local)
+
                 timestamp = credits_dict["lastUpdate"] / 1000.0
                 page_data["patrons"] = credits_dict["patrons"]
                 page_data["staff"] = credits_dict["staff"]
                 page_data["translations"] = credits_dict["translations"]
-                page_data["lastUpdate"] = str(datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S'))
+                if timestamp == 0:
+                    page_data["lastUpdate"] = '😿'
+                else:
+                    page_data["lastUpdate"] = str(datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S'))
             template = "panel/credits.html"
 
         elif page == 'contribute':
