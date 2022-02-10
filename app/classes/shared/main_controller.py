@@ -7,6 +7,7 @@ import tempfile
 from distutils import dir_util
 from typing import Union
 from peewee import DoesNotExist
+import platform
 
 from app.classes.controllers.crafty_perms_controller import Crafty_Perms_Controller
 from app.classes.controllers.management_controller import Management_Controller
@@ -158,6 +159,7 @@ class Controller:
                 logger.warning(f"Failed to copy file with error: {e}")
         #Copy crafty logs to archive dir
         full_log_name = os.path.join(crafty_path, 'logs')
+        print(self.project_root)
         shutil.copytree(os.path.join(self.project_root, 'logs'), full_log_name)
         shutil.make_archive(tempZipStorage, "zip", tempDir)
 
@@ -295,7 +297,7 @@ class Controller:
         # download the jar
         server_jar_obj.download_jar(server, version, full_jar_path)
 
-        new_id = self.register_server(name, server_id, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, port)
+        new_id = self.register_server(name, server_id, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, port, type='minecraft-java')
         return new_id
 
     @staticmethod
@@ -351,7 +353,7 @@ class Controller:
         server_stop = "stop"
 
         new_id = self.register_server(server_name, server_id, new_server_dir, backup_path, server_command, server_jar,
-                                      server_log_file, server_stop, port)
+                                      server_log_file, server_stop, port, server_type='minecraft-java')
         return new_id
 
     def import_zip_server(self, server_name: str, zip_path: str, server_jar: str, min_mem: int, max_mem: int, port: int):
@@ -394,8 +396,95 @@ class Controller:
         server_stop = "stop"
 
         new_id = self.register_server(server_name, server_id, new_server_dir, backup_path, server_command, server_jar,
-                                      server_log_file, server_stop, port)
+                                      server_log_file, server_stop, port, type='minecraft-java')
         return new_id
+
+#---------------------------------------------------BEDROCK IMPORTS---------------------------------------------------
+
+    def import_bedrock_server(self, server_name: str, server_path: str, server_exe: str, port: int):
+        server_id = helper.create_uuid()
+        new_server_dir = os.path.join(helper.servers_dir, server_id)
+        backup_path = os.path.join(helper.backup_path, server_id)
+        if helper.is_os_windows():
+            new_server_dir = helper.wtol_path(new_server_dir)
+            backup_path = helper.wtol_path(backup_path)
+            new_server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
+
+        helper.ensure_dir_exists(new_server_dir)
+        helper.ensure_dir_exists(backup_path)
+        server_path = helper.get_os_understandable_path(server_path)
+        dir_util.copy_tree(server_path, new_server_dir)
+
+        has_properties = False
+        for item in os.listdir(new_server_dir):
+            if str(item) == 'server.properties':
+                has_properties = True
+        if not has_properties:
+            logger.info(f"No server.properties found on zip file import. Creating one with port selection of {str(port)}")
+            with open(os.path.join(new_server_dir, "server.properties"), "w", encoding='utf-8') as f:
+                f.write(f"server-port={port}")
+                f.close()
+
+        full_jar_path = os.path.join(new_server_dir, server_exe)
+
+        #due to adding strings this must not be an fstring
+        if helper.is_os_windows():
+            server_command = f'"{full_jar_path}"'
+        else:
+            server_command = f'LD_LIBRARY_PATH=. .{full_jar_path}'
+        logger.debug('command: ' + server_command)
+        server_log_file = "N/A"
+        server_stop = "stop"
+
+        new_id = self.register_server(server_name, server_id, new_server_dir, backup_path, server_command, server_exe,
+                                      server_log_file, server_stop, port, server_type='minecraft-bedrock')
+        return new_id
+
+    def import_bedrock_zip_server(self, server_name: str, zip_path: str, server_exe: str, port: int):
+        server_id = helper.create_uuid()
+        new_server_dir = os.path.join(helper.servers_dir, server_id)
+        backup_path = os.path.join(helper.backup_path, server_id)
+        if helper.is_os_windows():
+            new_server_dir = helper.wtol_path(new_server_dir)
+            backup_path = helper.wtol_path(backup_path)
+            new_server_dir.replace(' ', '^ ')
+            backup_path.replace(' ', '^ ')
+
+        tempDir = helper.get_os_understandable_path(zip_path)
+        helper.ensure_dir_exists(new_server_dir)
+        helper.ensure_dir_exists(backup_path)
+        has_properties = False
+        #extracts archive to temp directory
+        for item in os.listdir(tempDir):
+            if str(item) == 'server.properties':
+                has_properties = True
+            try:
+                shutil.move(os.path.join(tempDir, item), os.path.join(new_server_dir, item))
+            except Exception as ex:
+                logger.error(f'ERROR IN ZIP IMPORT: {ex}')
+        if not has_properties:
+            logger.info(f"No server.properties found on zip file import. Creating one with port selection of {str(port)}")
+            with open(os.path.join(new_server_dir, "server.properties"), "w", encoding='utf-8') as f:
+                f.write(f"server-port={port}")
+                f.close()
+
+        full_jar_path = os.path.join(new_server_dir, server_exe)
+
+        #due to strings being added we need to leave this as not an fstring
+        if helper.is_os_windows():
+            server_command = f'"{full_jar_path}"'
+        else:
+            server_command = f'LD_LIBRARY_PATH=. .{full_jar_path}'
+        logger.debug('command: ' + server_command)
+        server_log_file = "N/A"
+        server_stop = "stop"
+
+        new_id = self.register_server(server_name, server_id, new_server_dir, backup_path, server_command, server_exe,
+                                      server_log_file, server_stop, port, server_type='minecraft-bedrock')
+        return new_id
+
+#---------------------------------------------------END BEDROCK IMPORTS---------------------------------------------------
 
     def rename_backup_dir(self, old_server_id, new_server_id, new_uuid):
         server_data = self.servers.get_server_data_by_id(old_server_id)
@@ -421,11 +510,12 @@ class Controller:
                         server_file: str,
                         server_log_file: str,
                         server_stop: str,
-                        server_port: int):
+                        server_port: int,
+                        server_type: str):
         # put data in the db
 
         new_id = self.servers.create_server(
-            name, server_uuid, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, server_port)
+            name, server_uuid, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, server_type, server_port)
 
         if not helper.check_file_exists(os.path.join(server_dir, "crafty_managed.txt")):
             try:

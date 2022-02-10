@@ -133,7 +133,13 @@ def ping(ip, port):
         sock.connect((ip, port))
 
     except socket.error:
-        return False
+        #We'll try gathering this data on a UDP port next
+        try:
+            sock =socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.connect((ip, port))
+        #If the udp port fails as well we're toast. :sadcat:
+        except socket.error:
+            return False
 
     try:
         host = ip.encode('utf-8')

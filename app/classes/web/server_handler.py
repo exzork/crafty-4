@@ -177,6 +177,7 @@ class ServerHandler(BaseHandler):
                     new_executable = server_data.get('executable')
                     new_server_log_file = str(helper.get_os_understandable_path(server_data.get('log_path'))).replace(server_uuid, new_server_uuid)
                     server_port = server_data.get('server_port')
+                    server_type = server_data.get('server_type')
 
                     self.controller.servers.create_server(new_server_name,
                                                           new_server_uuid,
@@ -186,6 +187,7 @@ class ServerHandler(BaseHandler):
                                                           new_executable,
                                                           new_server_log_file,
                                                           stop_command,
+                                                          server_type,
                                                           server_port)
 
                     self.controller.init_all_servers()
