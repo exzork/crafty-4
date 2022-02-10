@@ -7,7 +7,6 @@ import tempfile
 from distutils import dir_util
 from typing import Union
 from peewee import DoesNotExist
-import platform
 
 from app.classes.controllers.crafty_perms_controller import Crafty_Perms_Controller
 from app.classes.controllers.management_controller import Management_Controller
@@ -297,7 +296,8 @@ class Controller:
         # download the jar
         server_jar_obj.download_jar(server, version, full_jar_path)
 
-        new_id = self.register_server(name, server_id, server_dir, backup_path, server_command, server_file, server_log_file, server_stop, port, server_type='minecraft-java')
+        new_id = self.register_server(name, server_id, server_dir, backup_path, server_command, server_file, server_log_file, server_stop,
+                                    port, server_type='minecraft-java')
         return new_id
 
     @staticmethod
@@ -396,7 +396,7 @@ class Controller:
         server_stop = "stop"
 
         new_id = self.register_server(server_name, server_id, new_server_dir, backup_path, server_command, server_jar,
-                                      server_log_file, server_stop, port, type='minecraft-java')
+                                      server_log_file, server_stop, port, server_type='minecraft-java')
         return new_id
 
     #************************************************************************************************
