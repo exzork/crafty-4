@@ -6,7 +6,7 @@
           <div class="col-sm-4 mr-2">
             {% if data['server_stats']['running'] %}
             <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-success">{{ translate('serverStats', 'online', data['lang']) }}</span><br />
-            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started">{{ data['server_stats']['started'] }} ({{ translate('serverStats', 'serverTime', data['lang']) }})</span><br />
+            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started">{{ data['server_stats']['started'] }}</span><br />
             <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime">{{ translate('serverStats', 'errorCalculatingUptime', data['lang']) }}</span>
             {% elif data['server_stats']['crashed'] %}
             <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-danger"> <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}</span><br />
@@ -153,7 +153,7 @@
       startedLocal = startedUTC.utcOffset(browserUTCOffset);
       startedLocalFormatted = startedLocal.format('YYYY-MM-DD HH:mm:ss');
       server_started.setAttribute("class", "");
-      server_started.innerHTML = startedLocalFormatted +` ({{ translate('serverStats', 'serverTime', data['lang']) }})`;
+      server_started.innerHTML = startedLocalFormatted;
       server_uptime.setAttribute("class", "");
       if (!uptimeLoop) {
         var calculateUptime = () => {

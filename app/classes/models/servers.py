@@ -43,6 +43,7 @@ class Servers(Model):
     server_ip = CharField(default="127.0.0.1")
     server_port = IntegerField(default=25565)
     logs_delete_after = IntegerField(default=0)
+    type = CharField(default="minecraft-java")
 
     class Meta:
         table_name = "servers"

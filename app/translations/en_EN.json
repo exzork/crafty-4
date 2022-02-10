@@ -49,7 +49,7 @@
         "serverVersion": "Server Version",
         "selectVersion": "Select a Version",
         "absoluteServerPath": "Absolute path to your server",
-        "serverJar": "Server Jarfile",
+        "serverJar": "Server Executable File",
         "minMem": "Minimum Memory",
         "maxMem": "Maximum Memory",
         "serverPort": "Server Port",

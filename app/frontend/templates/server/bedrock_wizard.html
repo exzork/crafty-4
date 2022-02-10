@@ -60,21 +60,7 @@
                 <hr>
                 <div class="row">
 
-                  <div class="col-sm-3">
-                    <div class="form-group">
-                      <label for="min_memory2">{{ translate('serverWizard', 'minMem', data['lang']) }} <small> - {{ translate('serverWizard', 'sizeInGB', data['lang']) }}</small></label>
-                      <input type="number" class="form-control" id="min_memory2"  name="min_memory" value="1" step="0.5" min="0.5" required>
-                    </div>
-                  </div>
-
-                  <div class="col-sm-3 offset-1">
-                    <div class="form-group">
-                      <label for="max_memory2">{{ translate('serverWizard', 'maxMem', data['lang']) }} <small> - {{ translate('serverWizard', 'sizeInGB', data['lang']) }}</small></label>
-                      <input type="number" class="form-control" id="max_memory2"  name="max_memory" value="2" step="0.5" min="0.5" required>
-                    </div>
-                  </div>
-
-                  <div class="col-sm-3 offset-1">
+                  <div class="col-sm-12">
                     <div class="form-group">
                       <label for="port2">{{ translate('serverWizard', 'serverPort', data['lang']) }} <small> - {{ translate('serverWizard', 'defaultPort', data['lang']) }}</small></label>
                       <input type="number" class="form-control" id="port2" name="port" value="25565" step="1" min="1" required>
@@ -112,8 +98,7 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="col-sm-13 grid-margin stretch-card">
+      <div class="col-sm-6 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
 
@@ -157,27 +142,14 @@
                       </div>
                     </div>
                   </div>
+    </div>
 
 
 
-                  <div class="col-sm-3">
+                  <div class="col-sm-12">
                     <h4 class="card-title">{{ translate('serverWizard', 'quickSettings', data['lang']) }} <small style="text-transform: none;"> - {{ translate('serverWizard', 'quickSettingsDescription', data['lang']) }}</small></h4>
                     <hr>
                     <div class="row">
-
-                      <div class="col-sm-12">
-                        <div class="form-group">
-                          <label for="min_memory3">{{ translate('serverWizard', 'minMem', data['lang']) }} <small> - {{ translate('serverWizard', 'sizeInGB', data['lang']) }}</small></label>
-                          <input type="number" class="form-control" id="min_memory3"  name="min_memory" value="1" step="0.5" min="0.5" required>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-12">
-                        <div class="form-group">
-                          <label for="max_memory3">{{ translate('serverWizard', 'maxMem', data['lang']) }} <small> - {{ translate('serverWizard', 'sizeInGB', data['lang']) }}</small></label>
-                          <input type="number" class="form-control" id="max_memory3"  name="max_memory" value="2" step="0.5" min="0.5" required>
-                        </div>
-                      </div>
 
                       <div class="col-sm-12">
                         <div class="form-group">
@@ -364,22 +336,6 @@ function hide(event) {
     }
     document.getElementById("overlay").classList.add("d-none");
 }
-  $( document ).ready(function() {
-    console.log('ready');
-    var forms = $('form.server-wizard');
-    forms.each(function(i, formEl) {
-      var form = $(formEl);
-      var min = form.find('[name=min_memory]');
-      var max = form.find('[name=max_memory]');
-      console.log(form, min, max)
-      min.change(function(){
-        check_sizes(max, min, 'min');
-      });
-      max.change(function(){
-        check_sizes(max, min, 'max');
-      });
-    });
-  });
 
   function wait_msg(importing){
     bootbox.alert({
@@ -390,17 +346,6 @@ function hide(event) {
 
   function show_file_tree(){
     $("#dir_select").modal();
-  }
-
-  function check_sizes(a, b, changed){
-    max_mem = parseFloat(a.val());
-    min_mem = parseFloat(b.val());
-    if (max_mem < min_mem && changed === 'min'){
-      a.val(min_mem)
-    }
-    if (max_mem < min_mem && changed === 'max'){
-      b.val(max_mem)
-    }
   }
 
     function getTreeView(path) {
@@ -509,42 +454,6 @@ function hide(event) {
     for(var i in str)
       result.push([i, str [i]]);
     return result
-  }
-
-  var text = '{% raw data["js_server_types"] %}';
-  var serverTypesLists = JSON.parse(text);
-  //convertHtmlJsonToJavacriptArray('{{ data["js_server_types"] }}')
-  /* CountryChange() is called from the onchange event of a select element.
-  * param selectObj - the select object which fired the on change event.
-  */
-  function serverTypeChange(selectObj) {
-    // get the index of the selected option
-    var idx = selectObj.selectedIndex;
-    // get the value of the selected option
-    var which = selectObj.options[idx].value;
-    // use the selected option value to retrieve the list of items from the serverTypesLists array
-    cList = serverTypesLists[which];
-    // get the country select element via its known id
-    var cSelect = document.getElementById("server");
-    // remove the current options from the country select
-    var len=cSelect.options.length;
-    while (cSelect.options.length > 0) {
-      cSelect.remove(0);
-    }
-    var newOption;
-    // create new options ordered by descending
-    for (var i=(cList.length)-1; i>=0; i--) {
-      newOption = document.createElement("option");
-      newOption.value = which+"|"+cList[i];  // assumes option string and value are the same
-      newOption.text=cList[i];
-      // add the new option
-      try {
-        cSelect.add(newOption);  // this will fail in DOM browsers but is needed for IE
-      }
-      catch (e) {
-        cSelect.appendChild(newOption);
-      }
-    }
   }
  //]]>
  </script>
