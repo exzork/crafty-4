@@ -158,7 +158,6 @@ class Controller:
                 logger.warning(f"Failed to copy file with error: {e}")
         #Copy crafty logs to archive dir
         full_log_name = os.path.join(crafty_path, 'logs')
-        print(self.project_root)
         shutil.copytree(os.path.join(self.project_root, 'logs'), full_log_name)
         shutil.make_archive(tempZipStorage, "zip", tempDir)
 
