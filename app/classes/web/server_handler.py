@@ -292,7 +292,7 @@ class ServerHandler(BaseHandler):
             port = bleach.clean(self.get_argument('port', ''))
             import_type = bleach.clean(self.get_argument('create_type', ''))
             import_server_path = bleach.clean(self.get_argument('server_path', ''))
-            import_server_jar = bleach.clean(self.get_argument('server_jar', ''))
+            import_server_exe = bleach.clean(self.get_argument('server_jar', ''))
             server_parts = server.split("|")
             captured_roles = []
             for role in user_roles:
@@ -310,7 +310,7 @@ class ServerHandler(BaseHandler):
                     self.redirect("/panel/error?error=Server path or Server Jar not found!")
                     return
 
-                new_server_id = self.controller.import_jar_server(server_name, import_server_path,import_server_jar, min_mem, max_mem, port)
+                new_server_id = self.controller.import_bedrock_server(server_name, import_server_path,import_server_exe, port)
                 self.controller.management.add_to_audit_log(exec_user['user_id'],
                                            f"imported a jar server named \"{server_name}\"", # Example: Admin imported a server named "old creative"
                                            new_server_id,
@@ -323,7 +323,7 @@ class ServerHandler(BaseHandler):
                     self.redirect("/panel/error?error=Temp path not found!")
                     return
 
-                new_server_id = self.controller.import_zip_server(server_name, zip_path, import_server_jar, min_mem, max_mem, port)
+                new_server_id = self.controller.import_bedrock_zip_server(server_name, zip_path, import_server_exe, port)
                 if new_server_id == "false":
                     self.redirect("/panel/error?error=Zip file not accessible! You can fix this permissions issue with" +
                                   f"sudo chown -R crafty:crafty {import_server_path} And sudo chmod 2775 -R {import_server_path}")
