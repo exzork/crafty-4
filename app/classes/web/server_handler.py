@@ -113,6 +113,13 @@ class ServerHandler(BaseHandler):
             page_data['js_server_types'] = json.dumps(server_jar_obj.get_serverjar_data())
             template = "server/wizard.html"
 
+        if page == "bedrock_step1":
+            if not superuser and not self.controller.crafty_perms.can_create_server(exec_user["user_id"]):
+                self.redirect("/panel/error?error=Unauthorized access: not a server creator or server limit reached")
+                return
+
+            template = "server/bedrock_wizard.html"
+
         self.render(
             template,
             data=page_data,
@@ -170,6 +177,7 @@ class ServerHandler(BaseHandler):
                     new_executable = server_data.get('executable')
                     new_server_log_file = str(helper.get_os_understandable_path(server_data.get('log_path'))).replace(server_uuid, new_server_uuid)
                     server_port = server_data.get('server_port')
+                    server_type = server_data.get('server_type')
 
                     self.controller.servers.create_server(new_server_name,
                                                           new_server_uuid,
@@ -179,6 +187,7 @@ class ServerHandler(BaseHandler):
                                                           new_executable,
                                                           new_server_log_file,
                                                           stop_command,
+                                                          server_type,
                                                           server_port)
 
                     self.controller.init_all_servers()
