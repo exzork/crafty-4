@@ -133,13 +133,7 @@ def ping(ip, port):
         sock.connect((ip, port))
 
     except socket.error:
-        #We'll try gathering this data on a UDP port next
-        try:
-            sock =socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.connect((ip, port))
-        #If the udp port fails as well we're toast. :sadcat:
-        except socket.error:
-            return False
+        return False
 
     try:
         host = ip.encode('utf-8')
@@ -158,6 +152,64 @@ def ping(ip, port):
             else:
                 return False
 
+        sock.recv(1)  # packet type, 0 for pings
+        length = read_var_int()  # string length
+        data = b''
+        while len(data) != length:
+            chunk = sock.recv(length - len(data))
+            if not chunk:
+                return False
+
+            data += chunk
+        logger.debug(f"Server reports this data on ping: {data}")
+        return Server(json.loads(data))
+    finally:
+        sock.close()
+
+# For the rest of requests see wiki.vg/Protocol
+def ping_bedrock(ip, port):
+    def read_var_int():
+        i = 0
+        j = 0
+        while True:
+            k = sock.recv(1)
+            if not k:
+                return 0
+            k = k[0]
+            i |= (k & 0x7f) << (j * 7)
+            j += 1
+            if j > 5:
+                raise ValueError('var_int too big')
+            if not k & 0x80:
+                return i
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.connect((ip, port))
+
+    except:
+        print("in except")
+        return False
+
+    try:
+        host = ip.encode('utf-8')
+        data = b''  # wiki.vg/Server_List_Ping
+        data += b'\x00'  # packet ID
+        data += b'\x04'  # protocol variant
+        data += struct.pack('>b', len(host)) + host
+        data += struct.pack('>H', port)
+        data += b'\x01'  # next state
+        data = struct.pack('>b', len(data)) + data
+        sock.sendall(data + b'\x01\x00')  # handshake + status ping
+        try:
+            length = read_var_int()  # full packet length
+        except:
+            return False
+        if length < 10:
+            if length < 0:
+                return False
+            else:
+                return False
         sock.recv(1)  # packet type, 0 for pings
         length = read_var_int()  # string length
         data = b''
