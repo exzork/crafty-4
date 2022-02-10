@@ -207,6 +207,10 @@ if ($('canvas').length) {
         body.toggleClass('sidebar-hidden');
       } else {
         body.toggleClass('sidebar-icon-only');
+        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        if (vw >= 1200) {
+            localStorage.setItem('crafty-sidebar-expanded', !body.hasClass('sidebar-icon-only'));
+        }
       }
     });
 
