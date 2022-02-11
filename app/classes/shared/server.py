@@ -359,6 +359,7 @@ class Server:
         server_name = self.name
         server_pid = self.process.pid
 
+
         while running:
             x = x+1
             logstr = f"Server {server_name} is still running - waiting 2s to see if it stops ({int(60-(x*2))} seconds until force close)"
@@ -476,6 +477,13 @@ class Server:
 
         # if all is okay, we just exit out
         if running:
+            return
+        #check the exit code -- This could be a fix for /stop
+        if self.process.returncode == 0:
+            logger.warning(f'Process {self.process.pid} exited with code {self.process.returncode}. This is considered a clean exit'+
+            ' supressing crash handling.')
+            # cancel the watcher task
+            self.server_scheduler.remove_job("c_"+str(self.server_id))
             return
 
         servers_helper.sever_crashed(self.server_id)
