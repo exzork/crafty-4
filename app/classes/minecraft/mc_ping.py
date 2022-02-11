@@ -172,7 +172,11 @@ def ping_bedrock(ip, port):
         i = 0
         j = 0
         while True:
-            k = sock.recv(1)
+            print("in first while")
+            try:
+                k = sock.recvfrom(1024)
+            except:
+                return False
             if not k:
                 return 0
             k = k[0]
@@ -184,11 +188,12 @@ def ping_bedrock(ip, port):
                 return i
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(2)
     try:
         sock.connect((ip, port))
 
     except:
-        print("in except")
+        print("in first except")
         return False
 
     try:
@@ -201,19 +206,20 @@ def ping_bedrock(ip, port):
         data += b'\x01'  # next state
         data = struct.pack('>b', len(data)) + data
         sock.sendall(data + b'\x01\x00')  # handshake + status ping
-        try:
-            length = read_var_int()  # full packet length
-        except:
-            return False
+        length = read_var_int()  # full packet length
         if length < 10:
             if length < 0:
                 return False
             else:
                 return False
-        sock.recv(1)  # packet type, 0 for pings
+        try:
+            sock.recvfrom(1024)  # packet type, 0 for pings
+        except:
+            return False
         length = read_var_int()  # string length
         data = b''
         while len(data) != length:
+            print("in while")
             chunk = sock.recv(length - len(data))
             if not chunk:
                 return False
