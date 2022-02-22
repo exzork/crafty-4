@@ -427,7 +427,6 @@ class Server:
 
     def crash_detected(self, name):
 
-        print("crash detected")
         # clear the old scheduled watcher task
         self.server_scheduler.remove_job(f"c_{self.server_id}")
 
