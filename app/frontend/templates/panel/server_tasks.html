@@ -45,7 +45,8 @@
                         <table class="table table-hover d-none d-lg-block responsive-table"  id="schedule_table" width="100%" style="table-layout:fixed;">
                           <thead>
                           <tr class="rounded">
-                            <th style="width: 25%; min-width: 50px;">Action</th>
+                            <th style="width: 2%; min-width: 10px;">ID</th>
+                            <th style="width: 23%; min-width: 50px;">Action</th>
                             <th style="width: 40%; min-width: 50px;">Command</th>
                             <th style="width: 10%; min-width: 50px;">Interval</th>
                             <th style="width: 10%; min-width: 50px;">Start Time</th>
@@ -56,6 +57,9 @@
                           <tbody>
                           {% for schedule in data['schedules'] %}
                           <tr>
+                          <td id="{{schedule.schedule_id}}" class="id">
+                              <p>{{schedule.schedule_id}}</p>
+                            </td>
                           <td id="{{schedule.action}}" class="action">
                             <p>{{schedule.action}}</p>
                           </td>
@@ -66,6 +70,8 @@
                             {% if schedule.interval != '' %}
                             <p>Every</p>
                             <p>{{schedule.interval}} {{schedule.interval_type}}</p>
+                            {% elif schedule.interval_type == 'reaction' %}
+                            <p>{{schedule.interval_type}}<br><br>child of ID: {{ schedule.parent }}</p>
                             {% else %}
                             <p>Cron String:</p>
                             <p>{{schedule.cron_string}}</p>
@@ -141,6 +147,9 @@
                                 </div>
                                 <div class="modal-body">
                                   <ul style="list-style: none;">
+                                    <li id="{{schedule.schedule_id}}" class="id" style="border-top: .1em solid gray;">
+                                      <h4>ID</h4><p>{{schedule.schedule_id}}</p>
+                                    </li>
                                     <li id="{{schedule.action}}" class="action" style="border-top: .1em solid gray;">
                                       <h4>Action</h4><p>{{schedule.action}}</p>
                                     </li>
@@ -150,6 +159,8 @@
                                     <li id="{{schedule.interval}}" class="action" style="border-top: .1em solid gray;">
                                       {% if schedule.interval != '' %}
                                       <h4>Interval</h4> <p>Every {{schedule.interval}} {{schedule.interval_type}}</p>
+                                      {% elif schedule.interval_type == 'reaction' %}
+                                      <h4>Interval</h4> <p>{{schedule.interval_type}}<br><br>child of ID: {{ schedule.parent }}</p>
                                       {% else %}
                                       <h4>Interval</h4> <p>Cron String: {{schedule.cron_string}}</p>
                                       {% end %}

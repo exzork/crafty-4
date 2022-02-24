@@ -113,6 +113,8 @@ class Schedules(Model):
     comment = CharField()
     one_time = BooleanField(default=False)
     cron_string = CharField(default="")
+    parent = IntegerField(null=True)
+    delay = IntegerField(default=0)
 
     class Meta:
         table_name = 'schedules'
@@ -278,6 +280,10 @@ class helpers_management:
     @staticmethod
     def get_schedules_by_server(server_id):
         return Schedules.select().where(Schedules.server_id == server_id).execute()
+
+    @staticmethod
+    def get_child_schedules_by_server(schedule_id, server_id):
+        return Schedules.select().where(Schedules.server_id == server_id, Schedules.parent == schedule_id).execute()
 
     @staticmethod
     def get_schedules_all():

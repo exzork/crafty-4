@@ -45,10 +45,11 @@
                       <input type="hidden" name="subpage" value="config">
 
                       <div class="form-group">
-                        <label for="difficulty">Basic / Cron Select<small class="text-muted ml-1"></small> </label><br>
+                        <label for="difficulty">Basic / Cron Select / Chain-Reaction<small class="text-muted ml-1"></small> </label><br>
                         <select id="difficulty" name="difficulty" onchange="basicAdvanced(this);" class="form-control form-control-lg select-css" value="{{ data['schedule']['difficulty']  }}">
                           <option id="basic" value="basic">Basic</option>
                           <option id="advanced" value="advanced">Advanced</option>
+                          <option id="reaction" value="reaction">Chain-Reaction</option>
                         </select>
                       </div>
                         <div class="form-group">
@@ -58,7 +59,7 @@
                             <option id="restart" value="restart">Restart Server</option>
                             <option id="stop" value="stop">Shutdown Server</option>
                             <option id="backup" value="backup">Backup Server</option>
-                            <option id="command" value="command">Custon Command</option>
+                            <option id="command" value="command">Custom Command</option>
                           </select>
                         </div>
                         <div id="ifBasic">
@@ -90,6 +91,26 @@
                       <div class="form-group">
                         <label for="cron">Cron <small class="text-muted ml-1"> - Input your cron string</small> </label>
                         <input type="input" class="form-control" name="cron" id="cron" value="{{ data['schedule']['cron_string']  }}" placeholder="* * * * *">
+                      </div>
+                    </div>
+                    <div id="ifReaction" style="display: none;">
+                      <div class="form-group">
+                        <label for="delay">Delay Offset <small class="text-muted ml-1"> - How long should we wait to fire this after firing the first task? (Seconds)</small> </label>
+                        <input type="number" class="form-control" name="delay" id="delay" value="0">
+                        <br>
+                        <br>
+                        <label for="parent">Parent Task <small class="text-muted ml-1"> - Which task should trigger this one?</small> </label>
+                        <select id="parent" name="parent" class="form-control form-control-lg select-css" value="{{ data['schedule']['action']  }}">
+                        {% for schedule in data['schedules'] %}
+                        {% if schedule.schedule_id != data['schedule']['schedule_id'] %}
+                        {% if schedule.interval != '' %}
+                          <option id="{{schedule.schedule_id}}" value="{{schedule.schedule_id}}">ID: {{schedule.schedule_id}} | {{schedule.command}} | {{schedule.interval}} {{ schedule.interval_type}}</option>
+                        {% else %}
+                          <option id="{{schedule.schedule_id}}" value="{{schedule.schedule_id}}">ID: {{schedule.schedule_id}} {{schedule.command}} {{schedule.cron_string}}</option>
+                        {% end %}
+                        {% end %}
+                        {% end %}
+                      </select>
                       </div>
                     </div>
 
@@ -149,12 +170,27 @@
   function basicAdvanced() {
     if (document.getElementById('difficulty').value == "advanced") {
         document.getElementById("ifAdvanced").style.display = "block";
+        document.getElementById("ifReaction").style.display = "none";
         document.getElementById("ifBasic").style.display = "none";
+        document.getElementById("delay").required = false;
+        document.getElementById("parent").required = false;
         document.getElementById("interval").required = false;
         document.getElementById("time").required = false;
-    } else {
+    } else if(document.getElementById('difficulty').value == "reaction"){
+      document.getElementById("ifReaction").style.display = "block";
+      document.getElementById("ifBasic").style.display = "none";
+      document.getElementById("ifAdvanced").style.display = "none";
+      document.getElementById("delay").required = true;
+      document.getElementById("parent").required = true;
+      document.getElementById("interval").required = false;
+      document.getElementById("time").required = false;
+    }
+     else {
         document.getElementById("ifAdvanced").style.display = "none";
+        document.getElementById("ifReaction").style.display = "none";
         document.getElementById("ifBasic").style.display = "block";
+        document.getElementById("delay").required = false;
+        document.getElementById("parent").required = false;
         document.getElementById("interval").required = true;
         document.getElementById("time").required = true;
     }
