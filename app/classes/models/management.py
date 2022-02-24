@@ -240,7 +240,9 @@ class helpers_management:
         comment=None,
         enabled=True,
         one_time=False,
-        cron_string='* * * * *'):
+        cron_string='* * * * *',
+        parent=None,
+        delay=0):
         sch_id = Schedules.insert({
             Schedules.server_id: server_id,
             Schedules.action: action,
@@ -251,7 +253,9 @@ class helpers_management:
             Schedules.command: command,
             Schedules.comment: comment,
             Schedules.one_time: one_time,
-            Schedules.cron_string: cron_string
+            Schedules.cron_string: cron_string,
+            Schedules.parent: parent,
+            Schedules.delay: delay
 
         }).execute()
         return sch_id
@@ -284,6 +288,10 @@ class helpers_management:
     @staticmethod
     def get_child_schedules_by_server(schedule_id, server_id):
         return Schedules.select().where(Schedules.server_id == server_id, Schedules.parent == schedule_id).execute()
+
+    @staticmethod
+    def get_child_schedules(schedule_id):
+        return Schedules.select().where(Schedules.parent == schedule_id)
 
     @staticmethod
     def get_schedules_all():

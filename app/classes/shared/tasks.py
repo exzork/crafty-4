@@ -232,7 +232,9 @@ class TasksManager:
             "None",
             job_data['enabled'],
             job_data['one_time'],
-            job_data['cron_string'])
+            job_data['cron_string'],
+            job_data['parent'],
+            job_data['delay'])
             #Check to see if it's enabled and is not a chain reaction.
         if job_data['enabled'] and job_data['interval_type'] != 'reaction':
             if job_data['cron_string'] != "":
@@ -301,6 +303,8 @@ class TasksManager:
 
     def remove_job(self, sch_id):
         job = management_helper.get_scheduled_task_model(sch_id)
+        for schedule in management_helper.get_child_schedules(sch_id):
+            management_helper.update_scheduled_task(schedule.schedule_id, {'parent':None})
         management_helper.delete_scheduled_task(sch_id)
         if job.enabled and job.interval_type != 'reaction':
             self.scheduler.remove_job(str(sch_id))

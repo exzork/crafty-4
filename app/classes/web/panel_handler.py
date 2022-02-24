@@ -1072,7 +1072,6 @@ class PanelHandler(BaseHandler):
                     command = "restart_server"
                 elif action == "backup":
                     command = "backup_server"
-                parent = bleach.clean(self.get_argument('parent', None))
 
             else:
                 interval_type = ''
@@ -1123,8 +1122,6 @@ class PanelHandler(BaseHandler):
                         "interval": interval,
                         "command": command,
                         "start_time": sch_time,
-                        "parent": '',
-                        "delay": '',
                         "enabled": enabled,
                         "one_time": one_time,
                         "cron_string": ''
