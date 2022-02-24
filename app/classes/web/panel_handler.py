@@ -559,6 +559,7 @@ class PanelHandler(BaseHandler):
 
         elif page == "add_schedule":
             server_id = self.get_argument('id', None)
+            page_data['schedules'] = management_helper.get_schedules_by_server(server_id)
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
             page_data['active_link'] = 'tasks'
             page_data['permissions'] = {
@@ -598,6 +599,7 @@ class PanelHandler(BaseHandler):
 
         elif page == "edit_schedule":
             server_id = self.get_argument('id', None)
+            page_data['schedules'] = management_helper.get_schedules_by_server(server_id)
             sch_id = self.get_argument('sch_id', None)
             schedule = self.controller.management.get_scheduled_task_model(sch_id)
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
@@ -632,7 +634,9 @@ class PanelHandler(BaseHandler):
             page_data['schedule']['time'] = schedule.start_time
             page_data['schedule']['interval'] = schedule.interval
             page_data['schedule']['interval_type'] = schedule.interval_type
-            if schedule.cron_string == '':
+            if schedule.interval_type == 'reaction':
+                difficulty = 'reaction'
+            elif schedule.cron_string == '':
                 difficulty = 'basic'
             else:
                 difficulty = 'advanced'
@@ -1052,6 +1056,24 @@ class PanelHandler(BaseHandler):
                     command = "restart_server"
                 elif action == "backup":
                     command = "backup_server"
+
+            elif difficulty == 'reaction':
+                interval_type = 'reaction'
+                action = bleach.clean(self.get_argument('action', None))
+                delay = bleach.clean(self.get_argument('delay', None))
+                parent = bleach.clean(self.get_argument('parent', None))
+                if action == "command":
+                    command = bleach.clean(self.get_argument('command', None))
+                elif action == "start":
+                    command = "start_server"
+                elif action == "stop":
+                    command = "stop_server"
+                elif action == "restart":
+                    command = "restart_server"
+                elif action == "backup":
+                    command = "backup_server"
+                parent = bleach.clean(self.get_argument('parent', None))
+
             else:
                 interval_type = ''
                 cron_string = bleach.clean(self.get_argument('cron', ''))
@@ -1101,9 +1123,26 @@ class PanelHandler(BaseHandler):
                         "interval": interval,
                         "command": command,
                         "start_time": sch_time,
+                        "parent": '',
+                        "delay": '',
                         "enabled": enabled,
                         "one_time": one_time,
                         "cron_string": ''
+                    }
+                elif difficulty == "reaction":
+                    job_data = {
+                        "server_id": server_id,
+                        "action": action,
+                        "interval_type": interval_type,
+                        "interval": '',
+                        #We'll base every interval off of a midnight start time.
+                        "start_time": '',
+                        "command": command,
+                        "cron_string": '',
+                        "enabled": enabled,
+                        "one_time": one_time,
+                        "parent": parent,
+                        "delay": delay
                     }
                 elif difficulty == "advanced":
                     job_data = {
@@ -1164,6 +1203,22 @@ class PanelHandler(BaseHandler):
                     command = "restart_server"
                 elif action == "backup":
                     command = "backup_server"
+            elif difficulty == 'reaction':
+                interval_type = 'reaction'
+                action = bleach.clean(self.get_argument('action', None))
+                delay = bleach.clean(self.get_argument('delay', None))
+                parent = bleach.clean(self.get_argument('parent', None))
+                if action == "command":
+                    command = bleach.clean(self.get_argument('command', None))
+                elif action == "start":
+                    command = "start_server"
+                elif action == "stop":
+                    command = "stop_server"
+                elif action == "restart":
+                    command = "restart_server"
+                elif action == "backup":
+                    command = "backup_server"
+                parent = bleach.clean(self.get_argument('parent', None))
             else:
                 interval_type = ''
                 cron_string = bleach.clean(self.get_argument('cron', ''))
@@ -1228,8 +1283,25 @@ class PanelHandler(BaseHandler):
                         "start_time": '',
                         "command": command,
                         "cron_string": cron_string,
+                        "delay": '',
+                        "parent": '',
                         "enabled": enabled,
                         "one_time": one_time
+                    }
+                elif difficulty == "reaction":
+                    job_data = {
+                        "server_id": server_id,
+                        "action": action,
+                        "interval_type": interval_type,
+                        "interval": '',
+                        #We'll base every interval off of a midnight start time.
+                        "start_time": '',
+                        "command": command,
+                        "cron_string": '',
+                        "enabled": enabled,
+                        "one_time": one_time,
+                        "parent": parent,
+                        "delay": delay
                     }
                 else:
                     job_data = {
@@ -1241,6 +1313,8 @@ class PanelHandler(BaseHandler):
                         "enabled": enabled,
                         #We'll base every interval off of a midnight start time.
                         "start_time": '00:00',
+                        "delay": '',
+                        "parent": '',
                         "one_time": one_time,
                         "cron_string": ''
                     }
