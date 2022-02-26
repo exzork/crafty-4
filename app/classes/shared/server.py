@@ -241,11 +241,12 @@ class Server:
         logger.info(f"Starting server in {self.server_path} with command: {self.server_command}")
 
         if not helper.is_os_windows() and servers_helper.get_server_type_by_id(self.server_id) == "minecraft-bedrock":
+            print("in catch")
             my_env = os.environ
             my_env["PATH"] = 'LD_LIBRARY_PATH='+self.server_path
             try:
                 self.process = subprocess.Popen(
-                    self.server_command, cwd=self.server_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                    self.server_command, cwd=self.server_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=my_env)
             except Exception as ex:
                 #Checks for java on initial fail
                 if os.system("java -version") == 32512:
