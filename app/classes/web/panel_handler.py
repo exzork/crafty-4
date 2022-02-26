@@ -561,7 +561,6 @@ class PanelHandler(BaseHandler):
             server_id = self.get_argument('id', None)
             page_data['schedules'] = management_helper.get_schedules_by_server(server_id)
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
-            page_data['schedule']['children'] = []
             page_data['active_link'] = 'tasks'
             page_data['permissions'] = {
                 'Commands': Enum_Permissions_Server.Commands,
@@ -578,6 +577,7 @@ class PanelHandler(BaseHandler):
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
             page_data['new_schedule'] = True
             page_data['schedule'] = {}
+            page_data['schedule']['children'] = []
             page_data['schedule']['server_id'] = server_id
             page_data['schedule']['schedule_id'] = ''
             page_data['schedule']['action'] = ""
