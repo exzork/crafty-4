@@ -241,7 +241,7 @@ class Server:
         logger.info(f"Starting server in {self.server_path} with command: {self.server_command}")
 
         if not helper.is_os_windows() and servers_helper.get_server_type_by_id(self.server_id) == "minecraft-bedrock":
-            print("in catch")
+            logger.info(f"Bedrock and Unix detected for server {self.server_name}. Switching to appropriate execution string")
             my_env = os.environ
             my_env["LD_LIBRARY_PATH"] = self.server_path
             try:

@@ -140,6 +140,10 @@ class Servers_Controller:
         return servers_helper.server_id_exists(server_id)
 
     @staticmethod
+    def get_server_type_by_id(server_id):
+        return servers_helper.get_server_type_by_id(server_id)
+
+    @staticmethod
     def server_id_authorized(server_id_a, user_id):
         user_roles = users_helper.user_role_query(user_id)
         for role in user_roles:

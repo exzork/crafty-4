@@ -363,6 +363,7 @@ class PanelHandler(BaseHandler):
             }
             page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
             page_data['server_stats']['crashed'] = self.controller.servers.is_crashed(server_id)
+            page_data['server_stats']['server_type'] = self.controller.servers.get_server_type_by_id(server_id)
 
             if subpage == 'term':
                 if not page_data['permissions']['Terminal'] in page_data['user_permissions']:
