@@ -235,6 +235,9 @@ class TasksManager:
             job_data['cron_string'],
             job_data['parent'],
             job_data['delay'])
+        #Checks to make sure some doofus didn't actually make the newly created task a child of itself.
+        if str(job_data['parent']) == str(sch_id):
+            management_helper.update_scheduled_task(sch_id, {'parent':None})
             #Check to see if it's enabled and is not a chain reaction.
         if job_data['enabled'] and job_data['interval_type'] != 'reaction':
             if job_data['cron_string'] != "":
@@ -315,6 +318,9 @@ class TasksManager:
 
     def update_job(self, sch_id, job_data):
         management_helper.update_scheduled_task(sch_id, job_data)
+        #Checks to make sure some doofus didn't actually make the newly created task a child of itself.
+        if str(job_data['parent']) == str(sch_id):
+            management_helper.update_scheduled_task(sch_id, {'parent':None})
         try:
             if job_data['interval'] != 'reaction':
                 self.scheduler.remove_job(str(sch_id))
