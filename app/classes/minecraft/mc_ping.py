@@ -172,7 +172,6 @@ def ping_bedrock(ip, port):
         i = 0
         j = 0
         while True:
-            print("in first while")
             try:
                 k = sock.recvfrom(1024)
             except:

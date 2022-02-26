@@ -433,7 +433,7 @@ class Controller:
         if helper.is_os_windows():
             server_command = f'"{full_jar_path}"'
         else:
-            server_command = f'LD_LIBRARY_PATH=. .{full_jar_path}'
+            server_command = f'.{server_exe}'
         logger.debug('command: ' + server_command)
         server_log_file = "N/A"
         server_stop = "stop"
