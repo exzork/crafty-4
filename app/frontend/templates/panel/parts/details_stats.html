@@ -134,11 +134,6 @@
     server_version = document.getElementById('version');
     server_input_motd = document.getElementById('input_motd');
 
-    if (server['stats']['updating']){
-      server_status.setAttribute("class", "text-success");
-      server_status.innerHTML = `{{ translate('serverTerm', 'updating', data['lang']) }}`;
-    }
-
     /* TODO Update each element */
     if (server.running){
       if (server['stats']['waiting_start']){
