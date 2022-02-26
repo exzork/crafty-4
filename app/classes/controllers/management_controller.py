@@ -81,6 +81,10 @@ class Management_Controller:
         return management_helper.get_scheduled_task_model(schedule_id)
 
     @staticmethod
+    def get_child_schedules(sch_id):
+        return management_helper.get_child_schedules(sch_id)
+
+    @staticmethod
     def get_schedules_by_server(server_id):
         return management_helper.get_schedules_by_server(server_id)
 

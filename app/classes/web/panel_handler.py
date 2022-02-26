@@ -622,6 +622,7 @@ class PanelHandler(BaseHandler):
             page_data['schedule']['server_id'] = server_id
             page_data['schedule']['schedule_id'] = schedule.schedule_id
             page_data['schedule']['action'] = schedule.action
+            page_data['schedule']['children'] = self.controller.management.get_child_schedules(sch_id)
             # We check here to see if the command is any of the default ones.
             # We do not want a user changing to a custom command and seeing our command there.
             if schedule.action != 'start' or schedule.action != 'stop' or schedule.action != 'restart' or schedule.action != 'backup':
@@ -1152,7 +1153,9 @@ class PanelHandler(BaseHandler):
                         "command": command,
                         "cron_string": cron_string,
                         "enabled": enabled,
-                        "one_time": one_time
+                        "one_time": one_time,
+                        "parent": None,
+                        "delay": 0
                     }
                 else:
                     job_data = {
@@ -1165,7 +1168,9 @@ class PanelHandler(BaseHandler):
                         #We'll base every interval off of a midnight start time.
                         "start_time": '00:00',
                         "one_time": one_time,
-                        "cron_string": ''
+                        "cron_string": '',
+                        'parent': None,
+                        'delay': 0
                     }
 
                 self.tasks_manager.schedule_job(job_data)
