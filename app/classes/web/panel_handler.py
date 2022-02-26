@@ -307,6 +307,29 @@ class PanelHandler(BaseHandler):
                     list(filter(lambda x: x['stats']['running'], page_data['servers'])))
                 page_data['server_stats']['stopped'] = len(page_data['servers']) - page_data['server_stats']['running']
 
+            #set user server order
+            user_order = self.controller.users.get_user_by_id(exec_user['user_id'])
+            user_order = user_order['server_order'].split(',')
+            page_servers = []
+            server_ids = []
+
+            for server_id in user_order:
+                for server in page_data['servers']:
+                    if str(server['server_data']['server_id']) == str(server_id):
+                        page_servers.append(server)
+
+
+            for server in page_data['servers']:
+                server_ids.append(str(server['server_data']['server_id']))
+                if server not in page_servers:
+                    page_servers.append(server)
+            for server_id in user_order:
+                #remove IDs in list that user no longer has access to
+                if str(server_id) not in server_ids:
+                    user_order.remove(server_id)
+            page_data['servers'] = page_servers
+
+
             for data in page_data['servers']:
                 data['stats']['crashed'] = self.controller.servers.is_crashed(
                         str(data['stats']['server_id']['server_id']))

@@ -1,3 +1,5 @@
+from email.policy import default
+from http import server
 import sys
 import logging
 import datetime
@@ -42,6 +44,7 @@ class Users(Model):
     lang = CharField(default="en_EN")
     support_logs = CharField(default = '')
     valid_tokens_from = DateTimeField(default=datetime.datetime.now)
+    server_order = CharField(default="")
 
     class Meta:
         table_name = "users"
@@ -172,6 +175,14 @@ class helper_users:
             up_data = {}
         if up_data:
             Users.update(up_data).where(Users.user_id == user_id).execute()
+
+    @staticmethod
+    def update_server_order(user_id, user_server_order):
+        Users.update(server_order = user_server_order).where(Users.user_id == user_id).execute()
+
+    @staticmethod
+    def get_server_order(user_id):
+        return Users.select().where(Users.user_id == user_id)
 
     @staticmethod
     def get_super_user_list():
