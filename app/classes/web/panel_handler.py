@@ -356,7 +356,7 @@ class PanelHandler(BaseHandler):
             if server_id is None:
                 return
 
-            valid_subpages = ['term', 'logs', 'backup', 'config', 'files', 'admin_controls', 'tasks']
+            valid_subpages = ['term', 'logs', 'backup', 'config', 'files', 'admin_controls', 'schedules']
 
             if subpage not in valid_subpages:
                 logger.debug('not a valid subpage')
@@ -401,10 +401,10 @@ class PanelHandler(BaseHandler):
                         return
 
 
-            if subpage == 'tasks':
+            if subpage == 'schedules':
                 if not page_data['permissions']['Schedule'] in page_data['user_permissions']:
                     if not superuser:
-                        self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
+                        self.redirect("/panel/error?error=Unauthorized access To Schedules")
                         return
                 page_data['schedules'] = management_helper.get_schedules_by_server(server_id)
 
@@ -585,7 +585,7 @@ class PanelHandler(BaseHandler):
             server_id = self.get_argument('id', None)
             page_data['schedules'] = management_helper.get_schedules_by_server(server_id)
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
-            page_data['active_link'] = 'tasks'
+            page_data['active_link'] = 'schedules'
             page_data['permissions'] = {
                 'Commands': Enum_Permissions_Server.Commands,
                 'Terminal': Enum_Permissions_Server.Terminal,
@@ -599,6 +599,7 @@ class PanelHandler(BaseHandler):
             page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
             page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
+            page_data['server_stats']['server_type'] = self.controller.servers.get_server_type_by_id(server_id)
             page_data['new_schedule'] = True
             page_data['schedule'] = {}
             page_data['schedule']['children'] = []
@@ -617,7 +618,7 @@ class PanelHandler(BaseHandler):
 
             if not Enum_Permissions_Server.Schedule in page_data['user_permissions']:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
+                    self.redirect("/panel/error?error=Unauthorized access To Schedules")
                     return
 
             template = "panel/server_schedule_edit.html"
@@ -628,7 +629,7 @@ class PanelHandler(BaseHandler):
             sch_id = self.get_argument('sch_id', None)
             schedule = self.controller.management.get_scheduled_task_model(sch_id)
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
-            page_data['active_link'] = 'tasks'
+            page_data['active_link'] = 'schedules'
             page_data['permissions'] = {
                 'Commands': Enum_Permissions_Server.Commands,
                 'Terminal': Enum_Permissions_Server.Terminal,
@@ -642,6 +643,7 @@ class PanelHandler(BaseHandler):
             page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
             page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
+            page_data['server_stats']['server_type'] = self.controller.servers.get_server_type_by_id(server_id)
             page_data['new_schedule'] = False
             page_data['schedule'] = {}
             page_data['schedule']['server_id'] = server_id
@@ -673,7 +675,7 @@ class PanelHandler(BaseHandler):
 
             if not Enum_Permissions_Server.Schedule in page_data['user_permissions']:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
+                    self.redirect("/panel/error?error=Unauthorized access To Schedules")
                     return
 
             template = "panel/server_schedule_edit.html"
@@ -1205,7 +1207,7 @@ class PanelHandler(BaseHandler):
                                        server_id,
                                        self.get_remote_ip())
             self.tasks_manager.reload_schedule_from_db()
-            self.redirect(f"/panel/server_detail?id={server_id}&subpage=tasks")
+            self.redirect(f"/panel/server_detail?id={server_id}&subpage=schedules")
 
 
         if page == "edit_schedule":
@@ -1353,7 +1355,7 @@ class PanelHandler(BaseHandler):
                                        server_id,
                                        self.get_remote_ip())
             self.tasks_manager.reload_schedule_from_db()
-            self.redirect(f"/panel/server_detail?id={server_id}&subpage=tasks")
+            self.redirect(f"/panel/server_detail?id={server_id}&subpage=schedules")
 
 
         elif page == "edit_user":
