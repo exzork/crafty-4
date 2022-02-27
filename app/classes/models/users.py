@@ -1,5 +1,3 @@
-from email.policy import default
-from http import server
 import sys
 import logging
 import datetime
