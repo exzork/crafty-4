@@ -4,8 +4,6 @@ import json
 import asyncio
 import logging
 
-from app.classes.web.file_handler import FileHandler
-
 logger = logging.getLogger(__name__)
 
 try:
@@ -16,6 +14,7 @@ try:
     import tornado.escape
     import tornado.locale
     import tornado.httpserver
+    from app.classes.web.file_handler import FileHandler
     from app.classes.web.public_handler import PublicHandler
     from app.classes.web.panel_handler import PanelHandler
     from app.classes.web.default_handler import DefaultHandler
