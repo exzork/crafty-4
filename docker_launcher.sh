@@ -6,4 +6,6 @@ if [ ! "$(ls -A ./app/config)" ]; then
     cp -r ./app/config_original/* ./app/config/
 fi
 
+# Activate our prepared venv and launch crafty with provided args
+. /commander-venv/bin/activate
 exec python3 main.py $@
