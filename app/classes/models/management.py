@@ -113,6 +113,8 @@ class Schedules(Model):
     comment = CharField()
     one_time = BooleanField(default=False)
     cron_string = CharField(default="")
+    parent = IntegerField(null=True)
+    delay = IntegerField(default=0)
 
     class Meta:
         table_name = 'schedules'
@@ -191,11 +193,14 @@ class helpers_management:
             Audit_Log.log_msg: audit_msg,
             Audit_Log.source_ip: source_ip
         }).execute()
-        #todo make this user configurable
         #deletes records when they're more than 100
         ordered = Audit_Log.select().order_by(+Audit_Log.created)
         for item in ordered:
-            if Audit_Log.select().count() > 300:
+            if not helper.get_setting('max_audit_entries'):
+                max_entries = 300
+            else:
+                max_entries = helper.get_setting('max_audit_entries')
+            if Audit_Log.select().count() > max_entries:
                 Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
             else:
                 return
@@ -212,7 +217,12 @@ class helpers_management:
         #deletes records when they're more than 100
         ordered = Audit_Log.select().order_by(+Audit_Log.created)
         for item in ordered:
-            if Audit_Log.select().count() > 300:
+            #configurable through app/config/config.json
+            if not helper.get_setting('max_audit_entries'):
+                max_entries = 300
+            else:
+                max_entries = helper.get_setting('max_audit_entries')
+            if Audit_Log.select().count() > max_entries:
                 Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
             else:
                 return
@@ -230,7 +240,9 @@ class helpers_management:
         comment=None,
         enabled=True,
         one_time=False,
-        cron_string='* * * * *'):
+        cron_string='* * * * *',
+        parent=None,
+        delay=0):
         sch_id = Schedules.insert({
             Schedules.server_id: server_id,
             Schedules.action: action,
@@ -241,7 +253,9 @@ class helpers_management:
             Schedules.command: command,
             Schedules.comment: comment,
             Schedules.one_time: one_time,
-            Schedules.cron_string: cron_string
+            Schedules.cron_string: cron_string,
+            Schedules.parent: parent,
+            Schedules.delay: delay
 
         }).execute()
         return sch_id
@@ -270,6 +284,14 @@ class helpers_management:
     @staticmethod
     def get_schedules_by_server(server_id):
         return Schedules.select().where(Schedules.server_id == server_id).execute()
+
+    @staticmethod
+    def get_child_schedules_by_server(schedule_id, server_id):
+        return Schedules.select().where(Schedules.server_id == server_id, Schedules.parent == schedule_id).execute()
+
+    @staticmethod
+    def get_child_schedules(schedule_id):
+        return Schedules.select().where(Schedules.parent == schedule_id)
 
     @staticmethod
     def get_schedules_all():

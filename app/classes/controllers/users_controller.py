@@ -31,6 +31,14 @@ class Users_Controller:
         return users_helper.get_user(user_id)
 
     @staticmethod
+    def update_server_order(user_id, user_server_order):
+        users_helper.update_server_order(user_id, user_server_order)
+
+    @staticmethod
+    def get_server_order(user_id):
+        return users_helper.get_server_order(user_id)
+
+    @staticmethod
     def user_query(user_id):
         return users_helper.user_query(user_id)
 

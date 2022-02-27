@@ -173,7 +173,10 @@ class Permissions_Servers:
         else:
             roles_list = users_helper.get_user_roles_id(user.user_id)
             role_server = Role_Servers.select().where(Role_Servers.role_id.in_(roles_list)).where(Role_Servers.server_id == server_id).execute()
-            permissions_mask = role_server[0].permissions
+            try:
+                permissions_mask = role_server[0].permissions
+            except IndexError:
+                permissions_mask = '0' * len(server_permissions.get_permissions_list())
         return permissions_mask
 
     @staticmethod

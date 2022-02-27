@@ -28,6 +28,7 @@ class Servers_Controller:
         server_file: str,
         server_log_file: str,
         server_stop: str,
+        server_type: str,
         server_port=25565):
         return servers_helper.create_server(
             name,
@@ -38,6 +39,7 @@ class Servers_Controller:
             server_file,
             server_log_file,
             server_stop,
+            server_type,
             server_port)
 
     @staticmethod
@@ -136,6 +138,10 @@ class Servers_Controller:
     @staticmethod
     def server_id_exists(server_id):
         return servers_helper.server_id_exists(server_id)
+
+    @staticmethod
+    def get_server_type_by_id(server_id):
+        return servers_helper.get_server_type_by_id(server_id)
 
     @staticmethod
     def server_id_authorized(server_id_a, user_id):

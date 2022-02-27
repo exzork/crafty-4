@@ -9,7 +9,7 @@ from app.classes.models.management import Host_Stats
 from app.classes.models.servers import Server_Stats, servers_helper
 
 from app.classes.shared.helpers import helper
-from app.classes.minecraft.mc_ping import ping
+from app.classes.minecraft.mc_ping import ping, ping_bedrock
 
 logger = logging.getLogger(__name__)
 
@@ -177,7 +177,10 @@ class Stats:
         server_port = server['server_port']
 
         logger.debug("Pinging {internal_ip} on port {server_port}")
-        int_mc_ping = ping(internal_ip, int(server_port))
+        if servers_helper.get_server_type_by_id(server_id) == 'minecraft-bedrock':
+            int_mc_ping = ping_bedrock(internal_ip, int(server_port))
+        else:
+            int_mc_ping = ping(internal_ip, int(server_port))
 
         ping_data = {}
 
@@ -223,7 +226,10 @@ class Stats:
             server = s.get('server_name', f"ID#{server_id}")
 
             logger.debug("Pinging server '{server}' on {internal_ip}:{server_port}")
-            int_mc_ping = ping(internal_ip, int(server_port))
+            if servers_helper.get_server_type_by_id(server_id) == 'minecraft-bedrock':
+                int_mc_ping = ping_bedrock(internal_ip, int(server_port))
+            else:
+                int_mc_ping = ping(internal_ip, int(server_port))
 
             int_data = False
             ping_data = {}
@@ -286,7 +292,10 @@ class Stats:
 
 
         logger.debug(f"Pinging server '{server.name}' on {internal_ip}:{server_port}")
-        int_mc_ping = ping(internal_ip, int(server_port))
+        if servers_helper.get_server_type_by_id(server_id) == 'minecraft-bedrock':
+            int_mc_ping = ping_bedrock(internal_ip, int(server_port))
+        else:
+            int_mc_ping = ping(internal_ip, int(server_port))
 
         int_data = False
         ping_data = {}

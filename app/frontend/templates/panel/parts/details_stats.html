@@ -6,7 +6,7 @@
           <div class="col-sm-4 mr-2">
             {% if data['server_stats']['running'] %}
             <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-success">{{ translate('serverStats', 'online', data['lang']) }}</span><br />
-            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started">{{ data['server_stats']['started'] }} ({{ translate('serverStats', 'serverTime', data['lang']) }})</span><br />
+            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started">{{ data['server_stats']['started'] }}</span><br />
             <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime">{{ translate('serverStats', 'errorCalculatingUptime', data['lang']) }}</span>
             {% elif data['server_stats']['crashed'] %}
             <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-danger"> <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}</span><br />
@@ -16,7 +16,6 @@
             <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
             <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started" class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
             <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime" class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span>
-            <p>{{ data['server_stats']['crashed'] }}</p>
             {% end %}
             <br>
             <b>{{ translate('serverStats', 'serverTimeZone', data['lang']) }}:</b> <span class="text-info">{{ data['serverTZ'] }}</span>
@@ -40,6 +39,8 @@
             <b>{{ translate('serverStats', 'version', data['lang']) }}:</b> <span id="version">{{ translate('serverStats', 'unableToConnect', data['lang']) }}</span> <br />
             <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> <span id="input_motd" class="input_motd">{{ translate('serverStats', 'unableToConnect', data['lang']) }}</span> <br />
             {% end %}
+            <b>Server Type: <span class="text-info">{{data['server_stats']['server_type']}}</span></b>
+
           </div>
         </div>
       </div>
@@ -134,17 +135,15 @@
     server_input_motd = document.getElementById('input_motd');
 
     /* TODO Update each element */
-    if (server.running)
-    {
-      if (server.int_ping_results)
-      {
-        server_status.setAttribute("class", "text-success");
-        server_status.innerHTML = `{{ translate('serverStats', 'online', data['lang']) }}`;
+    if (server.running){
+      if (server['stats']['waiting_start']){
+        server_status.setAttribute("class", "text-warning");
+        server_status.innerHTML = `{{ translate('serverStats', 'starting', data['lang']) }}`;
       }
       else
       {
-        server_status.setAttribute("class", "text-warning");
-        server_status.innerHTML = `{{ translate('serverStats', 'starting', data['lang']) }}`;
+        server_status.setAttribute("class", "text-success");
+        server_status.innerHTML = `{{ translate('serverStats', 'online', data['lang']) }}`;
       }
 
       startedUTC = server.started;
@@ -153,7 +152,7 @@
       startedLocal = startedUTC.utcOffset(browserUTCOffset);
       startedLocalFormatted = startedLocal.format('YYYY-MM-DD HH:mm:ss');
       server_started.setAttribute("class", "");
-      server_started.innerHTML = startedLocalFormatted +` ({{ translate('serverStats', 'serverTime', data['lang']) }})`;
+      server_started.innerHTML = startedLocalFormatted;
       server_uptime.setAttribute("class", "");
       if (!uptimeLoop) {
         var calculateUptime = () => {

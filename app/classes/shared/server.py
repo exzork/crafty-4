@@ -201,8 +201,8 @@ class Server:
         logger.info(f"Launching Server {self.name} with command {self.server_command}")
         console.info(f"Launching Server {self.name} with command {self.server_command}")
 
-    #Checks for eula. Creates one if none detected.
-    #If EULA is detected and not set to one of these true vaiants we offer to set it true.
+        #Checks for eula. Creates one if none detected.
+        #If EULA is detected and not set to one of these true vaiants we offer to set it true.
         if helper.check_file_exists(os.path.join(self.settings['path'], 'eula.txt')):
             f = open(os.path.join(self.settings['path'], 'eula.txt'), 'r', encoding='utf-8')
             line = f.readline().lower()
@@ -240,24 +240,40 @@ class Server:
 
         logger.info(f"Starting server in {self.server_path} with command: {self.server_command}")
 
-        try:
-            self.process = subprocess.Popen(
-                self.server_command, cwd=self.server_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        except Exception as ex:
-            #Checks for java on initial fail
-            if os.system("java -version") == 32512:
+        if not helper.is_os_windows() and servers_helper.get_server_type_by_id(self.server_id) == "minecraft-bedrock":
+            logger.info(f"Bedrock and Unix detected for server {self.name}. Switching to appropriate execution string")
+            my_env = os.environ
+            my_env["LD_LIBRARY_PATH"] = self.server_path
+            try:
+                self.process = subprocess.Popen(
+                    self.server_command, cwd=self.server_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=my_env)
+            except Exception as ex:
+                logger.error(f"Server {self.name} failed to start with error code: {ex}")
                 if user_id:
                     websocket_helper.broadcast_user(user_id, 'send_start_error',{
-                    'error': translation.translate('error', 'noJava', user_lang).format(self.name)
-                })
+                        'error': translation.translate('error', 'start-error', user_lang).format(self.name, ex)
+                    })
                 return False
-            else:
-                logger.error(f"Server {self.name} failed to start with error code: {ex}")
-            if user_id:
-                websocket_helper.broadcast_user(user_id, 'send_start_error',{
-                    'error': translation.translate('error', 'start-error', user_lang).format(self.name, ex)
-                })
-            return False
+
+        else:
+            try:
+                self.process = subprocess.Popen(
+                    self.server_command, cwd=self.server_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            except Exception as ex:
+                #Checks for java on initial fail
+                if os.system("java -version") == 32512:
+                    if user_id:
+                        websocket_helper.broadcast_user(user_id, 'send_start_error',{
+                        'error': translation.translate('error', 'noJava', user_lang).format(self.name)
+                    })
+                    return False
+                else:
+                    logger.error(f"Server {self.name} failed to start with error code: {ex}")
+                if user_id:
+                    websocket_helper.broadcast_user(user_id, 'send_start_error',{
+                        'error': translation.translate('error', 'start-error', user_lang).format(self.name, ex)
+                    })
+                return False
 
         out_buf = ServerOutBuf(self.process, self.server_id)
 
@@ -359,6 +375,7 @@ class Server:
         server_name = self.name
         server_pid = self.process.pid
 
+
         while running:
             x = x+1
             logstr = f"Server {server_name} is still running - waiting 2s to see if it stops ({int(60-(x*2))} seconds until force close)"
@@ -426,7 +443,6 @@ class Server:
 
     def crash_detected(self, name):
 
-        print("crash detected")
         # clear the old scheduled watcher task
         self.server_scheduler.remove_job(f"c_{self.server_id}")
 
@@ -476,6 +492,13 @@ class Server:
 
         # if all is okay, we just exit out
         if running:
+            return
+        #check the exit code -- This could be a fix for /stop
+        if self.process.returncode == 0:
+            logger.warning(f'Process {self.process.pid} exited with code {self.process.returncode}. This is considered a clean exit'+
+            ' supressing crash handling.')
+            # cancel the watcher task
+            self.server_scheduler.remove_job("c_"+str(self.server_id))
             return
 
         servers_helper.sever_crashed(self.server_id)

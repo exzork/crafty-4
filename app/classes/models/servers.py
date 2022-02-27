@@ -43,6 +43,7 @@ class Servers(Model):
     server_ip = CharField(default="127.0.0.1")
     server_port = IntegerField(default=25565)
     logs_delete_after = IntegerField(default=0)
+    type = CharField(default="minecraft-java")
 
     class Meta:
         table_name = "servers"
@@ -99,6 +100,7 @@ class helper_servers:
         server_file: str,
         server_log_file: str,
         server_stop: str,
+        server_type: str,
         server_port=25565):
         return Servers.insert({
             Servers.server_name: name,
@@ -112,13 +114,19 @@ class helper_servers:
             Servers.log_path: server_log_file,
             Servers.server_port: server_port,
             Servers.stop_command: server_stop,
-            Servers.backup_path: backup_path
+            Servers.backup_path: backup_path,
+            Servers.type: server_type
         }).execute()
 
 
     @staticmethod
     def get_server_obj(server_id):
         return Servers.get_by_id(server_id)
+
+    @staticmethod
+    def get_server_type_by_id(server_id):
+        server_type = Servers.select().where(Servers.server_id == server_id).get()
+        return server_type.type
 
     @staticmethod
     def update_server(server_obj):

@@ -258,6 +258,10 @@ class AjaxHandler(BaseHandler):
             # Create the directory
             os.mkdir(dir_path)
 
+        elif page == "send_order":
+            self.controller.users.update_server_order(exec_user['user_id'], bleach.clean(self.get_argument('order')))
+            return
+
         elif page == "unzip_file":
             if not permissions['Files'] in user_perms:
                 if not superuser:

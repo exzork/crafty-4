@@ -123,10 +123,10 @@
               </thead>
               <tbody>
                 {% for server in data['servers'] %}
-                <tr>
-                  <td>
+                <tr id="{{server['server_data']['server_id']}}" draggable="true" ondragstart="start()"  ondragover="dragover()" ondragend="dragend()">
+                  <td draggable="false">
                     <i class="fas fa-server"></i>
-                    <a href="/panel/server_detail?id={{server['server_data']['server_id']}}">
+                    <a draggable="false" href="/panel/server_detail?id={{server['server_data']['server_id']}}">
                       {{ server['server_data']['server_name'] }}
                     </a>
                   </td>
@@ -391,7 +391,7 @@
         server_desc.innerHTML = server.online + ` / ` + server.max + ` {{ translate('dashboard', 'max', data['lang']) }}<br />`
 
         server_infos = "";
-        server_infos = server.online + " / " + server.max + "{{ translate('dashboard', 'max', data['lang']) }}<br />"
+        server_infos = server.online + " / " + server.max + " {{ translate('dashboard', 'max', data['lang']) }}<br />"
       }
 
       /* Update Motd */
@@ -553,6 +553,56 @@
     });
 
   });
+</script>
+<script>
+  var row;
+
+  function start(){  
+    row = event.target; 
+  }
+  function dragover(){
+    var e = event;
+    e.preventDefault(); 
+    
+    let children= Array.from(e.target.parentNode.parentNode.children);
+    
+    if(children.indexOf(e.target.parentNode)>children.indexOf(row))
+      e.target.parentNode.after(row);
+    else
+      e.target.parentNode.before(row);
+  }
+
+  function dragend(){
+    var id_string = '';
+    const table = document.querySelector("table");  
+    for (const row of table.rows) {
+      if (row.getAttribute('id') != null){
+        if (id_string != ''){
+          id_string += ',' + String(row.getAttribute('id'));
+        }else{
+          id_string +=String(row.getAttribute('id'));
+        }
+      }
+    }
+    console.log(id_string)
+    sendOrder(id_string)
+  }
+  function sendOrder(id_string) {
+    var token = getCookie("_xsrf")
+    $.ajax({
+      type: "POST",
+      headers: {'X-XSRFToken': token},
+      url: '/ajax/send_order?order='+id_string,
+      data: {
+        order: id_string,
+      },
+      success: function(data){
+        console.log("got response:");
+        console.log(data);
+      },
+    });
+  }
+
 </script>
 
 {% end %}

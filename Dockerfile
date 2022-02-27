@@ -1,23 +1,17 @@
-FROM python:alpine
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND="noninteractive"
 
 LABEL maintainer="Dockerfile created by Zedifus <https://gitlab.com/zedifus>"
 
 # Security Patch for CVE-2021-44228
 ENV LOG4J_FORMAT_MSG_NO_LOOKUPS=true
 
-# Install Packages, Build Dependencies & Garbage Collect & Harden
-#        (Alpine Edge repo is needed because jre16 is new)
+# Install Packages And Dependencies
 COPY requirements.txt /commander/requirements.txt
-RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/latest-stable/community \
-gcc musl-dev libffi-dev make rust cargo openssl-dev llvm11-libs \
-openjdk8-jre-base openjdk11-jre-headless openjdk16-jre-headless openjdk17-jre-headless mariadb-dev \
-&& pip3 install --no-cache-dir -r /commander/requirements.txt \
-&& apk del --no-cache gcc musl-dev libffi-dev make rust cargo openssl-dev llvm11-libs \
-&& rm -rf /sbin/apk \
-&& rm -rf /etc/apk \
-&& rm -rf /lib/apk \
-&& rm -rf /usr/share/apk \
-&& rm -rf /var/lib/apk
+RUN apt update \
+&& apt install -y gcc python3 python3-pip libmariadb-dev openjdk-8-jre-headless openjdk-11-jre-headless openjdk-16-jre-headless openjdk-17-jre-headless default-jre \
+&& pip3 install --no-cache-dir -r /commander/requirements.txt
 
 # Copy Source & copy default config from image
 COPY ./ /commander

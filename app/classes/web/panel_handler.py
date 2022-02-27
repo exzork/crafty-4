@@ -307,6 +307,29 @@ class PanelHandler(BaseHandler):
                     list(filter(lambda x: x['stats']['running'], page_data['servers'])))
                 page_data['server_stats']['stopped'] = len(page_data['servers']) - page_data['server_stats']['running']
 
+            #set user server order
+            user_order = self.controller.users.get_user_by_id(exec_user['user_id'])
+            user_order = user_order['server_order'].split(',')
+            page_servers = []
+            server_ids = []
+
+            for server_id in user_order:
+                for server in page_data['servers']:
+                    if str(server['server_data']['server_id']) == str(server_id):
+                        page_servers.append(server)
+
+
+            for server in page_data['servers']:
+                server_ids.append(str(server['server_data']['server_id']))
+                if server not in page_servers:
+                    page_servers.append(server)
+            for server_id in user_order:
+                #remove IDs in list that user no longer has access to
+                if str(server_id) not in server_ids:
+                    user_order.remove(server_id)
+            page_data['servers'] = page_servers
+
+
             for data in page_data['servers']:
                 data['stats']['crashed'] = self.controller.servers.is_crashed(
                         str(data['stats']['server_id']['server_id']))
@@ -333,7 +356,7 @@ class PanelHandler(BaseHandler):
             if server_id is None:
                 return
 
-            valid_subpages = ['term', 'logs', 'backup', 'config', 'files', 'admin_controls', 'tasks']
+            valid_subpages = ['term', 'logs', 'backup', 'config', 'files', 'admin_controls', 'schedules']
 
             if subpage not in valid_subpages:
                 logger.debug('not a valid subpage')
@@ -363,6 +386,7 @@ class PanelHandler(BaseHandler):
             }
             page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
             page_data['server_stats']['crashed'] = self.controller.servers.is_crashed(server_id)
+            page_data['server_stats']['server_type'] = self.controller.servers.get_server_type_by_id(server_id)
 
             if subpage == 'term':
                 if not page_data['permissions']['Terminal'] in page_data['user_permissions']:
@@ -377,10 +401,10 @@ class PanelHandler(BaseHandler):
                         return
 
 
-            if subpage == 'tasks':
+            if subpage == 'schedules':
                 if not page_data['permissions']['Schedule'] in page_data['user_permissions']:
                     if not superuser:
-                        self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
+                        self.redirect("/panel/error?error=Unauthorized access To Schedules")
                         return
                 page_data['schedules'] = management_helper.get_schedules_by_server(server_id)
 
@@ -559,8 +583,9 @@ class PanelHandler(BaseHandler):
 
         elif page == "add_schedule":
             server_id = self.get_argument('id', None)
+            page_data['schedules'] = management_helper.get_schedules_by_server(server_id)
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
-            page_data['active_link'] = 'tasks'
+            page_data['active_link'] = 'schedules'
             page_data['permissions'] = {
                 'Commands': Enum_Permissions_Server.Commands,
                 'Terminal': Enum_Permissions_Server.Terminal,
@@ -574,8 +599,10 @@ class PanelHandler(BaseHandler):
             page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
             page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
+            page_data['server_stats']['server_type'] = self.controller.servers.get_server_type_by_id(server_id)
             page_data['new_schedule'] = True
             page_data['schedule'] = {}
+            page_data['schedule']['children'] = []
             page_data['schedule']['server_id'] = server_id
             page_data['schedule']['schedule_id'] = ''
             page_data['schedule']['action'] = ""
@@ -591,17 +618,18 @@ class PanelHandler(BaseHandler):
 
             if not Enum_Permissions_Server.Schedule in page_data['user_permissions']:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
+                    self.redirect("/panel/error?error=Unauthorized access To Schedules")
                     return
 
             template = "panel/server_schedule_edit.html"
 
         elif page == "edit_schedule":
             server_id = self.get_argument('id', None)
+            page_data['schedules'] = management_helper.get_schedules_by_server(server_id)
             sch_id = self.get_argument('sch_id', None)
             schedule = self.controller.management.get_scheduled_task_model(sch_id)
             page_data['get_players'] = lambda: self.controller.stats.get_server_players(server_id)
-            page_data['active_link'] = 'tasks'
+            page_data['active_link'] = 'schedules'
             page_data['permissions'] = {
                 'Commands': Enum_Permissions_Server.Commands,
                 'Terminal': Enum_Permissions_Server.Terminal,
@@ -615,11 +643,13 @@ class PanelHandler(BaseHandler):
             page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
             page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
+            page_data['server_stats']['server_type'] = self.controller.servers.get_server_type_by_id(server_id)
             page_data['new_schedule'] = False
             page_data['schedule'] = {}
             page_data['schedule']['server_id'] = server_id
             page_data['schedule']['schedule_id'] = schedule.schedule_id
             page_data['schedule']['action'] = schedule.action
+            page_data['schedule']['children'] = self.controller.management.get_child_schedules(sch_id)
             # We check here to see if the command is any of the default ones.
             # We do not want a user changing to a custom command and seeing our command there.
             if schedule.action != 'start' or schedule.action != 'stop' or schedule.action != 'restart' or schedule.action != 'backup':
@@ -632,7 +662,9 @@ class PanelHandler(BaseHandler):
             page_data['schedule']['time'] = schedule.start_time
             page_data['schedule']['interval'] = schedule.interval
             page_data['schedule']['interval_type'] = schedule.interval_type
-            if schedule.cron_string == '':
+            if schedule.interval_type == 'reaction':
+                difficulty = 'reaction'
+            elif schedule.cron_string == '':
                 difficulty = 'basic'
             else:
                 difficulty = 'advanced'
@@ -643,7 +675,7 @@ class PanelHandler(BaseHandler):
 
             if not Enum_Permissions_Server.Schedule in page_data['user_permissions']:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access To Scheduled Tasks")
+                    self.redirect("/panel/error?error=Unauthorized access To Schedules")
                     return
 
             template = "panel/server_schedule_edit.html"
@@ -1052,6 +1084,23 @@ class PanelHandler(BaseHandler):
                     command = "restart_server"
                 elif action == "backup":
                     command = "backup_server"
+
+            elif difficulty == 'reaction':
+                interval_type = 'reaction'
+                action = bleach.clean(self.get_argument('action', None))
+                delay = bleach.clean(self.get_argument('delay', None))
+                parent = bleach.clean(self.get_argument('parent', None))
+                if action == "command":
+                    command = bleach.clean(self.get_argument('command', None))
+                elif action == "start":
+                    command = "start_server"
+                elif action == "stop":
+                    command = "stop_server"
+                elif action == "restart":
+                    command = "restart_server"
+                elif action == "backup":
+                    command = "backup_server"
+
             else:
                 interval_type = ''
                 cron_string = bleach.clean(self.get_argument('cron', ''))
@@ -1105,6 +1154,21 @@ class PanelHandler(BaseHandler):
                         "one_time": one_time,
                         "cron_string": ''
                     }
+                elif difficulty == "reaction":
+                    job_data = {
+                        "server_id": server_id,
+                        "action": action,
+                        "interval_type": interval_type,
+                        "interval": '',
+                        #We'll base every interval off of a midnight start time.
+                        "start_time": '',
+                        "command": command,
+                        "cron_string": '',
+                        "enabled": enabled,
+                        "one_time": one_time,
+                        "parent": parent,
+                        "delay": delay
+                    }
                 elif difficulty == "advanced":
                     job_data = {
                         "server_id": server_id,
@@ -1116,7 +1180,9 @@ class PanelHandler(BaseHandler):
                         "command": command,
                         "cron_string": cron_string,
                         "enabled": enabled,
-                        "one_time": one_time
+                        "one_time": one_time,
+                        "parent": None,
+                        "delay": 0
                     }
                 else:
                     job_data = {
@@ -1129,7 +1195,9 @@ class PanelHandler(BaseHandler):
                         #We'll base every interval off of a midnight start time.
                         "start_time": '00:00',
                         "one_time": one_time,
-                        "cron_string": ''
+                        "cron_string": '',
+                        'parent': None,
+                        'delay': 0
                     }
 
                 self.tasks_manager.schedule_job(job_data)
@@ -1139,7 +1207,7 @@ class PanelHandler(BaseHandler):
                                        server_id,
                                        self.get_remote_ip())
             self.tasks_manager.reload_schedule_from_db()
-            self.redirect(f"/panel/server_detail?id={server_id}&subpage=tasks")
+            self.redirect(f"/panel/server_detail?id={server_id}&subpage=schedules")
 
 
         if page == "edit_schedule":
@@ -1164,6 +1232,22 @@ class PanelHandler(BaseHandler):
                     command = "restart_server"
                 elif action == "backup":
                     command = "backup_server"
+            elif difficulty == 'reaction':
+                interval_type = 'reaction'
+                action = bleach.clean(self.get_argument('action', None))
+                delay = bleach.clean(self.get_argument('delay', None))
+                parent = bleach.clean(self.get_argument('parent', None))
+                if action == "command":
+                    command = bleach.clean(self.get_argument('command', None))
+                elif action == "start":
+                    command = "start_server"
+                elif action == "stop":
+                    command = "stop_server"
+                elif action == "restart":
+                    command = "restart_server"
+                elif action == "backup":
+                    command = "backup_server"
+                parent = bleach.clean(self.get_argument('parent', None))
             else:
                 interval_type = ''
                 cron_string = bleach.clean(self.get_argument('cron', ''))
@@ -1228,8 +1312,25 @@ class PanelHandler(BaseHandler):
                         "start_time": '',
                         "command": command,
                         "cron_string": cron_string,
+                        "delay": '',
+                        "parent": '',
                         "enabled": enabled,
                         "one_time": one_time
+                    }
+                elif difficulty == "reaction":
+                    job_data = {
+                        "server_id": server_id,
+                        "action": action,
+                        "interval_type": interval_type,
+                        "interval": '',
+                        #We'll base every interval off of a midnight start time.
+                        "start_time": '',
+                        "command": command,
+                        "cron_string": '',
+                        "enabled": enabled,
+                        "one_time": one_time,
+                        "parent": parent,
+                        "delay": delay
                     }
                 else:
                     job_data = {
@@ -1241,6 +1342,8 @@ class PanelHandler(BaseHandler):
                         "enabled": enabled,
                         #We'll base every interval off of a midnight start time.
                         "start_time": '00:00',
+                        "delay": '',
+                        "parent": '',
                         "one_time": one_time,
                         "cron_string": ''
                     }
@@ -1252,7 +1355,7 @@ class PanelHandler(BaseHandler):
                                        server_id,
                                        self.get_remote_ip())
             self.tasks_manager.reload_schedule_from_db()
-            self.redirect(f"/panel/server_detail?id={server_id}&subpage=tasks")
+            self.redirect(f"/panel/server_detail?id={server_id}&subpage=schedules")
 
 
         elif page == "edit_user":
