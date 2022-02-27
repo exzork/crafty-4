@@ -340,7 +340,7 @@ const server_id = new URLSearchParams(document.location.search).get('id')
   document.getElementById("root_files_button").addEventListener("click", function(){
     if($("#root_files_button").data('server_path') != ""){
       if(document.getElementById('root_files_button').classList.contains('clicked')){
-        document.getElementById('main-tree-div').innerHTML = '<input type="radio" id="main-tree-input" name="root_path" value="" checked><span id="main-tree" class="files-tree-title tree-caret-down root-dir" data-path=""><i class="far fa-folder"></i><i class="far fa-folder-open"></i>{{ translate('serverFiles', 'files', data['lang']) }}</span></input>'
+        document.getElementById('main-tree-div').innerHTML = '<input type="checkbox" id="main-tree-input" name="root_path" value="" disabled><span id="main-tree" class="files-tree-title tree-caret-down root-dir" data-path=""><i class="far fa-folder"></i><i class="far fa-folder-open"></i>{{ translate('serverFiles', 'files', data['lang']) }}</span></input>'
       }else{
         document.getElementById('root_files_button').classList.add('clicked')
       }
