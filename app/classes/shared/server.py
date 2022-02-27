@@ -8,6 +8,7 @@ import logging.config
 import shutil
 import subprocess
 import html
+import tempfile
 from apscheduler.schedulers.background import BackgroundScheduler
 #TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
@@ -568,14 +569,30 @@ class Server:
             backup_filename = f"{self.settings['backup_path']}/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
             logger.info(f"Creating backup of server '{self.settings['server_name']}'" +
                         f" (ID#{self.server_id}, path={self.server_path}) at '{backup_filename}'")
-            shutil.make_archive(helper.get_os_understandable_path(backup_filename), 'zip', self.server_path)
+            
+            # shutil.make_archive(helper.get_os_understandable_path(backup_filename), 'zip', self.server_path)
+            tempDir = tempfile.mkdtemp()
+            shutil.copytree(self.server_path, tempDir)
+            excluded_dirs = management_helper.get_excluded_backup_dirs(self.server_id)
+            server_dir = helper.get_os_understandable_path(self.settings['path'])
+            for dir in excluded_dirs:
+                temp_dir = helper.get_os_understandable_path(dir).replace(server_dir, helper.get_os_understandable_path(tempDir))
+                if os.path.isdir(temp_dir):
+                    shutil.rmtree(temp_dir)
+                else:
+                    os.remove(temp_dir)
+            
+            shutil.make_archive(helper.get_os_understandable_path(backup_filename), 'zip', tempDir)
+
             while len(self.list_backups()) > conf["max_backups"] and conf["max_backups"] > 0:
                 backup_list = self.list_backups()
                 oldfile = backup_list[0]
                 oldfile_path = f"{conf['backup_path']}/{oldfile['path']}"
                 logger.info(f"Removing old backup '{oldfile['path']}'")
                 os.remove(helper.get_os_understandable_path(oldfile_path))
+
             self.is_backingup = False
+            shutil.rmtree(tempDir)
             logger.info(f"Backup of server: {self.name} completed")
             return
         except:
