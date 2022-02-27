@@ -574,13 +574,18 @@ class Server:
             shutil.copytree(self.server_path, tempDir)
             excluded_dirs = management_helper.get_excluded_backup_dirs(self.server_id)
             server_dir = helper.get_os_understandable_path(self.settings['path'])
-            
+
             for dir in excluded_dirs:
-                temp_dir = helper.get_os_understandable_path(dir).replace(server_dir, helper.get_os_understandable_path(tempDir))
-                if os.path.isdir(temp_dir):
-                    shutil.rmtree(temp_dir)
+                # Take the full path of the excluded dir and replace the server path with the temp path
+                # This is so that we're only deleting excluded dirs from the temp path and not the server path
+                excluded_dir = helper.get_os_understandable_path(dir).replace(server_dir, helper.get_os_understandable_path(tempDir))
+                # Next, check to see if it is a directory
+                if os.path.isdir(excluded_dir):
+                    # If it is a directory, recursively delete the entire directory from the backup
+                    shutil.rmtree(excluded_dir)
                 else:
-                    os.remove(temp_dir)
+                    # If not, just remove the file
+                    os.remove(excluded_dir)
             
             shutil.make_archive(helper.get_os_understandable_path(backup_filename), 'zip', tempDir)
 
