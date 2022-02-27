@@ -87,7 +87,7 @@
                                 </a>
                                 <br>
                                 <br>
-                                <button data-file="{{ backup['path'] }}" class="btn btn-danger del_button">
+                                <button data-file="{{ backup['path'] }}" data-backup_path="{{ data['backup_path'] }}" class="btn btn-danger del_button">
                                     <i class="fas fa-trash" aria-hidden="true"></i>
                                     {{ translate('serverBackups', 'delete', data['lang']) }}
                                 </button>
@@ -209,6 +209,7 @@
 
     $( ".del_button" ).click(function() {
       var file_to_del = $(this).data("file");
+      var backup_path = $(this).data('backup_path');
 
       console.log("file to delete is" + file_to_del);
 
@@ -226,7 +227,7 @@
         callback: function (result) {
           console.log(result);
           if (result == true) {
-            var full_path = '{{ data['backup_path'] }}' + '/' + file_to_del;
+            var full_path = backup_path + '/' + file_to_del;
             del_backup(full_path, serverId);
           }
         }

@@ -239,13 +239,15 @@
 
 {% block js %}
 <script>
+  const userId = new URLSearchParams(document.location.search).get('id')
+
   $( ".delete-user" ).click(function() {
     var file_to_del = $(this).data("file");
 
-    console.log("User to delete is {{ data['user']['username']  }}");
+    console.log("User to delete is "+userId);
 
     bootbox.confirm({
-        title: "{% raw translate('userConfig', 'deleteUser', data['lang']) %}"+"{{ data['user']['username']  }}",
+        title: "{% raw translate('userConfig', 'deleteUser', data['lang']) %} "+userId,
         message: "{{ translate('userConfig', 'confirmDelete', data['lang']) }}",
         buttons: {
             cancel: {
@@ -259,7 +261,7 @@
         callback: function (result) {
             console.log(result);
             if (result == true) {
-              location.href="/panel/remove_user?id={{ data['user']['user_id'] }}";
+              location.href="/panel/remove_user?id="+userId;
             }
         }
     });

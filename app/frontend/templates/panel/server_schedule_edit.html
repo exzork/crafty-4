@@ -233,18 +233,18 @@ function startup(){
   try{
     document.getElementById("{{ data['schedule']['interval_type'] }}").setAttribute('selected', true);
   }catch{
-    console.log("no element named {{ data['schedule']['interval_type'] }}")
+    console.log("no element named")
   }
   try{
   document.getElementById("{{ data['schedule']['difficulty'] }}").setAttribute('selected', true);
 }catch{
-  console.log("no element named {{ data['schedule']['difficulty'] }}")
+  console.log("no element named")
 }
 try{
   document.getElementById("{{ data['schedule']['action'] }}").setAttribute('selected', true);
 
 }catch{
-  console.log("no element named {{ data['schedule']['action'] }}")
+  console.log("no element named")
 }
   ifDays();
   yesnoCheck();
