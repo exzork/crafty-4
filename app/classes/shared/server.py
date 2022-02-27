@@ -240,6 +240,18 @@ class Server:
 
         logger.info(f"Starting server in {self.server_path} with command: {self.server_command}")
 
+        #checks to make sure file is openable (downloaded) and exists.
+        try:
+            f = open(os.path.join(self.server_path, servers_helper.get_server_data_by_id(self.server_id)['executable']), "r", encoding="utf-8")
+            f.close()
+
+        except:
+            if user_id:
+                websocket_helper.broadcast_user(user_id, 'send_start_error',{
+                    'error': translation.translate('error', 'not-downloaded', user_lang)
+                })
+            return
+
         if not helper.is_os_windows() and servers_helper.get_server_type_by_id(self.server_id) == "minecraft-bedrock":
             logger.info(f"Bedrock and Unix detected for server {self.name}. Switching to appropriate execution string")
             my_env = os.environ

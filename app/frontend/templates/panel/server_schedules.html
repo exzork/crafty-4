@@ -233,6 +233,9 @@ td {
 
 {% block js %}
 <script>
+
+  const serverId = new URLSearchParams(document.location.search).get('id')
+  
   $( document ).ready(function() {
     console.log('ready for JS!')
     $('#schedule_table').DataTable({
@@ -325,7 +328,6 @@ function ifDays(that) {
 
 $( ".del_button" ).click(function() {
   var sch_id = $(this).data('sch');
-  var server_id = {{ data['server_stats']['server_id']['server_id'] }};
 
   console.log(sch_id)
 
@@ -344,7 +346,7 @@ $( ".del_button" ).click(function() {
       callback: function (result) {
           console.log(result);
           if (result == true) {
-              del_task(sch_id, server_id);
+              del_task(sch_id, serverId);
           }
       }
   });
