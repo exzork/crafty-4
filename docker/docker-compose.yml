@@ -13,7 +13,7 @@ services:
       - "8443:8443" # HTTPS
       - "8123:8123" # DYNMAP
       - "19132:19132/udp" # BEDROCK
-      - "24000-25600:24000-25600" # MC SERV PORT RANGE
+      - "25500-25600:25500-25600" # MC SERV PORT RANGE
     volumes:
       - ./backups:/commander/backups
       - ./logs:/commander/logs
