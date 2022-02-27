@@ -738,6 +738,57 @@ class Helpers:
         return output
 
     @staticmethod
+    def generate_backup_tree(folder, output=""):
+        file_list = os.listdir(folder)
+        file_list = sorted(file_list, key=str.casefold)
+        output += \
+    f"""<ul class="tree-nested d-block" id="{folder}ul">"""\
+
+        for raw_filename in file_list:
+            filename = html.escape(raw_filename)
+            rel = os.path.join(folder, raw_filename)
+            dpath = os.path.join(folder, filename)
+            if os.path.isdir(rel):
+                output += \
+                    f"""<li class="tree-item" data-path="{dpath}">
+                    \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
+                    <input type="checkbox" name="root_path" value="{dpath}">
+                    <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {filename}
+                      </span>
+                    </input></div><li>
+                    \n"""\
+
+        return output
+
+    @staticmethod
+    def generate_backup_dir(folder, output=""):
+        file_list = os.listdir(folder)
+        file_list = sorted(file_list, key=str.casefold)
+        output += \
+    f"""<ul class="tree-nested d-block" id="{folder}ul">"""\
+
+        for raw_filename in file_list:
+            filename = html.escape(raw_filename)
+            rel = os.path.join(folder, raw_filename)
+            dpath = os.path.join(folder, filename)
+            if os.path.isdir(rel):
+                output += \
+                    f"""<li class="tree-item" data-path="{dpath}">
+                    \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
+                    <input type="checkbox" name="root_path" value="{dpath}">
+                    <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {filename}
+                      </span>
+                    </input></div><li>"""\
+
+        return output
+
+    @staticmethod
     def generate_zip_dir(folder, output=""):
         file_list = os.listdir(folder)
         file_list = sorted(file_list, key=str.casefold)
@@ -773,6 +824,12 @@ class Helpers:
                 websocket_helper.broadcast_user(user_id, 'send_temp_path',{
                 'path': tempDir
                 })
+    @staticmethod
+    def backup_select(path, user_id):
+        if user_id:
+            websocket_helper.broadcast_user(user_id, 'send_temp_path',{
+            'path': path
+        })
 
     @staticmethod
     def unzip_backup_archive(backup_path, zip_name):

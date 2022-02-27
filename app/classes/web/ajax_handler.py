@@ -146,6 +146,22 @@ class AjaxHandler(BaseHandler):
                         helper.generate_zip_dir(path))
             self.finish()
 
+        elif page == "get_backup_tree":
+            server_id = self.get_argument('id', None)
+            path = self.get_argument('path', None)
+
+            self.write(helper.get_os_understandable_path(path) + '\n' +
+                        helper.generate_backup_tree(path, server_id))
+            self.finish()
+
+        elif page == "get_backup_dir":
+            server_id = self.get_argument('id', None)
+            path = self.get_argument('path', None)
+
+            self.write(helper.get_os_understandable_path(path) + '\n' +
+                        helper.generate_backup_dir(path, server_id))
+            self.finish()
+
         elif page == "get_dir":
             server_id = self.get_argument('id', None)
             path = self.get_argument('path', None)
@@ -316,6 +332,11 @@ class AjaxHandler(BaseHandler):
         elif page == "unzip_server":
             path = self.get_argument('path', None)
             helper.unzipServer(path, exec_user['user_id'])
+            return
+
+        elif page == "backup_select":
+            path = self.get_argument('path', None)
+            helper.backup_select(path, exec_user['user_id'])
             return
 
 

@@ -437,9 +437,6 @@
       message: '<p class="text-center mb-0"><i class="fa fa-spin fa-cog"></i> Please wait while we gather your files...</p>',
       closeButton: false
   });
-  setTimeout(function(){
-    dialog.modal('hide');
-}, 5000);
     $.ajax({
       type: "POST",
       headers: {'X-XSRFToken': token},
@@ -587,9 +584,20 @@ function hide(event) {
     }
     if (webSocket) {
       webSocket.on('send_temp_path', function (data) {
-        document.getElementById('main-tree-input').setAttribute('value', data.path)
-        getTreeView(data.path);
-        show_file_tree();
+        setTimeout(function(){
+          var x = document.querySelector('.bootbox');
+          if (x) {
+            x.remove()
+          }
+          var x = document.querySelector('.modal-backdrop');
+          if (x) {
+            x.remove()
+          }
+          document.getElementById('main-tree-input').setAttribute('value', data.path)
+          getTreeView(data.path);
+          show_file_tree();
+  
+      }, 5000);
       });
     }
 
