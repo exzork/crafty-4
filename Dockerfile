@@ -28,7 +28,7 @@ RUN groupadd -g "${PGID:-0}" -o crafty \
     && apt-get clean \
     && python3 -m venv /commander-venv/ \
     && . /commander-venv/bin/activate \
-    && pip3 install --no-cache-dir --upgrade setuptools==50.3.2 pip==20.3.3 \
+    && pip3 install --no-cache-dir --upgrade setuptools==50.3.2 pip==22.0.3 \
     && pip3 install --no-cache-dir -r /commander-venv/requirements.txt \
     && deactivate \
     && chown -R crafty:crafty /commander-venv
