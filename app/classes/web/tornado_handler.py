@@ -4,6 +4,8 @@ import json
 import asyncio
 import logging
 
+from app.classes.web.file_handler import FileHandler
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -122,6 +124,7 @@ class Webserver:
             (r'/panel/(.*)', PanelHandler, handler_args),
             (r'/server/(.*)', ServerHandler, handler_args),
             (r'/ajax/(.*)', AjaxHandler, handler_args),
+            (r'/files/(.*)', FileHandler, handler_args),
             (r'/api/stats/servers', ServersStats, handler_args),
             (r'/api/stats/node', NodeStats, handler_args),
             (r'/ws', SocketHandler, handler_args),

@@ -32,7 +32,7 @@
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-          {% include "parts/server_controls_list.html %}
+          {% include "parts/server_controls_list.html" %}
 
           <div class="row">
             <div class="col-md-6 col-sm-12">
@@ -188,14 +188,14 @@
               </div>
               <div class="text-center">
                 {% if data['server_stats']['running'] %}
-                <button onclick="send_command(server_id, 'update_executable');" id="update_executable"
+                <button onclick="send_command(serverId, 'update_executable');" id="update_executable"
                   style="max-width: 7rem;" class="btn btn-warning m-1 flex-grow-1 disabled">{{ translate('serverConfig',
                   'update', data['lang']) }}</button>
                 <a class="btn btn-sm btn-danger disabled">{{ translate('serverConfig', 'deleteServer', data['lang'])
                   }}</a><br />
                 <small>{{ translate('serverConfig', 'stopBeforeDeleting', data['lang']) }}</small>
                 {% else %}
-                <button onclick="send_command(server_id, 'update_executable');" id="update_executable"
+                <button onclick="send_command(serverId, 'update_executable');" id="update_executable"
                   style="max-width: 7rem;" class="btn btn-warning m-1 flex-grow-1">{{ translate('serverConfig',
                   'update', data['lang']) }}</button>
                 <button onclick="deleteConfirm()" class="btn btn-sm btn-danger">{{ translate('serverConfig',
@@ -221,6 +221,8 @@
 {% block js %}
 <script>
 
+  const serverId = new URLSearchParams(document.location.search).get('id')
+
 
   //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
   function getCookie(name) {
@@ -238,7 +240,7 @@
     $.ajax({
       type: "DELETE",
       headers: { 'X-XSRFToken': token },
-      url: '/ajax/delete_server?id={{ data['server_stats']['server_id']['server_id'] }}',
+      url: '/ajax/delete_server?id=' + serverId,
       data: {
       },
       success: function (data) {
@@ -252,7 +254,7 @@
     $.ajax({
       type: "DELETE",
       headers: { 'X-XSRFToken': token },
-      url: '/ajax/delete_server_files?id={{ data['server_stats']['server_id']['server_id'] }}',
+      url: '/ajax/delete_server_files?id=' + serverId,
       data: {
       },
       success: function (data) {
@@ -262,16 +264,14 @@
     });
   }
 
-  let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
-
-  function send_command(server_id, command) {
+  function send_command(serverId, command) {
     //<!--  this getCookie function is in base.html-->
     var token = getCookie("_xsrf");
 
     $.ajax({
       type: "POST",
       headers: { 'X-XSRFToken': token },
-      url: '/server/command?command=' + command + '&id=' + server_id,
+      url: '/server/command?command=' + command + '&id=' + serverId,
       success: function (data) {
         console.log("got response:");
         console.log(data);

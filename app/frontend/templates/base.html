@@ -34,6 +34,10 @@
   <link rel="alternate icon" href="/static/assets/images/favicon.png" />
   <link rel="stylesheet" href="/static/assets/css/crafty.css">
 
+  <!-- Alpine.js - The modern jQuery alternative -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- End Alpine.js -->
+
 </head>
 
 <body class="dark-theme">
@@ -375,7 +379,7 @@
     }
 
     function notify(message) {
-      console.log(`notify(${message}})`);
+      console.log(`notify(${message})`);
       var paragraphEl = document.createElement('p');
       var closeEl = document.createElement('span');
 
@@ -410,7 +414,15 @@
     }
     webSocket.on('notification', notify);
 
+    document.addEventListener('alpine:init', () => {
+      console.log('%c[Crafty Controller] %cAlpine.js pre-initialization!', 'font-weight: 900; color: #800080;', 'color: #eee;');
+    })
+    document.addEventListener('alpine:initialized', () => {
+      console.log('%c[Crafty Controller] %cAlpine.js initialized!', 'font-weight: 900; color: #800080;', 'color: #eee;');
+    })
+
     $(document).ready(function () {
+      console.log('%c[Crafty Controller] %cReady for JS!', 'font-weight: 900; color: #800080;', 'font-weight: 900; color: #eee;');
       $('#support_logs').click(function () {
         var dialog = bootbox.dialog({
           message: '<p class="text-center mb-0"><i class="fa fa-spin fa-cog"></i>{{ translate('notify', 'preparingLogs', data['lang']) }}</p>',

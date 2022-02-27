@@ -61,9 +61,9 @@
             </div>
             {% else %}
             <div id="control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
-              <button onclick="send_command(server_id, 'start_server');" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate('serverTerm', 'start', data['lang']) }}</button>
-              <button onclick="send_command(server_id, 'restart_server');" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate('serverTerm', 'restart', data['lang']) %}</button>
-              <button onclick="send_command(server_id, 'stop_server');" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1">{{ translate('serverTerm', 'stop', data['lang']) }}</button>
+              <button onclick="send_command(serverId, 'start_server');" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate('serverTerm', 'start', data['lang']) }}</button>
+              <button onclick="send_command(serverId, 'restart_server');" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate('serverTerm', 'restart', data['lang']) %}</button>
+              <button onclick="send_command(serverId, 'stop_server');" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1">{{ translate('serverTerm', 'stop', data['lang']) }}</button>
             </div>
             {% end %}
             {% end %}
@@ -93,7 +93,9 @@
 {% block js %}
 <script>
 
-  function send_command(server_id, command) {
+  const serverId = new URLSearchParams(document.location.search).get('id')
+
+  function send_command(serverId, command) {
     if (command == 'start_server') {
       startBtn.setAttribute('disabled', 'disabled');
       restartBtn.removeAttribute('disabled');
@@ -110,7 +112,7 @@
     $.ajax({
       type: "POST",
       headers: { 'X-XSRFToken': token },
-      url: '/server/command?command=' + command + '&id=' + server_id,
+      url: '/server/command?command=' + command + '&id=' + serverId,
       success: function (data) {
         console.log("got response:");
         console.log(data);
@@ -120,28 +122,28 @@
   if (webSocket) {
     webSocket.on('update_button_status', function (updateButton) {
       if (updateButton.isUpdating) {
-        if (updateButton.server_id == '{{ data['server_stats']['server_id']['server_id'] }}') {
+        if (updateButton.server_id == serverId) {
       console.log(updateButton.isUpdating)
-      document.getElementById('control_buttons').innerHTML = '<button onclick="" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "updating", data['lang']) }}</button><button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data['lang']) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data['lang']) }}</button>';
+      document.getElementById('control_buttons').innerHTML = '<button onclick="" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "updating", data["lang"]) }}</button><button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data["lang"]) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data["lang"]) }}</button>';
     }
   }
   else {
-    if (updateButton.server_id == '{{ data['server_stats']['server_id']['server_id'] }}') {
+    if (updateButton.server_id == serverId) {
       window.location.reload()
-      document.getElementById('update_control_buttons').innerHTML = '<button onclick="send_command(server_id, "start_server");" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "start", data['lang']) }}</button><button onclick="send_command(server_id, "restart_server");" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data['lang']) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data['lang']) }}</button>';
+      document.getElementById('update_control_buttons').innerHTML = '<button onclick="send_command(serverId, "start_server");" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "start", data["lang"]) }}</button><button onclick="send_command(serverId, "restart_server");" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data["lang"]) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data["lang"]) }}</button>';
     }
   }
     });
   }
   // Convert running to lower case (example: 'True' converts to 'true') and
   // then to boolean via JSON.parse()
-  let online = JSON.parse('{{ data['server_stats']['running'] }}'.toLowerCase());
+  let online = JSON.parse("{{ data['server_stats']['running'] }}".toLowerCase());
 
   let startBtn = document.querySelector('#start-btn');
   let restartBtn = document.querySelector('#restart-btn');
   let stopBtn = document.querySelector('#stop-btn');
 
-  {% if data['permissions']['Commands'] in data['user_permissions'] %}
+  //{% if data['permissions']['Commands'] in data['user_permissions'] %}
   if (online) {
     startBtn.setAttribute('disabled', 'disabled');
     restartBtn.removeAttribute('disabled');
@@ -151,14 +153,12 @@
     restartBtn.setAttribute('disabled', 'disabled');
     stopBtn.setAttribute('disabled', 'disabled');
   }
-  {% end %}
-
-  let server_id = '{{ data['server_stats']['server_id']['server_id'] }}';
+  //{% end %}
 
   function get_server_log() {
     $.ajax({
       type: 'GET',
-      url: '/ajax/server_log?id={{ data['server_stats']['server_id']['server_id'] }}',
+      url: '/ajax/server_log?id=' + serverId,
       dataType: 'text',
       success: function (data) {
         console.log('Got Log From Server')
@@ -195,7 +195,7 @@
   $('#server_command').on('keydown', function (e) {
     if (e.which == 13) {
       $(this).attr("disabled", "disabled"); //Disable textbox to prevent multiple submit
-      send_command_to_server()
+      sendConsoleCommand()
       $(this).removeAttr("disabled"); //Enable the textbox again if needed.
       $(this).focus();
     }
@@ -211,7 +211,7 @@
 
   $("#submit").click(function (e) {
     e.preventDefault();
-    send_command_to_server();
+    sendConsoleCommand();
 
   });
 
@@ -222,28 +222,31 @@
   }
 
 
-  function send_command_to_server() {
-    var server_command = $("#server_command").val()
-    console.log(server_command)
+  async function sendConsoleCommand() {
+    let serverCommand = $("#server_command").val()
+    console.log(serverCommand)
 
-    cmdHistory.push(server_command);
+    cmdHistory.push(serverCommand);
 
-    var token = getCookie("_xsrf")
+    let token = getCookie("_xsrf")
 
-    data_to_send = { command: server_command, }
+    let formdata = new FormData();
 
-    console.log('sending command: ' + server_command)
-    $.ajax({
-      type: "POST",
-      headers: { 'X-XSRFToken': token },
-      url: '/ajax/send_command?id={{ data['server_stats']['server_id']['server_id'] }}',
-      data: data_to_send,
-      success: function (data) {
-        console.log("got response:");
-        console.log(data);
-        $("#server_command").val('')
+    formdata.append('command', serverCommand)
+
+    console.log('sending command: ' + serverCommand)
+    let res = await fetch("/ajax/send_command?id=" + serverId, {
+      method: 'POST',
+      headers: {
+        'X-XSRFToken': token
       },
+      body: formdata,
     });
+    
+    let responseData = await res.text();
+    console.log("got response:");
+    console.log(responseData);
+    $("#server_command").val('')
   }
 
 
