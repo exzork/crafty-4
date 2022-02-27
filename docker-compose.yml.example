@@ -15,3 +15,4 @@ services:
       - ./docker/logs:/commander/logs
       - ./docker/servers:/commander/servers
       - ./docker/config:/commander/app/config
+      - ./import:/commander/import
