@@ -756,10 +756,17 @@ class Helpers:
                     <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
                       <i class="far fa-folder"></i>
                       <i class="far fa-folder-open"></i>
-                      {filename}
+                      <strong>{filename}</strong>
                       </span>
                     </input></div><li>
                     \n"""\
+
+            else:
+                output += f"""<li
+                class="tree-item tree-ctx-item tree-file"
+                data-path="{dpath}"
+                data-name="{filename}"
+                onclick=""><input type='checkbox' name='root_path' value='{dpath}'><span style="margin-right: 6px;"><i class="far fa-file"></i></span></input>{filename}</li>"""
 
         return output
 
@@ -782,9 +789,17 @@ class Helpers:
                     <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
                       <i class="far fa-folder"></i>
                       <i class="far fa-folder-open"></i>
-                      {filename}
+                      <strong>{filename}</strong>
                       </span>
                     </input></div><li>"""\
+
+            else:
+                output += f"""<li
+                class="tree-item tree-ctx-item tree-file"
+                data-path="{dpath}"
+                data-name="{filename}"
+                onclick=""><input type='checkbox' name='root_path' value='{dpath}'><span style="margin-right: 6px;"><i class="far fa-file"></i></span></input>{filename}</li>"""
+
 
         return output
 

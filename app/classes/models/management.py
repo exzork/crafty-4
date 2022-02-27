@@ -354,7 +354,7 @@ class helpers_management:
                     Servers.update(backup_path=backup_path).where(Servers.server_id == server_id)
                 Backups.create(**conf)
             logger.debug("Creating new backup record.")
-    
+
     @staticmethod
     def get_excluded_backup_dirs(server_id: int):
         excluded_dirs = helpers_management.get_backup_config(server_id)['excluded_dirs']
@@ -370,7 +370,7 @@ class helpers_management:
             management_helper.set_backup_config(server_id=server_id, excluded_dirs=excluded_dirs)
         else:
             logger.debug(f"Not adding {dir_to_add} to excluded directories - already in the excluded directory list for server ID {server_id}")
-    
+
     @staticmethod
     def del_excluded_backup_dir(server_id: int, dir_to_del: str):
         dir_list = management_helper.get_excluded_backup_dirs()
