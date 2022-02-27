@@ -51,4 +51,3 @@ EXPOSE 25500-25600
 USER crafty
 ENTRYPOINT ["/commander/docker_launcher.sh"]
 CMD ["-v", "-d", "-i"]
-
