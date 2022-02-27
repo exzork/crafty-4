@@ -357,7 +357,7 @@ class helpers_management:
     
     @staticmethod
     def get_excluded_backup_dirs(server_id: int):
-        excluded_dirs = Backups.select(Backups.excluded_dirs).where(Backups.server_id == server_id).execute()
+        excluded_dirs = helpers_management.get_backup_config(server_id)['excluded_dirs']
         dir_list = excluded_dirs.split(",")
         return dir_list
 
