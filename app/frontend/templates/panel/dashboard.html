@@ -124,9 +124,9 @@
               <tbody>
                 {% for server in data['servers'] %}
                 <tr id="{{server['server_data']['server_id']}}" draggable="true" ondragstart="start()"  ondragover="dragover()" ondragend="dragend()">
-                  <td>
+                  <td draggable="false">
                     <i class="fas fa-server"></i>
-                    <a href="/panel/server_detail?id={{server['server_data']['server_id']}}">
+                    <a draggable="false" href="/panel/server_detail?id={{server['server_data']['server_id']}}">
                       {{ server['server_data']['server_name'] }}
                     </a>
                   </td>

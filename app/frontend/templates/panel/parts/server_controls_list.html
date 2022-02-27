@@ -14,7 +14,7 @@
     {% end %}
     {% if data['permissions']['Schedule'] in data['user_permissions'] %}
     <li class="nav-item term-nav-item">
-        <a class="nav-link {% if data['active_link'] == 'tasks' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=tasks" role="tab" aria-selected="false">
+        <a class="nav-link {% if data['active_link'] == 'schedules' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=schedules" role="tab" aria-selected="false">
         <i class="fas fa-clock"></i>{{ translate('serverDetails', 'schedule', data['lang']) }}</a>
     </li>
     {% end %}
