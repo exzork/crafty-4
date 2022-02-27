@@ -4,6 +4,10 @@ services:
   crafty:
     container_name: crafty_commander
     image: registry.gitlab.com/crafty-controller/crafty-commander:latest
+    environment:
+      - PGID=0
+      - PUID=0
+      - TZ=Etc/UTC
     ports:
       - "8000:8000" # HTTP
       - "8443:8443" # HTTPS
@@ -15,4 +19,4 @@ services:
       - ./docker/logs:/commander/logs
       - ./docker/servers:/commander/servers
       - ./docker/config:/commander/app/config
-      - ./import:/commander/import
+      - ./docker/import:/commander/import
