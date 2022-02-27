@@ -118,7 +118,6 @@ class TasksManager:
     def _main_graceful_exit(self):
         try:
             os.remove(helper.session_file)
-            #os.remove(os.path.join(helper.root_dir, '.header'))
             self.controller.stop_all_servers()
         except:
             logger.info("Caught error during shutdown", exc_info=True)
