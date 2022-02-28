@@ -5,8 +5,6 @@ services:
     container_name: crafty_commander
     build: ..
     environment:
-      - PGID=0
-      - PUID=0
       - TZ=Etc/UTC
     ports:
       - "8000:8000" # HTTP
