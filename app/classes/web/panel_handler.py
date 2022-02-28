@@ -429,6 +429,7 @@ class PanelHandler(BaseHandler):
                         return
                 server_info = self.controller.servers.get_server_data_by_id(server_id)
                 page_data['backup_config'] = self.controller.management.get_backup_config(server_id)
+                page_data['exclusions'] = self.controller.management.get_excluded_backup_dirs(server_id)
                 self.controller.refresh_server_settings(server_id)
                 try:
                     page_data['backup_list'] = server.list_backups()
