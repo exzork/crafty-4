@@ -17,7 +17,6 @@ from tornado.ioloop import IOLoop
 #TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
 from cron_validator import CronValidator
-from app.classes.controllers.management_controller import Management_Controller
 
 from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.models.crafty_permissions import Enum_Permissions_Crafty

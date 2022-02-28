@@ -569,16 +569,16 @@ class Server:
             backup_filename = f"{self.settings['backup_path']}/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
             logger.info(f"Creating backup of server '{self.settings['server_name']}'" +
                         f" (ID#{self.server_id}, path={self.server_path}) at '{backup_filename}'")
-            
+
             tempDir = tempfile.mkdtemp()
             shutil.copytree(self.server_path, tempDir, dirs_exist_ok=True)
             excluded_dirs = management_helper.get_excluded_backup_dirs(self.server_id)
             server_dir = helper.get_os_understandable_path(self.settings['path'])
 
-            for dir in excluded_dirs:
+            for my_dir in excluded_dirs:
                 # Take the full path of the excluded dir and replace the server path with the temp path
                 # This is so that we're only deleting excluded dirs from the temp path and not the server path
-                excluded_dir = helper.get_os_understandable_path(dir).replace(server_dir, helper.get_os_understandable_path(tempDir))
+                excluded_dir = helper.get_os_understandable_path(my_dir).replace(server_dir, helper.get_os_understandable_path(tempDir))
                 # Next, check to see if it is a directory
                 if os.path.isdir(excluded_dir):
                     # If it is a directory, recursively delete the entire directory from the backup
@@ -586,7 +586,7 @@ class Server:
                 else:
                     # If not, just remove the file
                     os.remove(excluded_dir)
-            
+
             shutil.make_archive(helper.get_os_understandable_path(backup_filename), 'zip', tempDir)
 
             while len(self.list_backups()) > conf["max_backups"] and conf["max_backups"] > 0:
