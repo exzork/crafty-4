@@ -583,6 +583,7 @@ class Server:
                         f" (ID#{self.server_id}, path={self.server_path}) at '{backup_filename}'")
 
             tempDir = tempfile.mkdtemp()
+            # pylint: disable=unexpected-keyword-arg
             shutil.copytree(self.server_path, tempDir, dirs_exist_ok=True)
             excluded_dirs = management_helper.get_excluded_backup_dirs(self.server_id)
             server_dir = helper.get_os_understandable_path(self.settings['path'])
