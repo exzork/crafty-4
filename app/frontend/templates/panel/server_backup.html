@@ -327,7 +327,8 @@ const server_id = new URLSearchParams(document.location.search).get('id')
             label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
           },
           confirm: {
-            label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "restore", data['lang']) }}'
+            label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "restore", data['lang']) }}',
+          className: 'btn-outline-danger'
           }
         },
         callback: function (result) {
