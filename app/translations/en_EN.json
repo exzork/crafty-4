@@ -235,7 +235,11 @@
         "options": "Options",
         "restoring": "Restoring Backup. This may take a while. Please be patient.",
         "restore": "Restore",
-        "confirmRestore": "Are you sure you want to restore from this backup. All current server files will changed to backup state and will be unrecoverable."
+        "confirmRestore": "Are you sure you want to restore from this backup. All current server files will changed to backup state and will be unrecoverable.",
+        "excludedBackups": "Excluded Paths: ",
+        "excludedChoose": "Choose the paths you wish to exclude from your backups",
+        "clickExclude": "Click to select Exclusions",
+        "exclusionsTitle": "Backup Exclusions"
     },
     "serverFiles": {
         "noscript": "The file manager does not work without JavaScript",
