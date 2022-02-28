@@ -24,14 +24,14 @@
   </div>
   <!-- Page Title Header Ends-->
 
- {% include "parts/details_stats.html %}
+ {% include "parts/details_stats.html" %}
 
   <div class="row">
 
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-            {% include "parts/server_controls_list.html %}
+            {% include "parts/server_controls_list.html" %}
 
             <div class="col-md-12">
               <div class="input-group">
@@ -55,40 +55,42 @@
 
 {% block js %}
 <script>
-    function get_server_log(){
-      if( !$("#stop_scroll").is(':checked')){
-        $.ajax({
-            type: 'GET',
-            url: '/ajax/server_log?id={{ data['server_stats']['server_id']['server_id'] }}&full=1',
-            dataType: 'text',
-            success: function (data) {
-                console.log('Got Log From Server')
-                $('#virt_console').html(data);
-                scroll();
-             },
-        });
-      }
+
+  const serverId = new URLSearchParams(document.location.search).get('id')
+  function get_server_log(){
+    if( !$("#stop_scroll").is(':checked')){
+      $.ajax({
+        type: 'GET',
+        url: '/ajax/server_log?id=' + serverId + '&full=1',
+        dataType: 'text',
+        success: function (data) {
+          console.log('Got Log From Server')
+          $('#virt_console').html(data);
+          scroll();
+        },
+      });
     }
+  }
 
-    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
-    function getCookie(name) {
-        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
-        return r ? r[1] : undefined;
-    }
+  //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+  function getCookie(name) {
+    var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+    return r ? r[1] : undefined;
+  }
 
-    $( document ).ready(function() {
-        console.log( "ready!" );
-        get_server_log()
-
-
-    });
+  $( document ).ready(function() {
+    console.log( "ready!" );
+    get_server_log()
 
 
-    function scroll(){
-        var logview = $('#virt_console');
-        if(logview.length)
-           logview.scrollTop(logview[0].scrollHeight - logview.height());
-    }
+  });
+
+
+  function scroll(){
+    var logview = $('#virt_console');
+    if(logview.length)
+      logview.scrollTop(logview[0].scrollHeight - logview.height());
+  }
 
 
 </script>

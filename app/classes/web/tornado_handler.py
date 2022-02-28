@@ -14,6 +14,7 @@ try:
     import tornado.escape
     import tornado.locale
     import tornado.httpserver
+    from app.classes.web.file_handler import FileHandler
     from app.classes.web.public_handler import PublicHandler
     from app.classes.web.panel_handler import PanelHandler
     from app.classes.web.default_handler import DefaultHandler
@@ -122,6 +123,7 @@ class Webserver:
             (r'/panel/(.*)', PanelHandler, handler_args),
             (r'/server/(.*)', ServerHandler, handler_args),
             (r'/ajax/(.*)', AjaxHandler, handler_args),
+            (r'/files/(.*)', FileHandler, handler_args),
             (r'/api/stats/servers', ServersStats, handler_args),
             (r'/api/stats/node', NodeStats, handler_args),
             (r'/ws', SocketHandler, handler_args),

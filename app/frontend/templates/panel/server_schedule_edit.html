@@ -31,7 +31,7 @@
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-            {% include "parts/server_controls_list.html %}
+            {% include "parts/server_controls_list.html" %}
 
             <div class="row">
                 <div class="col-md-8 col-sm-8">
@@ -233,18 +233,18 @@ function startup(){
   try{
     document.getElementById("{{ data['schedule']['interval_type'] }}").setAttribute('selected', true);
   }catch{
-    console.log("no element named {{ data['schedule']['interval_type'] }}")
+    console.log("no element named")
   }
   try{
   document.getElementById("{{ data['schedule']['difficulty'] }}").setAttribute('selected', true);
 }catch{
-  console.log("no element named {{ data['schedule']['difficulty'] }}")
+  console.log("no element named")
 }
 try{
   document.getElementById("{{ data['schedule']['action'] }}").setAttribute('selected', true);
 
 }catch{
-  console.log("no element named {{ data['schedule']['action'] }}")
+  console.log("no element named")
 }
   ifDays();
   yesnoCheck();

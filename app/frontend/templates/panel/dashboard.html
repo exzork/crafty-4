@@ -134,29 +134,43 @@
                   <td id="controls{{server['server_data']['server_id']}}" class="actions_serverlist">
                     {% if server['user_command_permission'] %}
                     {% if server['stats']['running'] %}
-                    <a class="stop_button" data-id="{{server['server_data']['server_id']}}" data-toggle="tooltip"
-                      title={{ translate('dashboard', 'stop' , data['lang']) }}> <i class="fas fa-stop"></i></a> &nbsp;
-                    <a class="restart_button" data-id="{{server['server_data']['server_id']}}" data-toggle="tooltip"
-                      title={{ translate('dashboard', 'restart' , data['lang']) }}> <i class="fas fa-sync"></i></a>
-                    &nbsp;
-                    <a class="kill_button" data-id="{{server['server_data']['server_id']}}" class="kill_button"
-                      data-toggle="tooltip" title={{ translate('dashboard', 'kill' , data['lang']) }}> <i
-                        class="fas fa-skull"></i></a> &nbsp;
+                    <a data-id="{{server['server_data']['server_id']}}" class="stop_button"
+                      data-toggle="tooltip" title="{{ translate('dashboard', 'stop' , data['lang']) }}">
+                      <i class="fas fa-stop"></i>
+                    </a> &nbsp;
+
+                    <a data-id="{{server['server_data']['server_id']}}" class="restart_button"
+                      data-toggle="tooltip" title="{{ translate('dashboard', 'restart' , data['lang']) }}">
+                      <i class="fas fa-sync"></i>
+                    </a> &nbsp;
+
+                    <a data-id="{{server['server_data']['server_id']}}" class="kill_button"
+                      data-toggle="tooltip" title="{{ translate('dashboard', 'kill' , data['lang']) }}">
+                      <i class="fas fa-skull"></i>
+                    </a> &nbsp;
+
                     {% elif server['stats']['updating']%}
+                    <!-- WHAT HAPPENED HERE -->
                     <a data-id="{{server['server_data']['server_id']}}" class="">{{ translate('serverTerm', 'updating',
                       data['lang']) }}</i></a>
                     {% elif server['stats']['waiting_start']%}
+                    <!-- WHAT HAPPENED HERE -->
                     <a data-id="{{server['server_data']['server_id']}}" class="" title={{
                       translate('dashboard', 'delay-explained' , data['lang'])}}>{{ translate('dashboard', 'starting',
                       data['lang']) }}</i></a>
                     {% else %}
-                    <a data-id="{{server['server_data']['server_id']}}" class="play_button"><i class="fas fa-play"
-                        data-toggle="tooltip" title={{ translate('dashboard', 'start' , data['lang']) }}></i></a> &nbsp;
-                    <a data-id="{{server['server_data']['server_id']}}" class="clone_button"> <i class="fas fa-clone"
-                        data-toggle="tooltip" title={{ translate('dashboard', 'clone' , data['lang']) }}></i></a>&nbsp;
-                    <a class="kill_button" data-id="{{server['server_data']['server_id']}}" class="kill_button"
-                      data-toggle="tooltip" title={{ translate('dashboard', 'kill' , data['lang']) }}> <i
-                        class="fas fa-skull"></i></a> &nbsp;
+                    <a data-id="{{server['server_data']['server_id']}}" class="play_button"
+                      data-toggle="tooltip" title="{{ translate('dashboard', 'start' , data['lang']) }}">
+                      <i class="fas fa-play"></i>
+                    </a> &nbsp;
+                    <a data-id="{{server['server_data']['server_id']}}" class="clone_button"
+                      data-toggle="tooltip" title="{{ translate('dashboard', 'clone' , data['lang']) }}">
+                      <i class="fas fa-clone"></i>
+                    </a> &nbsp;
+                    <a data-id="{{server['server_data']['server_id']}}" class="kill_button"
+                      data-toggle="tooltip" title="{{ translate('dashboard', 'kill' , data['lang']) }}">
+                      <i class="fas fa-skull"></i>
+                    </a> &nbsp;
                     {% end %}
                     {% end %}
                   </td>
@@ -439,9 +453,9 @@
       send_command(server_id, 'start_server');
       bootbox.alert({
         backdrop: true,
-        title: '{% raw translate("dashboard", "sendingCommand", data['lang']) %}',
-        message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientStart", data['lang']) %} </div>'
-    });
+        title: '{% raw translate("dashboard", "sendingCommand", data["lang"]) %}',
+        message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientStart", data["lang"]) %} </div>'
+      });
     });
 
     $(".stop_button").click(function () {
@@ -450,9 +464,9 @@
       send_command(server_id, 'stop_server');
       bootbox.alert({
         backdrop: true,
-        title: '{% raw translate("dashboard", "sendingCommand", data['lang']) %}',
-        message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientStop", data['lang']) %} </div>'
-    });
+        title: '{% raw translate("dashboard", "sendingCommand", data["lang"]) %}',
+        message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientStop", data["lang"]) %} </div>'
+      });
     });
 
     $(".restart_button").click(function () {
@@ -460,9 +474,9 @@
       send_command(server_id, 'restart_server');
       bootbox.alert({
         backdrop: true,
-        title: '{% raw translate("dashboard", "sendingCommand", data['lang']) %}',
-        message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientRestart", data['lang']) %} </div>'
-    });
+        title: '{% raw translate("dashboard", "sendingCommand", data["lang"]) %}',
+        message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientRestart", data["lang"]) %} </div>'
+      });
     });
     $(".kill_button").click(function () {
       server_id = $(this).attr("data-id");
@@ -470,11 +484,11 @@
         message: "This will kill the server process and all it's subprocesses. Killing a process can potentially corrupt files. Only do this in extreme circumstances. Are you sure you would like to continue?",
         buttons: {
           confirm: {
-            label: '{% raw translate("dashboard", "kill", data['lang']) %}',
+            label: '{% raw translate("dashboard", "kill", data["lang"]) %}',
             className: 'btn-danger'
           },
           cancel: {
-            label: '{% raw translate("panelConfig", "cancel", data['lang']) %}',
+            label: '{% raw translate("panelConfig", "cancel", data["lang"]) %}',
             className: 'btn-secondary'
           }
         },
@@ -482,7 +496,7 @@
           if (result) {
             send_kill(server_id);
             var dialog = bootbox.dialog({
-              title: '{% raw translate("dashboard", "killing", data['lang']) %}',
+              title: '{% raw translate("dashboard", "killing", data["lang"]) %}',
               message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>'
             });
 
@@ -524,13 +538,13 @@
 
     if (webSocket) {
       webSocket.on('update_button_status', function (updateButton) {
-        var id = 'controls';
-        var dataId = updateButton.server_id;
-        var string = updateButton.string
-        var id = id.concat(updateButton.server_id);
-        if (updateButton.isUpdating) {
-          console.log(updateButton.isUpdating)
-          document.getElementById(id).innerHTML = string;
+        let serverId = updateButton.server_id;
+        let message = updateButton.string;
+        let updating = updateButton.isUpdating;
+        let id = 'controls' + serverId;
+        if (updating) {
+          console.log(updating)
+          document.getElementById(id).innerHTML = message;
         }
         else {
           window.location.reload()
@@ -547,9 +561,9 @@
       send_command(server_id, 'clone_server');
       bootbox.alert({
         backdrop: true,
-        title: '{% raw translate("dashboard", "sendingCommand", data['lang']) %}',
-        message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientClone", data['lang']) %} </div>'
-    });
+        title: '{% raw translate("dashboard", "sendingCommand", data["lang"]) %}',
+        message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientClone", data["lang"]) %} </div>'
+      });
     });
 
   });

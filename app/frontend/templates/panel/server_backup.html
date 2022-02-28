@@ -116,7 +116,7 @@
                                 </a>
                                 <br>
                                 <br>
-                                <button data-file="{{ backup['path'] }}" class="btn btn-danger del_button">
+                                <button data-file="{{ backup['path'] }}" data-backup_path="{{ data['backup_path'] }}" class="btn btn-danger del_button">
                                     <i class="fas fa-trash" aria-hidden="true"></i>
                                     {{ translate('serverBackups', 'delete', data['lang']) }}
                                 </button>
@@ -206,135 +206,137 @@
 
 const server_id = new URLSearchParams(document.location.search).get('id')
 
-    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
-    function getCookie(name) {
-        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
-        return r ? r[1] : undefined;
-    }
 
-    function backup_started(time='5-10') {
-            bootbox.alert({
-            message: "{{ translate('serverBackups', 'backupTask', data['lang']) }}",
-            backdrop: true
-        });
-    }
+  //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+  function getCookie(name) {
+    var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+    return r ? r[1] : undefined;
+  }
 
-    function del_backup(filename, id){
-        var token = getCookie("_xsrf")
+  function backup_started(time='5-10') {
+    bootbox.alert({
+      message: "{{ translate('serverBackups', 'backupTask', data['lang']) }}",
+      backdrop: true
+    });
+  }
 
-        data_to_send = { file_name :filename}
+  function del_backup(filename, id){
+    var token = getCookie("_xsrf")
 
-        console.log('Sending Command to delete backup: ' + filename)
-        $.ajax({
-          type: "DELETE",
-          headers: {'X-XSRFToken': token},
-          url: '/ajax/del_backup?server_id='+id,
-          data: {
-          file_path: filename,
-          id: id
-          },
-          success: function(data) {
-            location.reload();
-          },
-        });
-    }
+    data_to_send = { file_name :filename}
 
-    function restore_backup(filename, id){
-      var token = getCookie("_xsrf")
+    console.log('Sending Command to delete backup: ' + filename)
+    $.ajax({
+      type: "DELETE",
+      headers: {'X-XSRFToken': token},
+      url: '/ajax/del_backup?server_id='+id,
+      data: {
+      file_path: filename,
+      id: id
+      },
+      success: function(data) {
+        location.reload();
+      },
+    });
+  }
 
-      console.log('Sending Command to restore backup: ' + filename)
-      $.ajax({
-        type: "POST",
-        headers: {'X-XSRFToken': token},
-        url: '/ajax/restore_backup?server_id='+id,
-        data: {
-        zip_file: filename,
-        id: id
-        },
-        success: function(data) {
-          var dialog = bootbox.dialog({
-            message: '<i class="fa fa-spin fa-spinner"></i> {{ translate('serverBackups', 'restoring', data['lang']) }}',
-            closeButton: false
-        });
-        setTimeout(function(){
-          location.href=('/panel/dashboard');
-      }, 15000);
-        },
+  function restore_backup(filename, id){
+    var token = getCookie("_xsrf")
+
+    console.log('Sending Command to restore backup: ' + filename)
+    $.ajax({
+      type: "POST",
+      headers: {'X-XSRFToken': token},
+      url: '/ajax/restore_backup?server_id='+id,
+      data: {
+      zip_file: filename,
+      id: id
+      },
+      success: function(data) {
+        var dialog = bootbox.dialog({
+          message: '<i class="fa fa-spin fa-spinner"></i> {{ translate('serverBackups', 'restoring', data['lang']) }}',
+          closeButton: false
       });
+      setTimeout(function(){
+        location.href=('/panel/dashboard');
+    }, 15000);
+      },
+    });
   }
 
 
-    $( document ).ready(function() {
-        console.log( "ready!" );
-        $("#backup_config_box").hide();
-        $("#backup_save_note").hide();
+  $( document ).ready(function() {
+    console.log( "ready!" );
+    $("#backup_config_box").hide();
+    $("#backup_save_note").hide();
 
-        $("#show_config").click(function () {
-            $("#backup_config_box").toggle();
-            $('#backup_button').hide();
-            $('#backup_save_note').show();
-            $('#backup_data').hide();
-        });
+    $("#show_config").click(function () {
+      $("#backup_config_box").toggle();
+      $('#backup_button').hide();
+      $('#backup_save_note').show();
+      $('#backup_data').hide();
+    });
 
-        $('#backup_table').DataTable({
-            "order": [[ 1, "desc" ]],
-            "paging":true,
-            "lengthChange": false,
-            "searching": true,
-            "ordering": true,
-            "info": true,
-            "autoWidth": false,
-            "responsive": true,
-        });
+    $('#backup_table').DataTable({
+      "order": [[ 1, "desc" ]],
+      "paging":true,
+      "lengthChange": false,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false,
+      "responsive": true,
+    });
 
-        $( ".del_button" ).click(function() {
-            var file_to_del = $(this).data("file");
+    $( ".del_button" ).click(function() {
+      var file_to_del = $(this).data("file");
+      var backup_path = $(this).data('backup_path');
 
-            console.log("file to delete is" + file_to_del);
+      console.log("file to delete is" + file_to_del);
 
-            bootbox.confirm({
-                title: "{% raw translate('serverBackups', 'destroyBackup', data['lang']) %}",
-                message: "{{ translate('serverBackups', 'confirmDelete', data['lang']) }}",
-                buttons: {
-                    cancel: {
-                        label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
-                    },
-                    confirm: {
-                        label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm", data['lang']) }}'
-                    }
-                },
-                callback: function (result) {
-                    console.log(result);
-                    if (result == true) {
-                      var full_path = '{{ data['backup_path'] }}' + '/' + file_to_del;
-                        del_backup(full_path, {{ data['server_stats']['server_id']['server_id'] }} );
-                    }
-                }
-            });
-        });
+      bootbox.confirm({
+        title: "{% raw translate('serverBackups', 'destroyBackup', data['lang']) %}",
+        message: "{{ translate('serverBackups', 'confirmDelete', data['lang']) }}",
+        buttons: {
+          cancel: {
+            label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
+          },
+          confirm: {
+            label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm", data['lang']) }}'
+          }
+        },
+        callback: function (result) {
+          console.log(result);
+          if (result == true) {
+            var full_path = backup_path + '/' + file_to_del;
+            del_backup(full_path, serverId);
+          }
+        }
+      });
+    });
 
-      $( ".restore_button" ).click(function() {
-        var file_to_restore = $(this).data("file");
+    $( ".restore_button" ).click(function() {
+      var file_to_restore = $(this).data("file");
 
 
-        bootbox.confirm({
-            title: "{{ translate('serverBackups', 'restore', data['lang']) }} "+file_to_restore,
-            message: "{{ translate('serverBackups', 'confirmRestore', data['lang']) }}",
-            buttons: {
-                cancel: {
-                    label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
-                },
-                confirm: {
-                    label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "restore", data['lang']) }}'
-                }
-            },
-            callback: function (result) {
-                console.log(result);
-                if (result == true) {
-                    restore_backup(file_to_restore, {{ data['server_stats']['server_id']['server_id'] }} );
-                }
-            }
-        });
+      bootbox.confirm({
+        title: "{{ translate('serverBackups', 'restore', data['lang']) }} "+file_to_restore,
+        message: "{{ translate('serverBackups', 'confirmRestore', data['lang']) }}",
+        buttons: {
+          cancel: {
+            label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
+          },
+          confirm: {
+            label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "restore", data['lang']) }}'
+          }
+        },
+        callback: function (result) {
+          console.log(result);
+          if (result == true) {
+            restore_backup(file_to_restore, serverId);
+          }
+        }
+      });
     });
 
   });
