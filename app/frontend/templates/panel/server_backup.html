@@ -309,7 +309,7 @@ const server_id = new URLSearchParams(document.location.search).get('id')
           console.log(result);
           if (result == true) {
             var full_path = backup_path + '/' + file_to_del;
-            del_backup(full_path, serverId);
+            del_backup(full_path, server_id);
           }
         }
       });
@@ -333,7 +333,7 @@ const server_id = new URLSearchParams(document.location.search).get('id')
         callback: function (result) {
           console.log(result);
           if (result == true) {
-            restore_backup(file_to_restore, serverId);
+            restore_backup(file_to_restore, server_id);
           }
         }
       });
