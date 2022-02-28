@@ -136,8 +136,15 @@
 
     /* TODO Update each element */
     if (server.running){
+      if (server['stats']['waiting_start']){
+        server_status.setAttribute("class", "text-warning");
+        server_status.innerHTML = `{{ translate('serverStats', 'starting', data['lang']) }}`;
+      }
+      else
+      {
         server_status.setAttribute("class", "text-success");
         server_status.innerHTML = `{{ translate('serverStats', 'online', data['lang']) }}`;
+      }
 
       startedUTC = server.started;
       startedUTC = moment.utc(startedUTC, 'YYYY-MM-DD HH:mm:ss');

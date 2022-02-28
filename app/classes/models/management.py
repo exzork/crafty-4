@@ -125,7 +125,7 @@ class Schedules(Model):
 #                                   Backups Class
 #************************************************************************************************
 class Backups(Model):
-    excluded_dirs = CharField(null=True)
+    directories = CharField(null=True)
     max_backups = IntegerField()
     server_id = ForeignKeyField(Servers, backref='backups_server')
     class Meta:
@@ -311,37 +311,34 @@ class helpers_management:
             row = Backups.select().where(Backups.server_id == server_id).join(Servers)[0]
             conf = {
                 "backup_path": row.server_id.backup_path,
-                "excluded_dirs": row.excluded_dirs,
+                "directories": row.directories,
                 "max_backups": row.max_backups,
                 "server_id": row.server_id.server_id
             }
         except IndexError:
             conf = {
                 "backup_path": None,
-                "excluded_dirs": None,
+                "directories": None,
                 "max_backups": 0,
                 "server_id": server_id
             }
         return conf
 
     @staticmethod
-    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, excluded_dirs: list = None):
+    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None):
         logger.debug(f"Updating server {server_id} backup config with {locals()}")
         if Backups.select().where(Backups.server_id == server_id).count() != 0:
             new_row = False
             conf = {}
         else:
             conf = {
-                "excluded_dirs": None,
+                "directories": None,
                 "max_backups": 0,
                 "server_id":   server_id
             }
             new_row = True
         if max_backups is not None:
             conf['max_backups'] = max_backups
-        if excluded_dirs is not None:
-            dirs_to_exclude = ",".join(excluded_dirs)
-            conf['excluded_dirs'] = dirs_to_exclude
         if not new_row:
             with database.atomic():
                 if backup_path is not None:
@@ -357,35 +354,6 @@ class helpers_management:
                     Servers.update(backup_path=backup_path).where(Servers.server_id == server_id)
                 Backups.create(**conf)
             logger.debug("Creating new backup record.")
-
-    @staticmethod
-    def get_excluded_backup_dirs(server_id: int):
-        excluded_dirs = helpers_management.get_backup_config(server_id)['excluded_dirs']
-        if excluded_dirs is not None:
-            dir_list = excluded_dirs.split(",")
-        else:
-            dir_list = []
-        return dir_list
-
-    @staticmethod
-    def add_excluded_backup_dir(server_id: int, dir_to_add: str):
-        dir_list = management_helper.get_excluded_backup_dirs()
-        if dir_to_add not in dir_list:
-            dir_list.append(dir_to_add)
-            excluded_dirs = ",".join(dir_list)
-            management_helper.set_backup_config(server_id=server_id, excluded_dirs=excluded_dirs)
-        else:
-            logger.debug(f"Not adding {dir_to_add} to excluded directories - already in the excluded directory list for server ID {server_id}")
-
-    @staticmethod
-    def del_excluded_backup_dir(server_id: int, dir_to_del: str):
-        dir_list = management_helper.get_excluded_backup_dirs()
-        if dir_to_del in dir_list:
-            dir_list.remove(dir_to_del)
-            excluded_dirs = ",".join(dir_list)
-            management_helper.set_backup_config(server_id=server_id, excluded_dirs=excluded_dirs)
-        else:
-            logger.debug(f"Not removing {dir_to_del} from excluded directories - not in the excluded directory list for server ID {server_id}")
 
 
 management_helper = helpers_management()
