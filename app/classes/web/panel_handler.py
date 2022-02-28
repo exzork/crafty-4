@@ -428,6 +428,7 @@ class PanelHandler(BaseHandler):
                         return
                 server_info = self.controller.servers.get_server_data_by_id(server_id)
                 page_data['backup_config'] = self.controller.management.get_backup_config(server_id)
+                page_data['exclusions'] = self.controller.management.get_excluded_backup_dirs(server_id)
                 self.controller.refresh_server_settings(server_id)
                 try:
                     page_data['backup_list'] = server.list_backups()
@@ -1027,6 +1028,7 @@ class PanelHandler(BaseHandler):
             logger.debug(self.request.arguments)
             server_id = self.get_argument('id', None)
             server_obj = self.controller.servers.get_server_obj(server_id)
+            checked = self.get_body_arguments('root_path')
             if superuser:
                 backup_path = bleach.clean(self.get_argument('backup_path', None))
                 if helper.is_os_windows():
@@ -1052,7 +1054,7 @@ class PanelHandler(BaseHandler):
             server_obj = self.controller.servers.get_server_obj(server_id)
             server_obj.backup_path = backup_path
             self.controller.servers.update_server(server_obj)
-            self.controller.management.set_backup_config(server_id, max_backups=max_backups)
+            self.controller.management.set_backup_config(server_id, max_backups=max_backups, excluded_dirs=checked)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        f"Edited server {server_id}: updated backups",
