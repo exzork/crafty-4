@@ -17,6 +17,7 @@ from tornado.ioloop import IOLoop
 #TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
 from cron_validator import CronValidator
+from app.classes.controllers.management_controller import Management_Controller
 
 from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
@@ -1027,6 +1028,7 @@ class PanelHandler(BaseHandler):
             logger.debug(self.request.arguments)
             server_id = self.get_argument('id', None)
             server_obj = self.controller.servers.get_server_obj(server_id)
+            checked = self.get_body_arguments('root_path')
             if superuser:
                 backup_path = bleach.clean(self.get_argument('backup_path', None))
                 if helper.is_os_windows():
@@ -1052,7 +1054,7 @@ class PanelHandler(BaseHandler):
             server_obj = self.controller.servers.get_server_obj(server_id)
             server_obj.backup_path = backup_path
             self.controller.servers.update_server(server_obj)
-            self.controller.management.set_backup_config(server_id, max_backups=max_backups)
+            self.controller.management.set_backup_config(server_id, max_backups=max_backups, excluded_dirs=checked)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        f"Edited server {server_id}: updated backups",

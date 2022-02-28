@@ -339,6 +339,9 @@ class helpers_management:
             new_row = True
         if max_backups is not None:
             conf['max_backups'] = max_backups
+        if excluded_dirs is not None:
+            dirs_to_exclude = ",".join(excluded_dirs)
+            conf['excluded_dirs'] = dirs_to_exclude
         if not new_row:
             with database.atomic():
                 if backup_path is not None:

@@ -54,24 +54,16 @@
                         <label for="server_path">{{ translate('serverBackups', 'maxBackups', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverBackups', 'maxBackupsDesc', data['lang']) }}</small> </label>
                         <input type="text" class="form-control" name="max_backups" id="max_backups" value="{{ data['backup_config']['max_backups']  }}" placeholder="{{ translate('serverBackups', 'maxBackups', data['lang']) }}" >
                       </div>
-
-                      <div class="col-sm-12">
                         <div class="form-group">
-                          <label for="server">{{ translate('serverWizard', 'selectRoot', data['lang']) }} <small>{{ translate('serverWizard', 'explainRoot', data['lang']) }}</small></label>
+                          <label for="server">{{ translate('serverBackups', 'exclusionsTitle', data['lang']) }} <small> - {{ translate('serverBackups', 'excludedChoose', data['lang']) }}</small></label>
                           <br>
-                          <button class="btn btn-primary mr-2" id="root_files_button" data-server_path="{{ data['server_stats']['server_id']['path']}}" type="button">{{ translate('serverWizard', 'clickRoot', data['lang']) }}</button>
+                          <button class="btn btn-primary mr-2" id="root_files_button" data-server_path="{{ data['server_stats']['server_id']['path']}}" type="button">{{ translate('serverBackups', 'clickExclude', data['lang']) }}</button>
                         </div>
-                      </div>
-                      <div class="col-sm-12" style="visibility: hidden;">
-                        <div class="form-group">
-                          <input type="text" class="form-control" id="zip_root_path" name="zip_root_path">
-                        </div>
-                      </div>
                       <div class="modal fade" id="dir_select" tabindex="-1" role="dialog" aria-labelledby="dir_select" aria-hidden="true">
                         <div class="modal-dialog" role="document">
                           <div class="modal-content">
                             <div class="modal-header">
-                              <h5 class="modal-title" id="exampleModalLongTitle">{{ translate('serverWizard', 'selectZipDir', data['lang']) }}</h5>
+                              <h5 class="modal-title" id="exampleModalLongTitle">{{ translate('serverBackups', 'excludedChoose', data['lang']) }}</h5>
                               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                               </button>
@@ -88,7 +80,7 @@
                               </div>
                             </div>
                             <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('serverWizard', 'close', data['lang']) }}</button>
+                              <button type="button" id="modal-cancel" class="btn btn-secondary" data-dismiss="modal">{{ translate('serverBackups', 'cancel', data['lang']) }}</button>
                               <button type="button" id="modal-okay" data-dismiss="modal" class="btn btn-primary">{{ translate('serverWizard', 'save', data['lang']) }}</button>
                             </div>
                           </div>
@@ -336,11 +328,16 @@ const server_id = new URLSearchParams(document.location.search).get('id')
 
   });
 
+document.getElementById("modal-cancel").addEventListener("click", function(){
+  document.getElementById("root_files_button").classList.remove('clicked');
+  document.getElementById("main-tree-div").innerHTML = '<input type="checkbox" id="main-tree-input" name="root_path" value="" disabled><span id="main-tree" class="files-tree-title tree-caret-down root-dir" data-path=""><i class="far fa-folder"></i><i class="far fa-folder-open"></i>{{ translate("serverFiles", "files", data["lang"]) }}</span></input>'
+})
 
   document.getElementById("root_files_button").addEventListener("click", function(){
     if($("#root_files_button").data('server_path') != ""){
       if(document.getElementById('root_files_button').classList.contains('clicked')){
-        document.getElementById('main-tree-div').innerHTML = '<input type="checkbox" id="main-tree-input" name="root_path" value="" disabled><span id="main-tree" class="files-tree-title tree-caret-down root-dir" data-path=""><i class="far fa-folder"></i><i class="far fa-folder-open"></i>{{ translate('serverFiles', 'files', data['lang']) }}</span></input>'
+        show_file_tree();
+        return;
       }else{
         document.getElementById('root_files_button').classList.add('clicked')
       }

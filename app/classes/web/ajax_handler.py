@@ -166,7 +166,7 @@ class AjaxHandler(BaseHandler):
                         output += \
                             f"""<li class="tree-item" data-path="{dpath}">
                             \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
-                            <input type="checkbox" name="root_path" value="{dpath}" checked>
+                            <input type="checkbox" class="checkBoxClass" name="root_path" value="{dpath}" checked>
                             <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
                             <i class="far fa-folder"></i>
                             <i class="far fa-folder-open"></i>
@@ -180,7 +180,7 @@ class AjaxHandler(BaseHandler):
                         class="tree-item tree-ctx-item tree-file"
                         data-path="{dpath}"
                         data-name="{filename}"
-                        onclick=""><input type='checkbox' name='root_path' value='{dpath}' checked><span style="margin-right: 6px;">
+                        onclick=""><input type='checkbox' class="checkBoxClass" name='root_path' value="{dpath}" checked><span style="margin-right: 6px;">
                         <i class="far fa-file"></i></span></input>{filename}</li>"""
 
                 else:
@@ -188,7 +188,7 @@ class AjaxHandler(BaseHandler):
                         output += \
                             f"""<li class="tree-item" data-path="{dpath}">
                             \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
-                            <input type="checkbox" name="root_path" value="{dpath}">
+                            <input type="checkbox" class="checkBoxClass" name="root_path" value="{dpath}">
                             <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
                             <i class="far fa-folder"></i>
                             <i class="far fa-folder-open"></i>
@@ -202,7 +202,7 @@ class AjaxHandler(BaseHandler):
                         class="tree-item tree-ctx-item tree-file"
                         data-path="{dpath}"
                         data-name="{filename}"
-                        onclick=""><input type='checkbox' name='root_path' value='{dpath}'>
+                        onclick=""><input type='checkbox' class="checkBoxClass" name='root_path' value="{dpath}">
                         <span style="margin-right: 6px;"><i class="far fa-file"></i></span></input>{filename}</li>"""
             self.write(helper.get_os_understandable_path(folder) + '\n' +
                         output)
@@ -261,7 +261,8 @@ class AjaxHandler(BaseHandler):
                         class="tree-item tree-ctx-item tree-file"
                         data-path="{dpath}"
                         data-name="{filename}"
-                        onclick=""><input type='checkbox' name='root_path' value='{dpath}'><span style="margin-right: 6px;"><i class="far fa-file"></i></span></input>{filename}</li>"""
+                        onclick=""><input type='checkbox' name='root_path' value='{dpath}'>
+                        <span style="margin-right: 6px;"><i class="far fa-file"></i></span></input>{filename}</li>"""
 
             self.write(helper.get_os_understandable_path(folder) + '\n' +
                         output)
