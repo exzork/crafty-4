@@ -204,6 +204,29 @@ class PanelHandler(BaseHandler):
                 exec_user_role.add(role['role_name'])
             defined_servers = self.controller.servers.get_authorized_servers(exec_user["user_id"])
 
+
+        user_order = self.controller.users.get_user_by_id(exec_user['user_id'])
+        user_order = user_order['server_order'].split(',')
+        page_servers = []
+        server_ids = []
+
+        for server_id in user_order:
+            for server in defined_servers:
+                if str(server['server_id']) == str(server_id):
+                    page_servers.append(server)
+
+
+        for server in defined_servers:
+            server_ids.append(str(server['server_id']))
+            if server not in page_servers:
+                page_servers.append(server)
+        for server_id in user_order:
+            #remove IDs in list that user no longer has access to
+            if str(server_id) not in server_ids:
+                user_order.remove(server_id)
+        defined_servers = page_servers
+
+
         page_data: Dict[str, Any] = {
             # todo: make this actually pull and compare version data
             'update_available': False,
@@ -428,6 +451,15 @@ class PanelHandler(BaseHandler):
                         return
                 server_info = self.controller.servers.get_server_data_by_id(server_id)
                 page_data['backup_config'] = self.controller.management.get_backup_config(server_id)
+                exclusions = []
+                page_data['exclusions'] = self.controller.management.get_excluded_backup_dirs(server_id)
+                #makes it so relative path is the only thing shown
+                for file in page_data['exclusions']:
+                    if helper.is_os_windows():
+                        exclusions.append(file.replace(server_info['path']+'\\', ""))
+                    else:
+                        exclusions.append(file.replace(server_info['path']+'/', ""))
+                page_data['exclusions'] = exclusions
                 self.controller.refresh_server_settings(server_id)
                 try:
                     page_data['backup_list'] = server.list_backups()
@@ -1027,6 +1059,11 @@ class PanelHandler(BaseHandler):
             logger.debug(self.request.arguments)
             server_id = self.get_argument('id', None)
             server_obj = self.controller.servers.get_server_obj(server_id)
+            check_changed = self.get_argument('changed')
+            if str(check_changed) == str(1):
+                checked = self.get_body_arguments('root_path')
+            else:
+                checked = self.controller.management.get_excluded_backup_dirs(server_id)
             if superuser:
                 backup_path = bleach.clean(self.get_argument('backup_path', None))
                 if helper.is_os_windows():
@@ -1052,7 +1089,7 @@ class PanelHandler(BaseHandler):
             server_obj = self.controller.servers.get_server_obj(server_id)
             server_obj.backup_path = backup_path
             self.controller.servers.update_server(server_obj)
-            self.controller.management.set_backup_config(server_id, max_backups=max_backups)
+            self.controller.management.set_backup_config(server_id, max_backups=max_backups, excluded_dirs=checked)
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        f"Edited server {server_id}: updated backups",

@@ -13,7 +13,6 @@ import logging
 import html
 import zipfile
 import pathlib
-import shutil
 import ctypes
 from datetime import datetime
 from socket import gethostname
@@ -22,6 +21,7 @@ from requests import get
 
 from app.classes.web.websocket_helper import websocket_helper
 from app.classes.shared.console import console
+from app.classes.shared.file_helpers import file_helper
 
 logger = logging.getLogger(__name__)
 
@@ -369,7 +369,7 @@ class Helpers:
 
                 for item in os.listdir(full_root_path):
                     try:
-                        shutil.move(os.path.join(full_root_path, item), os.path.join(new_dir, item))
+                        file_helper.move_dir(os.path.join(full_root_path, item), os.path.join(new_dir, item))
                     except Exception as ex:
                         logger.error(f'ERROR IN ZIP IMPORT: {ex}')
             except Exception as ex:
@@ -773,6 +773,12 @@ class Helpers:
                 websocket_helper.broadcast_user(user_id, 'send_temp_path',{
                 'path': tempDir
                 })
+    @staticmethod
+    def backup_select(path, user_id):
+        if user_id:
+            websocket_helper.broadcast_user(user_id, 'send_temp_path',{
+            'path': path
+        })
 
     @staticmethod
     def unzip_backup_archive(backup_path, zip_name):
@@ -804,7 +810,7 @@ class Helpers:
     @staticmethod
     def copy_files(source, dest):
         if os.path.isfile(source):
-            shutil.copyfile(source, dest)
+            file_helper.copy_file(source, dest)
             logger.info("Copying jar %s to %s", source, dest)
         else:
             logger.info("Source jar does not exist.")

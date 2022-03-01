@@ -1,5 +1,4 @@
 import os
-import shutil
 import logging
 import tornado.web
 import tornado.escape
@@ -7,6 +6,7 @@ import bleach
 
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
+from app.classes.shared.file_helpers import file_helper
 
 from app.classes.web.base_handler import BaseHandler
 from app.classes.models.server_permissions import Enum_Permissions_Server
@@ -232,7 +232,7 @@ class FileHandler(BaseHandler):
                 return
 
             # Delete the file
-            os.remove(file_path)
+            file_helper.del_file(file_path)
 
         elif page == "del_dir":
             if not permissions['Files'] in user_perms:
@@ -258,7 +258,8 @@ class FileHandler(BaseHandler):
             # Delete the directory
             # os.rmdir(dir_path)     # Would only remove empty directories
             if helper.validate_traversal(helper.get_os_understandable_path(server_info['path']), dir_path):
-                shutil.rmtree(dir_path)  # Removes also when there are contents
+                # Removes also when there are contents
+                file_helper.del_dirs(dir_path)
 
     @tornado.web.authenticated
     def put(self, page):
