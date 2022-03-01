@@ -18,7 +18,8 @@
         "eulaMsg": "You must agree to the EULA. A copy of the Mojang EULA is linked under this message.",
         "eulaAgree": "Do you agree?",
         "noJava": "Server {} failed to start with error code: We have detected Java is not installed. Please install java then start the server.",
-        "not-downloaded": "We can't seem to find your executable file. Has it finished downloading? Are the permissions set to executable?"
+        "not-downloaded": "We can't seem to find your executable file. Has it finished downloading? Are the permissions set to executable?",
+        "no-file": "We can't seem to locate the requested file. Double check the path. Does Crafty have proper permissions?"
     },
     "404": {
         "contact": "Contact Crafty Control Support via Discord",
