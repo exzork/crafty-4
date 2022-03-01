@@ -3,8 +3,10 @@ import socket
 import base64
 import json
 import os
-import sys
+import re
 import logging.config
+import uuid
+import random
 
 from app.classes.shared.console import console
 from app.classes.minecraft.bedrock_ping import BedrockPing
@@ -170,11 +172,15 @@ def ping(ip, port):
 
 # For the rest of requests see wiki.vg/Protocol
 def ping_bedrock(ip, port):
-    if len(sys.argv) > 3:
-        client_guid = sys.argv[3]
-    else:
-        client_guid = 0
+    rd = random.Random()
     try:
+        rd.seed(''.join(re.findall('..', '%012x' % uuid.getnode())))
+        client_guid = uuid.UUID(int=rd.getrandbits(32)).int
+    except:
+        client_guid = 0
+    print(client_guid)
+    try:
+        print(client_guid)
         brp = BedrockPing(ip, port, client_guid)
         return brp.ping()
     except socket.timeout:
