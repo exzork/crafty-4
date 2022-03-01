@@ -575,6 +575,10 @@ class Server:
 
     def a_backup_server(self):
         logger.info(f"Starting server {self.name} (ID {self.server_id}) backup")
+        server_users = server_permissions.get_server_user_list(self.server_id)
+        for user in server_users:
+            websocket_helper.broadcast_user(user, 'notification', "Starting backup for " + self.name)
+        time.sleep(3)
         self.is_backingup = True
         conf = management_helper.get_backup_config(self.server_id)
         try:
@@ -611,6 +615,10 @@ class Server:
             self.is_backingup = False
             file_helper.del_dirs(tempDir)
             logger.info(f"Backup of server: {self.name} completed")
+            server_users = server_permissions.get_server_user_list(self.server_id)
+            for user in server_users:
+                websocket_helper.broadcast_user(user, 'notification', "Backup completed successfully for " + self.name)
+            time.sleep(3)
             return
         except:
             logger.exception(f"Failed to create backup of server {self.name} (ID {self.server_id})")

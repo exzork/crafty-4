@@ -161,6 +161,27 @@ class Stats:
 
         return ping_data
 
+    @staticmethod
+    def parse_server_RakNet_ping(ping_obj: object):
+        online_stats = {}
+
+        try:
+            server_icon = base64.encodebytes(ping_obj['icon'])
+        except  Exception as e:
+            server_icon = False
+            logger.info(f"Unable to read the server icon : {e}")
+
+        ping_data = {
+            'online': ping_obj['server_player_count'],
+            'max': ping_obj['server_player_max'],
+            'players': online_stats.get('players', 0),
+            'server_description': ping_obj['server_edition'],
+            'server_version': ping_obj['server_version_name'],
+            'server_icon': server_icon
+        }
+
+        return ping_data
+
     def get_server_players(self, server_id):
 
         server = servers_helper.get_server_data_by_id(server_id)
@@ -177,10 +198,9 @@ class Stats:
         server_port = server['server_port']
 
         logger.debug("Pinging {internal_ip} on port {server_port}")
-        if servers_helper.get_server_type_by_id(server_id) == 'minecraft-bedrock':
-            int_mc_ping = ping_bedrock(internal_ip, int(server_port))
-        else:
+        if servers_helper.get_server_type_by_id(server_id) != 'minecraft-bedrock':
             int_mc_ping = ping(internal_ip, int(server_port))
+
 
         ping_data = {}
 
@@ -237,7 +257,10 @@ class Stats:
             # if we got a good ping return, let's parse it
             if int_mc_ping:
                 int_data = True
-                ping_data = self.parse_server_ping(int_mc_ping)
+                if servers_helper.get_server_type_by_id(server_id) == 'minecraft-bedrock':
+                    ping_data = self.parse_server_RakNet_ping(int_mc_ping)
+                else:
+                    ping_data = self.parse_server_ping(int_mc_ping)
 
             server_stats = {
                 'id': server_id,
@@ -301,28 +324,80 @@ class Stats:
         ping_data = {}
 
         # if we got a good ping return, let's parse it
-        if int_mc_ping:
-            int_data = True
-            ping_data = self.parse_server_ping(int_mc_ping)
+        if servers_helper.get_server_type_by_id(server_id) != 'minecraft-bedrock':
+            if int_mc_ping:
+                int_data = True
+                ping_data = self.parse_server_ping(int_mc_ping)
 
-        server_stats = {
-            'id': server_id,
-            'started': server_obj.get_start_time(),
-            'running': server_obj.check_running(),
-            'cpu': p_stats.get('cpu_usage', 0),
-            'mem': p_stats.get('memory_usage', 0),
-            "mem_percent": p_stats.get('mem_percentage', 0),
-            'world_name': world_name,
-            'world_size': self.get_world_size(world_path),
-            'server_port': server_port,
-            'int_ping_results': int_data,
-            'online': ping_data.get("online", False),
-            "max": ping_data.get("max", False),
-            'players': ping_data.get("players", False),
-            'desc': ping_data.get("server_description", False),
-            'version': ping_data.get("server_version", False),
-            'icon': ping_data.get("server_icon", False)
-        }
+            server_stats = {
+                'id': server_id,
+                'started': server_obj.get_start_time(),
+                'running': server_obj.check_running(),
+                'cpu': p_stats.get('cpu_usage', 0),
+                'mem': p_stats.get('memory_usage', 0),
+                "mem_percent": p_stats.get('mem_percentage', 0),
+                'world_name': world_name,
+                'world_size': self.get_world_size(world_path),
+                'server_port': server_port,
+                'int_ping_results': int_data,
+                'online': ping_data.get("online", False),
+                "max": ping_data.get("max", False),
+                'players': ping_data.get("players", False),
+                'desc': ping_data.get("server_description", False),
+                'version': ping_data.get("server_version", False),
+                'icon': ping_data.get("server_icon", False)
+            }
+
+        else:
+
+            if int_mc_ping:
+                int_data = True
+                ping_data = self.parse_server_RakNet_ping(int_mc_ping)
+                try:
+                    server_icon = base64.encodebytes(ping_data['icon'])
+                except  Exception as e:
+                    server_icon = False
+                    logger.info(f"Unable to read the server icon : {e}")
+
+            
+
+                server_stats = {
+                    'id': server_id,
+                    'started': server_obj.get_start_time(),
+                    'running': server_obj.check_running(),
+                    'cpu': p_stats.get('cpu_usage', 0),
+                    'mem': p_stats.get('memory_usage', 0),
+                    "mem_percent": p_stats.get('mem_percentage', 0),
+                    'world_name': world_name,
+                    'world_size': self.get_world_size(world_path),
+                    'server_port': server_port,
+                    'int_ping_results': int_data,
+                    'online': ping_data['server_player_count'],
+                    'max': ping_data['server_player_max'],
+                    'players': 0,
+                    'server_description': ping_data['server_edition'],
+                    'server_version': ping_data['server_version_name'],
+                    'server_icon': server_icon
+                }
+            else:
+                server_stats = {
+                                        'id': server_id,
+                    'started': server_obj.get_start_time(),
+                    'running': server_obj.check_running(),
+                    'cpu': p_stats.get('cpu_usage', 0),
+                    'mem': p_stats.get('memory_usage', 0),
+                    "mem_percent": p_stats.get('mem_percentage', 0),
+                    'world_name': world_name,
+                    'world_size': self.get_world_size(world_path),
+                    'server_port': server_port,
+                    'int_ping_results': int_data,
+                    'online': 0,
+                    'max': 0,
+                    'players': 0,
+                    'server_description': '',
+                    'server_version': '',
+                    'server_icon': ''
+                }
 
         return server_stats
 
