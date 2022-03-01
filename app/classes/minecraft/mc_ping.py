@@ -178,9 +178,7 @@ def ping_bedrock(ip, port):
         client_guid = uuid.UUID(int=rd.getrandbits(32)).int
     except:
         client_guid = 0
-    print(client_guid)
     try:
-        print(client_guid)
         brp = BedrockPing(ip, port, client_guid)
         return brp.ping()
     except socket.timeout:
