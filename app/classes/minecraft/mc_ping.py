@@ -174,6 +174,7 @@ def ping(ip, port):
 def ping_bedrock(ip, port):
     rd = random.Random()
     try:
+        #pylint: disable=consider-using-f-string
         rd.seed(''.join(re.findall('..', '%012x' % uuid.getnode())))
         client_guid = uuid.UUID(int=rd.getrandbits(32)).int
     except:
