@@ -305,8 +305,30 @@ class Stats:
 
     def get_raw_server_stats(self, server_id):
 
+        try:
+            self.controller.get_server_obj(server_id)
+        except:
+            return {    'id': server_id,
+                        'started': False,
+                        'running': False,
+                        'cpu': 0,
+                        'mem': 0,
+                        "mem_percent": 0,
+                        'world_name': None,
+                        'world_size': None,
+                        'server_port': None,
+                        'int_ping_results': False,
+                        'online': False,
+                        'max': False,
+                        'players': False,
+                        'desc': False,
+                        'version': False,
+                        'icon': False}
+
         server_stats = {}
         server = self.controller.get_server_obj(server_id)
+        if not server:
+            return {}
         server_dt = servers_helper.get_server_data_by_id(server_id)
 
 
@@ -314,8 +336,7 @@ class Stats:
 
         # get our server object, settings and data dictionaries
         server_obj = self.controller.get_server_obj(server_id)
-        if server_obj:
-            server_obj.reload_server_settings()
+        server_obj.reload_server_settings()
         server_settings = self.controller.get_server_settings(server_id)
         server_data = self.controller.get_server_data(server_id)
 
