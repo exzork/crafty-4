@@ -170,15 +170,16 @@ class Stats:
         except  Exception as e:
             server_icon = False
             logger.info(f"Unable to read the server icon : {e}")
-
+        print('in raw stats')
         ping_data = {
             'online': ping_obj['server_player_count'],
             'max': ping_obj['server_player_max'],
-            'players': online_stats.get('players', 0),
+            'players': 0,
             'server_description': ping_obj['server_edition'],
             'server_version': ping_obj['server_version_name'],
             'server_icon': server_icon
         }
+
 
         return ping_data
 
@@ -359,7 +360,7 @@ class Stats:
                     server_icon = False
                     logger.info(f"Unable to read the server icon : {e}")
 
-            
+                print(ping_data)
 
                 server_stats = {
                     'id': server_id,
@@ -372,16 +373,16 @@ class Stats:
                     'world_size': self.get_world_size(world_path),
                     'server_port': server_port,
                     'int_ping_results': int_data,
-                    'online': ping_data['server_player_count'],
-                    'max': ping_data['server_player_max'],
+                    'online': ping_data['online'],
+                    'max': ping_data['max'],
                     'players': 0,
-                    'server_description': ping_data['server_edition'],
-                    'server_version': ping_data['server_version_name'],
+                    'server_description': ping_data['server_description'],
+                    'server_version': ping_data['server_version'],
                     'server_icon': server_icon
                 }
             else:
                 server_stats = {
-                                        'id': server_id,
+                    'id': server_id,
                     'started': server_obj.get_start_time(),
                     'running': server_obj.check_running(),
                     'cpu': p_stats.get('cpu_usage', 0),
