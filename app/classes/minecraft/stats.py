@@ -163,7 +163,6 @@ class Stats:
 
     @staticmethod
     def parse_server_RakNet_ping(ping_obj: object):
-        online_stats = {}
 
         try:
             server_icon = base64.encodebytes(ping_obj['icon'])
