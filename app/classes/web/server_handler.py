@@ -304,7 +304,7 @@ class ServerHandler(BaseHandler):
                 return
 
             if import_type == 'import_jar':
-                good_path = self.controller.verify_jar_server(import_server_path, import_server_jar)
+                good_path = self.controller.verify_jar_server(import_server_path, import_server_exe)
 
                 if not good_path:
                     self.redirect("/panel/error?error=Server path or Server Jar not found!")
