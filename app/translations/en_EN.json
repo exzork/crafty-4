@@ -213,7 +213,9 @@
         "logout": "Logout",
         "preparingLogs": " Please wait while we prepare your logs... We`ll send a notification when they`re ready. This may take a while for large deployments.",
         "downloadLogs": "Download Support Logs?",
-        "finishedPreparing": "We've finished preparing your support logs. Please click download to download"
+        "finishedPreparing": "We've finished preparing your support logs. Please click download to download",
+        "backupComplete": "Backup completed successfully for server ",
+        "backupStarted": "Backup started for server "
     },
     "serverBackups": {
         "backupNow": "Backup Now!",
