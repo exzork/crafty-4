@@ -314,7 +314,8 @@ class Stats:
 
         # get our server object, settings and data dictionaries
         server_obj = self.controller.get_server_obj(server_id)
-        server_obj.reload_server_settings()
+        if server_obj:
+            server_obj.reload_server_settings()
         server_settings = self.controller.get_server_settings(server_id)
         server_data = self.controller.get_server_data(server_id)
 

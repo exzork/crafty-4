@@ -108,8 +108,15 @@ class AjaxHandler(BaseHandler):
 
             output = ""
 
+            dir_list = []
+            unsorted_files = []
             file_list = os.listdir(folder)
-            file_list = sorted(file_list, key=str.casefold)
+            for item in file_list:
+                if os.path.isdir(os.path.join(folder, item)):
+                    dir_list.append(item)
+                else:
+                    unsorted_files.append(item)
+            file_list = sorted(dir_list, key=str.casefold) + sorted(unsorted_files, key=str.casefold)
             output += \
         f"""<ul class="tree-nested d-block" id="{folder}ul">"""\
 
@@ -133,7 +140,7 @@ class AjaxHandler(BaseHandler):
 
                     else:
                         output += f"""<li
-                        class="tree-item tree-ctx-item tree-file"
+                        class="tree-nested d-block tree-ctx-item tree-file"
                         data-path="{dpath}"
                         data-name="{filename}"
                         onclick=""><input type='checkbox' class="checkBoxClass" name='root_path' value="{dpath}" checked><span style="margin-right: 6px;">
@@ -155,7 +162,7 @@ class AjaxHandler(BaseHandler):
 
                     else:
                         output += f"""<li
-                        class="tree-item tree-ctx-item tree-file"
+                        class="tree-nested d-block tree-ctx-item tree-file"
                         data-path="{dpath}"
                         data-name="{filename}"
                         onclick=""><input type='checkbox' class="checkBoxClass" name='root_path' value="{dpath}">
@@ -169,8 +176,15 @@ class AjaxHandler(BaseHandler):
             folder = self.get_argument('path', None)
             output = ""
 
+            dir_list = []
+            unsorted_files = []
             file_list = os.listdir(folder)
-            file_list = sorted(file_list, key=str.casefold)
+            for item in file_list:
+                if os.path.isdir(os.path.join(folder, item)):
+                    dir_list.append(item)
+                else:
+                    unsorted_files.append(item)
+            file_list = sorted(dir_list, key=str.casefold) + sorted(unsorted_files, key=str.casefold)
             output += \
         f"""<ul class="tree-nested d-block" id="{folder}ul">"""\
 

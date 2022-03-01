@@ -652,8 +652,15 @@ class Helpers:
 
     @staticmethod
     def generate_tree(folder, output=""):
+        dir_list = []
+        unsorted_files = []
         file_list = os.listdir(folder)
-        file_list = sorted(file_list, key=str.casefold)
+        for item in file_list:
+            if os.path.isdir(os.path.join(folder, item)):
+                dir_list.append(item)
+            else:
+                unsorted_files.append(item)
+        file_list = sorted(dir_list, key=str.casefold) + sorted(unsorted_files, key=str.casefold)
         for raw_filename in file_list:
             filename = html.escape(raw_filename)
             rel = os.path.join(folder, raw_filename)
@@ -673,7 +680,7 @@ class Helpers:
             else:
                 if filename != "crafty_managed.txt":
                     output += f"""<li
-                    class="tree-item tree-ctx-item tree-file"
+                    class="tree-nested d-block tree-ctx-item tree-file"
                     data-path="{dpath}"
                     data-name="{filename}"
                     onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{filename}</li>"""
@@ -681,8 +688,15 @@ class Helpers:
 
     @staticmethod
     def generate_dir(folder, output=""):
+        dir_list = []
+        unsorted_files = []
         file_list = os.listdir(folder)
-        file_list = sorted(file_list, key=str.casefold)
+        for item in file_list:
+            if os.path.isdir(os.path.join(folder, item)):
+                dir_list.append(item)
+            else:
+                unsorted_files.append(item)
+        file_list = sorted(dir_list, key=str.casefold) + sorted(unsorted_files, key=str.casefold)
         output += \
     f"""<ul class="tree-nested d-block" id="{folder}ul">"""\
 
@@ -704,7 +718,7 @@ class Helpers:
             else:
                 if filename != "crafty_managed.txt":
                     output += f"""<li
-                    class="tree-item tree-ctx-item tree-file"
+                    class="tree-nested d-block tree-ctx-item tree-file"
                     data-path="{dpath}"
                     data-name="{filename}"
                     onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{filename}</li>"""
