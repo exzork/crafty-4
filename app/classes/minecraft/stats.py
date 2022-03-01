@@ -201,12 +201,12 @@ class Stats:
             int_mc_ping = ping(internal_ip, int(server_port))
 
 
-        ping_data = {}
+            ping_data = {}
 
-        # if we got a good ping return, let's parse it
-        if int_mc_ping:
-            ping_data = self.parse_server_ping(int_mc_ping)
-            return ping_data['players']
+            # if we got a good ping return, let's parse it
+            if int_mc_ping:
+                ping_data = self.parse_server_ping(int_mc_ping)
+                return ping_data['players']
         return []
 
     def get_servers_stats(self):
