@@ -527,7 +527,7 @@ class TasksManager:
                         websocket_helper.broadcast_page('/status', 'update_server_status', servers_ping)
                     except:
                         console.warning("Can't broadcast server status to websocket")
-            time.sleep(5)
+            time.sleep(2)
 
     def log_watcher(self):
         self.controller.servers.check_for_old_logs()
