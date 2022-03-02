@@ -243,7 +243,8 @@
         "excludedBackups": "Excluded Paths: ",
         "excludedChoose": "Choose the paths you wish to exclude from your backups",
         "clickExclude": "Click to select Exclusions",
-        "exclusionsTitle": "Backup Exclusions"
+        "exclusionsTitle": "Backup Exclusions",
+        "compress": "Compress Backup"
     },
     "serverFiles": {
         "noscript": "The file manager does not work without JavaScript",

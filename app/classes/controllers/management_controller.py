@@ -104,8 +104,8 @@ class Management_Controller:
         return management_helper.get_backup_config(server_id)
 
     @staticmethod
-    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, excluded_dirs: list = None):
-        return management_helper.set_backup_config(server_id, backup_path, max_backups, excluded_dirs)
+    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, excluded_dirs: list = None, compress: bool = False,):
+        return management_helper.set_backup_config(server_id, backup_path, max_backups, excluded_dirs, compress)
 
     @staticmethod
     def get_excluded_backup_dirs(server_id: int):

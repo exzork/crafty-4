@@ -9,7 +9,7 @@ from app.classes.shared.console import console
 logger = logging.getLogger(__name__)
 
 try:
-    from zipfile import ZipFile
+    from zipfile import ZipFile, ZIP_DEFLATED
 
 except ModuleNotFoundError as err:
     logger.critical(f"Import Error: Unable to load {err.name} module", exc_info=True)
@@ -71,6 +71,27 @@ class FileHelpers:
         # create a ZipFile object
         path_to_destination += '.zip'
         with ZipFile(path_to_destination, 'w') as z:
+            for root, _dirs, files in os.walk(path_to_zip, topdown=True):
+                ziproot = path_to_zip
+                for file in files:
+                    try:
+                        logger.info(f"backing up: {os.path.join(root, file)}")
+                        if os.name == "nt":
+                            z.write(os.path.join(root, file), os.path.join(root.replace(ziproot, ""), file))
+                        else:
+                            z.write(os.path.join(root, file), os.path.join(root.replace(ziproot, "/"), file))
+
+                    except Exception as e:
+                        logger.warning(f"Error backing up: {os.path.join(root, file)}! - Error was: {e}")
+
+
+        return True
+
+    @staticmethod
+    def make_compressed_archive(path_to_destination, path_to_zip):
+        # create a ZipFile object
+        path_to_destination += '.zip'
+        with ZipFile(path_to_destination, 'w', ZIP_DEFLATED) as z:
             for root, _dirs, files in os.walk(path_to_zip, topdown=True):
                 ziproot = path_to_zip
                 for file in files:

@@ -1061,6 +1061,7 @@ class PanelHandler(BaseHandler):
             logger.debug(self.request.arguments)
             server_id = self.get_argument('id', None)
             server_obj = self.controller.servers.get_server_obj(server_id)
+            compress = self.get_argument('compress', False)
             check_changed = self.get_argument('changed')
             if str(check_changed) == str(1):
                 checked = self.get_body_arguments('root_path')
@@ -1091,7 +1092,7 @@ class PanelHandler(BaseHandler):
             server_obj = self.controller.servers.get_server_obj(server_id)
             server_obj.backup_path = backup_path
             self.controller.servers.update_server(server_obj)
-            self.controller.management.set_backup_config(server_id, max_backups=max_backups, excluded_dirs=checked)
+            self.controller.management.set_backup_config(server_id, max_backups=max_backups, excluded_dirs=checked, compress=bool(compress))
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        f"Edited server {server_id}: updated backups",
