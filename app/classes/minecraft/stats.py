@@ -117,7 +117,9 @@ class Stats:
         
         total_size = helper.get_dir_size(server_path)
 
-        return total_size
+        level_total_size = helper.human_readable_file_size(total_size)
+
+        return level_total_size
 
     @staticmethod
     def parse_server_ping(ping_obj: object):

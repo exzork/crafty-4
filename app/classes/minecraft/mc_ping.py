@@ -60,7 +60,11 @@ class Server:
                 self.description = self.description['text']
 
         self.icon = base64.b64decode(data.get('favicon', '')[22:])
-        self.players = Players(data['players']).report()
+        try:
+            self.players = Players(data['players']).report()
+        except KeyError:
+            logger.error("Error geting player information key error")
+            self.players = []
         self.version = data['version']['name']
         self.protocol = data['version']['protocol']
 
