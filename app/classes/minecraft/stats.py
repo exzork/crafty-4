@@ -111,23 +111,17 @@ class Stats:
         return disk_data
 
     @staticmethod
-    def get_world_size(world_path):
+    def get_world_size(server_path):
 
         total_size = 0
 
         # do a scan of the directories in the server path.
-        for root, dirs, _files in os.walk(world_path, topdown=False):
+        for root, dirs, _files in os.walk(server_path, topdown=False):
 
             # for each directory we find
             for name in dirs:
-
-                # if the directory name is "region"
-                if str(name) == "region":
-                    # log it!
-                    logger.debug("Path %s is called region. Getting directory size", os.path.join(root, name))
-
                     # get this directory size, and add it to the total we have running.
-                    total_size += helper.get_dir_size(os.path.join(root, name))
+                total_size += helper.get_dir_size(os.path.join(root, name))
 
         level_total_size = helper.human_readable_file_size(total_size)
 
@@ -229,12 +223,10 @@ class Stats:
             # get our server object, settings and data dictionaries
             server_obj = s.get('server_obj', None)
             server_obj.reload_server_settings()
-            server_settings = s.get('server_settings', {})
-            server_data = self.controller.get_server_data(server_id)
 
             # world data
-            world_name = server_settings.get('level-name', 'Unknown')
-            world_path = os.path.join(server_data.get('path', None), world_name)
+            server_name = server['server_name']
+            server_path = server['path']
 
             # process stats
             p_stats = self._get_process_stats(server_obj.process)
@@ -269,8 +261,8 @@ class Stats:
                     'cpu': p_stats.get('cpu_usage', 0),
                     'mem': p_stats.get('memory_usage', 0),
                     "mem_percent": p_stats.get('mem_percentage', 0),
-                    'world_name': world_name,
-                    'world_size': self.get_world_size(world_path),
+                    'world_name': server_name,
+                    'world_size': self.get_world_size(server_path),
                     'server_port': server_port,
                     'int_ping_results': int_data,
                     'online': ping_data.get("online", False),
@@ -287,8 +279,8 @@ class Stats:
                     'cpu': p_stats.get('cpu_usage', 0),
                     'mem': p_stats.get('memory_usage', 0),
                     "mem_percent": p_stats.get('mem_percentage', 0),
-                    'world_name': world_name,
-                    'world_size': self.get_world_size(world_path),
+                    'world_name': server_name,
+                    'world_size': self.get_world_size(server_path),
                     'server_port': server_port,
                     'int_ping_results': int_data,
                     'online': False,
@@ -337,12 +329,10 @@ class Stats:
         # get our server object, settings and data dictionaries
         server_obj = self.controller.get_server_obj(server_id)
         server_obj.reload_server_settings()
-        server_settings = self.controller.get_server_settings(server_id)
-        server_data = self.controller.get_server_data(server_id)
 
         # world data
-        world_name = server_settings.get('level-name', 'Unknown')
-        world_path = os.path.join(server_data.get('path', None), world_name)
+        server_name = server_dt['server_name']
+        server_path = server_dt['path']
 
         # process stats
         p_stats = self._get_process_stats(server_obj.process)
@@ -377,8 +367,8 @@ class Stats:
                     'cpu': p_stats.get('cpu_usage', 0),
                     'mem': p_stats.get('memory_usage', 0),
                     "mem_percent": p_stats.get('mem_percentage', 0),
-                    'world_name': world_name,
-                    'world_size': self.get_world_size(world_path),
+                    'world_name': server_name,
+                    'world_size': self.get_world_size(server_path),
                     'server_port': server_port,
                     'int_ping_results': int_data,
                     'online': ping_data.get("online", False),
@@ -406,8 +396,8 @@ class Stats:
                         'cpu': p_stats.get('cpu_usage', 0),
                         'mem': p_stats.get('memory_usage', 0),
                         "mem_percent": p_stats.get('mem_percentage', 0),
-                        'world_name': world_name,
-                        'world_size': self.get_world_size(world_path),
+                        'world_name': server_name,
+                        'world_size': self.get_world_size(server_path),
                         'server_port': server_port,
                         'int_ping_results': int_data,
                         'online': ping_data['online'],
@@ -425,8 +415,8 @@ class Stats:
                         'cpu': p_stats.get('cpu_usage', 0),
                         'mem': p_stats.get('memory_usage', 0),
                         "mem_percent": p_stats.get('mem_percentage', 0),
-                        'world_name': world_name,
-                        'world_size': self.get_world_size(world_path),
+                        'world_name': server_name,
+                        'world_size': self.get_world_size(server_path),
                         'server_port': server_port,
                         'int_ping_results': int_data,
                         'online': False,
@@ -444,8 +434,8 @@ class Stats:
                 'cpu': p_stats.get('cpu_usage', 0),
                 'mem': p_stats.get('memory_usage', 0),
                 "mem_percent": p_stats.get('mem_percentage', 0),
-                'world_name': world_name,
-                'world_size': self.get_world_size(world_path),
+                'world_name': server_name,
+                'world_size': self.get_world_size(server_path),
                 'server_port': server_port,
                 'int_ping_results': int_data,
                 'online': False,
