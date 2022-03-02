@@ -606,10 +606,11 @@ class PanelHandler(BaseHandler):
                 page_data['super-disabled'] = ''
             else:
                 page_data['super-disabled'] = 'disabled'
-            for file in os.listdir(os.path.join(helper.root_dir, 'app', 'translations')):
+            for file in sorted(os.listdir(os.path.join(helper.root_dir, 'app', 'translations'))):
                 if file.endswith('.json'):
-                    if file != str(page_data['languages'][0] + '.json'):
-                        page_data['languages'].append(file.split('.')[0])
+                    if file not in helper.get_setting('disabled_language_files'):
+                        if file != str(page_data['languages'][0] + '.json'):
+                            page_data['languages'].append(file.split('.')[0])
 
             template = "panel/panel_edit_user.html"
 
@@ -738,8 +739,9 @@ class PanelHandler(BaseHandler):
 
             for file in sorted(os.listdir(os.path.join(helper.root_dir, 'app', 'translations'))):
                 if file.endswith('.json'):
-                    if file != str(page_data['languages'][0] + '.json'):
-                        page_data['languages'].append(file.split('.')[0])
+                    if file not in helper.get_setting('disabled_language_files'):
+                        if file != str(page_data['languages'][0] + '.json'):
+                            page_data['languages'].append(file.split('.')[0])
 
             if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")

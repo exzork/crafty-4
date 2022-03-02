@@ -14,6 +14,7 @@
   "virtual_terminal_lines": 70,
   "max_log_lines": 700,
   "max_audit_entries": 300,
+  "disabled_language_files": ["lol_EN.json", ""],
   "keywords": ["help", "chunk"],
   "allow_nsfw_profile_pictures": false
 }
