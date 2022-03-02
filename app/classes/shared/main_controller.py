@@ -1,9 +1,9 @@
 import os
 import pathlib
+import shutil
 import time
 import logging
 import tempfile
-from distutils import dir_util
 from typing import Union
 from peewee import DoesNotExist
 
@@ -329,7 +329,10 @@ class Controller:
         helper.ensure_dir_exists(new_server_dir)
         helper.ensure_dir_exists(backup_path)
         server_path = helper.get_os_understandable_path(server_path)
-        dir_util.copy_tree(server_path, new_server_dir)
+        try:
+            file_helper.copy_dir(server_path, new_server_dir, True)
+        except shutil.Error as ex:
+            logger.error(f"Server import failed with error: {ex}")
 
         has_properties = False
         for item in os.listdir(new_server_dir):
@@ -374,7 +377,10 @@ class Controller:
             if str(item) == 'server.properties':
                 has_properties = True
             try:
-                file_helper.move_file(os.path.join(tempDir, item), os.path.join(new_server_dir, item))
+                if not os.path.isdir(os.path.join(tempDir, item)):
+                    file_helper.move_file(os.path.join(tempDir, item), os.path.join(new_server_dir, item))
+                else:
+                    file_helper.move_dir(os.path.join(tempDir, item), os.path.join(new_server_dir, item))
             except Exception as ex:
                 logger.error(f'ERROR IN ZIP IMPORT: {ex}')
         if not has_properties:
@@ -415,7 +421,10 @@ class Controller:
         helper.ensure_dir_exists(new_server_dir)
         helper.ensure_dir_exists(backup_path)
         server_path = helper.get_os_understandable_path(server_path)
-        dir_util.copy_tree(server_path, new_server_dir)
+        try:
+            file_helper.copy_dir(server_path, new_server_dir, True)
+        except shutil.Error as ex:
+            logger.error(f"Server import failed with error: {ex}")
 
         has_properties = False
         for item in os.listdir(new_server_dir):
@@ -440,7 +449,9 @@ class Controller:
 
         new_id = self.register_server(server_name, server_id, new_server_dir, backup_path, server_command, server_exe,
                                       server_log_file, server_stop, port, server_type='minecraft-bedrock')
-        os.chmod(full_jar_path, 2775)
+        if os.name != "nt":
+            if helper.check_file_exists(full_jar_path):
+                os.chmod(full_jar_path, 2775)
         return new_id
 
     def import_bedrock_zip_server(self, server_name: str, zip_path: str, server_exe: str, port: int):
@@ -457,12 +468,16 @@ class Controller:
         helper.ensure_dir_exists(new_server_dir)
         helper.ensure_dir_exists(backup_path)
         has_properties = False
+        print(os.listdir(tempDir))
         #extracts archive to temp directory
         for item in os.listdir(tempDir):
             if str(item) == 'server.properties':
                 has_properties = True
             try:
-                file_helper.move_file(os.path.join(tempDir, item), os.path.join(new_server_dir, item))
+                if not os.path.isdir(os.path.join(tempDir, item)):
+                    file_helper.move_file(os.path.join(tempDir, item), os.path.join(new_server_dir, item))
+                else:
+                    file_helper.move_dir(os.path.join(tempDir, item), os.path.join(new_server_dir, item))
             except Exception as ex:
                 logger.error(f'ERROR IN ZIP IMPORT: {ex}')
         if not has_properties:
@@ -484,7 +499,10 @@ class Controller:
 
         new_id = self.register_server(server_name, server_id, new_server_dir, backup_path, server_command, server_exe,
                                       server_log_file, server_stop, port, server_type='minecraft-bedrock')
-        os.chmod(full_jar_path, 2775)
+        if os.name != "nt":
+            if helper.check_file_exists(full_jar_path):
+                os.chmod(full_jar_path, 2775)
+
         return new_id
 
     #************************************************************************************************

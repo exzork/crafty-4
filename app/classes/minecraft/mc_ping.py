@@ -3,9 +3,13 @@ import socket
 import base64
 import json
 import os
+import re
 import logging.config
+import uuid
+import random
 
 from app.classes.shared.console import console
+from app.classes.minecraft.bedrock_ping import BedrockPing
 
 logger = logging.getLogger(__name__)
 
@@ -168,63 +172,15 @@ def ping(ip, port):
 
 # For the rest of requests see wiki.vg/Protocol
 def ping_bedrock(ip, port):
-    def read_var_int():
-        i = 0
-        j = 0
-        while True:
-            try:
-                k = sock.recvfrom(1024)
-            except:
-                return False
-            if not k:
-                return 0
-            k = k[0]
-            i |= (k & 0x7f) << (j * 7)
-            j += 1
-            if j > 5:
-                raise ValueError('var_int too big')
-            if not k & 0x80:
-                return i
-
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(2)
+    rd = random.Random()
     try:
-        sock.connect((ip, port))
-
+        #pylint: disable=consider-using-f-string
+        rd.seed(''.join(re.findall('..', '%012x' % uuid.getnode())))
+        client_guid = uuid.UUID(int=rd.getrandbits(32)).int
     except:
-        print("in first except")
-        return False
-
+        client_guid = 0
     try:
-        host = ip.encode('utf-8')
-        data = b''  # wiki.vg/Server_List_Ping
-        data += b'\x00'  # packet ID
-        data += b'\x04'  # protocol variant
-        data += struct.pack('>b', len(host)) + host
-        data += struct.pack('>H', port)
-        data += b'\x01'  # next state
-        data = struct.pack('>b', len(data)) + data
-        sock.sendall(data + b'\x01\x00')  # handshake + status ping
-        length = read_var_int()  # full packet length
-        if length < 10:
-            if length < 0:
-                return False
-            else:
-                return False
-        try:
-            sock.recvfrom(1024)  # packet type, 0 for pings
-        except:
-            return False
-        length = read_var_int()  # string length
-        data = b''
-        while len(data) != length:
-            print("in while")
-            chunk = sock.recv(length - len(data))
-            if not chunk:
-                return False
-
-            data += chunk
-        logger.debug(f"Server reports this data on ping: {data}")
-        return Server(json.loads(data))
-    finally:
-        sock.close()
+        brp = BedrockPing(ip, port, client_guid)
+        return brp.ping()
+    except socket.timeout:
+        logger.debug("Unable to get RakNet stats")

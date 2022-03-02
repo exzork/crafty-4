@@ -2,12 +2,15 @@ import os
 import html
 import re
 import logging
+import time
 import tornado.web
 import tornado.escape
 import bleach
 
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
+from app.classes.web.websocket_helper import websocket_helper
+from app.classes.shared.translation import translation
 from app.classes.shared.server import ServerOutBuf
 
 from app.classes.web.base_handler import BaseHandler
@@ -105,8 +108,15 @@ class AjaxHandler(BaseHandler):
 
             output = ""
 
+            dir_list = []
+            unsorted_files = []
             file_list = os.listdir(folder)
-            file_list = sorted(file_list, key=str.casefold)
+            for item in file_list:
+                if os.path.isdir(os.path.join(folder, item)):
+                    dir_list.append(item)
+                else:
+                    unsorted_files.append(item)
+            file_list = sorted(dir_list, key=str.casefold) + sorted(unsorted_files, key=str.casefold)
             output += \
         f"""<ul class="tree-nested d-block" id="{folder}ul">"""\
 
@@ -130,7 +140,7 @@ class AjaxHandler(BaseHandler):
 
                     else:
                         output += f"""<li
-                        class="tree-item tree-ctx-item tree-file"
+                        class="tree-nested d-block tree-ctx-item tree-file"
                         data-path="{dpath}"
                         data-name="{filename}"
                         onclick=""><input type='checkbox' class="checkBoxClass" name='root_path' value="{dpath}" checked><span style="margin-right: 6px;">
@@ -152,7 +162,7 @@ class AjaxHandler(BaseHandler):
 
                     else:
                         output += f"""<li
-                        class="tree-item tree-ctx-item tree-file"
+                        class="tree-nested d-block tree-ctx-item tree-file"
                         data-path="{dpath}"
                         data-name="{filename}"
                         onclick=""><input type='checkbox' class="checkBoxClass" name='root_path' value="{dpath}">
@@ -166,8 +176,15 @@ class AjaxHandler(BaseHandler):
             folder = self.get_argument('path', None)
             output = ""
 
+            dir_list = []
+            unsorted_files = []
             file_list = os.listdir(folder)
-            file_list = sorted(file_list, key=str.casefold)
+            for item in file_list:
+                if os.path.isdir(os.path.join(folder, item)):
+                    dir_list.append(item)
+                else:
+                    unsorted_files.append(item)
+            file_list = sorted(dir_list, key=str.casefold) + sorted(unsorted_files, key=str.casefold)
             output += \
         f"""<ul class="tree-nested d-block" id="{folder}ul">"""\
 
@@ -331,7 +348,16 @@ class AjaxHandler(BaseHandler):
 
         elif page == "unzip_server":
             path = self.get_argument('path', None)
-            helper.unzipServer(path, exec_user['user_id'])
+            if helper.check_file_exists(path):
+                helper.unzipServer(path, exec_user['user_id'])
+            else:
+                user_id = exec_user['user_id']
+                if user_id:
+                    time.sleep(5)
+                    user_lang = self.controller.users.get_user_lang_by_id(user_id)
+                    websocket_helper.broadcast_user(user_id, 'send_start_error',{
+                    'error': translation.translate('error', 'no-file', user_lang)
+                })
             return
 
         elif page == "backup_select":
