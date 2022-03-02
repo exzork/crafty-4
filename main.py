@@ -7,14 +7,11 @@ import logging.config
 import signal
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
-if helper.check_file_exists('/.dockerenv'):
-    console.cyan("Docker environment detected!")
-else:
-    if helper.checkRoot():
-        console.critical("Root detected. Root/Admin access denied. Run Crafty again with non-elevated permissions.")
-        time.sleep(5)
-        console.critical("Crafty shutting down. Root/Admin access denied.")
-        sys.exit(0)
+if helper.checkRoot():
+    console.critical("Root detected. Root/Admin access denied. Run Crafty again with non-elevated permissions.")
+    time.sleep(5)
+    console.critical("Crafty shutting down. Root/Admin access denied.")
+    sys.exit(0)
 # pylint: disable=wrong-import-position
 from app.classes.shared.main_models import installer, database
 from app.classes.shared.tasks import TasksManager
@@ -152,10 +149,10 @@ if __name__ == '__main__':
     controller.set_project_root(project_root)
     controller.clear_unexecuted_commands()
 
-    def sigterm_handler():
+    def sigterm_handler(*sig):
         print() # for newline
-        logger.info("Recieved SIGTERM, stopping Crafty")
-        console.info("Recieved SIGTERM, stopping Crafty")
+        logger.info(f"Recieved SIGINT [{sig[0]}], stopping Crafty...")
+        console.info(f"Recieved SIGINT [{sig[0]}], stopping Crafty...")
         tasks_manager._main_graceful_exit()
         Crafty.universal_exit()
 
@@ -166,8 +163,8 @@ if __name__ == '__main__':
             Crafty.cmdloop()
         except KeyboardInterrupt:
             print() # for newline
-            logger.info("Recieved SIGINT, stopping Crafty")
-            console.info("Recieved SIGINT, stopping Crafty")
+            logger.info("Recieved SIGINT, stopping Crafty...")
+            console.info("Recieved SIGINT, stopping Crafty...")
             tasks_manager._main_graceful_exit()
             Crafty.universal_exit()
     else:
@@ -178,8 +175,8 @@ if __name__ == '__main__':
                     break
                 time.sleep(1)
             except KeyboardInterrupt:
-                logger.info("Recieved SIGINT, stopping Crafty")
-                console.info("Recieved SIGINT, stopping Crafty")
+                logger.info("Recieved SIGINT, stopping Crafty...")
+                console.info("Recieved SIGINT, stopping Crafty...")
                 break
         tasks_manager._main_graceful_exit()
         Crafty.universal_exit()

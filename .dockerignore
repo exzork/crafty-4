@@ -10,6 +10,10 @@ docker-compose.yml
 .gitlab-ci.yml
 
 # root
+.editorconfig
+.pylintrc
+.venv
+.vscode
 crafty_commander.exe
 DBCHANGES.md
 docker-compose.yml.example
