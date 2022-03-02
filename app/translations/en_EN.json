@@ -89,7 +89,7 @@
         "allServers": "All Servers",
         "server": "Server",
         "actions": "Actions",
-        "world": "World",
+        "size": "Server Dir Size",
         "motd": "MOTD",
         "version": "Version",
         "status": "Status",
