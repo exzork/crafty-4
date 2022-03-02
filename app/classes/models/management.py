@@ -128,6 +128,7 @@ class Backups(Model):
     excluded_dirs = CharField(null=True)
     max_backups = IntegerField()
     server_id = ForeignKeyField(Servers, backref='backups_server')
+    compress = BooleanField(default=False)
     class Meta:
         table_name = 'backups'
         database = database
@@ -313,19 +314,21 @@ class helpers_management:
                 "backup_path": row.server_id.backup_path,
                 "excluded_dirs": row.excluded_dirs,
                 "max_backups": row.max_backups,
-                "server_id": row.server_id.server_id
+                "server_id": row.server_id.server_id,
+                "compress": row.compress
             }
         except IndexError:
             conf = {
                 "backup_path": None,
                 "excluded_dirs": None,
                 "max_backups": 0,
-                "server_id": server_id
+                "server_id": server_id,
+                "compress": False,
             }
         return conf
 
     @staticmethod
-    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, excluded_dirs: list = None):
+    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, excluded_dirs: list = None, compress: bool = False):
         logger.debug(f"Updating server {server_id} backup config with {locals()}")
         if Backups.select().where(Backups.server_id == server_id).count() != 0:
             new_row = False
@@ -334,7 +337,8 @@ class helpers_management:
             conf = {
                 "excluded_dirs": None,
                 "max_backups": 0,
-                "server_id":   server_id
+                "server_id":   server_id,
+                "compress": False
             }
             new_row = True
         if max_backups is not None:
@@ -342,6 +346,7 @@ class helpers_management:
         if excluded_dirs is not None:
             dirs_to_exclude = ",".join(excluded_dirs)
             conf['excluded_dirs'] = dirs_to_exclude
+        conf['compress'] = compress
         if not new_row:
             with database.atomic():
                 if backup_path is not None:

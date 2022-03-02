@@ -606,10 +606,11 @@ class PanelHandler(BaseHandler):
                 page_data['super-disabled'] = ''
             else:
                 page_data['super-disabled'] = 'disabled'
-            for file in os.listdir(os.path.join(helper.root_dir, 'app', 'translations')):
+            for file in sorted(os.listdir(os.path.join(helper.root_dir, 'app', 'translations'))):
                 if file.endswith('.json'):
-                    if file != str(page_data['languages'][0] + '.json'):
-                        page_data['languages'].append(file.split('.')[0])
+                    if file not in helper.get_setting('disabled_language_files'):
+                        if file != str(page_data['languages'][0] + '.json'):
+                            page_data['languages'].append(file.split('.')[0])
 
             template = "panel/panel_edit_user.html"
 
@@ -738,8 +739,9 @@ class PanelHandler(BaseHandler):
 
             for file in sorted(os.listdir(os.path.join(helper.root_dir, 'app', 'translations'))):
                 if file.endswith('.json'):
-                    if file != str(page_data['languages'][0] + '.json'):
-                        page_data['languages'].append(file.split('.')[0])
+                    if file not in helper.get_setting('disabled_language_files'):
+                        if file != str(page_data['languages'][0] + '.json'):
+                            page_data['languages'].append(file.split('.')[0])
 
             if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
@@ -1059,6 +1061,7 @@ class PanelHandler(BaseHandler):
             logger.debug(self.request.arguments)
             server_id = self.get_argument('id', None)
             server_obj = self.controller.servers.get_server_obj(server_id)
+            compress = self.get_argument('compress', False)
             check_changed = self.get_argument('changed')
             if str(check_changed) == str(1):
                 checked = self.get_body_arguments('root_path')
@@ -1089,7 +1092,7 @@ class PanelHandler(BaseHandler):
             server_obj = self.controller.servers.get_server_obj(server_id)
             server_obj.backup_path = backup_path
             self.controller.servers.update_server(server_obj)
-            self.controller.management.set_backup_config(server_id, max_backups=max_backups, excluded_dirs=checked)
+            self.controller.management.set_backup_config(server_id, max_backups=max_backups, excluded_dirs=checked, compress=bool(compress))
 
             self.controller.management.add_to_audit_log(exec_user['user_id'],
                                        f"Edited server {server_id}: updated backups",
@@ -1189,7 +1192,9 @@ class PanelHandler(BaseHandler):
                         "start_time": sch_time,
                         "enabled": enabled,
                         "one_time": one_time,
-                        "cron_string": ''
+                        "cron_string": '',
+                        "parent": None,
+                        "delay": 0
                     }
                 elif difficulty == "reaction":
                     job_data = {
@@ -1337,7 +1342,9 @@ class PanelHandler(BaseHandler):
                         "start_time": sch_time,
                         "enabled": enabled,
                         "one_time": one_time,
-                        "cron_string": ''
+                        "cron_string": '',
+                        "parent": None,
+                        "delay": 0
                     }
                 elif difficulty == "advanced":
                     job_data = {

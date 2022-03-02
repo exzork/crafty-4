@@ -604,7 +604,12 @@ class Server:
                 else:
                     # If not, just remove the file
                     os.remove(excluded_dir)
-            file_helper.make_archive(helper.get_os_understandable_path(backup_filename), tempDir)
+            if conf['compress']:
+                logger.debug("Found compress backup to be true. Calling compressed archive")
+                file_helper.make_compressed_archive(helper.get_os_understandable_path(backup_filename), tempDir)
+            else:
+                logger.debug("Found compress backup to be false. Calling NON-compressed archive")
+                file_helper.make_archive(helper.get_os_understandable_path(backup_filename), tempDir)
 
             while len(self.list_backups()) > conf["max_backups"] and conf["max_backups"] > 0:
                 backup_list = self.list_backups()

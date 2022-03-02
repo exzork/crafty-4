@@ -1,4 +1,3 @@
-import os
 import json
 import logging
 import datetime
@@ -114,7 +113,7 @@ class Stats:
     def get_world_size(server_path):
 
         total_size = 0
-        
+
         total_size = helper.get_dir_size(server_path)
 
         level_total_size = helper.human_readable_file_size(total_size)

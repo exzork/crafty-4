@@ -17,6 +17,7 @@ import ctypes
 from datetime import datetime
 from socket import gethostname
 from contextlib import suppress
+import psutil
 from requests import get
 
 from app.classes.web.websocket_helper import websocket_helper
@@ -481,11 +482,18 @@ class Helpers:
                 pid = data.get('pid')
                 started = data.get('started')
                 console.critical(f"Another Crafty Controller agent seems to be running...\npid: {pid} \nstarted on: {started}")
+                if psutil.pid_exists(pid):
+                    logger.critical("Found running crafty process. Exiting.")
+                    sys.exit(1)
+                else:
+                    logger.info("No process found for pid. Assuming crafty crashed. Deleting stale session.lock")
+                    os.remove(self.session_file)
+
             except Exception as e:
                 logger.error(f"Failed to locate existing session.lock with error: {e} ")
                 console.error(f"Failed to locate existing session.lock with error: {e} ")
 
-            sys.exit(1)
+                sys.exit(1)
 
         pid = os.getpid()
         now = datetime.now()
