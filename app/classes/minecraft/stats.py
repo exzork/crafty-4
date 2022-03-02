@@ -114,18 +114,10 @@ class Stats:
     def get_world_size(server_path):
 
         total_size = 0
+        
+        total_size = helper.get_dir_size(server_path)
 
-        # do a scan of the directories in the server path.
-        for root, dirs, _files in os.walk(server_path, topdown=False):
-
-            # for each directory we find
-            for name in dirs:
-                    # get this directory size, and add it to the total we have running.
-                total_size += helper.get_dir_size(os.path.join(root, name))
-
-        level_total_size = helper.human_readable_file_size(total_size)
-
-        return level_total_size
+        return total_size
 
     @staticmethod
     def parse_server_ping(ping_obj: object):
