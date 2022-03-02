@@ -151,7 +151,7 @@ if __name__ == '__main__':
     project_root = os.path.dirname(__file__)
     controller.set_project_root(project_root)
 
-    def sigterm_handler():
+    def sigterm_handler(*args):
         print() # for newline
         logger.info("Recieved SIGTERM, stopping Crafty")
         console.info("Recieved SIGTERM, stopping Crafty")
