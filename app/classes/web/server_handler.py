@@ -2,12 +2,12 @@ import sys
 import json
 import logging
 import os
-import shutil
 import libgravatar
 import requests
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
+from app.classes.shared.file_helpers import file_helper
 from app.classes.web.base_handler import BaseHandler
 from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
 from app.classes.minecraft.serverjars import server_jar_obj
@@ -169,7 +169,7 @@ class ServerHandler(BaseHandler):
                     new_server_path = os.path.join(helper.servers_dir, new_server_uuid)
 
                     # copy the old server
-                    shutil.copytree(server_data.get('path'), new_server_path)
+                    file_helper.copy_dir(server_data.get('path'), new_server_path)
 
                     # TODO get old server DB data to individual variables
                     stop_command = server_data.get('stop_command')
@@ -177,7 +177,7 @@ class ServerHandler(BaseHandler):
                     new_executable = server_data.get('executable')
                     new_server_log_file = str(helper.get_os_understandable_path(server_data.get('log_path'))).replace(server_uuid, new_server_uuid)
                     server_port = server_data.get('server_port')
-                    server_type = server_data.get('server_type')
+                    server_type = server_data.get('type')
 
                     self.controller.servers.create_server(new_server_name,
                                                           new_server_uuid,
@@ -250,7 +250,7 @@ class ServerHandler(BaseHandler):
                                            new_server_id,
                                            self.get_remote_ip())
                 #deletes temp dir
-                shutil.rmtree(zip_path)
+                file_helper.del_dirs(zip_path)
             else:
                 if len(server_parts) != 2:
                     self.redirect("/panel/error?error=Invalid server data")
@@ -304,7 +304,7 @@ class ServerHandler(BaseHandler):
                 return
 
             if import_type == 'import_jar':
-                good_path = self.controller.verify_jar_server(import_server_path, import_server_jar)
+                good_path = self.controller.verify_jar_server(import_server_path, import_server_exe)
 
                 if not good_path:
                     self.redirect("/panel/error?error=Server path or Server Jar not found!")
@@ -333,7 +333,7 @@ class ServerHandler(BaseHandler):
                                            new_server_id,
                                            self.get_remote_ip())
                 #deletes temp dir
-                shutil.rmtree(zip_path)
+                file_helper.del_dirs(zip_path)
             else:
                 if len(server_parts) != 2:
                     self.redirect("/panel/error?error=Invalid server data")

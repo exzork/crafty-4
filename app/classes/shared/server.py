@@ -5,9 +5,9 @@ import time
 import datetime
 import threading
 import logging.config
-import shutil
 import subprocess
 import html
+import tempfile
 from apscheduler.schedulers.background import BackgroundScheduler
 #TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
@@ -20,6 +20,7 @@ from app.classes.models.server_permissions import server_permissions
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.shared.translation import translation
+from app.classes.shared.file_helpers import file_helper
 
 from app.classes.web.websocket_helper import websocket_helper
 
@@ -574,21 +575,57 @@ class Server:
 
     def a_backup_server(self):
         logger.info(f"Starting server {self.name} (ID {self.server_id}) backup")
+        server_users = server_permissions.get_server_user_list(self.server_id)
+        for user in server_users:
+            websocket_helper.broadcast_user(user, 'notification', translation.translate('notify',
+            'backupStarted', users_helper.get_user_lang_by_id(user)) + self.name)
+        time.sleep(3)
         self.is_backingup = True
         conf = management_helper.get_backup_config(self.server_id)
         try:
             backup_filename = f"{self.settings['backup_path']}/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
             logger.info(f"Creating backup of server '{self.settings['server_name']}'" +
                         f" (ID#{self.server_id}, path={self.server_path}) at '{backup_filename}'")
-            shutil.make_archive(helper.get_os_understandable_path(backup_filename), 'zip', self.server_path)
+
+            tempDir = tempfile.mkdtemp()
+            # pylint: disable=unexpected-keyword-arg
+            file_helper.copy_dir(self.server_path, tempDir, dirs_exist_ok=True)
+            excluded_dirs = management_helper.get_excluded_backup_dirs(self.server_id)
+            server_dir = helper.get_os_understandable_path(self.settings['path'])
+
+            for my_dir in excluded_dirs:
+                # Take the full path of the excluded dir and replace the server path with the temp path
+                # This is so that we're only deleting excluded dirs from the temp path and not the server path
+                excluded_dir = helper.get_os_understandable_path(my_dir).replace(server_dir, helper.get_os_understandable_path(tempDir))
+                # Next, check to see if it is a directory
+                if os.path.isdir(excluded_dir):
+                    # If it is a directory, recursively delete the entire directory from the backup
+                    file_helper.del_dirs(excluded_dir)
+                else:
+                    # If not, just remove the file
+                    os.remove(excluded_dir)
+            if conf['compress']:
+                logger.debug("Found compress backup to be true. Calling compressed archive")
+                file_helper.make_compressed_archive(helper.get_os_understandable_path(backup_filename), tempDir)
+            else:
+                logger.debug("Found compress backup to be false. Calling NON-compressed archive")
+                file_helper.make_archive(helper.get_os_understandable_path(backup_filename), tempDir)
+
             while len(self.list_backups()) > conf["max_backups"] and conf["max_backups"] > 0:
                 backup_list = self.list_backups()
                 oldfile = backup_list[0]
                 oldfile_path = f"{conf['backup_path']}/{oldfile['path']}"
                 logger.info(f"Removing old backup '{oldfile['path']}'")
                 os.remove(helper.get_os_understandable_path(oldfile_path))
+
             self.is_backingup = False
+            file_helper.del_dirs(tempDir)
             logger.info(f"Backup of server: {self.name} completed")
+            server_users = server_permissions.get_server_user_list(self.server_id)
+            for user in server_users:
+                websocket_helper.broadcast_user(user, 'notification', translation.translate('notify', 'backupComplete',
+                users_helper.get_user_lang_by_id(user)) + self.name)
+            time.sleep(3)
             return
         except:
             logger.exception(f"Failed to create backup of server {self.name} (ID {self.server_id})")

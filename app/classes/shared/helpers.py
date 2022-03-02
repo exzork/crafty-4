@@ -13,15 +13,16 @@ import logging
 import html
 import zipfile
 import pathlib
-import shutil
 import ctypes
 from datetime import datetime
 from socket import gethostname
 from contextlib import suppress
+import psutil
 from requests import get
 
 from app.classes.web.websocket_helper import websocket_helper
 from app.classes.shared.console import console
+from app.classes.shared.file_helpers import file_helper
 
 logger = logging.getLogger(__name__)
 
@@ -369,7 +370,7 @@ class Helpers:
 
                 for item in os.listdir(full_root_path):
                     try:
-                        shutil.move(os.path.join(full_root_path, item), os.path.join(new_dir, item))
+                        file_helper.move_dir(os.path.join(full_root_path, item), os.path.join(new_dir, item))
                     except Exception as ex:
                         logger.error(f'ERROR IN ZIP IMPORT: {ex}')
             except Exception as ex:
@@ -481,11 +482,18 @@ class Helpers:
                 pid = data.get('pid')
                 started = data.get('started')
                 console.critical(f"Another Crafty Controller agent seems to be running...\npid: {pid} \nstarted on: {started}")
+                if psutil.pid_exists(pid):
+                    logger.critical("Found running crafty process. Exiting.")
+                    sys.exit(1)
+                else:
+                    logger.info("No process found for pid. Assuming crafty crashed. Deleting stale session.lock")
+                    os.remove(self.session_file)
+
             except Exception as e:
                 logger.error(f"Failed to locate existing session.lock with error: {e} ")
                 console.error(f"Failed to locate existing session.lock with error: {e} ")
 
-            sys.exit(1)
+                sys.exit(1)
 
         pid = os.getpid()
         now = datetime.now()
@@ -652,8 +660,15 @@ class Helpers:
 
     @staticmethod
     def generate_tree(folder, output=""):
+        dir_list = []
+        unsorted_files = []
         file_list = os.listdir(folder)
-        file_list = sorted(file_list, key=str.casefold)
+        for item in file_list:
+            if os.path.isdir(os.path.join(folder, item)):
+                dir_list.append(item)
+            else:
+                unsorted_files.append(item)
+        file_list = sorted(dir_list, key=str.casefold) + sorted(unsorted_files, key=str.casefold)
         for raw_filename in file_list:
             filename = html.escape(raw_filename)
             rel = os.path.join(folder, raw_filename)
@@ -673,7 +688,7 @@ class Helpers:
             else:
                 if filename != "crafty_managed.txt":
                     output += f"""<li
-                    class="tree-item tree-ctx-item tree-file"
+                    class="tree-nested d-block tree-ctx-item tree-file"
                     data-path="{dpath}"
                     data-name="{filename}"
                     onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{filename}</li>"""
@@ -681,8 +696,15 @@ class Helpers:
 
     @staticmethod
     def generate_dir(folder, output=""):
+        dir_list = []
+        unsorted_files = []
         file_list = os.listdir(folder)
-        file_list = sorted(file_list, key=str.casefold)
+        for item in file_list:
+            if os.path.isdir(os.path.join(folder, item)):
+                dir_list.append(item)
+            else:
+                unsorted_files.append(item)
+        file_list = sorted(dir_list, key=str.casefold) + sorted(unsorted_files, key=str.casefold)
         output += \
     f"""<ul class="tree-nested d-block" id="{folder}ul">"""\
 
@@ -704,7 +726,7 @@ class Helpers:
             else:
                 if filename != "crafty_managed.txt":
                     output += f"""<li
-                    class="tree-item tree-ctx-item tree-file"
+                    class="tree-nested d-block tree-ctx-item tree-file"
                     data-path="{dpath}"
                     data-name="{filename}"
                     onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{filename}</li>"""
@@ -773,6 +795,12 @@ class Helpers:
                 websocket_helper.broadcast_user(user_id, 'send_temp_path',{
                 'path': tempDir
                 })
+    @staticmethod
+    def backup_select(path, user_id):
+        if user_id:
+            websocket_helper.broadcast_user(user_id, 'send_temp_path',{
+            'path': path
+        })
 
     @staticmethod
     def unzip_backup_archive(backup_path, zip_name):
@@ -804,7 +832,7 @@ class Helpers:
     @staticmethod
     def copy_files(source, dest):
         if os.path.isfile(source):
-            shutil.copyfile(source, dest)
+            file_helper.copy_file(source, dest)
             logger.info("Copying jar %s to %s", source, dest)
         else:
             logger.info("Source jar does not exist.")

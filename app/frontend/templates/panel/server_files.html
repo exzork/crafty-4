@@ -133,7 +133,7 @@
                 </style>
                 <ul class="tree-view">
                   <li>
-                    <div class="tree-ctx-item" data-path="{{ data['server_stats']['server_id']['path'] }}">
+                    <div id="root_dir" class="tree-ctx-item" data-path="{{ data['server_stats']['server_id']['path'] }}">
                       <span id="{{ data['server_stats']['server_id']['path'] }}span" class="files-tree-title tree-caret-down root-dir" data-path="{{ data['server_stats']['server_id']['path'] }}" onclick="getToggleMain(event)">
                         <i class="far fa-folder"></i>
                         <i class="far fa-folder-open"></i>
@@ -650,7 +650,7 @@
   }
   function getTreeView(event) {
 
-    let path = "{{ data['server_stats']['server_id']['path'] }}";
+    const path = $('#root_dir').data('path');;
 
     $.ajax({
       type: "GET",

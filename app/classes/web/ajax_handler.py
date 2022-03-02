@@ -2,12 +2,15 @@ import os
 import html
 import re
 import logging
+import time
 import tornado.web
 import tornado.escape
 import bleach
 
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
+from app.classes.web.websocket_helper import websocket_helper
+from app.classes.shared.translation import translation
 from app.classes.shared.server import ServerOutBuf
 
 from app.classes.web.base_handler import BaseHandler
@@ -99,6 +102,155 @@ class AjaxHandler(BaseHandler):
                         helper.generate_zip_dir(path))
             self.finish()
 
+        elif page == "get_backup_tree":
+            server_id = self.get_argument('id', None)
+            folder = self.get_argument('path', None)
+
+            output = ""
+
+            dir_list = []
+            unsorted_files = []
+            file_list = os.listdir(folder)
+            for item in file_list:
+                if os.path.isdir(os.path.join(folder, item)):
+                    dir_list.append(item)
+                else:
+                    unsorted_files.append(item)
+            file_list = sorted(dir_list, key=str.casefold) + sorted(unsorted_files, key=str.casefold)
+            output += \
+        f"""<ul class="tree-nested d-block" id="{folder}ul">"""\
+
+            for raw_filename in file_list:
+                filename = html.escape(raw_filename)
+                rel = os.path.join(folder, raw_filename)
+                dpath = os.path.join(folder, filename)
+                if str(dpath) in self.controller.management.get_excluded_backup_dirs(server_id):
+                    if os.path.isdir(rel):
+                        output += \
+                            f"""<li class="tree-item" data-path="{dpath}">
+                            \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
+                            <input type="checkbox" class="checkBoxClass" name="root_path" value="{dpath}" checked>
+                            <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
+                            <i class="far fa-folder"></i>
+                            <i class="far fa-folder-open"></i>
+                            <strong>{filename}</strong>
+                            </span>
+                            </input></div><li>
+                            \n"""\
+
+                    else:
+                        output += f"""<li
+                        class="tree-nested d-block tree-ctx-item tree-file"
+                        data-path="{dpath}"
+                        data-name="{filename}"
+                        onclick=""><input type='checkbox' class="checkBoxClass" name='root_path' value="{dpath}" checked><span style="margin-right: 6px;">
+                        <i class="far fa-file"></i></span></input>{filename}</li>"""
+
+                else:
+                    if os.path.isdir(rel):
+                        output += \
+                            f"""<li class="tree-item" data-path="{dpath}">
+                            \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
+                            <input type="checkbox" class="checkBoxClass" name="root_path" value="{dpath}">
+                            <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
+                            <i class="far fa-folder"></i>
+                            <i class="far fa-folder-open"></i>
+                            <strong>{filename}</strong>
+                            </span>
+                            </input></div><li>
+                            \n"""\
+
+                    else:
+                        output += f"""<li
+                        class="tree-nested d-block tree-ctx-item tree-file"
+                        data-path="{dpath}"
+                        data-name="{filename}"
+                        onclick=""><input type='checkbox' class="checkBoxClass" name='root_path' value="{dpath}">
+                        <span style="margin-right: 6px;"><i class="far fa-file"></i></span></input>{filename}</li>"""
+            self.write(helper.get_os_understandable_path(folder) + '\n' +
+                        output)
+            self.finish()
+
+        elif page == "get_backup_dir":
+            server_id = self.get_argument('id', None)
+            folder = self.get_argument('path', None)
+            output = ""
+
+            dir_list = []
+            unsorted_files = []
+            file_list = os.listdir(folder)
+            for item in file_list:
+                if os.path.isdir(os.path.join(folder, item)):
+                    dir_list.append(item)
+                else:
+                    unsorted_files.append(item)
+            file_list = sorted(dir_list, key=str.casefold) + sorted(unsorted_files, key=str.casefold)
+            output += \
+        f"""<ul class="tree-nested d-block" id="{folder}ul">"""\
+
+            for raw_filename in file_list:
+                filename = html.escape(raw_filename)
+                rel = os.path.join(folder, raw_filename)
+                dpath = os.path.join(folder, filename)
+                if str(dpath) in self.controller.management.get_excluded_backup_dirs(server_id):
+                    if os.path.isdir(rel):
+                        output += \
+                            f"""<li class="tree-item" data-path="{dpath}">
+                            \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
+                            <input type="checkbox" name="root_path" value="{dpath}">
+                            <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
+                            <i class="far fa-folder"></i>
+                            <i class="far fa-folder-open"></i>
+                            <strong>{filename}</strong>
+                            </span>
+                            </input></div><li>"""\
+
+                    else:
+                        output += f"""<li
+                        class="tree-item tree-ctx-item tree-file"
+                        data-path="{dpath}"
+                        data-name="{filename}"
+                        onclick=""><input type='checkbox' name='root_path' value='{dpath}'><span style="margin-right: 6px;">
+                        <i class="far fa-file"></i></span></input>{filename}</li>"""
+
+                else:
+                    if os.path.isdir(rel):
+                        output += \
+                            f"""<li class="tree-item" data-path="{dpath}">
+                            \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
+                            <input type="checkbox" name="root_path" value="{dpath}">
+                            <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
+                            <i class="far fa-folder"></i>
+                            <i class="far fa-folder-open"></i>
+                            <strong>{filename}</strong>
+                            </span>
+                            </input></div><li>"""\
+
+                    else:
+                        output += f"""<li
+                        class="tree-item tree-ctx-item tree-file"
+                        data-path="{dpath}"
+                        data-name="{filename}"
+                        onclick=""><input type='checkbox' name='root_path' value='{dpath}'>
+                        <span style="margin-right: 6px;"><i class="far fa-file"></i></span></input>{filename}</li>"""
+
+            self.write(helper.get_os_understandable_path(folder) + '\n' +
+                        output)
+            self.finish()
+
+        elif page == "get_dir":
+            server_id = self.get_argument('id', None)
+            path = self.get_argument('path', None)
+
+            if not self.check_server_id(server_id, 'get_tree'):
+                return
+            else:
+                server_id = bleach.clean(server_id)
+
+            if helper.validate_traversal(self.controller.servers.get_server_data_by_id(server_id)['path'], path):
+                self.write(helper.get_os_understandable_path(path) + '\n' +
+                        helper.generate_dir(path))
+            self.finish()
 
     @tornado.web.authenticated
     def post(self, page):
@@ -196,7 +348,21 @@ class AjaxHandler(BaseHandler):
 
         elif page == "unzip_server":
             path = self.get_argument('path', None)
-            helper.unzipServer(path, exec_user['user_id'])
+            if helper.check_file_exists(path):
+                helper.unzipServer(path, exec_user['user_id'])
+            else:
+                user_id = exec_user['user_id']
+                if user_id:
+                    time.sleep(5)
+                    user_lang = self.controller.users.get_user_lang_by_id(user_id)
+                    websocket_helper.broadcast_user(user_id, 'send_start_error',{
+                    'error': translation.translate('error', 'no-file', user_lang)
+                })
+            return
+
+        elif page == "backup_select":
+            path = self.get_argument('path', None)
+            helper.backup_select(path, exec_user['user_id'])
             return
 
 

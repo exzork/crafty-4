@@ -157,10 +157,12 @@ class helper_servers:
     def get_all_servers_stats():
         servers = servers_helper.get_all_defined_servers()
         server_data = []
-
-        for s in servers:
-            latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
-            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0], "user_command_permission":True})
+        try:
+            for s in servers:
+                latest = Server_Stats.select().where(Server_Stats.server_id == s.get('server_id')).order_by(Server_Stats.created.desc()).limit(1)
+                server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0], "user_command_permission":True})
+        except IndexError as ex:
+            logger.error(f"Stats collection failed with error: {ex}. Was a server just created?")
         return server_data
 
     @staticmethod
