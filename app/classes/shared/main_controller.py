@@ -468,7 +468,6 @@ class Controller:
         helper.ensure_dir_exists(new_server_dir)
         helper.ensure_dir_exists(backup_path)
         has_properties = False
-        print(os.listdir(tempDir))
         #extracts archive to temp directory
         for item in os.listdir(tempDir):
             if str(item) == 'server.properties':
