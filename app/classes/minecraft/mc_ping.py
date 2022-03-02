@@ -182,5 +182,5 @@ def ping_bedrock(ip, port):
     try:
         brp = BedrockPing(ip, port, client_guid)
         return brp.ping()
-    except socket.timeout:
+    except:
         logger.debug("Unable to get RakNet stats")
