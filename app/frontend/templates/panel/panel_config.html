@@ -141,6 +141,21 @@
               </div>
             </div>
           </div>
+          {% if data['superuser'] %}
+          <div class="row">
+            <div class="col-md-12 col-lg-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                  <h4 class="card-title"><i class="fas fa-user-tag"></i> {{ translate('panelConfig', 'adminControls', data['lang']) }}</h4>
+                </div>
+                <div class="card-body">
+                  <button type="button" class="btn btn-outline-danger clear-comm">{{ translate('panelConfig', 'clearComms', data['lang']) }}</button>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          {% end %}
         </div>
       </div>
     </div>
@@ -206,6 +221,17 @@ $( document ).ready(function() {
       message: api_key,
     });
   });
+
+  $('.clear-comm').click(function () {
+    var token = getCookie("_xsrf")
+    $.ajax({
+        type: "POST",
+        headers: {'X-XSRFToken': token},
+        url: '/ajax/clear_comm',
+        success: function (data) {
+        },
+    });
+})
 </script>
 
 {% end %}

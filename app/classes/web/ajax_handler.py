@@ -306,6 +306,11 @@ class AjaxHandler(BaseHandler):
             self.controller.users.update_server_order(exec_user['user_id'], bleach.clean(self.get_argument('order')))
             return
 
+        elif page == "clear_comms":
+            if exec_user['superuser']:
+                self.controller.clear_unexecuted_commands()
+                return
+
         elif page == "kill":
             if not permissions['Commands'] in user_perms:
                 if not superuser:

@@ -481,8 +481,8 @@ class Helpers:
                 data = json.loads(file_data)
                 pid = data.get('pid')
                 started = data.get('started')
-                console.critical(f"Another Crafty Controller agent seems to be running...\npid: {pid} \nstarted on: {started}")
                 if psutil.pid_exists(pid):
+                    console.critical(f"Another Crafty Controller agent seems to be running...\npid: {pid} \nstarted on: {started}")
                     logger.critical("Found running crafty process. Exiting.")
                     sys.exit(1)
                 else:
