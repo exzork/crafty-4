@@ -594,3 +594,6 @@ class Controller:
                 self.servers_list.pop(counter)
 
             counter += 1
+    @staticmethod
+    def clear_unexecuted_commands():
+        helpers_management.clear_unexecuted_commands()

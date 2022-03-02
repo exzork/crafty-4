@@ -389,5 +389,12 @@ class helpers_management:
         else:
             logger.debug(f"Not removing {dir_to_del} from excluded directories - not in the excluded directory list for server ID {server_id}")
 
+    @staticmethod
+    def clear_unexecuted_commands():
+        Commands.update({
+            Commands.executed: True
+        #pylint: disable=singleton-comparison
+        }).where(Commands.executed == False).execute()
+
 
 management_helper = helpers_management()

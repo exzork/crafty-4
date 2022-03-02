@@ -357,7 +357,9 @@
         "cancel": "Cancel",
         "delete": "Delete",
         "superConfirmTitle": "Enable superuser? Are you sure?",
-        "superConfirm": "Proceed only if you want this user to have access to EVERYTHING (all user accounts, servers, panel settings, etc.). They can even revoke your superuser rights."
+        "superConfirm": "Proceed only if you want this user to have access to EVERYTHING (all user accounts, servers, panel settings, etc.). They can even revoke your superuser rights.",
+        "adminControls": "Admin Controls",
+        "clearComms": "Clear Un-executed Commands"
     },
     "userConfig": {
         "pageTitle": "Edit User",
