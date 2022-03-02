@@ -7,14 +7,11 @@ import logging.config
 import signal
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
-if helper.check_file_exists('/.dockerenv'):
-    console.cyan("Docker environment detected!")
-else:
-    if helper.checkRoot():
-        console.critical("Root detected. Root/Admin access denied. Run Crafty again with non-elevated permissions.")
-        time.sleep(5)
-        console.critical("Crafty shutting down. Root/Admin access denied.")
-        sys.exit(0)
+if helper.checkRoot():
+    console.critical("Root detected. Root/Admin access denied. Run Crafty again with non-elevated permissions.")
+    time.sleep(5)
+    console.critical("Crafty shutting down. Root/Admin access denied.")
+    sys.exit(0)
 # pylint: disable=wrong-import-position
 from app.classes.shared.main_models import installer, database
 from app.classes.shared.tasks import TasksManager
