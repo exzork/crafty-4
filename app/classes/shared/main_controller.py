@@ -451,7 +451,7 @@ class Controller:
                                       server_log_file, server_stop, port, server_type='minecraft-bedrock')
         if os.name != "nt":
             if helper.check_file_exists(full_jar_path):
-                os.chmod(full_jar_path, 2775)
+                os.chmod(full_jar_path, 0o2775)
         return new_id
 
     def import_bedrock_zip_server(self, server_name: str, zip_path: str, server_exe: str, port: int):
@@ -500,7 +500,7 @@ class Controller:
                                       server_log_file, server_stop, port, server_type='minecraft-bedrock')
         if os.name != "nt":
             if helper.check_file_exists(full_jar_path):
-                os.chmod(full_jar_path, 2775)
+                os.chmod(full_jar_path, 0o2775)
 
         return new_id
 
