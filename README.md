@@ -28,6 +28,11 @@ With `Crafty Controller 4.0` we have focused on building our DevOps Principles, 
 - Containers now run as non-root, using practices used by OpenSwift & Kubernetes (root group perms).
 
 
+> __**⚠ 🔻WARNING: [WSL/WSL2 | WINDOWS 11 | DOCKER DESKTOP]🔻**__ <br>
+ BE ADVISED! Upstream is currently broken for Minecraft running on **Docker under WSL/WSL2, Windows 11 / DOCKER DESKTOP!** <br>
+ On '**Stop**' or '**Restart**' of the MC Server, there is a 90% chance the World's Chunks will be shredded irreparably! <br>
+ Please only run Docker on Linux, If you are using Windows we have a portable installs found here: [Latest-Stable](https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/master/download?job=win-prod-build), [Latest-Development](https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/dev/download?job=win-dev-build)
+
 ----
 
 ### - To get started with docker 🛫
@@ -77,7 +82,7 @@ Then use one of the following methods:
 ### **docker-compose.yml:**
 ```sh
 # We need to make them because of permissions remember!
-$ mkdir docker/backups docker/logs docker/servers docker/config docker/import
+$ mkdir docker/ docker/backups docker/logs docker/servers docker/config docker/import
 
 # Make your compose file
 $ vim docker-compose.yml
@@ -112,7 +117,7 @@ $ docker-compose up -d && docker-compose logs -f
 ### **docker run:**
 ```sh
 # We need to make them because of permissions remember!
-$ mkdir docker/backups docker/logs docker/servers docker/config docker/import
+$ mkdir docker/ docker/backups docker/logs docker/servers docker/config docker/import
 
 $ docker run \
 	--name crafty_commander \
