@@ -450,7 +450,8 @@ class Controller:
         new_id = self.register_server(server_name, server_id, new_server_dir, backup_path, server_command, server_exe,
                                       server_log_file, server_stop, port, server_type='minecraft-bedrock')
         if os.name != "nt":
-            os.chmod(full_jar_path, 2775)
+            if helper.check_file_exists(full_jar_path):
+                os.chmod(full_jar_path, 2775)
         return new_id
 
     def import_bedrock_zip_server(self, server_name: str, zip_path: str, server_exe: str, port: int):
@@ -499,7 +500,8 @@ class Controller:
         new_id = self.register_server(server_name, server_id, new_server_dir, backup_path, server_command, server_exe,
                                       server_log_file, server_stop, port, server_type='minecraft-bedrock')
         if os.name != "nt":
-            os.chmod(full_jar_path, 2775)
+            if helper.check_file_exists(full_jar_path):
+                os.chmod(full_jar_path, 2775)
 
         return new_id
 
