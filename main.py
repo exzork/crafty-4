@@ -148,10 +148,10 @@ if __name__ == '__main__':
     project_root = os.path.dirname(__file__)
     controller.set_project_root(project_root)
 
-    def sigterm_handler(*args):
+    def sigterm_handler(*sig):
         print() # for newline
-        logger.info(f"Recieved SIGINT [{args[0]}], stopping Crafty...")
-        console.info(f"Recieved SIGINT [{args[0]}], stopping Crafty...")
+        logger.info(f"Recieved SIGINT [{sig[0]}], stopping Crafty...")
+        console.info(f"Recieved SIGINT [{sig[0]}], stopping Crafty...")
         tasks_manager._main_graceful_exit()
         Crafty.universal_exit()
 
@@ -162,8 +162,8 @@ if __name__ == '__main__':
             Crafty.cmdloop()
         except KeyboardInterrupt:
             print() # for newline
-            logger.info(f"Recieved SIGINT, stopping Crafty...")
-            console.info(f"Recieved SIGINT, stopping Crafty...")
+            logger.info("Recieved SIGINT, stopping Crafty...")
+            console.info("Recieved SIGINT, stopping Crafty...")
             tasks_manager._main_graceful_exit()
             Crafty.universal_exit()
     else:
@@ -174,8 +174,8 @@ if __name__ == '__main__':
                     break
                 time.sleep(1)
             except KeyboardInterrupt:
-                logger.info(f"Recieved SIGINT, stopping Crafty...")
-                console.info(f"Recieved SIGINT, stopping Crafty...")
+                logger.info("Recieved SIGINT, stopping Crafty...")
+                console.info("Recieved SIGINT, stopping Crafty...")
                 break
         tasks_manager._main_graceful_exit()
         Crafty.universal_exit()
