@@ -1191,7 +1191,9 @@ class PanelHandler(BaseHandler):
                         "start_time": sch_time,
                         "enabled": enabled,
                         "one_time": one_time,
-                        "cron_string": ''
+                        "cron_string": '',
+                        "parent": None,
+                        "delay": 0
                     }
                 elif difficulty == "reaction":
                     job_data = {
@@ -1339,7 +1341,9 @@ class PanelHandler(BaseHandler):
                         "start_time": sch_time,
                         "enabled": enabled,
                         "one_time": one_time,
-                        "cron_string": ''
+                        "cron_string": '',
+                        "parent": None,
+                        "delay": 0
                     }
                 elif difficulty == "advanced":
                     job_data = {
