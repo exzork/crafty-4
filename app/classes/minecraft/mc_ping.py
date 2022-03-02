@@ -170,7 +170,10 @@ def ping(ip, port):
 
             data += chunk
         logger.debug(f"Server reports this data on ping: {data}")
-        return Server(json.loads(data))
+        try:
+            return Server(json.loads(data))
+        except KeyError:
+            return {}
     finally:
         sock.close()
 
