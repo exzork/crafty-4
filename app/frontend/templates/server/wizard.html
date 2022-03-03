@@ -247,7 +247,7 @@
                         <button class="btn btn-primary mr-2" id="root_files_button" type="button">{{ translate('serverWizard', 'clickRoot', data['lang']) }}</button>
                       </div>
                     </div>
-                    
+
 
                     <div class="col-sm-12">
                       <div class="form-group">
@@ -521,7 +521,7 @@ function hide(event) {
           }catch{
             document.getElementById('files-tree').innerHTML = text;
           }
-          
+
 
           document.getElementsByClassName('files-tree-title')[0].setAttribute('data-path', serverDir);
           document.getElementsByClassName('files-tree-title')[0].setAttribute('data-name', 'Files');
@@ -536,7 +536,7 @@ function hide(event) {
           document.getElementById(path+"span").classList.toggle("tree-caret-down");
           document.getElementById(path+"span").classList.toggle("tree-caret");
       }
-    
+
 
     function getDirView(event) {
         path = event.target.parentElement.getAttribute('data-path');
@@ -571,7 +571,7 @@ function hide(event) {
           }
 
           var toggler = document.getElementById(path);
-  
+
             if (toggler.classList.contains('files-tree-title')){
             document.getElementById(path+"span").addEventListener("click", function caretListener() {
               document.getElementById(path+"ul").classList.toggle("d-block");
@@ -596,7 +596,7 @@ function hide(event) {
           document.getElementById('main-tree-input').setAttribute('value', data.path)
           getTreeView(data.path);
           show_file_tree();
-  
+
       }, 5000);
       });
     }
@@ -639,8 +639,8 @@ function hide(event) {
       cSelect.remove(0);
     }
     var newOption;
-    // create new options ordered by descending
-    for (var i=(cList.length)-1; i>=0; i--) {
+    // create new options ordered by ascending
+    for (var i=0; i < (cList.length); i++) {
       newOption = document.createElement("option");
       newOption.value = which+"|"+cList[i];  // assumes option string and value are the same
       newOption.text=cList[i];
