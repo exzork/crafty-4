@@ -3,6 +3,8 @@ import logging
 from app.classes.shared.helpers import helper
 from app.classes.web.base_handler import BaseHandler
 
+from app.classes.shared.server import Server
+
 logger = logging.getLogger(__name__)
 
 class StatusHandler(BaseHandler):
@@ -13,7 +15,7 @@ class StatusHandler(BaseHandler):
         for srv in page_data['servers']:
             server_data = srv.get('server_data', False)
             server_id = server_data.get('server_id', False)
-            srv['raw_ping_result'] = self.controller.stats.get_raw_server_stats(server_id)
+            srv['raw_ping_result'] = self.controller.servers.get_server_stats_by_id(server_id)
 
         template = 'public/status.html'
 
@@ -28,7 +30,7 @@ class StatusHandler(BaseHandler):
         for srv in page_data['servers']:
             server_data = srv.get('server_data', False)
             server_id = server_data.get('server_id', False)
-            srv['raw_ping_result'] = self.controller.stats.get_raw_server_stats(server_id)
+            srv['raw_ping_result'] = self.controller.servers.get_server_stats_by_id(server_id)
 
         template = 'public/status.html'
 
