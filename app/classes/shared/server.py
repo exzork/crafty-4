@@ -148,6 +148,8 @@ class Server:
         self.name = serverName
         self.settings = server_data_obj
 
+        self.record_server_stats()
+
         # build our server run command
 
         if server_data_obj['auto_start']:
@@ -832,8 +834,8 @@ class Server:
 
         self.record_server_stats()
 
-#TODO How I do ?
-#        websocket_helper.broadcast_user_page('/panel/dashboard', user.user_id, 'update_player_status', players_ping)
+        #TODO How I do ?
+        #websocket_helper.broadcast_user_page('/panel/dashboard', user.user_id, 'update_player_status', players_ping)
 
         if (len(servers_ping) > 0) & (len(websocket_helper.clients) > 0):
             try:
@@ -858,7 +860,7 @@ class Server:
         self.reload_server_settings()
 
         # world data
-        server_name = server['server_name']
+        world_name = server['server_name']
         server_path = server['path']
 
         # process stats
@@ -867,7 +869,7 @@ class Server:
         # TODO: search server properties file for possible override of 127.0.0.1
         internal_ip = server['server_ip']
         server_port = server['server_port']
-        server = server.get('server_name', f"ID#{server_id}")
+        server_name = server.get('server_name', f"ID#{server_id}")
 
         logger.debug("Pinging server '{server}' on {internal_ip}:{server_port}")
         if servers_helper.get_server_type_by_id(server_id) == 'minecraft-bedrock':
@@ -1002,7 +1004,7 @@ class Server:
         server_port = server_dt['server_port']
 
 
-        logger.debug(f"Pinging server '{server.name}' on {internal_ip}:{server_port}")
+        logger.debug(f"Pinging server '{self.name}' on {internal_ip}:{server_port}")
         if servers_helper.get_server_type_by_id(server_id) == 'minecraft-bedrock':
             int_mc_ping = ping_bedrock(internal_ip, int(server_port))
         else:

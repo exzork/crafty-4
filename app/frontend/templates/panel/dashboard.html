@@ -155,9 +155,7 @@
                       data['lang']) }}</i></a>
                     {% elif server['stats']['waiting_start']%}
                     <!-- WHAT HAPPENED HERE -->
-                    <a data-id="{{server['server_data']['server_id']}}" class="" title={{
-                      translate('dashboard', 'delay-explained' , data['lang'])}}>{{ translate('dashboard', 'starting',
-                      data['lang']) }}</i></a>
+                    <a data-id="{{server['server_data']['server_id']}}" class="" title={{ translate('dashboard', 'delay-explained' , data['lang'])}}>{{ translate('dashboard', 'starting', data['lang']) }}</i></a>
                     {% else %}
                     <a data-id="{{server['server_data']['server_id']}}" class="play_button"
                       data-toggle="tooltip" title="{{ translate('dashboard', 'start' , data['lang']) }}">
@@ -438,10 +436,7 @@
   }
 
   function update_servers_status(data) {
-    console.log(data);
-    for (server of data) {
-      update_one_server_status(server);
-    }
+    update_one_server_status(data[0]);
     display_motd();
   }
 
@@ -571,15 +566,15 @@
 <script>
   var row;
 
-  function start(){  
-    row = event.target; 
+  function start(){
+    row = event.target;
   }
   function dragover(){
     var e = event;
-    e.preventDefault(); 
-    
+    e.preventDefault();
+
     let children= Array.from(e.target.parentNode.parentNode.children);
-    
+
     if(children.indexOf(e.target.parentNode)>children.indexOf(row))
       e.target.parentNode.after(row);
     else
@@ -588,7 +583,7 @@
 
   function dragend(){
     var id_string = '';
-    const table = document.querySelector("table");  
+    const table = document.querySelector("table");
     for (const row of table.rows) {
       if (row.getAttribute('id') != null){
         if (id_string != ''){
