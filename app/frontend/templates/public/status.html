@@ -143,9 +143,9 @@
   }
 
   function update_servers_status(data) {
-    for (server of data) {
-      update_one_server_status(server);
-    }
+    console.log(data);
+    update_one_server_status(data[0]);
+    display_motd();
   }
 
   $(document).ready(function () {

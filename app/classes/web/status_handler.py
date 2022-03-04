@@ -13,7 +13,7 @@ class StatusHandler(BaseHandler):
         for srv in page_data['servers']:
             server_data = srv.get('server_data', False)
             server_id = server_data.get('server_id', False)
-            srv['raw_ping_result'] = self.controller.stats.get_raw_server_stats(server_id)
+            srv['raw_ping_result'] = self.controller.servers.get_server_stats_by_id(server_id)
 
         template = 'public/status.html'
 
@@ -28,7 +28,7 @@ class StatusHandler(BaseHandler):
         for srv in page_data['servers']:
             server_data = srv.get('server_data', False)
             server_id = server_data.get('server_id', False)
-            srv['raw_ping_result'] = self.controller.stats.get_raw_server_stats(server_id)
+            srv['raw_ping_result'] = self.controller.servers.get_server_stats_by_id(server_id)
 
         template = 'public/status.html'
 

@@ -3,6 +3,7 @@ import sys
 import re
 import time
 import datetime
+import base64
 import threading
 import logging.config
 import subprocess
@@ -12,10 +13,13 @@ from apscheduler.schedulers.background import BackgroundScheduler
 #TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
 
-from app.classes.models.servers import servers_helper
+from app.classes.models.servers import Server_Stats, servers_helper
 from app.classes.models.management import management_helper
 from app.classes.models.users import users_helper
 from app.classes.models.server_permissions import server_permissions
+
+from app.classes.minecraft.stats import Stats
+from app.classes.minecraft.mc_ping import ping, ping_bedrock
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
@@ -96,6 +100,9 @@ class ServerOutBuf:
         )
 
 
+#************************************************************************************************
+#                               Minecraft Server Class
+#************************************************************************************************
 class Server:
 
     def __init__(self, stats):
@@ -123,6 +130,10 @@ class Server:
         servers_helper.server_crash_reset(self.server_id)
         servers_helper.set_update(self.server_id, False)
 
+
+#************************************************************************************************
+#                               Minecraft Server Management
+#************************************************************************************************
     def reload_server_settings(self):
         server_data = servers_helper.get_server_data_by_id(self.server_id)
         self.settings = server_data
@@ -136,6 +147,8 @@ class Server:
         self.server_id = serverId
         self.name = serverName
         self.settings = server_data_obj
+
+        self.record_server_stats()
 
         # build our server run command
 
@@ -161,6 +174,12 @@ class Server:
         # start the server
         self.server_thread = threading.Thread(target=self.start_server, daemon=True, args=(user_id,), name=f'{self.server_id}_server_thread')
         self.server_thread.start()
+
+        #Register an shedule for polling server stats when running
+        logger.info(f"Polling server statistics {self.name} every {5} seconds")
+        console.info(f"Polling server statistics {self.name} every {5} seconds")
+        self.server_scheduler.add_job(self.realtime_stats, 'interval', seconds=5, id="stats_"+str(self.server_id))
+
 
     def setup_server_run_command(self):
         # configure the server
@@ -310,7 +329,7 @@ class Server:
             console.info(f"Server {self.name} running with PID {self.process.pid}")
             self.is_crashed = False
             servers_helper.server_crash_reset(self.server_id)
-            self.stats.record_stats()
+            self.record_server_stats()
             check_internet_thread = threading.Thread(
                 target=self.check_internet_thread, daemon=True, args=(user_id, user_lang, ), name=f"{self.name}_Internet")
             check_internet_thread.start()
@@ -417,7 +436,10 @@ class Server:
         self.cleanup_server_object()
         server_users = server_permissions.get_server_user_list(self.server_id)
 
-        self.stats.record_stats()
+        # remove the stats polling job since server is stopped
+        self.server_scheduler.remove_job("stats_"+str(self.server_id))
+
+        self.record_server_stats()
 
         for user in server_users:
             websocket_helper.broadcast_user(user, 'send_start_reload', {
@@ -748,3 +770,363 @@ class Server:
                     websocket_helper.broadcast_user(user,'notification',
                                            "Executable update failed for " + self.name + ". Check log file for details.")
                 logger.error("Executable download failed.")
+
+
+
+#************************************************************************************************
+#                               Minecraft Servers Statistics
+#************************************************************************************************
+
+    def realtime_stats(self):
+        total_players = 0
+        max_players = 0
+        servers_ping = []
+        raw_ping_result = []
+        raw_ping_result = self.get_raw_server_stats(self.server_id)
+
+        if f"{raw_ping_result.get('icon')}" == "b''":
+            raw_ping_result['icon'] = False
+
+        servers_ping.append({
+            'id': raw_ping_result.get('id'),
+            'started': raw_ping_result.get('started'),
+            'running': raw_ping_result.get('running'),
+            'cpu': raw_ping_result.get('cpu'),
+            'mem': raw_ping_result.get('mem'),
+            'mem_percent': raw_ping_result.get('mem_percent'),
+            'world_name': raw_ping_result.get('world_name'),
+            'world_size': raw_ping_result.get('world_size'),
+            'server_port': raw_ping_result.get('server_port'),
+            'int_ping_results': raw_ping_result.get('int_ping_results'),
+            'online': raw_ping_result.get('online'),
+            'max': raw_ping_result.get('max'),
+            'players': raw_ping_result.get('players'),
+            'desc': raw_ping_result.get('desc'),
+            'version': raw_ping_result.get('version'),
+            'icon': raw_ping_result.get('icon')
+        })
+        if len(websocket_helper.clients) > 0:
+            websocket_helper.broadcast_page_params(
+                '/panel/server_detail',
+                {
+                    'id': str(self.server_id)
+                },
+                'update_server_details',
+                {
+                    'id': raw_ping_result.get('id'),
+                    'started': raw_ping_result.get('started'),
+                    'running': raw_ping_result.get('running'),
+                    'cpu': raw_ping_result.get('cpu'),
+                    'mem': raw_ping_result.get('mem'),
+                    'mem_percent': raw_ping_result.get('mem_percent'),
+                    'world_name': raw_ping_result.get('world_name'),
+                    'world_size': raw_ping_result.get('world_size'),
+                    'server_port': raw_ping_result.get('server_port'),
+                    'int_ping_results': raw_ping_result.get('int_ping_results'),
+                    'online': raw_ping_result.get('online'),
+                    'max': raw_ping_result.get('max'),
+                    'players': raw_ping_result.get('players'),
+                    'desc': raw_ping_result.get('desc'),
+                    'version': raw_ping_result.get('version'),
+                    'icon': raw_ping_result.get('icon')
+                }
+            )
+        total_players += int(raw_ping_result.get('online'))
+        max_players += int(raw_ping_result.get('max'))
+
+        self.record_server_stats()
+
+        if (len(servers_ping) > 0) & (len(websocket_helper.clients) > 0):
+            try:
+                websocket_helper.broadcast_page('/panel/dashboard', 'update_server_status', servers_ping)
+                websocket_helper.broadcast_page('/status', 'update_server_status', servers_ping)
+            except:
+                console.warning("Can't broadcast server status to websocket")
+
+    def get_servers_stats(self):
+
+        server_stats = {}
+
+        logger.info("Getting Stats for Server " + self.name + " ...")
+
+        server_id = self.server_id
+        server = servers_helper.get_server_data_by_id(server_id)
+
+        logger.debug(f'Getting stats for server: {server_id}')
+
+        # get our server object, settings and data dictionaries
+        self.reload_server_settings()
+
+        # world data
+        server_path = server['path']
+
+        # process stats
+        p_stats = Stats._get_process_stats(self.process)
+
+        # TODO: search server properties file for possible override of 127.0.0.1
+        internal_ip = server['server_ip']
+        server_port = server['server_port']
+        server_name = server.get('server_name', f"ID#{server_id}")
+
+        logger.debug("Pinging server '{server}' on {internal_ip}:{server_port}")
+        if servers_helper.get_server_type_by_id(server_id) == 'minecraft-bedrock':
+            int_mc_ping = ping_bedrock(internal_ip, int(server_port))
+        else:
+            int_mc_ping = ping(internal_ip, int(server_port))
+
+        int_data = False
+        ping_data = {}
+
+        # if we got a good ping return, let's parse it
+        if int_mc_ping:
+            int_data = True
+            if servers_helper.get_server_type_by_id(server['server_id']) == 'minecraft-bedrock':
+                ping_data = Stats.parse_server_RakNet_ping(int_mc_ping)
+            else:
+                ping_data = Stats.parse_server_ping(int_mc_ping)
+    #Makes sure we only show stats when a server is online otherwise people have gotten confused.
+        if self.check_running():
+            server_stats = {
+                'id': server_id,
+                'started': self.get_start_time(),
+                'running': self.check_running(),
+                'cpu': p_stats.get('cpu_usage', 0),
+                'mem': p_stats.get('memory_usage', 0),
+                "mem_percent": p_stats.get('mem_percentage', 0),
+                'world_name': server_name,
+                'world_size': Stats.get_world_size(server_path),
+                'server_port': server_port,
+                'int_ping_results': int_data,
+                'online': ping_data.get("online", False),
+                "max": ping_data.get("max", False),
+                'players': ping_data.get("players", False),
+                'desc': ping_data.get("server_description", False),
+                'version': ping_data.get("server_version", False)
+            }
+        else:
+            server_stats = {
+                'id': server_id,
+                'started': self.get_start_time(),
+                'running': self.check_running(),
+                'cpu': p_stats.get('cpu_usage', 0),
+                'mem': p_stats.get('memory_usage', 0),
+                "mem_percent": p_stats.get('mem_percentage', 0),
+                'world_name': server_name,
+                'world_size': Stats.get_world_size(server_path),
+                'server_port': server_port,
+                'int_ping_results': int_data,
+                'online': False,
+                "max": False,
+                'players': False,
+                'desc': False,
+                'version': False
+            }
+
+        return server_stats
+
+    def get_server_players(self):
+
+        server = servers_helper.get_server_data_by_id(self.server_id)
+
+        logger.info(f"Getting players for server {server}")
+
+        # get our settings and data dictionaries
+        # server_settings = server.get('server_settings', {})
+        # server_data = server.get('server_data_obj', {})
+
+
+        # TODO: search server properties file for possible override of 127.0.0.1
+        internal_ip = server['server_ip']
+        server_port = server['server_port']
+
+        logger.debug("Pinging {internal_ip} on port {server_port}")
+        if servers_helper.get_server_type_by_id(self.server_id) != 'minecraft-bedrock':
+            int_mc_ping = ping(internal_ip, int(server_port))
+
+
+            ping_data = {}
+
+            # if we got a good ping return, let's parse it
+            if int_mc_ping:
+                ping_data = Stats.parse_server_ping(int_mc_ping)
+                return ping_data['players']
+        return []
+
+    def get_raw_server_stats(self, server_id):
+
+        try:
+            server = servers_helper.get_server_obj(server_id)
+        except:
+            return {'id': server_id,
+                    'started': False,
+                    'running': False,
+                    'cpu': 0,
+                    'mem': 0,
+                    "mem_percent": 0,
+                    'world_name': None,
+                    'world_size': None,
+                    'server_port': None,
+                    'int_ping_results': False,
+                    'online': False,
+                    'max': False,
+                    'players': False,
+                    'desc': False,
+                    'version': False,
+                    'icon': False}
+
+        server_stats = {}
+        server = servers_helper.get_server_obj(server_id)
+        if not server:
+            return {}
+        server_dt = servers_helper.get_server_data_by_id(server_id)
+
+
+        logger.debug(f'Getting stats for server: {server_id}')
+
+        # get our server object, settings and data dictionaries
+        self.reload_server_settings()
+
+        # world data
+        server_name = server_dt['server_name']
+        server_path = server_dt['path']
+
+        # process stats
+        p_stats = Stats._get_process_stats(self.process)
+
+        # TODO: search server properties file for possible override of 127.0.0.1
+        #internal_ip =   server['server_ip']
+        #server_port = server['server_port']
+        internal_ip = server_dt['server_ip']
+        server_port = server_dt['server_port']
+
+
+        logger.debug(f"Pinging server '{self.name}' on {internal_ip}:{server_port}")
+        if servers_helper.get_server_type_by_id(server_id) == 'minecraft-bedrock':
+            int_mc_ping = ping_bedrock(internal_ip, int(server_port))
+        else:
+            int_mc_ping = ping(internal_ip, int(server_port))
+
+        int_data = False
+        ping_data = {}
+        #Makes sure we only show stats when a server is online otherwise people have gotten confused.
+        if self.check_running():
+            # if we got a good ping return, let's parse it
+            if servers_helper.get_server_type_by_id(server_id) != 'minecraft-bedrock':
+                if int_mc_ping:
+                    int_data = True
+                    ping_data = Stats.parse_server_ping(int_mc_ping)
+
+                server_stats = {
+                    'id': server_id,
+                    'started': self.get_start_time(),
+                    'running': self.check_running(),
+                    'cpu': p_stats.get('cpu_usage', 0),
+                    'mem': p_stats.get('memory_usage', 0),
+                    "mem_percent": p_stats.get('mem_percentage', 0),
+                    'world_name': server_name,
+                    'world_size': Stats.get_world_size(server_path),
+                    'server_port': server_port,
+                    'int_ping_results': int_data,
+                    'online': ping_data.get("online", False),
+                    "max": ping_data.get("max", False),
+                    'players': ping_data.get("players", False),
+                    'desc': ping_data.get("server_description", False),
+                    'version': ping_data.get("server_version", False),
+                    'icon': ping_data.get("server_icon", False)
+                }
+
+            else:
+                if int_mc_ping:
+                    int_data = True
+                    ping_data = Stats.parse_server_RakNet_ping(int_mc_ping)
+                    try:
+                        server_icon = base64.encodebytes(ping_data['icon'])
+                    except  Exception as ex:
+                        server_icon = False
+                        logger.info(f"Unable to read the server icon : {ex}")
+
+                    server_stats = {
+                        'id': server_id,
+                        'started': self.get_start_time(),
+                        'running': self.check_running(),
+                        'cpu': p_stats.get('cpu_usage', 0),
+                        'mem': p_stats.get('memory_usage', 0),
+                        "mem_percent": p_stats.get('mem_percentage', 0),
+                        'world_name': server_name,
+                        'world_size': Stats.get_world_size(server_path),
+                        'server_port': server_port,
+                        'int_ping_results': int_data,
+                        'online': ping_data['online'],
+                        'max': ping_data['max'],
+                        'players': [],
+                        'desc': ping_data['server_description'],
+                        'version': ping_data['server_version'],
+                        'icon': server_icon
+                    }
+                else:
+                    server_stats = {
+                        'id': server_id,
+                        'started': self.get_start_time(),
+                        'running': self.check_running(),
+                        'cpu': p_stats.get('cpu_usage', 0),
+                        'mem': p_stats.get('memory_usage', 0),
+                        "mem_percent": p_stats.get('mem_percentage', 0),
+                        'world_name': server_name,
+                        'world_size': Stats.get_world_size(server_path),
+                        'server_port': server_port,
+                        'int_ping_results': int_data,
+                        'online': False,
+                        'max': False,
+                        'players': False,
+                        'desc': False,
+                        'version': False,
+                        'icon': False
+                    }
+        else:
+            server_stats = {
+                'id': server_id,
+                'started': self.get_start_time(),
+                'running': self.check_running(),
+                'cpu': p_stats.get('cpu_usage', 0),
+                'mem': p_stats.get('memory_usage', 0),
+                "mem_percent": p_stats.get('mem_percentage', 0),
+                'world_name': server_name,
+                'world_size': Stats.get_world_size(server_path),
+                'server_port': server_port,
+                'int_ping_results': int_data,
+                'online': False,
+                "max": False,
+                'players': False,
+                'desc': False,
+                'version': False
+            }
+
+        return server_stats
+
+    def record_server_stats(self):
+
+        server = self.get_servers_stats()
+        Server_Stats.insert({
+            Server_Stats.server_id: server.get('id', 0),
+            Server_Stats.started: server.get('started', ""),
+            Server_Stats.running: server.get('running', False),
+            Server_Stats.cpu: server.get('cpu', 0),
+            Server_Stats.mem: server.get('mem', 0),
+            Server_Stats.mem_percent: server.get('mem_percent', 0),
+            Server_Stats.world_name: server.get('world_name', ""),
+            Server_Stats.world_size: server.get('world_size', ""),
+            Server_Stats.server_port: server.get('server_port', ""),
+            Server_Stats.int_ping_results: server.get('int_ping_results', False),
+            Server_Stats.online: server.get("online", False),
+            Server_Stats.max: server.get("max", False),
+            Server_Stats.players: server.get("players", False),
+            Server_Stats.desc: server.get("desc", False),
+            Server_Stats.version: server.get("version", False)
+        }).execute()
+
+        # delete old data
+        max_age = helper.get_setting("history_max_age")
+        now = datetime.datetime.now()
+        last_week = now.day - max_age
+
+        Server_Stats.delete().where(Server_Stats.created < last_week).execute()
