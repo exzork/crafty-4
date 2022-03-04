@@ -29,7 +29,8 @@ class StatusHandler(BaseHandler):
             server_data = srv.get('server_data', False)
             server_id = server_data.get('server_id', False)
             srv['raw_ping_result'] = self.controller.servers.get_server_stats_by_id(server_id)
-
+            if not srv['raw_ping_result'].has_key('icon'):
+                srv['raw_ping_result']['icon'] = False
         template = 'public/status.html'
 
         self.render(
