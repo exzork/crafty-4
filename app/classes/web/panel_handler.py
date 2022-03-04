@@ -346,14 +346,14 @@ class PanelHandler(BaseHandler):
                     if flag == 0:
                         server['stats']['downloading'] = self.controller.servers.get_download_status(
                             str(server['stats']['server_id']['server_id']))
-                    server['stats']['crashed'] = self.controller.servers.is_crashed(
-                            str(server['stats']['server_id']['server_id']))
-                    try:
-                        server['stats']['waiting_start'] = self.controller.servers.get_waiting_start(
-                            str(server['stats']['server_id']['server_id']))
-                    except Exception as e:
-                        logger.error(f"Failed to get server waiting to start: {e}")
-                        server['stats']['waiting_start'] = False
+                        server['stats']['crashed'] = self.controller.servers.is_crashed(
+                                str(server['stats']['server_id']['server_id']))
+                        try:
+                            server['stats']['waiting_start'] = self.controller.servers.get_waiting_start(
+                                str(server['stats']['server_id']['server_id']))
+                        except Exception as e:
+                            logger.error(f"Failed to get server waiting to start: {e}")
+                            server['stats']['waiting_start'] = False
 
                     if str(server['server_data']['server_id']) == str(server_id):
                         page_servers.append(server)
