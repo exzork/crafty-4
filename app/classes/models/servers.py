@@ -75,6 +75,7 @@ class Server_Stats(Model):
     waiting_start = BooleanField(default=False)
     first_run = BooleanField(default=True)
     crashed = BooleanField(default=False)
+    downloading = BooleanField(default=False)
 
 
     class Meta:
@@ -193,6 +194,22 @@ class helper_servers:
     def sever_crashed(server_id):
         with database.atomic():
             Server_Stats.update(crashed=True).where(Server_Stats.server_id == server_id).execute()
+
+    @staticmethod
+    def set_download(server_id):
+        with database.atomic():
+            Server_Stats.update(downloading=True).where(Server_Stats.server_id == server_id).execute()
+
+    @staticmethod
+    def finish_download(server_id):
+        with database.atomic():
+            Server_Stats.update(downloading=False).where(Server_Stats.server_id == server_id).execute()
+
+    @staticmethod
+    def get_download_status(server_id):
+        download_status = Server_Stats.select().where(Server_Stats.server_id == server_id).get()
+        return download_status.downloading
+
 
     @staticmethod
     def server_crash_reset(server_id):

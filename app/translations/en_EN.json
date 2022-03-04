@@ -165,7 +165,8 @@
         "stop": "Stop",
         "updating": "Updating...",
         "starting": "Delayed-Start",
-        "delay-explained": "The service/agent has recently started and is delaying the start of the minecraft server instance"
+        "delay-explained": "The service/agent has recently started and is delaying the start of the minecraft server instance",
+        "downloading": "Downloading..."
         },
     "serverPlayerManagement": {
         "players": "Players",

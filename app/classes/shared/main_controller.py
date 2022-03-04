@@ -292,11 +292,12 @@ class Controller:
         server_log_file = f"{server_dir}/logs/latest.log"
         server_stop = "stop"
 
-        # download the jar
-        server_jar_obj.download_jar(server, version, full_jar_path)
-
         new_id = self.register_server(name, server_id, server_dir, backup_path, server_command, server_file, server_log_file, server_stop,
                                     port, server_type='minecraft-java')
+
+        # download the jar
+        server_jar_obj.download_jar(server, version, full_jar_path, new_id)
+
         return new_id
 
     @staticmethod
