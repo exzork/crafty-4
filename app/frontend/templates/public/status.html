@@ -34,11 +34,7 @@
           </td>
           <td id="server_motd_{{ server['stats']['server_id']['server_id'] }}">
             {% if server['stats']['desc'] != 'False' %}
-            {% if server['raw_ping_result']['icon'] %}
-            <img src="data:image/png;base64,{% raw server['raw_ping_result']['icon'] %}" alt="icon" />
-            {% else %}
-            <img src="/static/assets/images/pack.png" alt="icon" />
-            {% end %}
+            <img src="/static/assets/images/pack.png" alt="icon" style="-webkit-filter:grayscale(100%); filter:grayscale(100%)"/>
             <span id="input_motd_{{ server['stats']['server_id']['server_id'] }}" class="input_motd">{{
               server['stats']['desc'] }}</span> <br />
             {% end %}
