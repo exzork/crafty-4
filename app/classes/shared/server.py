@@ -487,6 +487,8 @@ class Server:
 
         # clear the old scheduled watcher task
         self.server_scheduler.remove_job(f"c_{self.server_id}")
+        # remove the stats polling job since server is stopped
+        self.server_scheduler.remove_job("stats_"+str(self.server_id))
 
         # the server crashed, or isn't found - so let's reset things.
         logger.warning(f"The server {name} seems to have vanished unexpectedly, did it crash?")
