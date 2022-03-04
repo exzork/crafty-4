@@ -188,6 +188,13 @@ class Server:
         else:
             user_lang = users_helper.get_user_lang_by_id(user_id)
 
+        if servers_helper.get_download_status(self.server_id):
+            if user_id:
+                websocket_helper.broadcast_user(user_id, 'send_start_error',{
+                    'error': translation.translate('error', 'not-downloaded', user_lang)
+                })
+            return False
+
         logger.info(f"Start command detected. Reloading settings from DB for server {self.name}")
         self.setup_server_run_command()
         # fail safe in case we try to start something already running
