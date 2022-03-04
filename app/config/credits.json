@@ -82,6 +82,14 @@
 		  "tags": [ "Staff", [ "Developer", "https://gitlab.com/qub3d" ], "Wiki" ],
 		  "blurb": "Hosts Minecraft servers for his weird friends, works for an IoT company as his dayjob. The 's' in IoT stands for 'secure'.",
 		  "pic": "/static/assets/images/credits/qub3d.png"
+		},
+		{
+		  "name": "DarthLeo",
+		  "title": "Support Engineer",
+		  "loc": "East Coast, US",
+		  "tags": [ "Staff", null, "Discord" ],
+		  "blurb": "Just a simple gamer.",
+		  "pic": "/static/assets/images/credits/darthLeo.png"
 		}
 	  ],
 	  "retired": [
