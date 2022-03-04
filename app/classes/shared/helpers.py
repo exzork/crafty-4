@@ -688,7 +688,7 @@ class Helpers:
             else:
                 if filename != "crafty_managed.txt":
                     output += f"""<li
-                    class="tree-nested d-block tree-ctx-item tree-file"
+                    class="tree-nested d-block tree-ctx-item tree-file tree-item"
                     data-path="{dpath}"
                     data-name="{filename}"
                     onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{filename}</li>"""
@@ -726,7 +726,7 @@ class Helpers:
             else:
                 if filename != "crafty_managed.txt":
                     output += f"""<li
-                    class="tree-nested d-block tree-ctx-item tree-file"
+                    class="tree-nested d-block tree-ctx-item tree-file tree-item"
                     data-path="{dpath}"
                     data-name="{filename}"
                     onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{filename}</li>"""

@@ -207,7 +207,7 @@ class AjaxHandler(BaseHandler):
 
                     else:
                         output += f"""<li
-                        class="tree-item tree-ctx-item tree-file"
+                        class="tree-item tree-nested d-block tree-ctx-item tree-file"
                         data-path="{dpath}"
                         data-name="{filename}"
                         onclick=""><input type='checkbox' name='root_path' value='{dpath}'><span style="margin-right: 6px;">
@@ -228,7 +228,7 @@ class AjaxHandler(BaseHandler):
 
                     else:
                         output += f"""<li
-                        class="tree-item tree-ctx-item tree-file"
+                        class="tree-item tree-nested d-block tree-ctx-item tree-file"
                         data-path="{dpath}"
                         data-name="{filename}"
                         onclick=""><input type='checkbox' name='root_path' value='{dpath}'>
