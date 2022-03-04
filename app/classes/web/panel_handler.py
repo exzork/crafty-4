@@ -12,7 +12,6 @@ import requests
 import tornado.web
 import tornado.escape
 from tornado import iostream
-from tornado.ioloop import IOLoop
 
 #TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
@@ -374,12 +373,20 @@ class PanelHandler(BaseHandler):
                     user_order.remove(server_id)
             page_data['servers'] = page_servers
 
-            try:
-                self.fetch_server_data(page_data)
-            except:
-                page_data['num_players'] = 0
 
-            IOLoop.current().add_callback(self.fetch_server_data, page_data)
+            for data in page_data['servers']:
+                data['stats']['crashed'] = self.controller.servers.is_crashed(
+                        str(data['stats']['server_id']['server_id']))
+                try:
+                    data['stats']['waiting_start'] = self.controller.servers.get_waiting_start(
+                        str(data['stats']['server_id']['server_id']))
+                except Exception as e:
+                    logger.error(f"Failed to get server waiting to start: {e}")
+                    data['stats']['waiting_start'] = False
+
+            #num players is set to zero here. If we poll all servers while dashboard is loading it takes FOREVER. We leave this to the
+            #async polling once dashboard is served.
+            page_data['num_players'] = 0
 
             template = "panel/dashboard.html"
 
