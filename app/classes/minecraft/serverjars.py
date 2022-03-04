@@ -8,6 +8,9 @@ from datetime import datetime
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
+from app.classes.controllers.servers_controller import Servers_Controller
+from app.classes.web.websocket_helper import websocket_helper
+from app.classes.models.server_permissions import server_permissions
 
 logger = logging.getLogger(__name__)
 
@@ -170,23 +173,53 @@ class ServerJars:
         response = self._get_api_result(url)
         return response
 
-    def download_jar(self, server, version, path):
-        update_thread = threading.Thread(target=self.a_download_jar, daemon=True, args=(server, version, path))
+    def download_jar(self, server, version, path, server_id):
+        update_thread = threading.Thread(target=self.a_download_jar, daemon=True, args=(server, version, path, server_id))
         update_thread.start()
 
-    def a_download_jar(self, server, version, path):
+    def a_download_jar(self, server, version, path, server_id):
+        #delaying download for server register to finish
+        time.sleep(3)
         fetch_url = f"{self.base_url}/api/fetchJar/{server}/{version}"
+        server_users = server_permissions.get_server_user_list(server_id)
+
+
+        #We need to make sure the server is registered before we submit a db update for it's stats.
+        while True:
+            try:
+                Servers_Controller.set_download(server_id)
+                for user in server_users:
+                    websocket_helper.broadcast_user(user, 'send_start_reload', {
+                    })
+
+                break
+            except:
+                logger.debug("server not registered yet. Delaying download.")
 
         # open a file stream
         with requests.get(fetch_url, timeout=2, stream=True) as r:
             try:
                 with open(path, 'wb') as output:
                     shutil.copyfileobj(r.raw, output)
+                    Servers_Controller.finish_download(server_id)
 
+                    for user in server_users:
+                        websocket_helper.broadcast_user(user, 'notification', "Executable download finished")
+                        time.sleep(3)
+                        websocket_helper.broadcast_user(user, 'send_start_reload', {
+                        })
+                    return True
             except Exception as e:
                 logger.error(f"Unable to save jar to {path} due to error:{e}")
+                Servers_Controller.finish_download(server_id)
+                server_users = server_permissions.get_server_user_list(server_id)
+                for user in server_users:
+                    websocket_helper.broadcast_user(user, 'notification', "Executable download finished")
+                    time.sleep(3)
+                    websocket_helper.broadcast_user(user, 'send_start_reload', {
+                    })
 
-        return False
+                return False
 
 
 server_jar_obj = ServerJars()

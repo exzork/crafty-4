@@ -150,7 +150,7 @@ class PanelHandler(BaseHandler):
                 else:
                     if not self.controller.servers.server_id_authorized(server_id, exec_user["user_id"]):
                         print(f'User {exec_user["user_id"]} does not have permission')
-                        self.redirect("/panel/error?error=Invalid Server ID")
+                        self.redirect("/pandel/error?error=Invalid Server ID")
                         return None
         return server_id
 
@@ -209,14 +209,17 @@ class PanelHandler(BaseHandler):
         user_order = user_order['server_order'].split(',')
         page_servers = []
         server_ids = []
+        un_used_servers = defined_servers
 
         for server_id in user_order:
-            for server in defined_servers:
+            for server in un_used_servers:
                 if str(server['server_id']) == str(server_id):
                     page_servers.append(server)
+                    un_used_servers.remove(server)
+                    user_order.remove(server_id)
 
 
-        for server in defined_servers:
+        for server in un_used_servers:
             server_ids.append(str(server['server_id']))
             if server not in page_servers:
                 page_servers.append(server)
@@ -335,14 +338,33 @@ class PanelHandler(BaseHandler):
             user_order = user_order['server_order'].split(',')
             page_servers = []
             server_ids = []
+            un_used_servers = page_data['servers']
+            flag = 0
 
             for server_id in user_order:
-                for server in page_data['servers']:
+                for server in un_used_servers:
+                    if flag == 0:
+                        server['stats']['downloading'] = self.controller.servers.get_download_status(
+                            str(server['stats']['server_id']['server_id']))
+                    server['stats']['crashed'] = self.controller.servers.is_crashed(
+                            str(server['stats']['server_id']['server_id']))
+                    try:
+                        server['stats']['waiting_start'] = self.controller.servers.get_waiting_start(
+                            str(server['stats']['server_id']['server_id']))
+                    except Exception as e:
+                        logger.error(f"Failed to get server waiting to start: {e}")
+                        server['stats']['waiting_start'] = False
+
                     if str(server['server_data']['server_id']) == str(server_id):
                         page_servers.append(server)
+                        un_used_servers.remove(server)
+                        user_order.remove(server_id)
+                #we only want to set these server stats values once. We need to update the flag so it only hits that if once.
+                flag += 1
 
 
-            for server in page_data['servers']:
+
+            for server in un_used_servers:
                 server_ids.append(str(server['server_data']['server_id']))
                 if server not in page_servers:
                     page_servers.append(server)
@@ -351,17 +373,6 @@ class PanelHandler(BaseHandler):
                 if str(server_id) not in server_ids:
                     user_order.remove(server_id)
             page_data['servers'] = page_servers
-
-
-            for data in page_data['servers']:
-                data['stats']['crashed'] = self.controller.servers.is_crashed(
-                        str(data['stats']['server_id']['server_id']))
-                try:
-                    data['stats']['waiting_start'] = self.controller.servers.get_waiting_start(
-                        str(data['stats']['server_id']['server_id']))
-                except Exception as e:
-                    logger.error(f"Failed to get server waiting to start: {e}")
-                    data['stats']['waiting_start'] = False
 
             try:
                 self.fetch_server_data(page_data)
@@ -390,6 +401,8 @@ class PanelHandler(BaseHandler):
             # server_data isn't needed since the server_stats also pulls server data
             page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
             page_data['server_stats'] = self.controller.servers.get_server_stats_by_id(server_id)
+            page_data['downloading'] = self.controller.servers.get_download_status(
+                    server_id)
             try:
                 page_data['waiting_start'] = self.controller.servers.get_waiting_start(server_id)
             except Exception as e:

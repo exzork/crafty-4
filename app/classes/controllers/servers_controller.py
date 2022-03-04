@@ -51,6 +51,18 @@ class Servers_Controller:
         return servers_helper.update_server(server_obj)
 
     @staticmethod
+    def set_download(server_id):
+        return servers_helper.set_download(server_id)
+
+    @staticmethod
+    def finish_download(server_id):
+        return servers_helper.finish_download(server_id)
+
+    @staticmethod
+    def get_download_status(server_id):
+        return servers_helper.get_download_status(server_id)
+
+    @staticmethod
     def remove_server(server_id):
         roles_list = server_permissions.get_roles_from_server(server_id)
         for role in roles_list:
