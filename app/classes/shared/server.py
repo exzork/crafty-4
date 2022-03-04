@@ -799,7 +799,7 @@ class Server:
             'version': raw_ping_result.get('version'),
             'icon': raw_ping_result.get('icon')
         })
-        if (len(websocket_helper.clients) > 0):
+        if len(websocket_helper.clients) > 0:
             websocket_helper.broadcast_page_params(
                 '/panel/server_detail',
                 {
@@ -834,9 +834,6 @@ class Server:
 
         self.record_server_stats()
 
-        #TODO How I do ?
-        #websocket_helper.broadcast_user_page('/panel/dashboard', user.user_id, 'update_player_status', players_ping)
-
         if (len(servers_ping) > 0) & (len(websocket_helper.clients) > 0):
             try:
                 websocket_helper.broadcast_page('/panel/dashboard', 'update_server_status', servers_ping)
@@ -856,11 +853,9 @@ class Server:
         logger.debug(f'Getting stats for server: {server_id}')
 
         # get our server object, settings and data dictionaries
-        server_obj = server.get('server_obj', None)
         self.reload_server_settings()
 
         # world data
-        world_name = server['server_name']
         server_path = server['path']
 
         # process stats
@@ -987,7 +982,6 @@ class Server:
         logger.debug(f'Getting stats for server: {server_id}')
 
         # get our server object, settings and data dictionaries
-        server_obj = servers_helper.get_server_obj(server_id)
         self.reload_server_settings()
 
         # world data
@@ -1045,9 +1039,9 @@ class Server:
                     ping_data = Stats.parse_server_RakNet_ping(int_mc_ping)
                     try:
                         server_icon = base64.encodebytes(ping_data['icon'])
-                    except  Exception as e:
+                    except  Exception as ex:
                         server_icon = False
-                        logger.info(f"Unable to read the server icon : {e}")
+                        logger.info(f"Unable to read the server icon : {ex}")
 
                     server_stats = {
                         'id': server_id,
@@ -1134,4 +1128,3 @@ class Server:
         last_week = now.day - max_age
 
         Server_Stats.delete().where(Server_Stats.created < last_week).execute()
-

@@ -7,6 +7,8 @@ import psutil
 from app.classes.models.management import Host_Stats
 
 from app.classes.shared.helpers import helper
+from app.classes.models.servers import servers_helper
+from app.classes.minecraft.mc_ping import ping
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +119,34 @@ class Stats:
         level_total_size = helper.human_readable_file_size(total_size)
 
         return level_total_size
+
+    def get_server_players(self, server_id):
+
+        server = servers_helper.get_server_data_by_id(server_id)
+
+        logger.info(f"Getting players for server {server}")
+
+        # get our settings and data dictionaries
+        # server_settings = server.get('server_settings', {})
+        # server_data = server.get('server_data_obj', {})
+
+
+        # TODO: search server properties file for possible override of 127.0.0.1
+        internal_ip = server['server_ip']
+        server_port = server['server_port']
+
+        logger.debug("Pinging {internal_ip} on port {server_port}")
+        if servers_helper.get_server_type_by_id(server_id) != 'minecraft-bedrock':
+            int_mc_ping = ping(internal_ip, int(server_port))
+
+
+            ping_data = {}
+
+            # if we got a good ping return, let's parse it
+            if int_mc_ping:
+                ping_data = Stats.parse_server_ping(int_mc_ping)
+                return ping_data['players']
+        return []
 
     @staticmethod
     def parse_server_ping(ping_obj: object):

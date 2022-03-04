@@ -13,7 +13,10 @@
   <div class="row page-title-header">
     <div class="col-12">
       <div class="page-header">
-        <h4 class="page-title">{{ translate('dashboard', 'dashboard', data['lang']) }}</h4>
+        <h4 class="page-title">{{ translate('dashboard', 'dashboard', data['lang']) }} 
+          {% if data['server_stats']['running'] != 0 %}
+          <span id="sync" style="margin-left: 5px;"><i class="fas fa-sync fa-spin"></i></span></h4>
+          {% end %}
       </div>
     </div>
 
@@ -69,7 +72,6 @@
                   <h5 class="mb-1 font-weight-medium text-primary">{{ translate('dashboard', 'players', data['lang']) }}
                   </h5>
                   <h3 class="mb-0 font-weight-semibold" id="total_players">{{ data['num_players'] }}</h3>
-
                 </div>
                 <div class="wrapper my-auto ml-auto ml-lg-4">
                   <p class="mb-0 text-warning"><span id="max_players">0</span> {{ translate('dashboard', 'max', data['lang']) }}</p>
@@ -242,6 +244,7 @@
                       data['lang']) }}</span>
                     {% end %}
                   </td>
+                  <span class="server-player-totals" id="server_players_{{server['server_data']['server_id']}}" data-players="{{ server['stats']['online']}}" data-max="{{ server['stats']['max'] }}"></span>
                 </tr>
                 {% end %}
 
@@ -346,6 +349,8 @@
     server_world = document.getElementById('server_world_' + server.id);
     server_desc = document.getElementById('server_desc_' + server.id);
     server_online_status = document.getElementById('server_running_status_' + server.id);
+    server_players = document.getElementById('server_players_' + server.id);
+    total_players = document.getElementById('total_players');
 
     console.log("Received Data : " + server.id + ": " + server);
     /* TODO Update each element */
@@ -401,6 +406,24 @@
       /* Update Players */
       if (server.players) {
         server_desc.innerHTML = server.online + ` / ` + server.max + ` {{ translate('dashboard', 'max', data['lang']) }}<br />`
+
+        server_players.setAttribute('data-players', server.online);
+        server_players.setAttribute('data-max', server.max);
+        let servers = document.getElementsByClassName("server-player-totals");
+        let all_total_players = 0;
+        let all_total_max_players = 0;
+        for(var i = 0; i < servers.length; i++){
+          try{
+            all_total_players += parseInt(servers[i].getAttribute('data-players'));
+            all_total_max_players += parseInt(servers[i].getAttribute('data-max'));
+          }catch{
+            console.log("Player totals are not of type int");
+          }
+        }
+        total_players.innerHTML = all_total_players;
+        document.getElementById('max_players').innerHTML = all_total_max_players;
+        document.getElementById('sync').innerHTML = '';
+
 
         server_infos = "";
         server_infos = server.online + " / " + server.max + " {{ translate('dashboard', 'max', data['lang']) }}<br />"
@@ -509,8 +532,7 @@
       cpu_usage = document.getElementById('cpu_usage');
       mem_usage = document.getElementById('mem_usage');
       mem_percent = document.getElementById('mem_percent');
-      total_players = document.getElementById('total_players');
-      max_players = document.getElementById('max_players');
+      
 
       webSocket.on('update_host_stats', function (hostStats) {
         var cpuDataTitle = `{% raw translate('dashboard', 'cpuCores', data['lang']) %}: ${hostStats.cpu_cores} <br /> {% raw translate("dashboard", "cpuCurFreq", data['lang']) %}: ${hostStats.cpu_cur_freq} <br /> {% raw translate("dashboard", "cpuMaxFreq", data['lang']) %}: ${hostStats.cpu_max_freq}`;
@@ -518,10 +540,6 @@
         cpu_usage.textContent = hostStats.cpu_usage;
         mem_usage.setAttribute('data-original-title', `{% raw translate("dashboard", "memUsage", data['lang']) %}: ${hostStats.mem_usage}`);
         mem_percent.textContent = hostStats.mem_percent + '%';
-      });
-      webSocket.on('update_player_status', function (playerStats) {
-        total_players.innerHTML = playerStats.total_players;
-        max_players.innerHTML = playerStats.max_players;
       });
     }
 

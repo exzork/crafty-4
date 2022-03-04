@@ -363,12 +363,9 @@ class PanelHandler(BaseHandler):
                     logger.error(f"Failed to get server waiting to start: {e}")
                     data['stats']['waiting_start'] = False
 
-            try:
-                self.fetch_server_data(page_data)
-            except:
-                page_data['num_players'] = 0
-
-            IOLoop.current().add_callback(self.fetch_server_data, page_data)
+            #num players is set to zero here. If we poll all servers while dashboard is loading it takes FOREVER. We leave this to the
+            #async polling once dashboard is served.
+            page_data['num_players'] = 0
 
             template = "panel/dashboard.html"
 
