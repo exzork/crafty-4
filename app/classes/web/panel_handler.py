@@ -301,7 +301,12 @@ class PanelHandler(BaseHandler):
                 timestamp = credits_dict["lastUpdate"] / 1000.0
                 page_data["patrons"] = credits_dict["patrons"]
                 page_data["staff"] = credits_dict["staff"]
-                page_data["translations"] = credits_dict["translations"]
+
+                # Filter Language keys to exclude joke prefix '*'
+                clean_dict = {user.replace('*', ''): translation for user, translation in credits_dict['translations'].items()}
+                page_data["translations"] = clean_dict
+
+                # 0 Defines if we are using local credits file andd displays sadcat.
                 if timestamp == 0:
                     page_data["lastUpdate"] = '😿'
                 else:
