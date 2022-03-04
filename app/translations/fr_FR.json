@@ -17,7 +17,9 @@
         "eulaTitle": "Accepter le EULA",
         "eulaMsg": "Vous devez accepter le EULA. Une copie du CLUF de Mojang est liée sous ce message.",
         "eulaAgree": "Êtes-vous d'accord?",
-        "noJava": "Server {} failed to start with error code: We have detected Java is not installed. Please install java then start the server."
+        "noJava": "Le Démarrage du Serveur {} a échoué avec le code d'erreur : Nous avons détecté que Java n'est pas installé. Merci d'installer java avant de démarrer le serveur.",
+        "not-downloaded": "Nous ne parvenons pas à trouver le fichier exécutable. A-t-il fini de Télécharger ? Les permissions permettent elles l'exécution ?",
+        "no-file": "Nous ne parvenons pas à localiser le fichier demandé. Vérifier le chemin du fichier. Les permissions authorisent elles Crafty ?"
     },
     "404": {
         "contact": "Contacter le Support de Crafty Control via Discord",
@@ -68,7 +70,13 @@
         "downloading": "Téléchargement du Serveur ...",
         "addRole": "Ajouter le server au(x) rôle(s) existant(s)",
         "autoCreate": "Si aucun n'est sélectionné, Crafty en créera un !",
-        "selectRole": "Sélectionnez le rôle(s)"
+        "selectRole": "Sélectionnez le rôle(s)",
+        "selectZipDir": "Selectionner le dossier de l'archive depuis lequel extraire les fichiers",
+        "close": "Fermer",
+        "save": "Sauvegarder",
+        "selectRoot": "Selectionner le Dossier Racine de l'Archive",
+        "clickRoot": "Cliquer ici pour sélectionner le Dossier Racine",
+        "explainRoot": "Merci de clicker sur le bouton ci-dessous pour sélectionner le dossier du server contenu dans l'Archive"
     },
     "dashboard": {
         "dashboard": "Tableau de Bord",
@@ -112,7 +120,8 @@
         "starting": "Démarrage retardé",
         "delay-explained": "Le service/agent a récemment démarré et retarde le démarrage de l'instance du serveur minecraft",
         "no-servers": "Il n'y a actuellement aucun serveur. Pour commencer, clique sur",
-        "welcome": "Bienvenue sur Crafty Controller"
+        "welcome": "Bienvenue sur Crafty Controller",
+        "crashed": "Crashed"
     },
     "accessDenied": {
         "accessDenied": "Accès Interdit",
@@ -134,7 +143,8 @@
         "description": "Description",
         "errorCalculatingUptime": "Erreur de Calcul du Temps de Disponibilité",
         "serverTime": "Temps UTC",
-        "unableToConnect": "Impossible de se Connecter"
+        "unableToConnect": "Impossible de se Connecter",
+        "serverTimeZone": "Fuseau Horaire du Serveur"
     },
     "serverDetails": {
         "serverDetails": "Détails Serveur",
@@ -155,12 +165,59 @@
         "stop": "Arrêter",
         "updating": "Mise à Jour ...",
         "starting": "Démarrage retardé",
-        "delay-explained": "Le service/agent a récemment démarré et retarde le démarrage de l'instance du serveur minecraft"
+        "delay-explained": "Le service/agent a récemment démarré et retarde le démarrage de l'instance du serveur minecraft",
+        "downloading": "Téléchargement ..."
         },
     "serverPlayerManagement": {
         "players": "Joueurs",
         "bannedPlayers": "Joueurs Bannins",
         "loadingBannedPlayers": "Chargement des Joueurs Bannis"
+    },
+    "serverSchedules":{
+        "areYouSure": "Supprimer la Tâche Planifiée ?",
+        "confirmDelete": "Es-tu sûr de vouloir supprimer cette tâche planifiée ? Il n'y aura pas de retour en arrière.",
+        "cancel": "Annuler",
+        "confirm": "Confirmer",
+        "cannotSee": "Tu ne peux pas tou voir ?",
+        "cannotSeeOnMobile": "Essaie de clicker sur une tâche planifiée pour voir tous les détails."
+    },
+    "serverScheduleConfig":{
+        "basic": "Basique",
+        "cron": "Cron",
+        "reaction": "Réaction",
+        "start": "Démarrer le Serveur",
+        "restart": "Redémarrer le Serveur",
+        "stop": "Arrêter le Server",
+        "backup": "Sauvegarder le Server",
+        "custom": "Commande Personnalisée",
+        "interval": "Intervale",
+        "interval-explain": "A quelle fréquence exécuter cette tâche planifiée ?",
+        "days": "Jours",
+        "hours": "Heures",
+        "minutes": "Minutes",
+        "time": "Temps",
+        "time-explain": "A quelle heure exécuter la tâche planifiée ?",
+        "command": "Commande",
+        "command-explain": "Quelle Commande faut-il exécuter ? Ne pas précéder du '/'",
+        "cron-explain": "Entrer la ligne du Cron",
+        "offset": "Délai",
+        "offset-explain": "Combien de temps avant d'exécuter cette tâche après avoir lancé la première tâche ? (en Secondes)",
+        "parent": "Sélectionner la tâche parente",
+        "parent-explain": "Quelle tâche doit déclencher celle-ci ?",
+        "enabled": "Activé",
+        "one-time": "Supprimer après exécution",
+        "children": "Tâches filles liées : "
+
+    },
+    "notify":{
+        "supportLogs": "Logs de Support",
+        "activityLog": "Logs d'Activité",
+        "logout": "Logout",
+        "preparingLogs": " Merci d'attendre pendant que nous préparons les logs ... Nous enverrons une notification quand ils seront prêts. Cela peut prendre du temps s'il y a beaucoup de serveurs.",
+        "downloadLogs": "Télécharger les logs de Support ?",
+        "finishedPreparing": "Nous avons terminé de préparer les logs pour le support. Merci de clicker sur Télécharger pour les télécharger",
+        "backupComplete": "Sauvegarde complétée avec succès pour le server ",
+        "backupStarted": "Sauvegarde démarrée pour le serveur "
     },
     "serverBackups": {
         "backupNow": "Sauvegarder Maintenant !",
@@ -183,7 +240,12 @@
         "options": "Options",
         "restoring": "Restauration de la sauvegarde. Cela peut prendre un peu de temps. S'il vous plaît soyez patient.",
         "restore": "Restaurer",
-        "restoreConfirm": "Êtes-vous sûr de vouloir restaurer à partir de cette sauvegarde. Tous les fichiers du serveur actuel passeront à l'état de sauvegarde et seront irrécupérables."
+        "confirmRestore": "Êtes-vous sûr de vouloir restaurer à partir de cette sauvegarde. Tous les fichiers du serveur actuel passeront à l'état de sauvegarde et seront irrécupérables.",,
+        "excludedBackups": "Dossiers Exclus : ",
+        "excludedChoose": "Choisir les dossiers à exclure de la sauvegarde",
+        "clickExclude": "Cliquer pour sélectionner les Exclusions",
+        "exclusionsTitle": "Exclusions de Sauvegarde",
+        "compress": "Compresser la Sauvegarde"
     },
     "serverFiles": {
         "noscript": "Le gestionnaire de fichiers ne fonctionne pas sans JavaScript",
@@ -213,7 +275,8 @@
         "waitUpload": "Merci de patienter pendant que nous téléversons tes fichiers... Cela peut prendre un certain temps.",
         "stayHere": "NE FERME PAS CETTE PAGE!",
         "close": "Presque",
-        "download": "Télécharger"
+        "download": "Télécharger",
+        "loadingRecords": "Chargement des Fichiers ..."
     },
     "serverConfig": {
         "serverName": "Nom du Serveur",
@@ -257,7 +320,9 @@
         "noDeleteFiles": "Non, Supprimer uniquement du tabelau de bord",
         "sendingDelete": "Suppression du Serveur",
         "bePatientDelete": "Merci de patienter pendant la suppression du serveur du tableau de bord de Crafty. Cet écran se fermera dans quelques instants.",
-        "bePatientDeleteFiles" : "Merci de patienter pendant la suppression du serveur du tableau de bord de Crafty et des fichiers de la machine hôte. Cet écran se fermera dans quelques instants."
+        "bePatientDeleteFiles" : "Merci de patienter pendant la suppression du serveur du tableau de bord de Crafty et des fichiers de la machine hôte. Cet écran se fermera dans quelques instants.",
+        "crashTime": "Crash Timeout",
+        "crashTimeDesc": "Combien de temps attendre avant de considérer que le serveur a crash ?"
     },
     "serverConfigHelp": {
         "title": "Zone de Configuration du Serveur",
@@ -272,14 +337,91 @@
             "Sous Linux la meilleure façon de faire est d'exécuter les commandes suivantes :<br />",
             "<code>",
             "    sudo chown crafty:crafty /chemin/de/ton/serveur -R<br />",
-            "    sudo chmod 2775 /chemin/de/ton/serveu -R<br />",
+            "    sudo chmod 2775 /chemin/de/ton/serveur -R<br />",
             "</code>"
         ]
     },
     "panelConfig": {
+        "pageTitle": "Panneau de Configuration",
+        "users": "Utilisateurs",
+        "roles": "Roles",
+        "newUser": "Ajouter un Nouvel Utilisateur",
+        "newRole": "Ajouter un nouveau Rôle",
+        "user": "Utilisateur",
+        "enabled": "Activé",
+        "allowedServers": "Serveurs Authorisés",
+        "assignedRoles": "Rôles Assignés",
+        "edit": "Modifier",
+        "role": "Rôle",
+        "roleUsers": "Rôles Utilisteurs",
         "save": "Enregister",
         "cancel": "Annuler",
-        "delete": "Supprimer"
+        "delete": "Supprimer",
+        "superConfirmTitle": "Activer le superuser ? Es-tu sûr ?",
+        "superConfirm": "Utiliser seulement si tu veux que cet utilisateur ait accès à ABSOLUMENT TOUT (tous les comptes, tous les serveurs, panneau de configuration, etc). Ils peuvent même supprimer tes droits superuser.",
+        "adminControls": "Controls de l'Admin",
+        "clearComms": "Nettoyer les Commandes Non-Exécutées"
+    },
+    "userConfig": {
+        "pageTitle": "Modifier Utilisateur",
+        "pageTitleNew": "Créer Utilisateur",
+        "config": "Configuration",
+        "apiKey": "Clés API",
+        "userSettings": "Paramètres Utilisateur",
+        "userName": "Nom d'Utilisateur",
+        "userNameDesc": "Comment appeler cet Utilisateur ?",
+        "password": "Mot de Passe",
+        "repeat": "Confirmation du Mot de Passe",
+        "leaveBlank": "Pour modifier l'Utilisateur sans changer le MOt de Passe, laisser vide.",
+        "craftyPermDesc": "Les permisisons de l'Utilisateur pour Crafty ",
+        "gravEmail": "Email Gravatar™",
+        "gravDesc": "Cet email est strictement réservé pour être utiliser avec Gravatar™. En aucune circonstances Crafty n'utilisera cet email pour autre chose que trouver ton Gravatar™",
+        "userLang": "Langue de l'Utilisateur",
+        "userRoles": "Rôles Utilisateur",
+        "userRolesDesc": "L'utilisateur est membre de ces rôles.",
+        "roleName": "Nom du Rôle",
+        "member": "Membre ?",
+        "craftyPerms": "Permissions de Crafty : ",
+        "permName":"Nom de la Permission",
+        "auth": "Authorisé ? ",
+        "uses": "Nombre d'utilisation Authorisé (-1 == Illimité)",
+        "super": "Super Utilisateur",
+        "enabled": "Activé",
+        "configArea": "Zone de Configuration de l'Utilisateur",
+        "configAreaDesc": "Ici tu peux changer tous ltezs paramètres utilisateurs",
+        "created": "Crée le : ",
+        "lastLogin": "Dernière Connexion : ",
+        "lastUpdate": "Dernière Mise à Jour: ",
+        "lastIP": "Dernière IP: ",
+        "deleteUserB": "Supprimer l'Utilisateur",
+        "notExist": "Tu ne peux pas supprimer quelquechose qui n'existe pas !",
+        "delSuper": "Tu ne peux pas supprimer un Super Utilisateur",
+        "deleteUser": "Supprimer Utilisateur : ",
+        "confirmDelete": "Es-tu sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible."
+    },
+    "rolesConfig": {
+        "pageTitle": "Modifier le Rôle",
+        "pageTitleNew": "Nouveau Rôle",
+        "config": "Configuration du Rôle",
+        "roleTitle": "Paramètres du Rôle",
+        "roleName": "Nom du Rôle : ",
+        "roleDesc": "Comment appeler ce Rôle ?",
+        "roleServers": "Serveurs Authorisés",
+        "serversDesc": "Les serveurs auquels ce rôle a accès",
+        "serverName": "Nom du Serveur",
+        "serverAccess": "Accès ?",
+        "rolePerms": "Permissions du rôle",
+        "permsServer": "Les Permissions ce rôle possède pour ces serveurs",
+        "permName": "Nom de la Permission",
+        "permAccess": "Accès ?",
+        "roleUsers": "Les utilisateurs du Rôle: ",
+        "roleUserName": "Nom d'Utilisateur",
+        "roleConfigArea": "Zone de configurtation du Rôle",
+        "configDesc": "Ici tu pzux changer la configuration de ton rôle",
+        "created": "Créé le : ",
+        "configUpdate": "Dernière Mise à Jour : ",
+        "delRole": "Supprimer le Rôle",
+        "doesNotExist": "Tu ne peux pas supprimer quelquechose qui n'existe pas encore"
     },
     "datatables": {
         "i18n": {
@@ -349,6 +491,23 @@
         "doesNotWorkWithoutJavascript": "<strong>Attention: </strong>Crafty ne fonctionne pas correctement si JavaScript n'est pas activé !"
     },
     "apiKeys": {
+        "pageTitle": "Modifier la clé API de l'Utilisateur",
+        "config": "Configuration",
+        "apiKeys": "Clés API",
+        "name": "Nom",
+        "created": "Crée",
+        "perms": "Permissions",
+        "buttons": "Boutons",
+        "yes": "Oui",
+        "no": "Non",
+        "server": "Serveur: ",
+        "crafty": "Crafty: ",
+        "getToken": "Obtenir un Jeton",
+        "createNew": "Créer un nouveau Jeton d'API",
+        "nameDesc": "Comment appeler ce Jeton d'API ? ",
+        "permName": "Nom de la Permission",
+        "auth":"Authorisé ? ",
+        "superUser": "Super Utilisateur",
         "deleteKeyConfirmation": "Es-tu sûr de vouloir supprimer cette clé API? Tu ne pourras plus revenir en arrière.",
         "deleteKeyConfirmationTitle": "Supprimer la clé API ${keyId}?"
     }
