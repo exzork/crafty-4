@@ -161,6 +161,7 @@ class Stats:
 
         try:
             server_icon = base64.encodebytes(ping_obj.icon)
+            server_icon = server_icon.decode('utf-8')
         except  Exception as e:
             server_icon = False
             logger.info(f"Unable to read the server icon : {e}")
