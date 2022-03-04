@@ -774,11 +774,10 @@ class Server:
         total_players = 0
         max_players = 0
         servers_ping = []
-        players_ping = {}
         raw_ping_result = []
         raw_ping_result = self.get_raw_server_stats(self.server_id)
 
-        if ("{}".format(raw_ping_result.get('icon')) == "b''"):
+        if f"{raw_ping_result.get('icon')}" == "b''":
             raw_ping_result['icon'] = False
 
         servers_ping.append({
@@ -827,10 +826,6 @@ class Server:
             )
         total_players += int(raw_ping_result.get('online'))
         max_players += int(raw_ping_result.get('max'))
-        players_ping = {
-                'total_players': total_players,
-                'max_players': max_players
-            }
 
         self.record_server_stats()
 
