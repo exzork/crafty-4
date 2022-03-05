@@ -75,6 +75,7 @@ class ServerHandler(BaseHandler):
             'menu_servers': defined_servers,
             'show_contribute': helper.get_setting("show_contribute_link", True),
             'lang': self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
+            'lang_page': helper.getLangPage(self.controller.users.get_user_lang_by_id(exec_user["user_id"])),
             'api_key': {
                 'name': api_key.name,
                 'created': api_key.created,
@@ -84,6 +85,7 @@ class ServerHandler(BaseHandler):
             } if api_key is not None else None,
             'superuser': superuser
         }
+
         if  helper.get_setting("allow_nsfw_profile_pictures"):
             rating = "x"
         else:
@@ -139,7 +141,8 @@ class ServerHandler(BaseHandler):
             'version_data': "version_data_here", # TODO
             'user_data': exec_user,
             'show_contribute': helper.get_setting("show_contribute_link", True),
-            'lang': self.controller.users.get_user_lang_by_id(exec_user["user_id"])
+            'lang': self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
+            'lang_page': helper.getLangPage(self.controller.users.get_user_lang_by_id(exec_user["user_id"]))
         }
 
         if page == "command":

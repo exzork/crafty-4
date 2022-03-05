@@ -89,7 +89,7 @@
         "allServers": "Tous les Serverus",
         "server": "Serveur",
         "actions": "Actions",
-        "world": "Monde",
+        "size": "Taille du Serveur",
         "motd": "MOTD",
         "version": "Version",
         "status": "Statut",
@@ -240,7 +240,7 @@
         "options": "Options",
         "restoring": "Restauration de la sauvegarde. Cela peut prendre un peu de temps. S'il vous plaît soyez patient.",
         "restore": "Restaurer",
-        "confirmRestore": "Êtes-vous sûr de vouloir restaurer à partir de cette sauvegarde. Tous les fichiers du serveur actuel passeront à l'état de sauvegarde et seront irrécupérables.",,
+        "confirmRestore": "Êtes-vous sûr de vouloir restaurer à partir de cette sauvegarde. Tous les fichiers du serveur actuel passeront à l'état de sauvegarde et seront irrécupérables.",
         "excludedBackups": "Dossiers Exclus : ",
         "excludedChoose": "Choisir les dossiers à exclure de la sauvegarde",
         "clickExclude": "Cliquer pour sélectionner les Exclusions",
@@ -510,5 +510,24 @@
         "superUser": "Super Utilisateur",
         "deleteKeyConfirmation": "Es-tu sûr de vouloir supprimer cette clé API? Tu ne pourras plus revenir en arrière.",
         "deleteKeyConfirmationTitle": "Supprimer la clé API ${keyId}?"
+    },
+    "credits": {
+        "pageTitle": "Crédits",
+        "pageDescription": "Sans ces personnes, vous n'auriez pas Crafty",
+        "developmentTeam": "Equipe de Développement",
+        "supportTeam": "Equipe de Support et de Documentation",
+        "retiredStaff": "Retraités de Crafty",
+        "hugeDesc": "Un Enorme",
+        "thankYou": "MERCI",
+        "patreonSupporter": "Soutiens Patreon",
+        "patreonDesc": "à nos Soutiens Patreon !",
+        "patreonUpdate": "Dernière mise à Jour :",
+        "patreonName": "Nom",
+        "patreonLevel": "Niveau",
+        "patreonOther": "Autre",
+        "translationTitle": "Traductions",
+        "translationDesc": "à notre communauté qui traduit Crafty !",
+        "translationName": "Langue",
+        "translator": "Traducteurs"
     }
 }

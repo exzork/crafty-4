@@ -862,4 +862,13 @@ class Helpers:
             return text[len(prefix):]
         return text
 
+    @staticmethod
+    def getLangPage(text):
+        lang = text.split("_")[0]
+        region = text.split("_")[1]
+        if region == 'EN':
+            return 'en'
+        else:
+            return lang+"-"+region
+
 helper = Helpers()
