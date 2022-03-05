@@ -24,8 +24,7 @@
 
   <div class="card">
     <div class="card-header header-sm d-flex justify-content-between align-items-center">
-      <h4 class="card-title"><i class="far fa-code"></i> &nbsp;{{ translate('credits', 'developmentTeam',
-        data['lang']) }}</h4>
+      <h4 class="card-title"><i class="far fa-code"></i> &nbsp;{{ translate('credits', 'developmentTeam', data['lang']) }}</h4>
     </div>
     <div class="card-body">
       <div class="row">
@@ -67,16 +66,14 @@
                   {% end %}
                   {% if person['tags'][1] %}
                   {% if type(person['tags'][1]) is list %}
-                  <a href="{{ person['tags'][1][1] }}" class="btn btn-sm btn-primary mr-2">{{ person['tags'][1][0]
-                    }}</a>
+                  <a href="{{ person['tags'][1][1] }}" class="btn btn-sm btn-primary mr-2">{{ person['tags'][1][0] }}</a>
                   {% else %}
                   <span class="btn btn-sm btn-primary mr-2">{{ person['tags'][1] }}</span>
                   {% end %}
                   {% end %}
                   {% if person['tags'][2] %}
                   {% if type(person['tags'][2]) is list %}
-                  <a href="{{ person['tags'][2][1] }}" class="btn btn-sm btn-inverse-success mr-2">{{
-                    person['tags'][2][0] }}</a>
+                  <a href="{{ person['tags'][2][1] }}" class="btn btn-sm btn-inverse-success mr-2">{{ person['tags'][2][0] }}</a>
                   {% else %}
                   <span class="btn btn-sm btn-inverse-success mr-2">{{ person['tags'][2] }}</span>
                   {% end %}
@@ -146,16 +143,14 @@
                   {% end %}
                   {% if person['tags'][1] %}
                   {% if type(person['tags'][1]) is list %}
-                  <a href="{{ person['tags'][1][1] }}" class="btn btn-sm btn-primary mr-2">{{ person['tags'][1][0]
-                    }}</a>
+                  <a href="{{ person['tags'][1][1] }}" class="btn btn-sm btn-primary mr-2">{{ person['tags'][1][0] }}</a>
                   {% else %}
                   <span class="btn btn-sm btn-primary mr-2">{{ person['tags'][1] }}</span>
                   {% end %}
                   {% end %}
                   {% if person['tags'][2] %}
                   {% if type(person['tags'][2]) is list %}
-                  <a href="{{ person['tags'][2][1] }}" class="btn btn-sm btn-inverse-success mr-2">{{
-                    person['tags'][2][0] }}</a>
+                  <a href="{{ person['tags'][2][1] }}" class="btn btn-sm btn-inverse-success mr-2">{{ person['tags'][2][0] }}</a>
                   {% else %}
                   <span class="btn btn-sm btn-inverse-success mr-2">{{ person['tags'][2] }}</span>
                   {% end %}
@@ -182,8 +177,7 @@
 
   <div class="card">
     <div class="card-header header-sm d-flex justify-content-between align-items-center">
-      <h4 class="card-title"><i class="far fa-server"></i> &nbsp;{{ translate('credits', 'retiredStaff',
-        data['lang']) }}</h4>
+      <h4 class="card-title"><i class="far fa-server"></i> &nbsp;{{ translate('credits', 'retiredStaff', data['lang']) }}</h4>
     </div>
 
     <div class="card-body">
@@ -224,16 +218,14 @@
                     {% end %}
                     {% if person['tags'][1] %}
                     {% if type(person['tags'][1]) is list %}
-                    <a href="{{ person['tags'][1][1] }}" class="btn btn-sm btn-primary mr-2">{{ person['tags'][1][0]
-                      }}</a>
+                    <a href="{{ person['tags'][1][1] }}" class="btn btn-sm btn-primary mr-2">{{ person['tags'][1][0] }}</a>
                     {% else %}
                     <span class="btn btn-sm btn-primary mr-2">{{ person['tags'][1] }}</span>
                     {% end %}
                     {% end %}
                     {% if person['tags'][2] %}
                     {% if type(person['tags'][2]) is list %}
-                    <a href="{{ person['tags'][2][1] }}" class="btn btn-sm btn-inverse-success mr-2">{{
-                      person['tags'][2][0] }}</a>
+                    <a href="{{ person['tags'][2][1] }}" class="btn btn-sm btn-inverse-success mr-2">{{ person['tags'][2][0] }}</a>
                     {% else %}
                     <span class="btn btn-sm btn-inverse-success mr-2">{{ person['tags'][2] }}</span>
                     {% end %}
@@ -269,11 +261,7 @@
           </div>
           <div class="card-body">
             <p class="card-description"> {{ translate('credits', 'hugeDesc', data['lang']) }}
-              <code>{{ translate('credits', 'thankYou', data['lang']) }}</code>&nbsp; {{ translate('credits',
-              'patreonDesc',
-              data['lang']) }} | <span style="color: #9365B8">{{ translate('credits', 'patreonUpdate', data['lang']) }}
-                {{
-                data["lastUpdate"] }}</span>
+              <code>{{ translate('credits', 'thankYou', data['lang']) }}</code>&nbsp; {{ translate('credits', 'patreonDesc', data['lang']) }} | <span style="color: #9365B8">{{ translate('credits', 'patreonUpdate', data['lang']) }} {{ data["lastUpdate"] }}</span>
             </p>
             <table class="table table-hover">
               <thead>
@@ -288,18 +276,13 @@
                   <td>{{ pat["name"] }}</td>
                   <td>
                     {% if pat["level"] == "Crafty Sustainer" %}
-                    <span class="btn btn-sm btn-info mr-2">{{ translate('credits', 'patreonSustainer', data['lang'])
-                      }}</span>
+                    <span class="btn btn-sm btn-info mr-2">{{ translate('credits', 'patreonSustainer', data['lang']) }}</span>
                     {% elif pat["level"] == "Crafty Advocate" %}
-                    <span class="btn btn-sm btn-primary mr-2">{{ translate('credits', 'patreonAdvocate', data['lang'])
-                      }}</span>
+                    <span class="btn btn-sm btn-primary mr-2">{{ translate('credits', 'patreonAdvocate', data['lang']) }}</span>
                     {% elif pat["level"] == "Crafty Supporter" %}
-                    <span class="btn btn-sm btn-inverse-success mr-2">{{ translate('credits', 'patreonSubs',
-                      data['lang'])
-                      }}</span>
+                    <span class="btn btn-sm btn-inverse-success mr-2">{{ translate('credits', 'patreonSubs', data['lang']) }}</span>
                     {% else %}
-                    <span class="btn btn-sm btn-secondary mr-2">{{ translate('credits', 'patreonOther', data['lang'])
-                      }}</span>
+                    <span class="btn btn-sm btn-secondary mr-2">{{ translate('credits', 'patreonOther', data['lang']) }}</span>
                     {% end %}
                   </td>
                 </tr>
@@ -314,14 +297,11 @@
       <div class="col-lg-6 grid-margin stretch-card">
         <div class="card">
           <div class="card-header header-sm d-flex justify-content-between align-items-center">
-            <h4 class="card-title"><i class="far fa-language"></i> {{ translate('credits', 'translationTitle',
-              data['lang'])
-              }}</h4>
+            <h4 class="card-title"><i class="far fa-language"></i> {{ translate('credits', 'translationTitle', data['lang']) }}</h4>
           </div>
           <div class="card-body">
             <p class="card-text"> {{ translate('credits', 'hugeDesc', data['lang']) }}
-              <code>{{ translate('credits', 'thankYou', data['lang']) }}</code>&nbsp; {{ translate('credits',
-              'translationDesc', data['lang']) }}
+              <code>{{ translate('credits', 'thankYou', data['lang']) }}</code>&nbsp; {{ translate('credits', 'translationDesc', data['lang']) }}
             </p>
             <table class="table table-hover">
               <thead>
