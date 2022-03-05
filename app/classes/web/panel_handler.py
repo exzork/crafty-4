@@ -251,6 +251,7 @@ class PanelHandler(BaseHandler):
             'error': error,
             'time': formatted_time,
             'lang': self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
+            'lang_page': helper.getLangPage(self.controller.users.get_user_lang_by_id(exec_user["user_id"])),
             'super_user': superuser,
             'api_key': {
                 'name': api_key.name,
@@ -374,8 +375,6 @@ class PanelHandler(BaseHandler):
                 if str(server_id) not in server_ids[:]:
                     user_order.remove(server_id)
             page_data['servers'] = page_servers
-
-
 
             #num players is set to zero here. If we poll all servers while dashboard is loading it takes FOREVER. We leave this to the
             #async polling once dashboard is served.
@@ -1596,7 +1595,8 @@ class PanelHandler(BaseHandler):
             user_id = self.controller.users.add_user(username, password=password0, email=email, enabled=enabled, superuser=superuser)
             user_data = {
                 "roles": roles,
-                'lang': lang
+                'lang': lang,
+                'lang_page': helper.getLangPage(lang),
             }
             user_crafty_data = {
                 "permissions_mask": permissions_mask,
@@ -1682,7 +1682,10 @@ class PanelHandler(BaseHandler):
 
         else:
             self.set_status(404)
-            page_data = {'lang': helper.get_setting('language')}
+            page_data = {
+                'lang': helper.get_setting('language'),
+                'lang_page': helper.getLangPage(helper.get_setting('language')),
+            }
             self.render(
                 "public/404.html",
                 translate=self.translator.translate,
@@ -1704,7 +1707,8 @@ class PanelHandler(BaseHandler):
             'user_data': exec_user,
             'hosts_data': self.controller.management.get_latest_hosts_stats(),
             'show_contribute': helper.get_setting("show_contribute_link", True),
-            'lang': self.controller.users.get_user_lang_by_id(exec_user["user_id"])
+            'lang': self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
+            'lang_page': helper.getLangPage(self.controller.users.get_user_lang_by_id(exec_user["user_id"])),
         }
 
         if page == "remove_apikey":

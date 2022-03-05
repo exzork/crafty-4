@@ -39,7 +39,11 @@ class PublicHandler(BaseHandler):
         error = bleach.clean(self.get_argument('error', "Invalid Login!"))
         error_msg = bleach.clean(self.get_argument('error_msg', ''))
 
-        page_data = {'version': helper.get_version_string(), 'error': error, 'lang': helper.get_setting('language')}
+        page_data = {
+            'version': helper.get_version_string(),
+            'error': error, 'lang': helper.get_setting('language'),
+            'lang_page': helper.getLangPage(helper.get_setting('language'))
+        }
 
         # sensible defaults
         template = "public/404.html"
