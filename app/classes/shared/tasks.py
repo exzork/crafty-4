@@ -452,7 +452,6 @@ class TasksManager:
                         'mem_percent': host_stats.get('mem_percent'),
                         'mem_usage': host_stats.get('mem_usage')
                     })
-            time.sleep(2)
 
     def log_watcher(self):
         self.controller.servers.check_for_old_logs()

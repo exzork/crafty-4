@@ -140,7 +140,8 @@ class helpers_management:
     #************************************************************************************************
     @staticmethod
     def get_latest_hosts_stats():
-        query = Host_Stats.select().order_by(Host_Stats).get()
+        #pylint: disable=no-member
+        query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()
         return model_to_dict(query)
 
     #************************************************************************************************
