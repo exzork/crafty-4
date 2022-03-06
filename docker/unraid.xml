@@ -9,27 +9,27 @@
   <Privileged>false</Privileged>
   <Support>https://discord.gg/9VJPhCE</Support>
   <Project>https://craftycontrol.com/</Project>
-  <Overview>Crafty controller is a lightweight minecraft wrapper with great featuers and a awesome gui, acessible from a modern web browser.&#xD;
-The username and password appear on the first launch in the docker logs!&#xD;
-Crafty 4 is the successor of crafty controller, the docker image is no longer maintained on dockerhub. (now on gitlab)&#xD;
+  <Overview>Crafty Controller is a lightweight Minecraft wrapper with great featuers and a awesome GUI, acessible from a modern web browser.&#xD;
+The username and password appear on the first launch in the Docker logs!&#xD;
+Crafty 4 is the successor of Crafty Controller, the Docker image is no longer maintained on DockerHub. (now on GitLab)&#xD;
 For official support join the discord: https://discord.gg/9VJPhCE&#xD;
-For migration from 3.x please refer to the documentation on gitlab: htps://gitlab.com/crafty-docs&#xD;
+For migration from 3.x please refer to the documentation on GitLab: https://gitlab.com/crafty-controller/crafty-commander/-/wikis/home&#xD;
 </Overview>
   <Category>GameServers: Other:</Category>
   <WebUI>https://[IP]:[PORT:8443]/</WebUI>
-  <TemplateURL>https://raw.githubusercontent.com/mrFred-1a4/Freddy0-Crafty-Controller/main/Crafty-controller-freddy0.xml</TemplateURL>
+  <TemplateURL>https://gitlab.com/crafty-controller/crafty-commander/-/blob/dev/docker/unraid.xml</TemplateURL>
   <Icon>https://gitlab.com/crafty-controller/crafty-commander/-/raw/master/app/frontend/static/assets/images/logo_square.jpg</Icon>
   <ExtraParams/>
   <PostArgs/>
   <CPUset/>
-  <DateInstalled>1641595780</DateInstalled>
+  <DateInstalled/>
   <DonateText>Help to support Crafty on Patreon</DonateText>
   <DonateLink>https://www.patreon.com/craftycontroller</DonateLink>
-  <Description>Crafty controller is a lightweight minecraft wrapper with great featuers and a awesome gui, acessible from a modern web browser.&#xD;
-The username and password appear on the first launch in the docker logs!&#xD;
-Crafty 4 is the successor of crafty controller, the docker image is no longer maintained on dockerhub. (now on gitlab)&#xD;
+  <Description>Crafty Controller is a lightweight Minecraft wrapper with great featuers and a awesome GUI, acessible from a modern web browser.&#xD;
+The username and password appear on the first launch in the Docker logs!&#xD;
+Crafty 4 is the successor of Crafty Controller, the Docker image is no longer maintained on DockerHub. (now on GitLab)&#xD;
 For official support join the discord: https://discord.gg/9VJPhCE&#xD;
-For migration from 3.x please refer to the documentation on gitlab: https://gitlab.com/crafty-controller/crafty-commander/-/wikis/home&#xD;
+For migration from 3.x please refer to the documentation on GitLab: https://gitlab.com/crafty-controller/crafty-commander/-/wikis/home&#xD;
 </Description>
   <Networking>
     <Mode>bridge</Mode>
@@ -82,6 +82,11 @@ For migration from 3.x please refer to the documentation on gitlab: https://gitl
       <ContainerDir>/commander/app/config</ContainerDir>
       <Mode>rw</Mode>
     </Volume>
+    <Volume>
+      <HostDir>/mnt/user/appdata/Crafty-4/import/</HostDir>
+      <ContainerDir>/commander/import</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
   </Data>
   <Environment/>
   <Labels/>
@@ -94,4 +99,5 @@ For migration from 3.x please refer to the documentation on gitlab: https://gitl
   <Config Name="Backup files" Target="/commander/backups" Default="/mnt/user/appdata/Crafty-4/backups/" Mode="rw" Description="Server Backups" Type="Path" Display="always-hide" Required="true" Mask="false">/mnt/user/appdata/Crafty-4/backups/</Config>
   <Config Name="Server Logs" Target="/commander/logs" Default="/mnt/user/appdata/Crafty-4/logs/" Mode="rw" Description="Logs" Type="Path" Display="advanced-hide" Required="true" Mask="false">/mnt/user/appdata/Crafty-4/logs/</Config>
   <Config Name="Crafty Configuration" Target="/commander/app/config" Default="/mnt/user/appdata/Crafty-4/config/" Mode="rw" Description="Path to the persistent Crafty files" Type="Path" Display="advanced-hide" Required="true" Mask="false">/mnt/user/appdata/Crafty-4/config/</Config>
+  <Config Name="Import folder" Target="/commander/import" Default="/mnt/user/appdata/Crafty-4/import/" Mode="rw" Description="Imports" Type="Path" Display="advanced-hide" Required="true" Mask="false">/mnt/user/appdata/Crafty-4/import/</Config>
 </Container>
