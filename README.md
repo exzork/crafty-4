@@ -25,7 +25,7 @@ With `Crafty Controller 4.0` we have focused on building our DevOps Principles, 
 
 ### - Two big changes you will notice is:
 - We now provide pre-built images for you guys.
-- Containers now run as non-root, using practices used by OpenSwift & Kubernetes (root group perms).
+- Containers now run as non-root, using practices used by OpenShift & Kubernetes (root group perms).
 
 
 > __**⚠ 🔻WARNING: [WSL/WSL2 | WINDOWS 11 | DOCKER DESKTOP]🔻**__ <br>
@@ -39,11 +39,8 @@ With `Crafty Controller 4.0` we have focused on building our DevOps Principles, 
 All you need to do is pull the image from this git repository's registry.
 This is done by using `'docker-compose'` or `'docker run'` (You don't need to clone the Repository and build, like in 3.x ).
 
-If you have a config folder already from previous local installation or _docker setup_*, the image should mount this volume, if no config present then it will populate its own config folder for you. <br> <br>
+If you have a config folder already from previous local installation or _docker setup_*, the image should mount this volume and fix the permission as required, if no config present then it will populate its own config folder for you. <br> <br>
 As the Dockerfile uses the permission structure of `crafty:root` **internally** there is no need to worry about matching the `UID` or `GID` on the host system :)
-> ***Make sure the ownership permissions on `servers/ backups/ logs/ configs/ imports/` in the `docker/` are not `root:root`, please just chown the dir recursively to your host user.**
-
-> **Please make sure if you are using a `compose` file, that the above volume mount directories are present, otherwise, docker will just make them and they'll be `root:root` which is not what we want.💀**
 
 <br>
 
@@ -81,9 +78,6 @@ $ cat ~/my_password.txt | docker login registry.gitlab.com -u <username> --passw
 Then use one of the following methods:
 ### **docker-compose.yml:**
 ```sh
-# We need to make them because of permissions remember!
-$ mkdir docker/ docker/backups docker/logs docker/servers docker/config docker/import
-
 # Make your compose file
 $ vim docker-compose.yml
 ```
@@ -116,9 +110,6 @@ $ docker-compose up -d && docker-compose logs -f
 
 ### **docker run:**
 ```sh
-# We need to make them because of permissions remember!
-$ mkdir docker/ docker/backups docker/logs docker/servers docker/config docker/import
-
 $ docker run \
 	--name crafty_commander \
 	-p 8000:8000 \
