@@ -8,13 +8,14 @@ LABEL maintainer="Dockerfile created by Zedifus <https://gitlab.com/zedifus>"
 ENV LOG4J_FORMAT_MSG_NO_LOOKUPS=true
 
 # Create non-root user & required dirs
-RUN useradd -M crafty \
+RUN useradd -g root -M crafty \
     && mkdir /commander \
     && chown -R crafty:root /commander
 
 # Install required system packages
 RUN apt-get update \
     && apt-get -y --no-install-recommends install \
+        sudo \
         gcc \
         python3 \
         python3-dev \
@@ -38,6 +39,7 @@ RUN python3 -m venv ./.venv \
     && pip3 install --no-cache-dir --upgrade setuptools==50.3.2 pip==22.0.3 \
     && pip3 install --no-cache-dir -r requirements.txt \
     && deactivate
+USER root
 
 # Copy Source w/ perms & prepare default config from example
 COPY --chown=crafty:root ./ ./
