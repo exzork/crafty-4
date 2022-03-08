@@ -1,5 +1,6 @@
 import os
 import pathlib
+from pathlib import Path
 import shutil
 import time
 import logging
@@ -513,10 +514,13 @@ class Controller:
         server_data = self.servers.get_server_data_by_id(old_server_id)
         old_bu_path = server_data['backup_path']
         Server_Perms_Controller.backup_role_swap(old_server_id, new_server_id)
-        backup_path = helper.validate_traversal(helper.backup_path, old_bu_path)
+        if not helper.is_os_windows():
+            backup_path = helper.validate_traversal(helper.backup_path, old_bu_path)
         if helper.is_os_windows():
-            backup_path = helper.wtol_path(backup_path)
+            backup_path = helper.validate_traversal(helper.wtol_path(helper.backup_path), helper.wtol_path(old_bu_path))
+            backup_path = helper.wtol_path(str(backup_path))
             backup_path.replace(' ', '^ ')
+            backup_path = Path(backup_path)
         backup_path_components = list(backup_path.parts)
         backup_path_components[-1] = new_uuid
         new_bu_path = pathlib.PurePath(os.path.join(*backup_path_components))

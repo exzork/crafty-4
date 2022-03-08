@@ -337,19 +337,34 @@ class AjaxHandler(BaseHandler):
             zip_name = bleach.clean(self.get_argument('zip_file', None))
             svr_obj = self.controller.servers.get_server_obj(server_id)
             server_data = self.controller.servers.get_server_data_by_id(server_id)
-            backup_path = svr_obj.backup_path
-            if helper.validate_traversal(backup_path, zip_name):
-                tempDir = helper.unzip_backup_archive(backup_path, zip_name)
-                new_server = self.controller.import_zip_server(svr_obj.server_name,
-                                                               tempDir,
-                                                               server_data['executable'],
-                                                               '1', '2',
-                                                               server_data['server_port'])
-                new_server_id = new_server
-                new_server = self.controller.get_server_data(new_server)
-                self.controller.rename_backup_dir(server_id, new_server_id, new_server['server_uuid'])
-                self.controller.remove_server(server_id, True)
-                self.redirect('/panel/dashboard')
+            if server_data['type'] == 'minecraft-java':
+                backup_path = svr_obj.backup_path
+                if helper.validate_traversal(backup_path, zip_name):
+                    tempDir = helper.unzip_backup_archive(backup_path, zip_name)
+                    new_server = self.controller.import_zip_server(svr_obj.server_name,
+                                                                tempDir,
+                                                                server_data['executable'],
+                                                                '1', '2',
+                                                                server_data['server_port'])
+                    new_server_id = new_server
+                    new_server = self.controller.get_server_data(new_server)
+                    self.controller.rename_backup_dir(server_id, new_server_id, new_server['server_uuid'])
+                    self.controller.remove_server(server_id, True)
+                    self.redirect('/panel/dashboard')
+
+            else:
+                backup_path = svr_obj.backup_path
+                if helper.validate_traversal(backup_path, zip_name):
+                    tempDir = helper.unzip_backup_archive(backup_path, zip_name)
+                    new_server = self.controller.import_bedrock_zip_server(svr_obj.server_name,
+                                                                tempDir,
+                                                                server_data['executable'],
+                                                                server_data['server_port'])
+                    new_server_id = new_server
+                    new_server = self.controller.get_server_data(new_server)
+                    self.controller.rename_backup_dir(server_id, new_server_id, new_server['server_uuid'])
+                    self.controller.remove_server(server_id, True)
+                    self.redirect('/panel/dashboard')
 
         elif page == "unzip_server":
             path = self.get_argument('path', None)
