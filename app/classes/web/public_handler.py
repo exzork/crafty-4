@@ -1,23 +1,18 @@
-import sys
 import logging
 
+from app.classes.models.users import Users
 from app.classes.shared.authentication import authentication
 from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
 from app.classes.shared.main_models import fn
-
-from app.classes.models.users import Users
 from app.classes.web.base_handler import BaseHandler
-
-logger = logging.getLogger(__name__)
 
 try:
     import bleach
 
 except ModuleNotFoundError as e:
-    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
-    console.critical(f"Import Error: Unable to load {e.name} module")
-    sys.exit(1)
+    helper.auto_installer_fix(e)
+
+logger = logging.getLogger(__name__)
 
 class PublicHandler(BaseHandler):
 

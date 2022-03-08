@@ -4,7 +4,21 @@ import json
 import asyncio
 import logging
 
-logger = logging.getLogger(__name__)
+from app.classes.shared.translation import translation
+from app.classes.shared.console import console
+from app.classes.shared.helpers import helper
+from app.classes.web.file_handler import FileHandler
+from app.classes.web.public_handler import PublicHandler
+from app.classes.web.panel_handler import PanelHandler
+from app.classes.web.default_handler import DefaultHandler
+from app.classes.web.server_handler import ServerHandler
+from app.classes.web.ajax_handler import AjaxHandler
+from app.classes.web.api_handler import ServersStats, NodeStats
+from app.classes.web.websocket_handler import SocketHandler
+from app.classes.web.static_handler import CustomStaticHandler
+from app.classes.web.upload_handler import UploadHandler
+from app.classes.web.http_handler import HTTPHandler, HTTPHandlerPage
+from app.classes.web.status_handler import StatusHandler
 
 try:
     import tornado.web
@@ -14,26 +28,11 @@ try:
     import tornado.escape
     import tornado.locale
     import tornado.httpserver
-    from app.classes.web.file_handler import FileHandler
-    from app.classes.web.public_handler import PublicHandler
-    from app.classes.web.panel_handler import PanelHandler
-    from app.classes.web.default_handler import DefaultHandler
-    from app.classes.web.server_handler import ServerHandler
-    from app.classes.web.ajax_handler import AjaxHandler
-    from app.classes.web.api_handler import ServersStats, NodeStats
-    from app.classes.web.websocket_handler import SocketHandler
-    from app.classes.web.static_handler import CustomStaticHandler
-    from app.classes.web.upload_handler import UploadHandler
-    from app.classes.web.http_handler import HTTPHandler, HTTPHandlerPage
-    from app.classes.web.status_handler import StatusHandler
-    from app.classes.shared.translation import translation
-    from app.classes.shared.console import console
-    from app.classes.shared.helpers import helper
 
 except ModuleNotFoundError as e:
-    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
-    console.critical(f"Import Error: Unable to load {e.name} module")
-    sys.exit(1)
+    helper.auto_installer_fix(e)
+
+logger = logging.getLogger(__name__)
 
 class Webserver:
 

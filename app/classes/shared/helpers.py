@@ -18,23 +18,23 @@ from datetime import datetime
 from socket import gethostname
 from contextlib import suppress
 import psutil
-from requests import get
 
-from app.classes.web.websocket_helper import websocket_helper
 from app.classes.shared.console import console
+from app.classes.shared.installer import installer
 from app.classes.shared.file_helpers import file_helper
-
-logger = logging.getLogger(__name__)
+from app.classes.shared.helpers import helper
+from app.classes.web.websocket_helper import websocket_helper
 
 try:
     import requests
+    from requests import get
     from OpenSSL import crypto
     from argon2 import PasswordHasher
 
 except ModuleNotFoundError as err:
-    logger.critical(f"Import Error: Unable to load {err.name} module", exc_info=True)
-    console.critical(f"Import Error: Unable to load {err.name} module")
-    sys.exit(1)
+    helper.auto_installer_fix(err)
+
+logger = logging.getLogger(__name__)
 
 class Helpers:
     allowed_quotes = [
@@ -60,6 +60,12 @@ class Helpers:
         self.credits_cache = os.path.join(self.config_dir, 'credits.json')
         self.passhasher = PasswordHasher()
         self.exiting = False
+
+    @staticmethod
+    def auto_installer_fix(ex):
+        logger.critical(f"Import Error: Unable to load {ex.name} module", exc_info=True)
+        print(f"Import Error: Unable to load {ex.name} module")
+        installer.do_install()
 
     def float_to_string(self, gbs: int):
         s = str(float(gbs) * 1000).rstrip("0").rstrip(".")

@@ -6,7 +6,6 @@ import time
 import logging
 import tempfile
 from typing import Union
-from peewee import DoesNotExist
 
 from app.classes.controllers.crafty_perms_controller import Crafty_Perms_Controller
 from app.classes.controllers.management_controller import Management_Controller
@@ -14,22 +13,24 @@ from app.classes.controllers.users_controller import Users_Controller
 from app.classes.controllers.roles_controller import Roles_Controller
 from app.classes.controllers.server_perms_controller import Server_Perms_Controller
 from app.classes.controllers.servers_controller import Servers_Controller
-
 from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.models.users import helper_users
 from app.classes.models.management import helpers_management
 from app.classes.models.servers import servers_helper
-
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
 from app.classes.shared.server import Server
 from app.classes.shared.file_helpers import file_helper
-
 from app.classes.minecraft.server_props import ServerProps
 from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.minecraft.stats import Stats
-
 from app.classes.web.websocket_helper import websocket_helper
+
+try:
+    from peewee import DoesNotExist
+
+except ModuleNotFoundError as err:
+    helper.auto_installer_fix(err)
 
 logger = logging.getLogger(__name__)
 

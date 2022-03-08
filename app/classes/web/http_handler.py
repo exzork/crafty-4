@@ -1,8 +1,13 @@
 import logging
-import requests
 
 from app.classes.shared.helpers import helper
 from app.classes.web.base_handler import BaseHandler
+
+try:
+    import requests
+
+except ModuleNotFoundError as e:
+    helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
 

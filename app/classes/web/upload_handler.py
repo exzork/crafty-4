@@ -2,23 +2,24 @@ import logging
 import os
 import time
 
-import tornado.options
-import tornado.web
-import tornado.httpserver
-
+from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.shared.main_controller import Controller
-
 from app.classes.web.websocket_helper import websocket_helper
 from app.classes.web.base_handler import BaseHandler
 
-from app.classes.models.server_permissions import Enum_Permissions_Server
+try:
+    import tornado.web
+    import tornado.options
+    import tornado.httpserver
 
+except ModuleNotFoundError as ex:
+    helper.auto_installer_fix(ex)
 
 logger = logging.getLogger(__name__)
 
-# Class&Function Defination
+# Class & Function Defination
 MAX_STREAMED_SIZE = 1024 * 1024 * 1024
 
 @tornado.web.stream_request_body

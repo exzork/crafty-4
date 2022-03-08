@@ -2,18 +2,16 @@ import datetime
 import logging
 import sys
 
-logger = logging.getLogger(__name__)
+from app.classes.shared.helpers import helper
 
 try:
     from colorama import init
     from termcolor import colored
 
 except ModuleNotFoundError as e:
-    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
-    print(f"Import Error: Unable to load {e.name} module")
-    from app.classes.shared.installer import installer
-    installer.do_install()
-    sys.exit(1)
+    helper.auto_installer_fix(e)
+
+logger = logging.getLogger(__name__)
 
 class Console:
 

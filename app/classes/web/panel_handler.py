@@ -5,26 +5,27 @@ from typing import Dict, Any, Tuple
 import json
 import logging
 import threading
-import bleach
-import libgravatar
-import requests
-
-import tornado.web
-import tornado.escape
-from tornado import iostream
-
-#TZLocal is set as a hidden import on win pipeline
-from tzlocal import get_localzone
-from cron_validator import CronValidator
 
 from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
 from app.classes.models.management import management_helper
-
 from app.classes.shared.authentication import authentication
 from app.classes.shared.helpers import helper
-
 from app.classes.web.base_handler import BaseHandler
+
+try:
+    import bleach
+    import libgravatar
+    import requests
+    import tornado.web
+    import tornado.escape
+    from tornado import iostream
+    #TZLocal is set as a hidden import on win pipeline
+    from tzlocal import get_localzone
+    from cron_validator import CronValidator
+
+except ModuleNotFoundError as ex:
+    helper.auto_installer_fix(ex)
 
 logger = logging.getLogger(__name__)
 

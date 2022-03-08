@@ -1,6 +1,6 @@
 import logging
 
-from app.classes.models.crafty_permissions import  crafty_permissions, Enum_Permissions_Crafty
+from app.classes.models.crafty_permissions import crafty_permissions, Enum_Permissions_Crafty
 from app.classes.models.users import ApiKeys
 
 logger = logging.getLogger(__name__)

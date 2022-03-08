@@ -2,14 +2,17 @@ import logging
 import time
 from typing import Optional, Dict, Any, Tuple
 
-import jwt
-from jwt import PyJWTError
-
 from app.classes.models.users import users_helper, ApiKeys
 from app.classes.shared.helpers import helper
 
-logger = logging.getLogger(__name__)
+try:
+    import jwt
+    from jwt import PyJWTError
 
+except ModuleNotFoundError as e:
+    helper.auto_installer_fix(e)
+
+logger = logging.getLogger(__name__)
 
 class Authentication:
     def __init__(self):

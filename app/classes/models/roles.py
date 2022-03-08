@@ -1,24 +1,19 @@
-import sys
 import logging
 import datetime
 
 from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
-
-logger = logging.getLogger(__name__)
-peewee_logger = logging.getLogger('peewee')
-peewee_logger.setLevel(logging.INFO)
 
 try:
     from peewee import SqliteDatabase, Model, CharField, DoesNotExist, AutoField, DateTimeField
     from playhouse.shortcuts import model_to_dict
 
 except ModuleNotFoundError as e:
-    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
-    console.critical(f"Import Error: Unable to load {e.name} module")
-    sys.exit(1)
+    helper.auto_installer_fix(e)
 
-database = SqliteDatabase(helper.db_path, pragmas={
+logger = logging.getLogger(__name__)
+peewee_logger = logging.getLogger('peewee')
+peewee_logger.setLevel(logging.INFO)
+database = SqliteDatabase(helper.db_path, pragmas = {
     'journal_mode': 'wal',
     'cache_size': -1024 * 10})
 

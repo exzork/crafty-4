@@ -1,20 +1,10 @@
 import os
 import shutil
-import sys
 import logging
 import pathlib
-
-from app.classes.shared.console import console
+from zipfile import ZipFile, ZIP_DEFLATED
 
 logger = logging.getLogger(__name__)
-
-try:
-    from zipfile import ZipFile, ZIP_DEFLATED
-
-except ModuleNotFoundError as err:
-    logger.critical(f"Import Error: Unable to load {err.name} module", exc_info=True)
-    console.critical(f"Import Error: Unable to load {err.name} module")
-    sys.exit(1)
 
 class FileHelpers:
     allowed_quotes = [

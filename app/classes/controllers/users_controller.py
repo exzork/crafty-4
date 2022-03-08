@@ -1,11 +1,10 @@
 import logging
 from typing import Optional
 
-from app.classes.shared.helpers import helper
-from app.classes.shared.authentication import authentication
-
 from app.classes.models.users import users_helper
 from app.classes.models.crafty_permissions import crafty_permissions, Enum_Permissions_Crafty
+from app.classes.shared.helpers import helper
+from app.classes.shared.authentication import authentication
 
 logger = logging.getLogger(__name__)
 
