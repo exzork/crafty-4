@@ -21,6 +21,9 @@
         </tr>
       </thead>
       <tbody>
+        {% if data['running'] != 0 %}
+        <span id="sync" style="margin-left: 5px;"><i class="fas fa-sync fa-spin"></i></span></h4>
+        {% end %}
         {% for server in data['servers'] %}
         <tr>
           <td id="server_name_{{ server['stats']['server_id']['server_id'] }}">
@@ -94,7 +97,7 @@
 
     /* TODO Update each element */
     if (server.int_ping_results) {
-
+      document.getElementById('sync').innerHTML='';
       /* Update Players */
       if (server.players)
       {

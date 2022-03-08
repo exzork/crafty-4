@@ -10,12 +10,17 @@ class StatusHandler(BaseHandler):
         page_data = {}
         page_data['lang'] = helper.get_setting('language')
         page_data['servers'] = self.controller.servers.get_all_servers_stats()
+        running = 0
         for srv in page_data['servers']:
+            if srv['stats']['running']:
+                running += 1
             server_data = srv.get('server_data', False)
             server_id = server_data.get('server_id', False)
             srv['raw_ping_result'] = self.controller.servers.get_server_stats_by_id(server_id)
             if 'icon' not in srv['raw_ping_result']:
                 srv['raw_ping_result']['icon'] = False
+
+        page_data['running'] = running
 
         template = 'public/status.html'
 
