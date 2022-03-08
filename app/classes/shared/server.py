@@ -609,7 +609,7 @@ class Server:
         server_users = server_permissions.get_server_user_list(self.server_id)
         for user in server_users:
             websocket_helper.broadcast_user(user, 'notification', translation.translate('notify',
-            'backupStarted', users_helper.get_user_lang_by_id(user)) + self.name)
+            'backupStarted', users_helper.get_user_lang_by_id(user)).format(self.name))
         time.sleep(3)
         self.is_backingup = True
         conf = management_helper.get_backup_config(self.server_id)
@@ -655,7 +655,7 @@ class Server:
             server_users = server_permissions.get_server_user_list(self.server_id)
             for user in server_users:
                 websocket_helper.broadcast_user(user, 'notification', translation.translate('notify', 'backupComplete',
-                users_helper.get_user_lang_by_id(user)) + self.name)
+                users_helper.get_user_lang_by_id(user)).format(self.name))
             time.sleep(3)
             return
         except:
