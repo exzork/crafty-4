@@ -849,7 +849,7 @@
   function downloadFileE(event) {
     path = event.target.parentElement.getAttribute('data-path');
     name = event.target.parentElement.getAttribute('data-name');
-    window.location.href = `/panel/download_file?id=${server_id}&path=${path}&name=${name}`;
+    window.location.href = `/panel/download_file?id=${serverId}&path=${path}&name=${name}`;
   }
 
   function renameItemE(event) {

@@ -253,6 +253,10 @@ const server_id = new URLSearchParams(document.location.search).get('id')
 
   function restore_backup(filename, id){
     var token = getCookie("_xsrf")
+    var dialog = bootbox.dialog({
+          message: '<i class="fa fa-spin fa-spinner"></i> {{ translate('serverBackups', 'restoring', data['lang']) }}',
+          closeButton: false
+      });
 
     console.log('Sending Command to restore backup: ' + filename)
     $.ajax({
@@ -264,10 +268,6 @@ const server_id = new URLSearchParams(document.location.search).get('id')
       id: id
       },
       success: function(data) {
-        var dialog = bootbox.dialog({
-          message: '<i class="fa fa-spin fa-spinner"></i> {{ translate('serverBackups', 'restoring', data['lang']) }}',
-          closeButton: false
-      });
       setTimeout(function(){
         location.href=('/panel/dashboard');
     }, 15000);

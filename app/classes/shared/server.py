@@ -178,7 +178,11 @@ class Server:
         #Register an shedule for polling server stats when running
         logger.info(f"Polling server statistics {self.name} every {5} seconds")
         console.info(f"Polling server statistics {self.name} every {5} seconds")
-        self.server_scheduler.add_job(self.realtime_stats, 'interval', seconds=5, id="stats_"+str(self.server_id))
+        try:
+            self.server_scheduler.add_job(self.realtime_stats, 'interval', seconds=5, id="stats_"+str(self.server_id))
+        except:
+            self.server_scheduler.remove_job('stats_'+str(self.server_id))
+            self.server_scheduler.add_job(self.realtime_stats, 'interval', seconds=5, id="stats_"+str(self.server_id))
 
 
     def setup_server_run_command(self):
@@ -514,6 +518,7 @@ class Server:
             proc.kill()
         # kill the main process we are after
         logger.info('Sending SIGKILL to parent')
+        self.server_scheduler.remove_job("stats_"+str(self.server_id))
         self.process.kill()
 
     def get_start_time(self):
