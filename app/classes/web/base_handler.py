@@ -59,7 +59,8 @@ class BaseHandler(tornado.web.RequestHandler):
         return self.autobleach(name, arg)
 
     def get_arguments(self, name: str, strip: bool = True) -> List[str]:
-        assert isinstance(strip, bool)
+        if not isinstance(strip, bool):
+            raise AssertionError
         args = self._get_arguments(name, self.request.arguments, strip)
         args_ret = []
         for arg in args:
