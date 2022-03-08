@@ -5,6 +5,7 @@
   "language": "en_EN",
   "cookie_expire": 30,
   "cookie_secret": "random",
+  "apikey_secret": "random",
   "show_errors": true,
   "history_max_age": 7,
   "stats_update_frequency": 30,
@@ -12,5 +13,8 @@
   "show_contribute_link": true,
   "virtual_terminal_lines": 70,
   "max_log_lines": 700,
-  "keywords": ["help", "chunk"]
+  "max_audit_entries": 300,
+  "disabled_language_files": ["lol_EN.json", ""],
+  "keywords": ["help", "chunk"],
+  "allow_nsfw_profile_pictures": false
 }

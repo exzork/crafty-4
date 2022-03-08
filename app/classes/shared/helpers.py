@@ -13,25 +13,29 @@ import logging
 import html
 import zipfile
 import pathlib
-import shutil
-from requests import get
-
+import ctypes
 from datetime import datetime
 from socket import gethostname
+from contextlib import suppress
+import psutil
 
 from app.classes.shared.console import console
+from app.classes.shared.installer import installer
+from app.classes.shared.file_helpers import file_helper
+from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
 
 try:
     import requests
+    from requests import get
     from OpenSSL import crypto
     from argon2 import PasswordHasher
 
-except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name))
-    sys.exit(1)
+except ModuleNotFoundError as err:
+    logger.critical(f"Import Error: Unable to load {err.name} module", exc_info=True)
+    print(f"Import Error: Unable to load {err.name} module")
+    installer.do_install()
 
 class Helpers:
     allowed_quotes = [
@@ -58,14 +62,20 @@ class Helpers:
         self.passhasher = PasswordHasher()
         self.exiting = False
 
+    @staticmethod
+    def auto_installer_fix(ex):
+        logger.critical(f"Import Error: Unable to load {ex.name} module", exc_info=True)
+        print(f"Import Error: Unable to load {ex.name} module")
+        installer.do_install()
+
     def float_to_string(self, gbs: int):
         s = str(float(gbs) * 1000).rstrip("0").rstrip(".")
         return s
 
     def check_file_perms(self, path):
         try:
-            fp = open(path, "r").close()
-            logger.info("{} is readable".format(path))
+            open(path, "r", encoding='utf-8').close()
+            logger.info(f"{path} is readable")
             return True
         except PermissionError:
             return False
@@ -78,30 +88,52 @@ class Helpers:
                 return True
             else:
                 return False
-        logger.error("{} does not exist".format(file))
+        logger.error(f"{file} does not exist")
         return True
+
+    def get_servers_root_dir(self):
+        return self.servers_dir
 
     @staticmethod
     def check_internet():
         try:
             requests.get('https://google.com', timeout=1)
             return True
-        except Exception as err:
+        except Exception:
             return False
 
     @staticmethod
     def check_port(server_port):
         try:
-            host_public = get('https://api.ipify.org').text
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(10.0)
-            result = sock.connect_ex((host_public ,server_port))
-            sock.close()
-            if result == 0:
-                return True
-            else:
-                return False
-        except Exception as err:
+            ip = get('https://api.ipify.org').content.decode('utf8')
+        except:
+            ip = 'google.com'
+        a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        a_socket.settimeout(20.0)
+
+        location = (ip, server_port)
+        result_of_check = a_socket.connect_ex(location)
+
+        a_socket.close()
+
+        if result_of_check == 0:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def check_server_conn(server_port):
+        a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        a_socket.settimeout(10.0)
+        ip = '127.0.0.1'
+
+        location = (ip, server_port)
+        result_of_check = a_socket.connect_ex(location)
+        a_socket.close()
+
+        if result_of_check == 0:
+            return True
+        else:
             return False
 
     @staticmethod
@@ -113,7 +145,7 @@ class Helpers:
         esc = False  # whether an escape character was encountered
         stch = None  # if we're dealing with a quote, save the quote type here.  Nested quotes to be dealt with by the command
         for c in cmd_in: # for character in string
-            if np == True: # if set, begin a new argument and increment the command index.  Continue the loop.
+            if np: # if set, begin a new argument and increment the command index.  Continue the loop.
                 if c == ' ':
                     continue
                 else:
@@ -128,52 +160,35 @@ class Helpers:
             else:
                 if c == '\\': # if the current character is an escape character, set the esc flag and continue to next loop
                     esc = True
-                elif c == ' ' and stch is None: # if we encounter a space and are not dealing with a quote, set the new argument flag and continue to next loop
+                elif c == ' ' and stch is None: # if we encounter a space and are not dealing with a quote,
+                                                # set the new argument flag and continue to next loop
                     np = True
                 elif c == stch: # if we encounter the character that matches our start quote, end the quote and continue to next loop
                     stch = None
-                elif stch is None and (c in Helpers.allowed_quotes): # if we're not in the middle of a quote and we get a quotable character, start a quote and proceed to the next loop
+                elif stch is None and (c in Helpers.allowed_quotes): # if we're not in the middle of a quote and we get a quotable character,
+                                                                     # start a quote and proceed to the next loop
                     stch = c
                 else: # else, just store the character in the current arg
                     cmd_out[ci] += c
         return cmd_out
 
-    def check_for_old_logs(self, db_helper):
-        servers = db_helper.get_all_defined_servers()
-        for server in servers:
-            logs_path = os.path.split(server['log_path'])[0]
-            latest_log_file = os.path.split(server['log_path'])[1]
-            logs_delete_after = int(server['logs_delete_after'])
-            if logs_delete_after == 0:
-                continue
-
-            log_files = list(filter(
-                lambda val: val != latest_log_file,
-                os.listdir(logs_path)
-            ))
-            for log_file in log_files:
-                log_file_path = os.path.join(logs_path, log_file)
-                if self.check_file_exists(log_file_path) and \
-                        self.is_file_older_than_x_days(log_file_path, logs_delete_after):
-                    os.remove(log_file_path)
-
     def get_setting(self, key, default_return=False):
 
         try:
-            with open(self.settings_file, "r") as f:
+            with open(self.settings_file, "r", encoding='utf-8') as f:
                 data = json.load(f)
 
             if key in data.keys():
                 return data.get(key)
 
             else:
-                logger.error("Config File Error: setting {} does not exist".format(key))
-                console.error("Config File Error: setting {} does not exist".format(key))
+                logger.error(f"Config File Error: setting {key} does not exist")
+                console.error(f"Config File Error: setting {key} does not exist")
                 return default_return
 
         except Exception as e:
-            logger.critical("Config File Error: Unable to read {} due to {}".format(self.settings_file, e))
-            console.critical("Config File Error: Unable to read {} due to {}".format(self.settings_file, e))
+            logger.critical(f"Config File Error: Unable to read {self.settings_file} due to {e}")
+            console.critical(f"Config File Error: Unable to read {self.settings_file} due to {e}")
 
         return default_return
 
@@ -192,11 +207,11 @@ class Helpers:
     def get_version(self):
         version_data = {}
         try:
-            with open(os.path.join(self.config_dir, 'version.json'), 'r') as f:
+            with open(os.path.join(self.config_dir, 'version.json'), 'r', encoding='utf-8') as f:
                 version_data = json.load(f)
 
         except Exception as e:
-            console.critical("Unable to get version data!")
+            console.critical(f"Unable to get version data! \n{e}")
 
         return version_data
 
@@ -210,7 +225,7 @@ class Helpers:
             try:
                 data = json.loads(r.content)
             except Exception as e:
-                logger.error("Failed to load json content with error: {} ".format(e))
+                logger.error(f"Failed to load json content with error: {e}")
 
         return data
 
@@ -218,22 +233,14 @@ class Helpers:
     def get_version_string(self):
 
         version_data = self.get_version()
+        major = version_data.get('major', '?')
+        minor = version_data.get('minor', '?')
+        sub = version_data.get('sub', '?')
+        meta = version_data.get('meta', '?')
+
         # set some defaults if we don't get version_data from our helper
-        version = "{}.{}.{}-{}".format(version_data.get('major', '?'),
-                                    version_data.get('minor', '?'),
-                                    version_data.get('sub', '?'),
-                                    version_data.get('meta', '?'))
+        version = f"{major}.{minor}.{sub}-{meta}"
         return str(version)
-
-    def do_exit(self):
-        exit_file = os.path.join(self.root_dir, 'exit.txt')
-        try:
-            open(exit_file, 'a').close()
-
-        except Exception as e:
-            logger.critical("Unable to create exit file!")
-            console.critical("Unable to create exit file!")
-            sys.exit(1)
 
     def encode_pass(self, password):
         return self.passhasher.hash(password)
@@ -243,7 +250,6 @@ class Helpers:
             self.passhasher.verify(currenthash, password)
             return True
         except:
-            pass
             return False
 
     def log_colors(self, line):
@@ -256,15 +262,18 @@ class Helpers:
             (r'(\[.+?/INFO\])', r'<span class="mc-log-info">\1</span>'),
             (r'(\[.+?/WARN\])', r'<span class="mc-log-warn">\1</span>'),
             (r'(\[.+?/ERROR\])', r'<span class="mc-log-error">\1</span>'),
+            (r'(\[.+?/FATAL\])', r'<span class="mc-log-fatal">\1</span>'),
             (r'(\w+?\[/\d+?\.\d+?\.\d+?\.\d+?\:\d+?\])', r'<span class="mc-log-keyword">\1</span>'),
             (r'\[(\d\d:\d\d:\d\d)\]', r'<span class="mc-log-time">[\1]</span>'),
             (r'(\[.+? INFO\])', r'<span class="mc-log-info">\1</span>'),
             (r'(\[.+? WARN\])', r'<span class="mc-log-warn">\1</span>'),
-            (r'(\[.+? ERROR\])', r'<span class="mc-log-error">\1</span>')
+            (r'(\[.+? ERROR\])', r'<span class="mc-log-error">\1</span>'),
+            (r'(\[.+? FATAL\])', r'<span class="mc-log-fatal">\1</span>')
         ]
 
         # highlight users keywords
         for keyword in user_keywords:
+            # pylint: disable=consider-using-f-string
             search_replace = (r'({})'.format(keyword), r'<span class="mc-log-keyword">\1</span>')
             replacements.append(search_replace)
 
@@ -273,10 +282,23 @@ class Helpers:
 
         return line
 
+
+    def validate_traversal(self, base_path, filename):
+        logger.debug(f"Validating traversal (\"{base_path}\", \"{filename}\")")
+        base = pathlib.Path(base_path).resolve()
+        file = pathlib.Path(filename)
+        fileabs = base.joinpath(file).resolve()
+        cp = pathlib.Path(os.path.commonpath([base, fileabs]))
+        if base == cp:
+            return fileabs
+        else:
+            raise ValueError("Path traversal detected")
+
+
     def tail_file(self, file_name, number_lines=20):
         if not self.check_file_exists(file_name):
-            logger.warning("Unable to find file to tail: {}".format(file_name))
-            return ["Unable to find file to tail: {}".format(file_name)]
+            logger.warning(f"Unable to find file to tail: {file_name}")
+            return [f"Unable to find file to tail: {file_name}"]
 
         # length of lines is X char here
         avg_line_length = 255
@@ -285,7 +307,7 @@ class Helpers:
         line_buffer = number_lines * avg_line_length
 
         # open our file
-        with open(file_name, 'r') as f:
+        with open(file_name, 'r', encoding='utf-8') as f:
 
             # seek
             f.seek(0, 2)
@@ -301,8 +323,7 @@ class Helpers:
                 lines = f.readlines()
 
             except Exception as e:
-                logger.warning('Unable to read a line in the file:{} - due to error: {}'.format(file_name, e))
-                pass
+                logger.warning(f'Unable to read a line in the file:{file_name} - due to error: {e}')
 
         # now we are done getting the lines, let's return it
         return lines
@@ -311,15 +332,27 @@ class Helpers:
     def check_writeable(path: str):
         filename = os.path.join(path, "tempfile.txt")
         try:
-            fp = open(filename, "w").close()
+            open(filename, "w", encoding='utf-8').close()
             os.remove(filename)
 
-            logger.info("{} is writable".format(filename))
+            logger.info(f"{filename} is writable")
             return True
 
         except Exception as e:
-            logger.critical("Unable to write to {} - Error: {}".format(path, e))
+            logger.critical(f"Unable to write to {path} - Error: {e}")
             return False
+
+    def checkRoot(self):
+        if self.is_os_windows():
+            if ctypes.windll.shell32.IsUserAnAdmin() == 1:
+                return True
+            else:
+                return False
+        else:
+            if os.geteuid() == 0:
+                return True
+            else:
+                return False
 
     def unzipFile(self, zip_path):
         new_dir_list = zip_path.split('/')
@@ -336,24 +369,17 @@ class Helpers:
             try:
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall(tempDir)
-                for i in range(len(zip_ref.filelist)):
+                for i in enumerate(zip_ref.filelist):
                     if len(zip_ref.filelist) > 1 or not zip_ref.filelist[i].filename.endswith('/'):
-                        test = zip_ref.filelist[i].filename
                         break
-                path_list = test.split('/')
-                root_path = path_list[0]
-                '''
-                if len(path_list) > 1:
-                    for i in range(len(path_list) - 2):
-                        root_path = os.path.join(root_path, path_list[i + 1])
-'''
+
                 full_root_path = tempDir
 
                 for item in os.listdir(full_root_path):
                     try:
-                        shutil.move(os.path.join(full_root_path, item), os.path.join(new_dir, item))
+                        file_helper.move_dir(os.path.join(full_root_path, item), os.path.join(new_dir, item))
                     except Exception as ex:
-                        logger.error('ERROR IN ZIP IMPORT: {}'.format(ex))
+                        logger.error(f'ERROR IN ZIP IMPORT: {ex}')
             except Exception as ex:
                 print(ex)
         else:
@@ -370,27 +396,28 @@ class Helpers:
 
         # if not writeable, let's bomb out
         if not writeable:
-            logger.critical("Unable to write to {} directory!".format(self.root_dir))
+            logger.critical(f"Unable to write to {self.root_dir} directory!")
             sys.exit(1)
 
         # ensure the log directory is there
         try:
-            os.makedirs(os.path.join(self.root_dir, 'logs'))
+            with suppress(FileExistsError):
+                os.makedirs(os.path.join(self.root_dir, 'logs'))
         except Exception as e:
-            console.error("Failed to make logs directory with error: {} ".format(e))
+            console.error(f"Failed to make logs directory with error: {e} ")
 
         # ensure the log file is there
         try:
-            open(log_file, 'a').close()
+            open(log_file, 'a', encoding='utf-8').close()
         except Exception as e:
-            console.critical("Unable to open log file!")
+            console.critical(f"Unable to open log file! {e}")
             sys.exit(1)
 
         # del any old session.lock file as this is a new session
         try:
             os.remove(session_log_file)
         except Exception as e:
-            logger.error("Deleting Session.lock failed with error: {} ".format(e))
+            logger.error(f"Deleting Session.lock failed with error: {e}")
 
     @staticmethod
     def get_time_as_string():
@@ -399,10 +426,10 @@ class Helpers:
 
     @staticmethod
     def check_file_exists(path: str):
-        logger.debug('Looking for path: {}'.format(path))
+        logger.debug(f'Looking for path: {path}')
 
         if os.path.exists(path) and os.path.isfile(path):
-            logger.debug('Found path: {}'.format(path))
+            logger.debug(f'Found path: {path}')
             return True
         else:
             return False
@@ -411,18 +438,20 @@ class Helpers:
     def human_readable_file_size(num: int, suffix='B'):
         for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
             if abs(num) < 1024.0:
+            # pylint: disable=consider-using-f-string
                 return "%3.1f%s%s" % (num, unit, suffix)
             num /= 1024.0
+            # pylint: disable=consider-using-f-string
         return "%.1f%s%s" % (num, 'Y', suffix)
 
     @staticmethod
     def check_path_exists(path: str):
         if not path:
             return False
-        logger.debug('Looking for path: {}'.format(path))
+        logger.debug(f'Looking for path: {path}')
 
         if os.path.exists(path):
-            logger.debug('Found path: {}'.format(path))
+            logger.debug(f'Found path: {path}')
             return True
         else:
             return False
@@ -434,17 +463,17 @@ class Helpers:
 
         if os.path.exists(path) and os.path.isfile(path):
             try:
-                with open(path, 'r') as f:
+                with open(path, 'r', encoding='utf-8') as f:
                     for line in (f.readlines() [-lines:]):
                         contents = contents + line
 
                 return contents
 
             except Exception as e:
-                logger.error("Unable to read file: {}. \n Error: ".format(path, e))
+                logger.error(f"Unable to read file: {path}. \n Error: {e}")
                 return False
         else:
-            logger.error("Unable to read file: {}. File not found, or isn't a file.".format(path))
+            logger.error(f"Unable to read file: {path}. File not found, or isn't a file.")
             return False
 
     def create_session_file(self, ignore=False):
@@ -459,13 +488,19 @@ class Helpers:
                 data = json.loads(file_data)
                 pid = data.get('pid')
                 started = data.get('started')
-                console.critical("Another Crafty Controller agent seems to be running...\npid: {} \nstarted on: {}".format(pid, started))
-            except Exception as e:
-                logger.error("Failed to locate existing session.lock with error: {} ".format(e))
-                console.error("Failed to locate existing session.lock with error: {} ".format(e))
-                
+                if psutil.pid_exists(pid):
+                    console.critical(f"Another Crafty Controller agent seems to be running...\npid: {pid} \nstarted on: {started}")
+                    logger.critical("Found running crafty process. Exiting.")
+                    sys.exit(1)
+                else:
+                    logger.info("No process found for pid. Assuming crafty crashed. Deleting stale session.lock")
+                    os.remove(self.session_file)
 
-            sys.exit(1)
+            except Exception as e:
+                logger.error(f"Failed to locate existing session.lock with error: {e} ")
+                console.error(f"Failed to locate existing session.lock with error: {e} ")
+
+                sys.exit(1)
 
         pid = os.getpid()
         now = datetime.now()
@@ -474,7 +509,7 @@ class Helpers:
             'pid': pid,
             'started': now.strftime("%d-%m-%Y, %H:%M:%S")
             }
-        with open(self.session_file, 'w') as f:
+        with open(self.session_file, 'w', encoding='utf-8') as f:
             json.dump(session_data, f, indent=True)
 
     # because this is a recursive function, we will return bytes, and set human readable later
@@ -501,14 +536,14 @@ class Helpers:
         return sizes
 
     @staticmethod
-    def base64_encode_string(string: str):
-        s_bytes = str(string).encode('utf-8')
+    def base64_encode_string(fun_str: str):
+        s_bytes = str(fun_str).encode('utf-8')
         b64_bytes = base64.encodebytes(s_bytes)
         return b64_bytes.decode('utf-8')
 
     @staticmethod
-    def base64_decode_string(string: str):
-        s_bytes = str(string).encode('utf-8')
+    def base64_decode_string(fun_str: str):
+        s_bytes = str(fun_str).encode('utf-8')
         b64_bytes = base64.decodebytes(s_bytes)
         return b64_bytes.decode("utf-8")
 
@@ -528,7 +563,7 @@ class Helpers:
 
         try:
             os.makedirs(path)
-            logger.debug("Created Directory : {}".format(path))
+            logger.debug(f"Created Directory : {path}")
 
         # directory already exists - non-blocking error
         except FileExistsError:
@@ -545,8 +580,8 @@ class Helpers:
         cert_file = os.path.join(cert_dir, 'commander.cert.pem')
         key_file = os.path.join(cert_dir, 'commander.key.pem')
 
-        logger.info("SSL Cert File is set to: {}".format(cert_file))
-        logger.info("SSL Key File is set to: {}".format(key_file))
+        logger.info(f"SSL Cert File is set to: {cert_file}")
+        logger.info(f"SSL Key File is set to: {key_file}")
 
         # don't create new files if we already have them.
         if self.check_file_exists(cert_file) and self.check_file_exists(key_file):
@@ -577,11 +612,11 @@ class Helpers:
         cert.set_pubkey(k)
         cert.sign(k, 'sha256')
 
-        f = open(cert_file, "w")
+        f = open(cert_file, "w", encoding='utf-8')
         f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode())
         f.close()
 
-        f = open(key_file, "w")
+        f = open(key_file, "w", encoding='utf-8')
         f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, k).decode())
         f.close()
 
@@ -601,12 +636,26 @@ class Helpers:
         else:
             return False
 
+    @staticmethod
+    def wtol_path(w_path):
+        l_path = w_path.replace('\\', '/')
+        return l_path
+
+    @staticmethod
+    def ltow_path(l_path):
+        w_path = l_path.replace('/', '\\')
+        return w_path
+
+    @staticmethod
+    def get_os_understandable_path(path):
+        return os.path.normpath(path)
+
     def find_default_password(self):
         default_file = os.path.join(self.root_dir, "default.json")
         data = {}
 
         if self.check_file_exists(default_file):
-            with open(default_file, 'r') as f:
+            with open(default_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
 
             del_json = helper.get_setting('delete_default_json')
@@ -618,29 +667,159 @@ class Helpers:
 
     @staticmethod
     def generate_tree(folder, output=""):
-        for raw_filename in os.listdir(folder):
+        dir_list = []
+        unsorted_files = []
+        file_list = os.listdir(folder)
+        for item in file_list:
+            if os.path.isdir(os.path.join(folder, item)):
+                dir_list.append(item)
+            else:
+                unsorted_files.append(item)
+        file_list = sorted(dir_list, key=str.casefold) + sorted(unsorted_files, key=str.casefold)
+        for raw_filename in file_list:
             filename = html.escape(raw_filename)
+            rel = os.path.join(folder, raw_filename)
+            dpath = os.path.join(folder, filename)
+            if os.path.isdir(rel):
+                output += \
+                    f"""<li class="tree-item" data-path="{dpath}">
+                    \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
+                    <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {filename}
+                      </span>
+                    </div><li>
+                    \n"""\
+
+            else:
+                if filename != "crafty_managed.txt":
+                    output += f"""<li
+                    class="tree-nested d-block tree-ctx-item tree-file tree-item"
+                    data-path="{dpath}"
+                    data-name="{filename}"
+                    onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{filename}</li>"""
+        return output
+
+    @staticmethod
+    def generate_dir(folder, output=""):
+        dir_list = []
+        unsorted_files = []
+        file_list = os.listdir(folder)
+        for item in file_list:
+            if os.path.isdir(os.path.join(folder, item)):
+                dir_list.append(item)
+            else:
+                unsorted_files.append(item)
+        file_list = sorted(dir_list, key=str.casefold) + sorted(unsorted_files, key=str.casefold)
+        output += \
+    f"""<ul class="tree-nested d-block" id="{folder}ul">"""\
+
+        for raw_filename in file_list:
+            filename = html.escape(raw_filename)
+            dpath = os.path.join(folder, filename)
             rel = os.path.join(folder, raw_filename)
             if os.path.isdir(rel):
                 output += \
-                    """<li class="tree-item" data-path="{}">
-                    \n<div data-path="{}" data-name="{}" class="tree-caret tree-ctx-item tree-folder">
+                    f"""<li class="tree-item" data-path="{dpath}">
+                    \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
+                    <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
                       <i class="far fa-folder"></i>
                       <i class="far fa-folder-open"></i>
-                      {}
-                    </div>
-                    \n<ul class="tree-nested">"""\
-                        .format(os.path.join(folder, filename), os.path.join(folder, filename), filename, filename)
+                      {filename}
+                      </span>
+                    </div><li>"""\
 
-                output += helper.generate_tree(rel)
-                output += '</ul>\n</li>'
             else:
-                output += """<li
-                class="tree-item tree-ctx-item tree-file"
-                data-path="{}"
-                data-name="{}"
-                onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{}</li>""".format(os.path.join(folder, filename), filename, filename)
+                if filename != "crafty_managed.txt":
+                    output += f"""<li
+                    class="tree-nested d-block tree-ctx-item tree-file tree-item"
+                    data-path="{dpath}"
+                    data-name="{filename}"
+                    onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{filename}</li>"""
+        output += '</ul>\n'
         return output
+
+    @staticmethod
+    def generate_zip_tree(folder, output=""):
+        file_list = os.listdir(folder)
+        file_list = sorted(file_list, key=str.casefold)
+        output += \
+    f"""<ul class="tree-nested d-block" id="{folder}ul">"""\
+
+        for raw_filename in file_list:
+            filename = html.escape(raw_filename)
+            rel = os.path.join(folder, raw_filename)
+            dpath = os.path.join(folder, filename)
+            if os.path.isdir(rel):
+                output += \
+                    f"""<li class="tree-item" data-path="{dpath}">
+                    \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
+                    <input type="radio" name="root_path" value="{dpath}">
+                    <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {filename}
+                      </span>
+                    </input></div><li>
+                    \n"""\
+
+        return output
+
+    @staticmethod
+    def generate_zip_dir(folder, output=""):
+        file_list = os.listdir(folder)
+        file_list = sorted(file_list, key=str.casefold)
+        output += \
+    f"""<ul class="tree-nested d-block" id="{folder}ul">"""\
+
+        for raw_filename in file_list:
+            filename = html.escape(raw_filename)
+            rel = os.path.join(folder, raw_filename)
+            dpath = os.path.join(folder, filename)
+            if os.path.isdir(rel):
+                output += \
+                    f"""<li class="tree-item" data-path="{dpath}">
+                    \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
+                    <input type="radio" name="root_path" value="{dpath}">
+                    <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
+                      <i class="far fa-folder"></i>
+                      <i class="far fa-folder-open"></i>
+                      {filename}
+                      </span>
+                    </input></div><li>"""\
+
+        return output
+
+    @staticmethod
+    def unzipServer(zip_path, user_id):
+        if helper.check_file_perms(zip_path):
+            tempDir = tempfile.mkdtemp()
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                #extracts archive to temp directory
+                zip_ref.extractall(tempDir)
+            if user_id:
+                websocket_helper.broadcast_user(user_id, 'send_temp_path',{
+                'path': tempDir
+                })
+    @staticmethod
+    def backup_select(path, user_id):
+        if user_id:
+            websocket_helper.broadcast_user(user_id, 'send_temp_path',{
+            'path': path
+        })
+
+    @staticmethod
+    def unzip_backup_archive(backup_path, zip_name):
+        zip_path = os.path.join(backup_path, zip_name)
+        if helper.check_file_perms(zip_path):
+            tempDir = tempfile.mkdtemp()
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                #extracts archive to temp directory
+                zip_ref.extractall(tempDir)
+            return tempDir
+        else:
+            return False
 
     @staticmethod
     def in_path(parent_path, child_path):
@@ -648,7 +827,9 @@ class Helpers:
         parent_path = os.path.abspath(parent_path)
         child_path = os.path.abspath(child_path)
 
-        # Compare the common path of the parent and child path with the common path of just the parent path. Using the commonpath method on just the parent path will regularise the path name in the same way as the comparison that deals with both paths, removing any trailing path separator
+        # Compare the common path of the parent and child path with the common path of just the parent path.
+        # Using the commonpath method on just the parent path will regularise the path name in the same way
+        # as the comparison that deals with both paths, removing any trailing path separator
         return os.path.commonpath([parent_path]) == os.path.commonpath([parent_path, child_path])
 
     @staticmethod
@@ -658,7 +839,7 @@ class Helpers:
     @staticmethod
     def copy_files(source, dest):
         if os.path.isfile(source):
-            shutil.copyfile(source, dest)
+            file_helper.copy_file(source, dest)
             logger.info("Copying jar %s to %s", source, dest)
         else:
             logger.info("Source jar does not exist.")
@@ -687,5 +868,14 @@ class Helpers:
         if text.startswith(prefix):
             return text[len(prefix):]
         return text
+
+    @staticmethod
+    def getLangPage(text):
+        lang = text.split("_")[0]
+        region = text.split("_")[1]
+        if region == 'EN':
+            return 'en'
+        else:
+            return lang+"-"+region
 
 helper = Helpers()

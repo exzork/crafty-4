@@ -1,32 +1,24 @@
-import os
-import sys
 import logging
 import datetime
 
-from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
-from app.classes.shared.main_models import db_helper
 from app.classes.models.users import Users, users_helper
-from app.classes.models.servers import Servers, servers_helper
+from app.classes.models.servers import Servers
+from app.classes.models.server_permissions import server_permissions
+from app.classes.shared.helpers import helper
+from app.classes.shared.main_models import db_helper
 from app.classes.web.websocket_helper import websocket_helper
 
+try:
+    from peewee import SqliteDatabase, Model, ForeignKeyField, CharField, IntegerField, DateTimeField, FloatField, TextField, AutoField, BooleanField
+    from playhouse.shortcuts import model_to_dict
+
+except ModuleNotFoundError as e:
+    helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger('peewee')
 peewee_logger.setLevel(logging.INFO)
-
-try:
-    from peewee import *
-    from playhouse.shortcuts import model_to_dict
-    from enum import Enum
-    import yaml
-
-except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name))
-    sys.exit(1)
-
-database = SqliteDatabase(helper.db_path, pragmas={
+database = SqliteDatabase(helper.db_path, pragmas = {
     'journal_mode': 'wal',
     'cache_size': -1024 * 10})
 
@@ -112,6 +104,10 @@ class Schedules(Model):
     start_time = CharField(null=True)
     command = CharField(null=True)
     comment = CharField()
+    one_time = BooleanField(default=False)
+    cron_string = CharField(default="")
+    parent = IntegerField(null=True)
+    delay = IntegerField(default=0)
 
     class Meta:
         table_name = 'schedules'
@@ -122,22 +118,22 @@ class Schedules(Model):
 #                                   Backups Class
 #************************************************************************************************
 class Backups(Model):
-    directories = CharField(null=True)
+    excluded_dirs = CharField(null=True)
     max_backups = IntegerField()
     server_id = ForeignKeyField(Servers, backref='backups_server')
-    schedule_id = ForeignKeyField(Schedules, backref='backups_schedule')
-
+    compress = BooleanField(default=False)
     class Meta:
         table_name = 'backups'
         database = database
 
 class helpers_management:
-       
+
     #************************************************************************************************
     #                                   Host_Stats Methods
     #************************************************************************************************
     @staticmethod
     def get_latest_hosts_stats():
+        #pylint: disable=no-member
         query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()
         return model_to_dict(query)
 
@@ -156,16 +152,16 @@ class helpers_management:
     @staticmethod
     def get_unactioned_commands():
         query = Commands.select().where(Commands.executed == 0)
-        return db_helper.return_rows(query)
+        return query
 
     @staticmethod
     def mark_command_complete(command_id=None):
         if command_id is not None:
-            logger.debug("Marking Command {} completed".format(command_id))
+            logger.debug(f"Marking Command {command_id} completed")
             Commands.update({
                 Commands.executed: True
             }).where(Commands.command_id == command_id).execute()
-            
+
     #************************************************************************************************
     #                                   Audit_Log Methods
     #************************************************************************************************
@@ -173,15 +169,17 @@ class helpers_management:
     def get_actity_log():
         q = Audit_Log.select()
         return db_helper.return_db_rows(q)
-    
+
     @staticmethod
     def add_to_audit_log(user_id, log_msg, server_id=None, source_ip=None):
-        logger.debug("Adding to audit log User:{} - Message: {} ".format(user_id, log_msg))
+        logger.debug(f"Adding to audit log User:{user_id} - Message: {log_msg} ")
         user_data = users_helper.get_user(user_id)
 
-        audit_msg = "{} {}".format(str(user_data['username']).capitalize(), log_msg)
+        audit_msg = f"{str(user_data['username']).capitalize()} {log_msg}"
 
-        websocket_helper.broadcast('notification', audit_msg)
+        server_users = server_permissions.get_server_user_list(server_id)
+        for user in server_users:
+            websocket_helper.broadcast_user(user,'notification', audit_msg)
 
         Audit_Log.insert({
             Audit_Log.user_name: user_data['username'],
@@ -190,6 +188,17 @@ class helpers_management:
             Audit_Log.log_msg: audit_msg,
             Audit_Log.source_ip: source_ip
         }).execute()
+        #deletes records when they're more than 100
+        ordered = Audit_Log.select().order_by(+Audit_Log.created)
+        for item in ordered:
+            if not helper.get_setting('max_audit_entries'):
+                max_entries = 300
+            else:
+                max_entries = helper.get_setting('max_audit_entries')
+            if Audit_Log.select().count() > max_entries:
+                Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
+            else:
+                return
 
     @staticmethod
     def add_to_audit_log_raw(user_name, user_id, server_id, log_msg, source_ip):
@@ -200,12 +209,35 @@ class helpers_management:
             Audit_Log.log_msg: log_msg,
             Audit_Log.source_ip: source_ip
         }).execute()
-
+        #deletes records when they're more than 100
+        ordered = Audit_Log.select().order_by(+Audit_Log.created)
+        for item in ordered:
+            #configurable through app/config/config.json
+            if not helper.get_setting('max_audit_entries'):
+                max_entries = 300
+            else:
+                max_entries = helper.get_setting('max_audit_entries')
+            if Audit_Log.select().count() > max_entries:
+                Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
+            else:
+                return
     #************************************************************************************************
     #                                  Schedules Methods
     #************************************************************************************************
     @staticmethod
-    def create_scheduled_task(server_id, action, interval, interval_type, start_time, command, comment=None, enabled=True):
+    def create_scheduled_task(
+        server_id,
+        action,
+        interval,
+        interval_type,
+        start_time,
+        command,
+        comment=None,
+        enabled=True,
+        one_time=False,
+        cron_string='* * * * *',
+        parent=None,
+        delay=0):
         sch_id = Schedules.insert({
             Schedules.server_id: server_id,
             Schedules.action: action,
@@ -214,7 +246,12 @@ class helpers_management:
             Schedules.interval_type: interval_type,
             Schedules.start_time: start_time,
             Schedules.command: command,
-            Schedules.comment: comment
+            Schedules.comment: comment,
+            Schedules.one_time: one_time,
+            Schedules.cron_string: cron_string,
+            Schedules.parent: parent,
+            Schedules.delay: delay
+
         }).execute()
         return sch_id
 
@@ -228,12 +265,28 @@ class helpers_management:
         Schedules.update(updates).where(Schedules.schedule_id == schedule_id).execute()
 
     @staticmethod
+    def delete_scheduled_task_by_server(server_id):
+        Schedules.delete().where(Schedules.server_id == int(server_id)).execute()
+
+    @staticmethod
     def get_scheduled_task(schedule_id):
-        return model_to_dict(Schedules.get(Schedules.schedule_id == schedule_id)).execute()
+        return model_to_dict(Schedules.get(Schedules.schedule_id == schedule_id))
+
+    @staticmethod
+    def get_scheduled_task_model(schedule_id):
+        return Schedules.select().where(Schedules.schedule_id == schedule_id).get()
 
     @staticmethod
     def get_schedules_by_server(server_id):
         return Schedules.select().where(Schedules.server_id == server_id).execute()
+
+    @staticmethod
+    def get_child_schedules_by_server(schedule_id, server_id):
+        return Schedules.select().where(Schedules.server_id == server_id, Schedules.parent == schedule_id).execute()
+
+    @staticmethod
+    def get_child_schedules(schedule_id):
+        return Schedules.select().where(Schedules.parent == schedule_id)
 
     @staticmethod
     def get_schedules_all():
@@ -241,6 +294,7 @@ class helpers_management:
 
     @staticmethod
     def get_schedules_enabled():
+        #pylint: disable=singleton-comparison
         return Schedules.select().where(Schedules.enabled == True).execute()
 
     #************************************************************************************************
@@ -249,51 +303,44 @@ class helpers_management:
     @staticmethod
     def get_backup_config(server_id):
         try:
-            row = Backups.select().where(Backups.server_id == server_id).join(Schedules).join(Servers)[0]
+            row = Backups.select().where(Backups.server_id == server_id).join(Servers)[0]
             conf = {
                 "backup_path": row.server_id.backup_path,
-                "directories": row.directories,
+                "excluded_dirs": row.excluded_dirs,
                 "max_backups": row.max_backups,
-                "auto_enabled": row.schedule_id.enabled,
-                "server_id": row.server_id.server_id
+                "server_id": row.server_id.server_id,
+                "compress": row.compress
             }
         except IndexError:
             conf = {
                 "backup_path": None,
-                "directories": None,
+                "excluded_dirs": None,
                 "max_backups": 0,
-                "auto_enabled": True,
-                "server_id": server_id
+                "server_id": server_id,
+                "compress": False,
             }
         return conf
 
     @staticmethod
-    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, auto_enabled: bool = True):
-        logger.debug("Updating server {} backup config with {}".format(server_id, locals()))
-        try:
-            row = Backups.select().where(Backups.server_id == server_id).join(Schedules).join(Servers)[0]
+    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, excluded_dirs: list = None, compress: bool = False):
+        logger.debug(f"Updating server {server_id} backup config with {locals()}")
+        if Backups.select().where(Backups.server_id == server_id).count() != 0:
             new_row = False
             conf = {}
-            schd = {}
-        except IndexError:
+        else:
             conf = {
-                "directories": None,
+                "excluded_dirs": None,
                 "max_backups": 0,
-                "server_id":   server_id
-            }
-            schd = {
-                "enabled":    True,
-                "action":     "backup_server",
-                "interval_type": "days",
-                "interval":   1,
-                "start_time": "00:00",
-                "server_id":  server_id,
-                "comment":    "Default backup job"
+                "server_id":   server_id,
+                "compress": False
             }
             new_row = True
         if max_backups is not None:
             conf['max_backups'] = max_backups
-        schd['enabled'] = bool(auto_enabled)
+        if excluded_dirs is not None:
+            dirs_to_exclude = ",".join(excluded_dirs)
+            conf['excluded_dirs'] = dirs_to_exclude
+        conf['compress'] = compress
         if not new_row:
             with database.atomic():
                 if backup_path is not None:
@@ -301,17 +348,47 @@ class helpers_management:
                 else:
                     u1 = 0
                 u2 = Backups.update(conf).where(Backups.server_id == server_id).execute()
-                u3 = Schedules.update(schd).where(Schedules.schedule_id == row.schedule_id).execute()
-            logger.debug("Updating existing backup record.  {}+{}+{} rows affected".format(u1, u2, u3))
+            logger.debug(f"Updating existing backup record.  {u1}+{u2} rows affected")
         else:
             with database.atomic():
                 conf["server_id"] = server_id
                 if backup_path is not None:
-                    u = Servers.update(backup_path=backup_path).where(Servers.server_id == server_id)
-                s = Schedules.create(**schd)
-                conf['schedule_id'] = s.schedule_id
-                b = Backups.create(**conf)
+                    Servers.update(backup_path=backup_path).where(Servers.server_id == server_id)
+                Backups.create(**conf)
             logger.debug("Creating new backup record.")
+
+    def get_excluded_backup_dirs(self, server_id: int):
+        excluded_dirs = self.get_backup_config(server_id)['excluded_dirs']
+        if excluded_dirs is not None and excluded_dirs != "":
+            dir_list = excluded_dirs.split(",")
+        else:
+            dir_list = []
+        return dir_list
+
+    def add_excluded_backup_dir(self, server_id: int, dir_to_add: str):
+        dir_list = self.get_excluded_backup_dirs()
+        if dir_to_add not in dir_list:
+            dir_list.append(dir_to_add)
+            excluded_dirs = ",".join(dir_list)
+            self.set_backup_config(server_id=server_id, excluded_dirs=excluded_dirs)
+        else:
+            logger.debug(f"Not adding {dir_to_add} to excluded directories - already in the excluded directory list for server ID {server_id}")
+
+    def del_excluded_backup_dir(self, server_id: int, dir_to_del: str):
+        dir_list = self.get_excluded_backup_dirs()
+        if dir_to_del in dir_list:
+            dir_list.remove(dir_to_del)
+            excluded_dirs = ",".join(dir_list)
+            self.set_backup_config(server_id=server_id, excluded_dirs=excluded_dirs)
+        else:
+            logger.debug(f"Not removing {dir_to_del} from excluded directories - not in the excluded directory list for server ID {server_id}")
+
+    @staticmethod
+    def clear_unexecuted_commands():
+        Commands.update({
+            Commands.executed: True
+        #pylint: disable=singleton-comparison
+        }).where(Commands.executed == False).execute()
 
 
 management_helper = helpers_management()

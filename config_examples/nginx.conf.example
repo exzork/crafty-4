@@ -1,0 +1,46 @@
+# Config based on https://gitlab.com/lewishill211/crafty-controller-https
+# Edits for 4.0 compatibility by pretzelDewey - https://gitlab.com/amcmanu3
+
+upstream crafty {
+    server "<DOMAIN>";
+}
+
+server {
+    listen 80;
+    server_name <DOMAIN>;
+    if ($host !~* ^<SUBDOMAIN>\.<EXAMPLE>\.com$ ) {
+        return 444;
+    }
+    rewrite ^(.*) https://$host$1 permanent;
+}
+
+server {
+    listen 443 ssl;
+    server_name <DOMAIN>;
+    if ($host !~* ^<SUBDOMAIN>\.<EXAMPLE>\.com$ ) {
+        return 444;
+    }
+    ssl_certificate <CERIFICATE_LOCATION>;
+    ssl_certificate_key <KEYFILE_LOCATION>;
+    location / {
+        #This is important for websockets
+        proxy_http_version 1.1;
+        proxy_redirect off;
+
+        #These are important for websockets. They are required for crafty to function properly.
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $http_connection;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+       
+        proxy_pass https://localhost:8443;
+       
+        proxy_buffering off;
+        client_max_body_size 0;
+        proxy_connect_timeout  3600s;
+        proxy_read_timeout  3600s;
+        proxy_send_timeout  3600s;
+        send_timeout  3600s;
+    }
+}

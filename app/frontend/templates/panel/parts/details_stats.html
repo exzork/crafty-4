@@ -1,54 +1,58 @@
 <div class="row">
-      <div class="col-sm-12 grid-margin">
-        <div class="card">
-          <div class="card-body pt-3 pb-3">
-            <div class="row">
-              <div class="col-sm-3 mr-2">
-                {% if data['server_stats']['running'] %}
-                  <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span class="text-success">{{ translate('serverStats', 'online', data['lang']) }}</span><br />
-                  <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started">{{ data['server_stats']['started'] }} ({{ translate('serverStats', 'serverTime', data['lang']) }})</span><br />
-                  <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime">{{ translate('serverStats', 'errorCalculatingUptime', data['lang']) }}</span>
-                {% else %}
-                  <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span class="text-danger">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
-                  <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span class="text-danger">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
-                  <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span class="text-danger">{{ translate('serverStats', 'offline', data['lang']) }}</span>
-                {% end %}
-              </div>
-
-              <div class="col-sm-3 mr-2">
-                <b>{{ translate('serverStats', 'cpuUsage', data['lang']) }}:</b> {{ data['server_stats']['cpu'] }}% <br />
-                <b>{{ translate('serverStats', 'memUsage', data['lang']) }}:</b> {{ data['server_stats']['mem'] }} <br />
-                {% if data['server_stats']['int_ping_results'] %}
-                <b>{{ translate('serverStats', 'players', data['lang']) }}:</b> {{ data['server_stats']['online'] }} / {{ data['server_stats']['max'] }}<br />
-                {% else %}
-                <b>{{ translate('serverStats', 'players', data['lang']) }}:</b> 0/0<br />
-                {% end %}
-              </div>
-
-              <div class="col-sm-3 mr-2">
-                {% if data['server_stats']['version'] != 'False' %}
-                  <b>{{ translate('serverStats', 'version', data['lang']) }}:</b> {{ data['server_stats']['version'] }} <br />
-                  <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> <span id="input_motd" class="input_motd">{{ data['server_stats']['desc'] }}</span> <br />
-                {% else %}
-                  <b>{{ translate('serverStats', 'version', data['lang']) }}:</b> {{ translate('serverStats', 'unableToConnect', data['lang']) }} <br />
-                  <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> {{ translate('serverStats', 'unableToConnect', data['lang']) }} <br />
-                {% end %}
-              </div>
-
-            </div>
+  <div class="col-sm-12 grid-margin">
+    <div class="card">
+      <div class="card-body pt-3 pb-3">
+        <div class="row">
+          <div class="col-sm-4 mr-2">
+            {% if data['server_stats']['running'] %}
+            <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-success">{{ translate('serverStats', 'online', data['lang']) }}</span><br />
+            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started">{{ data['server_stats']['started'] }}</span><br />
+            <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime">{{ translate('serverStats', 'errorCalculatingUptime', data['lang']) }}</span>
+            {% elif data['server_stats']['crashed'] %}
+            <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-danger"> <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}</span><br />
+            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started" class="text-danger"> <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}</span><br />
+            <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime" class="text-danger"> <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}</span>
+            {% else %}
+            <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
+            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started" class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
+            <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime" class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span>
+            {% end %}
+            <br>
+            <b>{{ translate('serverStats', 'serverTimeZone', data['lang']) }}:</b> <span class="text-info">{{ data['serverTZ'] }}</span>
           </div>
 
+          <div class="col-sm-3 mr-2">
+            <b>{{ translate('serverStats', 'cpuUsage', data['lang']) }}:</b> <span id="cpu">{{ data['server_stats']['cpu'] }}%</span> <br />
+            <b>{{ translate('serverStats', 'memUsage', data['lang']) }}:</b> <span id="mem" >{{ data['server_stats']['mem'] }}</span> <br />
+            {% if data['server_stats']['int_ping_results'] %}
+            <b>{{ translate('serverStats', 'players', data['lang']) }}:</b> <span id="players" >{{ data['server_stats']['online'] }} / {{ data['server_stats']['max'] }}</span><br />
+            {% else %}
+            <b>{{ translate('serverStats', 'players', data['lang']) }}:</b> <span id="players" >0/0</span><br />
+            {% end %}
+          </div>
+
+          <div class="col-sm-3 mr-2">
+            {% if data['server_stats']['version'] != 'False' %}
+            <b>{{ translate('serverStats', 'version', data['lang']) }}:</b> <span id="version">{{ data['server_stats']['version'] }}</span><br />
+            <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> <span id="input_motd" class="input_motd">{{ data['server_stats']['desc'] }}</span> <br />
+            {% else %}
+            <b>{{ translate('serverStats', 'version', data['lang']) }}:</b> <span id="version">{{ translate('serverStats', 'unableToConnect', data['lang']) }}</span> <br />
+            <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> <span id="input_motd" class="input_motd">{{ translate('serverStats', 'unableToConnect', data['lang']) }}</span> <br />
+            {% end %}
+            <b>Server Type: <span class="text-info">{{data['server_stats']['server_type']}}</span></b>
+
+          </div>
         </div>
       </div>
-
+    </div>
   </div>
+</div>
+
 
 <script src="/static/assets/vendors/moment/moment.min.js" type="text/javascript" charset="utf-8"></script>
-
 <script src="/static/assets/js/motd.js"></script>
 <script>
-
-  function durationToHumanizedString (duration) {
+  function durationToHumanizedString(duration) {
     duration._data.months += duration._data.years * 12;
     // 30.45833333333 = average month length, calculate with (31+28.5+31+30+31+30+31+31+30+31+30+31) / 12
     duration._data.days += duration._data.months * 30.45833333333;
@@ -62,7 +66,7 @@
 
     output = Object.entries(obj)
       .map(([type, num]) => {
-         // make them strings
+        // make them strings
         returnData = num + ' ' + type;
         // remove the s in the end if the data is -1 or 1
         if (num == -1 || num == 1)
@@ -71,27 +75,28 @@
       })
       .map((v, i, a) => // example input: [1,2,3], output: "1, 2 and 3"
         v + (i !== a.length - 1
-          ? i !== a.length -  2
+          ? i !== a.length - 2
             ? ', '
             : ' and '
           : '')).join('');
     return output;
   }
 
+  let uptime = document.querySelector('#uptime');
+  let started = document.querySelector('#started');
+  let startedUTC;
+  let startedLocal;
+  let uptimeLoop;
+
   document.body.onload = (() => {
-
     console.log('calculateTime');
-    let uptime = document.querySelector('#uptime');
-    let started = document.querySelector('#started');
-    let startedUTC;
-    let startedLocal;
 
-    if (started != null) {
-      startedUTC = '{{ data['server_stats']['started'] }}';
+    startedUTC = "{{ data['server_stats']['started'] }}";
+    if (startedUTC != 'False') {
       console.log('started utc:', startedUTC);
       startedUTC = moment.utc(startedUTC, 'YYYY-MM-DD HH:mm:ss');
 
-      let browserUTCOffset = moment().utcOffset(); // This is in minutes
+      var browserUTCOffset = moment().utcOffset(); // This is in minutes
 
       startedLocal = startedUTC.utcOffset(browserUTCOffset);
       startedLocalFormatted = startedLocal.format('YYYY-MM-DD HH:mm:ss');
@@ -102,23 +107,110 @@
     }
 
     var calculateUptime = () => {
-      var msdiff = moment()
-        .diff(startedLocal);
+      var msdiff = moment().diff(startedLocal);
       var diff = moment.duration(msdiff);
-
       uptime.textContent = durationToHumanizedString(diff);
     }
 
     if (uptime != null && started != null) {
-
       console.log('startedLocal', startedLocal)
       if (startedLocal) {
-        calculateUptime()
-        var uptimeLoop = setInterval(calculateUptime, 1000)
+        calculateUptime();
+        uptimeLoop = setInterval(calculateUptime, 1000);
       }
     }
 
     initParser('input_motd', 'input_motd');
 
+  });
+
+  function update_server_details(server) {
+    server_status = document.getElementById('status');
+    server_started = document.getElementById('started');
+    server_uptime = document.getElementById('uptime');
+    server_cpu = document.getElementById('cpu');
+    server_mem = document.getElementById('mem');
+    server_players = document.getElementById('players');
+    server_version = document.getElementById('version');
+    server_input_motd = document.getElementById('input_motd');
+
+    /* TODO Update each element */
+    if (server.running){
+        server_status.setAttribute("class", "text-success");
+        server_status.innerHTML = `{{ translate('serverStats', 'online', data['lang']) }}`;
+
+      startedUTC = server.started;
+      startedUTC = moment.utc(startedUTC, 'YYYY-MM-DD HH:mm:ss');
+      var browserUTCOffset = moment().utcOffset(); // This is in minutes
+      startedLocal = startedUTC.utcOffset(browserUTCOffset);
+      startedLocalFormatted = startedLocal.format('YYYY-MM-DD HH:mm:ss');
+      server_started.setAttribute("class", "");
+      server_started.innerHTML = startedLocalFormatted;
+      server_uptime.setAttribute("class", "");
+      if (!uptimeLoop) {
+        var calculateUptime = () => {
+          var msdiff = moment().diff(startedLocal);
+          var diff = moment.duration(msdiff);
+          uptime.textContent = durationToHumanizedString(diff);
+        }
+        uptimeLoop = setInterval(calculateUptime, 1000);
+      }
+    }
+    else
+    {
+      if (server.crashed){
+        server_status.setAttribute("class", "text-danger");
+        server_status.innerHTML = `<i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}`;
+        server_started.setAttribute("class", "text-danger");
+        server_started.innerHTML = `<i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}`;
+        clearInterval(uptimeLoop);
+        uptimeLoop = null;
+        server_uptime.setAttribute("class", "text-danger");
+        server_uptime.innerHTML = `<i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}`;
+      }else{
+      server_status.setAttribute("class", "text-warning");
+      server_status.innerHTML = `{{ translate('serverStats', 'offline', data['lang']) }}`;
+      server_started.setAttribute("class", "text-warning");
+      server_started.innerHTML = `{{ translate('serverStats', 'offline', data['lang']) }}`;
+      clearInterval(uptimeLoop);
+      uptimeLoop = null;
+      server_uptime.setAttribute("class", "text-warning");
+      server_uptime.innerHTML = `{{ translate('serverStats', 'offline', data['lang']) }}`;
+      }
+    }
+
+    server_cpu.innerHTML = server.cpu + ` %`;
+    server_mem.innerHTML = server.mem;
+
+    if (server.int_ping_results)
+    {
+      server_players.innerHTML = server.online + `/` + server.max;
+    }
+    else
+    {
+      server_players.innerHTML = `0/0`;
+    }
+
+    if (server.version)
+    {
+      server_version.innerHTML = server.version;
+      server_input_motd.innerHTML = server.desc;
+    }
+    else
+    {
+      server_version.innerHTML = `{{ translate('serverStats', 'unableToConnect', data['lang']) }}`;
+      server_input_motd.innerHTML = `{{ translate('serverStats', 'unableToConnect', data['lang']) }}`;
+    }
+
+    initParser('input_motd', 'input_motd');
+
+  }
+
+  $(window).ready(function () {
+    console.log("ready!");
+
+    //if (webSocket) {
+    webSocket.on('update_server_details', update_server_details);
+    //}
   });
 </script>

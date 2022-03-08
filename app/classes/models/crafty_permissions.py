@@ -1,28 +1,20 @@
-import os
-import sys
 import logging
-import datetime
 
 from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
-from app.classes.models.users import Users
+from app.classes.shared.permission_helper import permission_helper
+from app.classes.models.users import Users, ApiKeys
+
+try:
+    from peewee import SqliteDatabase, Model, ForeignKeyField, CharField, IntegerField, DoesNotExist
+    from enum import Enum
+
+except ModuleNotFoundError as e:
+    helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger('peewee')
 peewee_logger.setLevel(logging.INFO)
-
-try:
-    from peewee import *
-    from playhouse.shortcuts import model_to_dict
-    from enum import Enum
-    import yaml
-
-except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name))
-    sys.exit(1)
-
-database = SqliteDatabase(helper.db_path, pragmas={
+database = SqliteDatabase(helper.db_path, pragmas = {
     'journal_mode': 'wal',
     'cache_size': -1024 * 10})
 
@@ -123,7 +115,7 @@ class Permissions_Crafty:
     def get_User_Crafty(user_id):
         try:
             user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
-        except User_Crafty.DoesNotExist:
+        except DoesNotExist:
             user_crafty = User_Crafty.insert({
                 User_Crafty.user_id: user_id,
                 User_Crafty.permissions: "000",
@@ -172,7 +164,6 @@ class Permissions_Crafty:
 
     @staticmethod
     def get_crafty_limit_value(user_id, permission):
-        user_crafty = crafty_permissions.get_User_Crafty(user_id)
         quantity_list = crafty_permissions.get_permission_quantity_list(user_id)
         return quantity_list[permission]
 
@@ -190,5 +181,19 @@ class Permissions_Crafty:
         user_crafty.created_server += 1
         User_Crafty.save(user_crafty)
         return user_crafty.created_server
+
+    @staticmethod
+    def get_api_key_permissions_list(key: ApiKeys):
+        user = key.user
+        if user.superuser and key.superuser:
+            return crafty_permissions.get_permissions_list()
+        else:
+            user_permissions_mask = crafty_permissions.get_crafty_permissions_mask(user.user_id)
+            key_permissions_mask: str = key.crafty_permissions
+            permissions_mask = permission_helper.combine_masks(user_permissions_mask, key_permissions_mask)
+            permissions_list = crafty_permissions.get_permissions(permissions_mask)
+            return permissions_list
+
+
 
 crafty_permissions = Permissions_Crafty()

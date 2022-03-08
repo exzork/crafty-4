@@ -1,23 +1,31 @@
 import logging
-import tornado.web
-import bleach
 from typing import (
     Union,
     List,
-    Optional
+    Optional, Tuple, Dict, Any
 )
 
+from app.classes.models.users import ApiKeys
+from app.classes.shared.authentication import authentication
 from app.classes.shared.main_controller import Controller
+from app.classes.shared.helpers import helper
+
+try:
+    import tornado.web
+    import bleach
+
+except ModuleNotFoundError as e:
+    helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
-
 
 class BaseHandler(tornado.web.RequestHandler):
 
     nobleach = {bool, type(None)}
     redactables = ("pass", "api")
 
-    def initialize(self, controller : Controller = None, tasks_manager=None, translator=None):
+    # noinspection PyAttributeOutsideInit
+    def initialize(self, controller: Controller = None, tasks_manager=None, translator=None):
         self.controller = controller
         self.tasks_manager = tasks_manager
         self.translator = translator
@@ -28,16 +36,17 @@ class BaseHandler(tornado.web.RequestHandler):
                     self.request.remote_ip
         return remote_ip
 
-    def get_current_user(self):
-        return self.get_secure_cookie("user", max_age_days=1)
+    current_user: Optional[Tuple[Optional[ApiKeys], Dict[str, Any], Dict[str, Any]]]
+    def get_current_user(self) -> Optional[Tuple[Optional[ApiKeys], Dict[str, Any], Dict[str, Any]]]:
+        return authentication.check(self.get_cookie("token"))
 
     def autobleach(self, name, text):
         for r in self.redactables:
             if r in name:
-                logger.debug("Auto-bleaching {}: {}".format(name, "[**REDACTED**]"))
+                logger.debug(f"Auto-bleaching {name}: [**REDACTED**]")
                 break
             else:
-                logger.debug("Auto-bleaching {}: {}".format(name, text))
+                logger.debug(f"Auto-bleaching {name}: {text}")
         if type(text) in self.nobleach:
             logger.debug("Auto-bleaching - bypass type")
             return text
@@ -54,7 +63,8 @@ class BaseHandler(tornado.web.RequestHandler):
         return self.autobleach(name, arg)
 
     def get_arguments(self, name: str, strip: bool = True) -> List[str]:
-        assert isinstance(strip, bool)
+        if not isinstance(strip, bool):
+            raise AssertionError
         args = self._get_arguments(name, self.request.arguments, strip)
         args_ret = []
         for arg in args:

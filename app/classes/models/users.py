@@ -1,29 +1,21 @@
-import os
-import sys
 import logging
 import datetime
-
-from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
+from typing import Optional, Union
 
 from app.classes.models.roles import Roles, roles_helper
+from app.classes.shared.helpers import helper
+
+try:
+    from peewee import SqliteDatabase, Model, ForeignKeyField, CharField, AutoField, DateTimeField, BooleanField, CompositeKey, DoesNotExist, JOIN
+    from playhouse.shortcuts import model_to_dict
+
+except ModuleNotFoundError as e:
+    helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger('peewee')
 peewee_logger.setLevel(logging.INFO)
-
-try:
-    from peewee import *
-    from playhouse.shortcuts import model_to_dict
-    from enum import Enum
-    import yaml
-
-except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name))
-    sys.exit(1)
-
-database = SqliteDatabase(helper.db_path, pragmas={
+database = SqliteDatabase(helper.db_path, pragmas = {
     'journal_mode': 'wal',
     'cache_size': -1024 * 10})
 
@@ -38,14 +30,35 @@ class Users(Model):
     last_ip = CharField(default="")
     username = CharField(default="", unique=True, index=True)
     password = CharField(default="")
+    email = CharField(default="default@example.com")
     enabled = BooleanField(default=True)
     superuser = BooleanField(default=False)
-    api_token = CharField(default="", unique=True, index=True) # we may need to revisit this
     lang = CharField(default="en_EN")
+    support_logs = CharField(default = '')
+    valid_tokens_from = DateTimeField(default=datetime.datetime.now)
+    server_order = CharField(default="")
 
     class Meta:
         table_name = "users"
         database = database
+
+
+# ************************************************************************************************
+#                                   API Keys Class
+# ************************************************************************************************
+class ApiKeys(Model):
+    token_id = AutoField()
+    name = CharField(default='', unique=True, index=True)
+    created = DateTimeField(default=datetime.datetime.now)
+    user_id = ForeignKeyField(Users, backref='api_token', index=True)
+    server_permissions = CharField(default='00000000')
+    crafty_permissions = CharField(default='000')
+    superuser = BooleanField(default=False)
+
+    class Meta:
+        table_name = 'api_keys'
+        database = database
+
 
 #************************************************************************************************
 #                                   User Roles Class
@@ -70,7 +83,7 @@ class helper_users:
 
     @staticmethod
     def get_all_users():
-        query = Users.select()
+        query = Users.select().where(Users.username != "system")
         return query
 
     @staticmethod
@@ -79,24 +92,10 @@ class helper_users:
 
     @staticmethod
     def get_user_id_by_name(username):
-        if username == "SYSTEM":
-            return 0
         try:
             return (Users.get(Users.username == username)).user_id
         except DoesNotExist:
             return None
-
-    @staticmethod
-    def get_user_by_api_token(token: str):
-        query = Users.select().where(Users.api_token == token)
-
-        if query.exists():
-            user = model_to_dict(Users.get(Users.api_token == token))
-            # I know it should apply it without setting it but I'm just making sure
-            user = users_helper.add_user_roles(user)
-            return user
-        else:
-            return {}
 
     @staticmethod
     def user_query(user_id):
@@ -108,17 +107,18 @@ class helper_users:
         if user_id == 0:
             return {
                 'user_id': 0,
-                'created': None,
-                'last_login': None,
-                'last_update': None,
+                'created': '10/24/2019, 11:34:00',
+                'last_login': '10/24/2019, 11:34:00',
+                'last_update': '10/24/2019, 11:34:00',
                 'last_ip': "127.27.23.89",
                 'username': "SYSTEM",
                 'password': None,
+                'email': "default@example.com",
                 'enabled': True,
-                'superuser': False,
-                'api_token': None,
+                'superuser': True,
                 'roles': [],
                 'servers': [],
+                'support_logs': '',
             }
         user = model_to_dict(Users.get(Users.user_id == user_id))
 
@@ -131,20 +131,30 @@ class helper_users:
             return {}
 
     @staticmethod
-    def add_user(username, password=None, api_token=None, enabled=True, superuser=False):
+    def check_system_user(user_id):
+        try:
+            result = Users.get(Users.user_id == user_id).user_id == user_id
+            if result:
+                return True
+        except:
+            return False
+
+    @staticmethod
+    def get_user_model(user_id: str) -> Users:
+        user = Users.get(Users.user_id == user_id)
+        user = users_helper.add_user_roles(user)
+        return user
+
+    @staticmethod
+    def add_user(username: str, password: Optional[str] = None, email: Optional[str] = None, enabled: bool = True, superuser: bool = False) -> str:
         if password is not None:
             pw_enc = helper.encode_pass(password)
         else:
             pw_enc = None
-        if api_token is None:
-            api_token = users_helper.new_api_token()
-        else:
-            if type(api_token) is not str and len(api_token) != 32:
-                raise ValueError("API token must be a 32 character string")
         user_id = Users.insert({
             Users.username: username.lower(),
             Users.password: pw_enc,
-            Users.api_token: api_token,
+            Users.email: email,
             Users.enabled: enabled,
             Users.superuser: superuser,
             Users.created: helper.get_time_as_string()
@@ -152,9 +162,29 @@ class helper_users:
         return user_id
 
     @staticmethod
-    def update_user(user_id, up_data={}):
+    def update_user(user_id, up_data=None):
+        if up_data is None:
+            up_data = {}
         if up_data:
             Users.update(up_data).where(Users.user_id == user_id).execute()
+
+    @staticmethod
+    def update_server_order(user_id, user_server_order):
+        Users.update(server_order = user_server_order).where(Users.user_id == user_id).execute()
+
+    @staticmethod
+    def get_server_order(user_id):
+        return Users.select().where(Users.user_id == user_id)
+
+    @staticmethod
+    def get_super_user_list():
+        final_users = []
+        # pylint: disable=singleton-comparison
+        super_users = Users.select().where(Users.superuser == True)
+        for suser in super_users:
+            if suser.user_id not in final_users:
+                final_users.append(suser.user_id)
+        return final_users
 
     @staticmethod
     def remove_user(user_id):
@@ -164,18 +194,14 @@ class helper_users:
             return user.delete_instance()
 
     @staticmethod
+    def set_support_path(user_id, support_path):
+        Users.update(support_logs = support_path).where(Users.user_id == user_id).execute()
+
+    @staticmethod
     def user_id_exists(user_id):
         if not users_helper.get_user(user_id):
             return False
         return True
-
-    @staticmethod
-    def new_api_token():
-        while True:
-            token = helper.random_string_generator(32)
-            test = list(Users.select(Users.user_id).where(Users.api_token == token))
-            if len(test) == 0:
-                return token
 
 #************************************************************************************************
 #                                   User_Roles Methods
@@ -209,8 +235,8 @@ class helper_users:
         }).execute()
 
     @staticmethod
-    def add_user_roles(user):
-        if type(user) == dict:
+    def add_user_roles(user: Union[dict, Users]):
+        if isinstance(user, dict):
             user_id = user['user_id']
         else:
             user_id = user.user_id
@@ -223,7 +249,11 @@ class helper_users:
         for r in roles_query:
             roles.add(r.role_id.role_id)
 
-        user['roles'] = roles
+        if isinstance(user, dict):
+            user['roles'] = roles
+        else:
+            user.roles = roles
+
         #logger.debug("user: ({}) {}".format(user_id, user))
         return user
 
@@ -242,6 +272,42 @@ class helper_users:
     @staticmethod
     def remove_roles_from_role_id(role_id):
         User_Roles.delete().where(User_Roles.role_id == role_id).execute()
+
+# ************************************************************************************************
+#                                   ApiKeys Methods
+# ************************************************************************************************
+
+    @staticmethod
+    def get_user_api_keys(user_id: str):
+        return ApiKeys.select().where(ApiKeys.user_id == user_id).execute()
+
+    @staticmethod
+    def get_user_api_key(key_id: str) -> ApiKeys:
+        return ApiKeys.get(ApiKeys.token_id == key_id)
+
+    @staticmethod
+    def add_user_api_key(
+         name: str,
+         user_id: str,
+         superuser: bool = False,
+         server_permissions_mask: Optional[str] = None,
+         crafty_permissions_mask: Optional[str] = None):
+        return ApiKeys.insert({
+            ApiKeys.name: name,
+            ApiKeys.user_id: user_id,
+            **({ApiKeys.server_permissions: server_permissions_mask} if server_permissions_mask is not None else {}),
+            **({ApiKeys.crafty_permissions: crafty_permissions_mask} if crafty_permissions_mask is not None else {}),
+            ApiKeys.superuser: superuser
+        }).execute()
+
+    @staticmethod
+    def delete_user_api_keys(user_id: str):
+        ApiKeys.delete().where(ApiKeys.user_id == user_id).execute()
+
+    @staticmethod
+    def delete_user_api_key(key_id: str):
+        ApiKeys.delete().where(ApiKeys.token_id == key_id).execute()
+
 
 
 users_helper = helper_users()

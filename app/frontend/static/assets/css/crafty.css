@@ -50,7 +50,11 @@
 }
 
 .mc-log-error{
-    color:#ff6258;
+    color:#af463f;
+}
+
+.mc-log-fatal{
+    color:#da0f00;
 }
 
 .mc-log-keyword{

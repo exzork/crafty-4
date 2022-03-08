@@ -1,27 +1,19 @@
-import os
-import sys
 import logging
 import datetime
 
 from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
+
+try:
+    from peewee import SqliteDatabase, Model, CharField, DoesNotExist, AutoField, DateTimeField
+    from playhouse.shortcuts import model_to_dict
+
+except ModuleNotFoundError as e:
+    helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger('peewee')
 peewee_logger.setLevel(logging.INFO)
-
-try:
-    from peewee import *
-    from playhouse.shortcuts import model_to_dict
-    from enum import Enum
-    import yaml
-
-except ModuleNotFoundError as e:
-    logger.critical("Import Error: Unable to load {} module".format(e.name), exc_info=True)
-    console.critical("Import Error: Unable to load {} module".format(e.name))
-    sys.exit(1)
-
-database = SqliteDatabase(helper.db_path, pragmas={
+database = SqliteDatabase(helper.db_path, pragmas = {
     'journal_mode': 'wal',
     'cache_size': -1024 * 10})
 
@@ -45,7 +37,7 @@ class helper_roles:
     @staticmethod
     def get_all_roles():
         query = Roles.select()
-        return query  
+        return query
 
     @staticmethod
     def get_roleid_by_name(role_name):
@@ -81,5 +73,5 @@ class helper_roles:
         if not roles_helper.get_role(role_id):
             return False
         return True
-    
+
 roles_helper = helper_roles()

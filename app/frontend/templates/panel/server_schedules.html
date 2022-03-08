@@ -1,0 +1,374 @@
+{% extends ../base.html %}
+
+{% block meta %}
+{% end %}
+
+{% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails', data['lang']) }}{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        <h4 class="page-title">
+          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{ data['server_stats']['server_id']['server_name'] }}
+            <br />
+            <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
+        </h4>
+      </div>
+    </div>
+
+  </div>
+  <!-- Page Title Header Ends-->
+
+ {% include "parts/details_stats.html %}
+
+  <div class="row">
+
+    <div class="col-sm-12 grid-margin">
+      <div class="card">
+        <div class="card-body  pt-0">
+            {% include "parts/server_controls_list.html %}
+
+            <div class="row">
+                <div class="col-md-12 col-sm-12" style="overflow-x:auto;">
+                    <div class="card">
+                      <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                        <h4 class="card-title"><i class="fas fa-calendar"></i> Scheduled Tasks</h4>
+                        <span class="too_small" title="{{ translate('serverSchedules', 'cannotSee', data['lang']) }}", data-content="{{ translate('serverSchedules', 'cannotSeeOnMobile', data['lang']) }}", data-placement="bottom"></span>
+                        <div><button onclick="location.href=`/panel/add_schedule?id={{ data['server_stats']['server_id']['server_id'] }}`" class="btn btn-info">Create New Schedule <i class="fas fa-pencil-alt"></i></button></div>
+                      </div>
+                      <div class="card-body">
+                        <table class="table table-hover d-none d-lg-block responsive-table"  id="schedule_table" width="100%" style="table-layout:fixed;">
+                          <thead>
+                          <tr class="rounded">
+                            <th style="width: 2%; min-width: 10px;">ID</th>
+                            <th style="width: 23%; min-width: 50px;">Action</th>
+                            <th style="width: 40%; min-width: 50px;">Command</th>
+                            <th style="width: 10%; min-width: 50px;">Interval</th>
+                            <th style="width: 10%; min-width: 50px;">Start Time</th>
+                            <th style="width: 10%; min-width: 50px;">Enabled</th>
+                            <th style="width: 10%; min-width: 50px;">Edit</th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                          {% for schedule in data['schedules'] %}
+                          <tr>
+                          <td id="{{schedule.schedule_id}}" class="id">
+                              <p>{{schedule.schedule_id}}</p>
+                            </td>
+                          <td id="{{schedule.action}}" class="action">
+                            <p>{{schedule.action}}</p>
+                          </td>
+                          <td id="{{schedule.command}}" class="action" style="overflow: scroll; max-width: 30px;">
+                            <p>{{schedule.command}}</p>
+                          </td>
+                          <td id="{{schedule.interval}}" class="action">
+                            {% if schedule.interval != '' %}
+                            <p>Every</p>
+                            <p>{{schedule.interval}} {{schedule.interval_type}}</p>
+                            {% elif schedule.interval_type == 'reaction' %}
+                            <p>{{schedule.interval_type}}<br><br>child of ID: {{ schedule.parent }}</p>
+                            {% else %}
+                            <p>Cron String:</p>
+                            <p>{{schedule.cron_string}}</p>
+                            {% end %}
+                          </td>
+                          <td id="{{schedule.start_time}}" class="action">
+                            <p>{{schedule.start_time}}</p>
+                          </td>
+                          <td id="{{schedule.enabled}}" class="action">
+                          {% if schedule.enabled %}
+                          <span class="text-success">
+                            <i class="fas fa-check-square"></i> Yes
+                          </span>
+                          {% else %}
+                          <span class="text-danger">
+                          <i class="far fa-times-square"></i> No
+                          </span>
+                          {% end %}
+                          </td>
+                          <td id="{{schedule.action}}" class="action">
+                            <button onclick="window.location.href='/panel/edit_schedule?id={{ data['server_stats']['server_id']['server_id'] }}&sch_id={{schedule.schedule_id}}'" class="btn btn-info">
+                              <i class="fas fa-pencil-alt"></i>
+                             </button>
+                          <br>
+                          <br>
+                          <button data-sch={{ schedule.schedule_id }} class="btn btn-danger del_button">
+                            <i class="fas fa-trash" aria-hidden="true"></i>
+                        </button>
+                            </td>
+                          </tr>
+                          {% end %}
+                        </tbody>
+                        </table>
+                        <hr />
+                        <table class="table table-hover d-block d-lg-none" id="mini_schedule_table" width="100%" style="table-layout:fixed;">
+                          <thead>
+                          <tr class="rounded">
+                            <th style="width: 25%; min-width: 50px;">Action</th>
+                            <th style="max-width: 40%; min-width: 50px;">Command</th>
+                            <th style="width: 10%; min-width: 50px;">Enabled</th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                          {% for schedule in data['schedules'] %}
+                          <tr data-toggle="modal" data-target="#task_details_{{schedule.schedule_id}}">
+                            <td id="{{schedule.action}}" class="action">
+                              <p>{{schedule.action}}</p>
+                            </td>
+                            <td id="{{schedule.command}}" class="action" style="overflow: scroll; max-width: 30px;">
+                              <p>{{schedule.command}}</p>
+                            </td>
+                            <td id="{{schedule.enabled}}" class="action">
+                              {% if schedule.enabled %}
+                              <span class="text-success">
+                                <i class="fas fa-check-square"></i> Yes
+                              </span>
+                              {% else %}
+                              <span class="text-danger">
+                              <i class="far fa-times-square"></i> No
+                              </span>
+                              {% end %}
+                            </td>
+                          </tr>
+                          <!-- Modal -->
+                          <div class="modal fade" id="task_details_{{schedule.schedule_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title" id="exampleModalLabel">Task Details</h5>
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                                </div>
+                                <div class="modal-body">
+                                  <ul style="list-style: none;">
+                                    <li id="{{schedule.schedule_id}}" class="id" style="border-top: .1em solid gray;">
+                                      <h4>ID</h4><p>{{schedule.schedule_id}}</p>
+                                    </li>
+                                    <li id="{{schedule.action}}" class="action" style="border-top: .1em solid gray;">
+                                      <h4>Action</h4><p>{{schedule.action}}</p>
+                                    </li>
+                                    <li id="{{schedule.command}}" class="action" style="border-top: .1em solid gray;">
+                                      <h4>Command</h4><p>{{schedule.command}}</p>
+                                    </li>
+                                    <li id="{{schedule.interval}}" class="action" style="border-top: .1em solid gray;">
+                                      {% if schedule.interval != '' %}
+                                      <h4>Interval</h4> <p>Every {{schedule.interval}} {{schedule.interval_type}}</p>
+                                      {% elif schedule.interval_type == 'reaction' %}
+                                      <h4>Interval</h4> <p>{{schedule.interval_type}}<br><br>child of ID: {{ schedule.parent }}</p>
+                                      {% else %}
+                                      <h4>Interval</h4> <p>Cron String: {{schedule.cron_string}}</p>
+                                      {% end %}
+                                    </li>
+                                    <li id="{{schedule.start_time}}" class="action" style="border-top: .1em solid gray;">
+                                      <h4>Start Time</h4> <p>{{schedule.start_time}}</p>
+                                    </li>
+                                    <li id="{{schedule.enabled}}" class="action" style="border-top: .1em solid gray; border-bottom: .1em solid gray">
+                                      {% if schedule.enabled %}
+                                      <h4>Enabled</h4> <span class="text-success">
+                                        <i class="fas fa-check-square"></i> Yes
+                                      </span>
+                                      {% else %}
+                                      <h4>Enabled</h4> <span class="text-danger">
+                                      <i class="far fa-times-square"></i> No
+                                      </span>
+                                      {% end %}
+                                    </li>
+                                  </ul>
+                                </div>
+                                <div class="modal-footer">
+                                  <button onclick="window.location.href='/panel/edit_schedule?id={{ data['server_stats']['server_id']['server_id'] }}&sch_id={{schedule.schedule_id}}'" class="btn btn-info">
+                                    <i class="fas fa-pencil-alt"></i> Edit
+                                  </button>
+                                  <button data-sch={{ schedule.schedule_id }} class="btn btn-danger del_button">
+                                    <i class="fas fa-trash" aria-hidden="true"></i> Delete
+                                  </button>
+                                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          {% end %}
+                        </tbody>
+                        </table>
+                      </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <style>
+    .popover-body{
+      color: white !important;;
+  }
+  </style>
+
+
+
+</div>
+<style>
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+td::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+td {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+</style>
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+<script>
+
+  const serverId = new URLSearchParams(document.location.search).get('id')
+  
+  $( document ).ready(function() {
+    console.log('ready for JS!')
+    $('#schedule_table').DataTable({
+      'order': [4, 'desc']
+    }
+    );
+
+});
+$( document ).ready(function() {
+  console.log('ready for JS!')
+  $('#mini_schedule_table').DataTable({
+    'order': [2, 'desc']
+  }
+  );
+  document.getElementById('mini_schedule_table_wrapper').hidden = true;
+});
+  $(document).ready(function(){
+    $('[data-toggle="popover"]').popover();
+      if($(window).width() < 1000){
+      $('.too_small').popover("show");
+      document.getElementById('schedule_table_wrapper').hidden = true;
+      document.getElementById('mini_schedule_table_wrapper').hidden = false;
+    }
+
+  });
+   $(window).ready(function(){
+          $('body').click(function(){
+              $('.too_small').popover("hide");
+      });
+  });
+  $(window).resize(function() {
+    // This will execute whenever the window is resized
+    if($(window).width() < 1000){
+      $('.too_small').popover("show");
+      document.getElementById('schedule_table_wrapper').hidden = true;
+      document.getElementById('mini_schedule_table_wrapper').hidden = false;
+    }
+    else{
+      $('.too_small').popover("hide");
+      document.getElementById('schedule_table_wrapper').hidden = false;
+      document.getElementById('mini_schedule_table_wrapper').hidden = true;
+    } // New width
+  });
+  </script>
+<script>
+
+
+    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+    function getCookie(name) {
+        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+        return r ? r[1] : undefined;
+    }
+
+    $( document ).ready(function() {
+        console.log( "ready!" );
+
+    });
+
+    function yesnoCheck(that) {
+      if (that.value == "command") {
+          document.getElementById("ifYes").style.display = "block";
+          document.getElementById("command").required = true;
+      } else {
+          document.getElementById("ifYes").style.display = "none";
+          document.getElementById("command").required = false;
+      }
+  }
+  function basicAdvanced(that) {
+    if (that.value == "advanced") {
+        document.getElementById("ifAdvanced").style.display = "block";
+        document.getElementById("ifBasic").style.display = "none";
+        document.getElementById("interval").required = false;
+        document.getElementById("time").required = false;
+    } else {
+        document.getElementById("ifAdvanced").style.display = "none";
+        document.getElementById("ifBasic").style.display = "block";
+        document.getElementById("interval").required = true;
+        document.getElementById("time").required = true;
+    }
+}
+function ifDays(that) {
+  if (that.value == "days") {
+      document.getElementById("ifDays").style.display = "block";
+      document.getElementById("time").required = true;
+  } else {
+      document.getElementById("ifDays").style.display = "none";
+      document.getElementById("time").required = false;
+  }
+}
+
+$( ".del_button" ).click(function() {
+  var sch_id = $(this).data('sch');
+
+  console.log(sch_id)
+
+  bootbox.confirm({
+      title: "{{ translate('serverSchedules', 'areYouSure', data['lang']) }}",
+      message: "{{ translate('serverSchedules', 'confirmDelete', data['lang']) }}",
+      buttons: {
+          cancel: {
+              label: '<i class="fas fa-times"></i> {{ translate("serverSchedules", "cancel", data['lang']) }}'
+          },
+          confirm: {
+            className: 'btn-outline-danger',
+              label: '<i class="fas fa-check"></i> {{ translate("serverSchedules", "confirm", data['lang']) }}'
+          }
+      },
+      callback: function (result) {
+          console.log(result);
+          if (result == true) {
+              del_task(sch_id, serverId);
+          }
+      }
+  });
+});
+
+function del_task(sch_id, id){
+  var token = getCookie("_xsrf")
+
+  $.ajax({
+    type: "DELETE",
+    headers: {'X-XSRFToken': token},
+    url: '/ajax/del_task?server_id='+id+'&schedule_id='+sch_id,
+    data: {
+    schedule_id: sch_id,
+    id: id
+    },
+    success: function(data) {
+      location.reload();
+    },
+  });
+}
+
+</script>
+
+{% end %}

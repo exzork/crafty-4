@@ -5,7 +5,8 @@
         <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'terminal', data['lang']) }}</a>
     </li>
     {% end %}
-    {% if data['permissions']['Logs'] in data['user_permissions'] %}
+    <!--Bedrock servers don't have logs so we'll only show it if we know it's not a bedrock server.-->
+    {% if data['permissions']['Logs'] in data['user_permissions'] and data['server_data']['type'] != 'minecraft-bedrock'%}
     <li class="nav-item term-nav-item">
         <a class="nav-link {% if data['active_link'] == 'logs' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=logs" role="tab" aria-selected="false">
         <i class="fas fa-file-signature"></i>{{ translate('serverDetails', 'logs', data['lang']) }}</a>
@@ -13,7 +14,7 @@
     {% end %}
     {% if data['permissions']['Schedule'] in data['user_permissions'] %}
     <li class="nav-item term-nav-item">
-        <a class="nav-link {% if data['active_link'] == 'schedule' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=tasks" role="tab" aria-selected="false">
+        <a class="nav-link {% if data['active_link'] == 'schedules' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=schedules" role="tab" aria-selected="false">
         <i class="fas fa-clock"></i>{{ translate('serverDetails', 'schedule', data['lang']) }}</a>
     </li>
     {% end %}
@@ -35,7 +36,7 @@
         <i class="fas fa-cogs"></i>{{ translate('serverDetails', 'config', data['lang']) }}</a>
     </li>
     {% end %}
-    {% if data['permissions']['Players'] in data['user_permissions'] %}
+    {% if data['permissions']['Players'] in data['user_permissions'] and data['server_data']['type'] != 'minecraft-bedrock' %}
     <li class="nav-item term-nav-item">
         <a class="nav-link {% if data['active_link'] == 'admin_controls' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=admin_controls" role="tab" aria-selected="true">
         <i class="fas fa-users"></i>{{ translate('serverDetails', 'playerControls', data['lang']) }}</a>

@@ -1,7 +1,6 @@
 {% extends ../base.html %}
 
 {% block meta %}
-<!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
 {% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails', data['lang']) }}{% end %}
@@ -25,14 +24,14 @@
   </div>
   <!-- Page Title Header Ends-->
 
- {% include "parts/details_stats.html %}
+ {% include "parts/details_stats.html" %}
 
   <div class="row">
 
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-            {% include "parts/server_controls_list.html %}
+            {% include "parts/server_controls_list.html" %}
 
             <div class="row">
               <div class="col-md-6 col-sm-12">
@@ -134,13 +133,15 @@
                 </style>
                 <ul class="tree-view">
                   <li>
-                    <div class="tree-caret tree-ctx-item files-tree-title">
-                      <i class="far fa-folder"></i>
-                      <i class="far fa-folder-open"></i>
-                      {{ translate('serverFiles', 'files', data['lang']) }}
+                    <div id="root_dir" class="tree-ctx-item" data-path="{{ data['server_stats']['server_id']['path'] }}">
+                      <span id="{{ data['server_stats']['server_id']['path'] }}span" class="files-tree-title tree-caret-down root-dir" data-path="{{ data['server_stats']['server_id']['path'] }}" onclick="getToggleMain(event)">
+                        <i class="far fa-folder"></i>
+                        <i class="far fa-folder-open"></i>
+                        {{ translate('serverFiles', 'files', data['lang']) }}
+                        </span>
                     </div>
-                    <ul class="tree-nested" id="files-tree">
-                      <li>{{ translate('serverFiles', 'error', data['lang']) }}</li>
+                    <ul class="tree-nested d-block" id="files-tree">
+                      <li><i class="fa fa-spin fa-spinner"></i>{{ translate('serverFiles', 'loadingRecords', data['lang']) }}</li>
 
                     </ul>
                   </li>
@@ -220,317 +221,319 @@
 
 <script>
 
-
-    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
-    function getCookie(name) {
-      var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
-      return r ? r[1] : undefined;
-    }
+  const serverId = new URLSearchParams(document.location.search).get('id')
 
 
-    let editor = ace.edit('editor');
-    editor.setTheme('ace/theme/dracula');
-    editor.session.setUseSoftTabs(true);
+  //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+  function getCookie(name) {
+    var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+    return r ? r[1] : undefined;
+  }
 
-    // mouseup = css resize end
+
+  let editor = ace.edit('editor');
+  editor.setTheme('ace/theme/dracula');
+  editor.session.setUseSoftTabs(true);
+
+  // mouseup = css resize end
 	document.addEventListener("mouseup", function(e){
 		editor.resize();
 	});
 
-    let extensionChanges = [
-      {
-        regex: /^js$/,
-        replaceWith: 'ace/mode/javascript'
-      },
-      {
-        regex: /^py$/,
-        replaceWith: 'ace/mode/python'
-      },
-      {
-        regex: /^html$/,
-        replaceWith: 'ace/mode/html'
-      },
-      {
-        regex: /^yml$/,
-        replaceWith: 'ace/mode/yaml'
-      },
-      {
-        regex: /^yaml$/,
-        replaceWith: 'ace/mode/yaml'
-      },
-      {
-        regex: /^txt$/,
-        replaceWith: 'ace/mode/text'
-      },
-      {
-        regex: /^json$/,
-        replaceWith: 'ace/mode/json'
-      },
-      {
-        regex: /^java$/,
-        replaceWith: 'ace/mode/java'
-      },
-      {
-        regex: /^cpp$/,
-        replaceWith: 'ace/mode/c_cpp'
-      },
-      {
-        regex: /^c$/,
-        replaceWith: 'ace/mode/c_cpp'
-      },
-      {
-        regex: /^css$/,
-        replaceWith: 'ace/mode/css'
-      },
-      {
-        regex: /^scss$/,
-        replaceWith: 'ace/mode/scss'
-      },
-      {
-        regex: /^sass$/,
-        replaceWith: 'ace/mode/sass'
-      },
-      {
-        regex: /^lua$/,
-        replaceWith: 'ace/mode/lua'
-      },
-      {
-        regex: /^php$/,
-        replaceWith: 'ace/mode/php'
-      },
-      {
-        regex: /^ps1$/,
-        replaceWith: 'ace/mode/powershell'
-      },
-      {
-        regex: /^svg$/,
-        replaceWith: 'ace/mode/svg'
-      },
-      {
-        regex: /^sh$/,
-        replaceWith: 'ace/mode/sh'
-      },
-      {
-        regex: /^xml$/,
-        replaceWith: 'ace/mode/xml'
-      },
-      {
-        regex: /^ts$/,
-        replaceWith: 'ace/mode/typescript'
-      },
-      {
-        regex: /^properties$/,
-        replaceWith: 'ace/mode/properties'
-      },
-      {
-        regex: /^log$/,
-        replaceWith: 'ace/mode/txt'
-      },
-    ];
+  let extensionChanges = [
+    {
+      regex: /^js$/,
+      replaceWith: 'ace/mode/javascript'
+    },
+    {
+      regex: /^py$/,
+      replaceWith: 'ace/mode/python'
+    },
+    {
+      regex: /^html$/,
+      replaceWith: 'ace/mode/html'
+    },
+    {
+      regex: /^yml$/,
+      replaceWith: 'ace/mode/yaml'
+    },
+    {
+      regex: /^yaml$/,
+      replaceWith: 'ace/mode/yaml'
+    },
+    {
+      regex: /^txt$/,
+      replaceWith: 'ace/mode/text'
+    },
+    {
+      regex: /^json$/,
+      replaceWith: 'ace/mode/json'
+    },
+    {
+      regex: /^java$/,
+      replaceWith: 'ace/mode/java'
+    },
+    {
+      regex: /^cpp$/,
+      replaceWith: 'ace/mode/c_cpp'
+    },
+    {
+      regex: /^c$/,
+      replaceWith: 'ace/mode/c_cpp'
+    },
+    {
+      regex: /^css$/,
+      replaceWith: 'ace/mode/css'
+    },
+    {
+      regex: /^scss$/,
+      replaceWith: 'ace/mode/scss'
+    },
+    {
+      regex: /^sass$/,
+      replaceWith: 'ace/mode/sass'
+    },
+    {
+      regex: /^lua$/,
+      replaceWith: 'ace/mode/lua'
+    },
+    {
+      regex: /^php$/,
+      replaceWith: 'ace/mode/php'
+    },
+    {
+      regex: /^ps1$/,
+      replaceWith: 'ace/mode/powershell'
+    },
+    {
+      regex: /^svg$/,
+      replaceWith: 'ace/mode/svg'
+    },
+    {
+      regex: /^sh$/,
+      replaceWith: 'ace/mode/sh'
+    },
+    {
+      regex: /^xml$/,
+      replaceWith: 'ace/mode/xml'
+    },
+    {
+      regex: /^ts$/,
+      replaceWith: 'ace/mode/typescript'
+    },
+    {
+      regex: /^properties$/,
+      replaceWith: 'ace/mode/properties'
+    },
+    {
+      regex: /^log$/,
+      replaceWith: 'ace/mode/txt'
+    },
+  ];
 
-    var filePath = '';
+  var filePath = '';
 
-    function clickOnFile(event) {
-      filePath = event.target.getAttribute('data-path');
-      $.ajax({
-        type: 'GET',
-        url: '/ajax/get_file?id={{ data['server_stats']['server_id']['server_id'] }}&file_path=' + encodeURIComponent(filePath),
-        dataType: 'text',
-        success: function (data) {
-          console.log('Got File Contents From Server');
-          json = JSON.parse(data)
-          if (json.error) {
-            $('#editorParent').toggle(false) // hide
-            $('#fileError').toggle(true)     // show
-            $('#fileError').text("{{ translate('serverFiles', 'fileReadError', data['lang']) }}: " + json.error) // show error
-            editor.blur()
-          } else {
-            $('#editorParent').toggle(true) // show
-            $('#fileError').toggle(false)   // hide
-            setFileName(event.target.innerText);
-            editor.session.setValue(json.content);
-          }
-        },
-      });
+  function clickOnFile(event) {
+    filePath = event.target.getAttribute('data-path');
+    $.ajax({
+      type: 'GET',
+      url: "/files/get_file?id=" + serverId + "&file_path=" + encodeURIComponent(filePath),
+      dataType: 'text',
+      success: function (data) {
+        console.log('Got File Contents From Server');
+        json = JSON.parse(data)
+        if (json.error) {
+          $('#editorParent').toggle(false) // hide
+          $('#fileError').toggle(true)     // show
+          $('#fileError').text("{{ translate('serverFiles', 'fileReadError', data['lang']) }}: " + json.error) // show error
+          editor.blur()
+        } else {
+          $('#editorParent').toggle(true) // show
+          $('#fileError').toggle(false)   // hide
+          setFileName(event.target.innerText);
+          editor.session.setValue(json.content);
+        }
+      },
+    });
+  }
+
+  function setFileName(name) {
+    let fileName = name || 'default.txt';
+    document.getElementById('editingFile').innerText = fileName;
+
+    if (fileName.match('.')) {
+
+      // The pop method removes and returns the last element.
+      setMode(fileName
+        .split('.')
+        .pop()
+        .replace('ace/mode/', ''));
+
+    } else {
+      setMode('txt');
+      document
+        .querySelector('#file_warn')
+        .innerText = "{% raw translate('serverFiles', 'unsupportedLanguage', data['lang']) %}";
     }
+  }
 
-    function setFileName(name) {
-      let fileName = name || 'default.txt';
-      document.getElementById('editingFile').innerText = fileName;
+  setFileName();
+  $('#editorParent').toggle(false) // show
+  $('#fileError').toggle(false)    // hide
+  editor.blur()
 
-      if (fileName.match('.')) {
+  function setMode (extension) {
+    // if the extension matches with the RegEx it will return the replaceWith
+    // property. else it will return the one it has. defaults to the extension.
+    // this runs for each element in extensionChanges.
+    let aceMode = extensionChanges.reduce((output, element) => {
+      return extension.match(element.regex)
+        ? element.replaceWith
+        : output;
+    }, extension);
 
-        // The pop method removes and returns the last element.
-        setMode(fileName
-          .split('.')
-          .pop()
-          .replace('ace/mode/', ''));
+    if (!aceMode.startsWith('ace/mode/')) {
+      document
+        .querySelector('#file_warn')
+        .innerText = "{% raw translate('serverFiles', 'unsupportedLanguage', data['lang']) %}";
+    } else {
+      document
+        .querySelector('#file_warn')
+        .innerText = '';
 
-      } else {
-        setMode('txt');
-        document
-          .querySelector('#file_warn')
-          .innerText = "{% raw translate('serverFiles', 'unsupportedLanguage', data['lang']) %}";
-      }
+      console.log(aceMode || 'ace/mode/text');
+      editor.session.setMode(aceMode || 'ace/mode/text');
     }
-
-    setFileName();
-    $('#editorParent').toggle(false) // show
-    $('#fileError').toggle(false)    // hide
-    editor.blur()
-
-    function setMode (extension) {
-      // if the extension matches with the RegEx it will return the replaceWith
-      // property. else it will return the one it has. defaults to the extension.
-      // this runs for each element in extensionChanges.
-      let aceMode = extensionChanges.reduce((output, element) => {
-        return extension.match(element.regex)
-          ? element.replaceWith
-          : output;
-      }, extension);
-
-      if (!aceMode.startsWith('ace/mode/')) {
-        document
-          .querySelector('#file_warn')
-          .innerText = "{% raw translate('serverFiles', 'unsupportedLanguage', data['lang']) %}";
-      } else {
-        document
-          .querySelector('#file_warn')
-          .innerText = '';
-
-        console.log(aceMode || 'ace/mode/text');
-        editor.session.setMode(aceMode || 'ace/mode/text');
-      }
-    }
+  }
 
 
 
-    function save() {
-      let text = editor.session.getValue();
+  function save() {
+    let text = editor.session.getValue();
 
-      var token = getCookie("_xsrf")
-      $.ajax({
-        type: "PUT",
-        headers: {'X-XSRFToken': token},
-        url: '/ajax/save_file?id={{ data['server_stats']['server_id']['server_id'] }}',
-        data: {
-          file_contents: text,
-          file_path: filePath
-        },
-        success: function(data){
-          console.log("got response:");
-          console.log(data);
-        },
-      });
-    }
+    var token = getCookie("_xsrf")
+    $.ajax({
+      type: "PUT",
+      headers: {'X-XSRFToken': token},
+      url: "/files/save_file?id=" + serverId,
+      data: {
+        file_contents: text,
+        file_path: filePath
+      },
+      success: function(data){
+        console.log("got response:");
+        console.log(data);
+      },
+    });
+  }
 
-    function createFile(parent, name, callback) {
-      var token = getCookie("_xsrf")
-      $.ajax({
-        type: "POST",
-        headers: {'X-XSRFToken': token},
-        url: '/ajax/create_file?id={{ data['server_stats']['server_id']['server_id'] }}',
-        data: {
-          file_parent: parent,
-          file_name: name
-        },
-        success: function(data){
-          console.log("got response:");
-          console.log(data);
-          callback();
-        },
-      });
-    }
+  function createFile(parent, name, callback) {
+    var token = getCookie("_xsrf")
+    $.ajax({
+      type: "POST",
+      headers: {'X-XSRFToken': token},
+      url: "/files/create_file?id=" + serverId,
+      data: {
+        file_parent: parent,
+        file_name: name
+      },
+      success: function(data){
+        console.log("got response:");
+        console.log(data);
+        callback();
+      },
+    });
+  }
 
-    function createDir(parent, name, callback) {
-      var token = getCookie("_xsrf")
-      $.ajax({
-        type: "POST",
-        headers: {'X-XSRFToken': token},
-        url: '/ajax/create_dir?id={{ data['server_stats']['server_id']['server_id'] }}',
-        data: {
-          dir_parent: parent,
-          dir_name: name
-        },
-        success: function(data){
-          console.log("got response:");
-          console.log(data);
-          callback();
-        },
-      });
-    }
+  function createDir(parent, name, callback) {
+    var token = getCookie("_xsrf")
+    $.ajax({
+      type: "POST",
+      headers: {'X-XSRFToken': token},
+      url: "/files/create_dir?id=" + serverId,
+      data: {
+        dir_parent: parent,
+        dir_name: name
+      },
+      success: function(data){
+        console.log("got response:");
+        console.log(data);
+        callback();
+      },
+    });
+  }
 
-    function renameItem(path, name, callback) {
-      var token = getCookie("_xsrf")
-      $.ajax({
-        type: "PUT",
-        headers: {'X-XSRFToken': token},
-        url: '/ajax/rename_item?id={{ data['server_stats']['server_id']['server_id'] }}',
-        data: {
-          item_path: path,
-          new_item_name: name
-        },
-        success: function(data){
-          console.log("got response:");
-          console.log(data);
-          callback();
-        },
-      });
-    }
+  function renameItem(path, name, callback) {
+    var token = getCookie("_xsrf")
+    $.ajax({
+      type: "PATCH",
+      headers: {'X-XSRFToken': token},
+      url: "/files/rename_file?id=" + serverId,
+      data: {
+        item_path: path,
+        new_item_name: name
+      },
+      success: function(data){
+        console.log("got response:");
+        console.log(data);
+        callback();
+      },
+    });
+  }
 
-    function deleteFile(path, callback) {
-      console.log('Deleting: ' + path)
-      var token = getCookie("_xsrf")
-      $.ajax({
-        type: "DELETE",
-        headers: {'X-XSRFToken': token},
-        url: '/ajax/del_file?id={{ data['server_stats']['server_id']['server_id'] }}',
-        data: {
-          file_path: path
-        },
-        success: function(data){
-          console.log("got response:");
-          console.log(data);
-          callback();
-        },
-      });
-    }
+  function deleteFile(path, callback) {
+    console.log('Deleting: ' + path)
+    var token = getCookie("_xsrf")
+    $.ajax({
+      type: "DELETE",
+      headers: {'X-XSRFToken': token},
+      url: "/files/del_file?id=" + serverId,
+      data: {
+        file_path: path
+      },
+      success: function(data){
+        console.log("got response:");
+        console.log(data);
+        callback();
+      },
+    });
+  }
 
-    function deleteDir(path, callback) {
-      var token = getCookie("_xsrf")
-      $.ajax({
-        type: "DELETE",
-        headers: {'X-XSRFToken': token},
-        url: '/ajax/del_dir?id={{ data['server_stats']['server_id']['server_id'] }}',
-        data: {
-          dir_path: path
-        },
-        success: function(data){
-          console.log("got response:");
-          console.log(data);
-          callback();
-        },
-      });
-    }
+  function deleteDir(path, callback) {
+    var token = getCookie("_xsrf")
+    $.ajax({
+      type: "DELETE",
+      headers: {'X-XSRFToken': token},
+      url: "/files/del_dir?id=" + serverId,
+      data: {
+        dir_path: path
+      },
+      success: function(data){
+        console.log("got response:");
+        console.log(data);
+        callback();
+      },
+    });
+  }
 
-        function unZip(path, callback) {
-      var token = getCookie("_xsrf")
-      $.ajax({
-        type: "POST",
-        headers: {'X-XSRFToken': token},
-        url: '/ajax/unzip_file?id={{ data['server_stats']['server_id']['server_id'] }}',
-        data: {
-          path: path
-        },
-      });
-      window.location.href = "/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files"
-    }
+  function unZip(path, callback) {
+    var token = getCookie("_xsrf")
+    $.ajax({
+      type: "POST",
+      headers: {'X-XSRFToken': token},
+      url: "/files/unzip_file?id=" + serverId,
+      data: {
+        path: path
+      },
+    });
+    window.location.href = "/panel/server_detail?id=" + serverId + "&subpage=files"
+  }
 
-  function sendFile(file, path, server_id, left, onProgress){
+  function sendFile(file, path, serverId, left, onProgress){
     var xmlHttpRequest = new XMLHttpRequest();
     var token = getCookie("_xsrf")
     var fileName = file.name
-    var target = '/upload?server_id=' + server_id
+    var target = '/upload?server_id=' + serverId
     var mimeType = file.type
 
     xmlHttpRequest.open('POST', target, true);
@@ -540,7 +543,7 @@
     xmlHttpRequest.setRequestHeader('X-Path', path);
     xmlHttpRequest.setRequestHeader('X-Files-Left', left);
     xmlHttpRequest.setRequestHeader('X-FileName', fileName);
-    xmlHttpRequest.setRequestHeader('X-ServerId', "{{ data['server_stats']['server_id']['server_id'] }}");
+    xmlHttpRequest.setRequestHeader('X-ServerId', serverId);
     xmlHttpRequest.upload.addEventListener('progress', (event) =>
       onProgress(Math.floor(event.loaded / event.total * 100)), false);
     xmlHttpRequest.addEventListener('load', (event) => {
@@ -555,7 +558,7 @@
     xmlHttpRequest.addEventListener('error', (e) => {
       console.error('Error while uploading file', file.name + '.', 'Event:', e)
     }, false);
-    
+
     xmlHttpRequest.send(file);
   }
 
@@ -566,7 +569,6 @@
     path = event.target.parentElement.getAttribute('data-path');
     console.log("PATH: " + path);
     $(function () {
-      server_id = {{ data['server_stats']['server_id']['server_id'] }};
       var uploadHtml = "<div>" +
         '<form id="upload_file" enctype="multipart/form-data">'+"<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
             "<input id='files' name='files' type='file' style='display:none;' multiple='true'>" +
@@ -576,327 +578,375 @@
         "</label></form>" +
         "<br />" +
         "<ul style='margin-left:5px !important;' id='fileList'></ul>" +
-    "</div><div class='clearfix'></div>";
-    bootbox.dialog({
+      "</div><div class='clearfix'></div>";
+      bootbox.dialog({
         message: uploadHtml,
         title: "{{ translate('serverFiles', 'uploadTitle', data['lang'])}}"+path,
         buttons: {
-            success: {
-                label: "{{ translate('serverFiles', 'upload', data['lang']) }}",
-                className: "btn-default",
-                callback: async function () {
-                  var height = files.files.length*50;
+          success: {
+            label: "{{ translate('serverFiles', 'upload', data['lang']) }}",
+            className: "btn-default",
+            callback: async function () {
+              var height = files.files.length*50;
 
-                  var waitMessage = '<p class="text-center mb-0">'+
-                    '<i class="fa fa-spin fa-cog"></i>'+
-                    "{{ translate('serverFiles', 'waitUpload', data['lang']) }}"+'<br>'+
-                    '<strong>'+"{{ translate('serverFiles', 'stayHere', data['lang']) }}"+'</strong>'+
-                  '</p>'+
-                  '<div class="progress" id="upload-progress-bar-parent" style="height:'+height +'px; width:100%; display: block;">'+
-                  '</div>'
-                    files = document.getElementById("files");
-                    uploadWaitDialog = bootbox.dialog({
-                      message: waitMessage,
-                      closeButton: false
-                  });
-                  let nFiles = files.files.length;
-                  for(i=0; i < files.files.length; i++) {
-                    if (!doUpload) {
-                      doUpload = true;
-                      hideUploadBox();
-                      break;
-                    }
-                    console.log(files.files[i].name);
-                    const progressHtml = `
-                    <div style="width: 100%; min-width: 100%;">
-                      ${files.files[i].name}:
-                      <br><div
-                        id="upload-progress-bar-${i + 1}"
-                        class="progress-bar progress-bar-striped progress-bar-animated"
-                        role="progressbar"
-                        style="width: 100%; height: 10px;"
-                        aria-valuenow="0"
-                        aria-valuemin="0"
-                        aria-valuemax="100"
-                      ></div>
-                    </div><br>
-                    `;
-                    $('#upload-progress-bar-parent').append(progressHtml);
-                    console.log(files.files.length)
-                    sendFile(files.files[i], path, server_id, files.files.length - i - 1, (progress) => {
-                      $(`#upload-progress-bar-${i + 1}`).attr('aria-valuenow', progress)
-                      $(`#upload-progress-bar-${i + 1}`).css('width', progress + '%')
-                    });
-                  }
+              var waitMessage = '<p class="text-center mb-0">'+
+                '<i class="fa fa-spin fa-cog"></i>'+
+                "{{ translate('serverFiles', 'waitUpload', data['lang']) }}"+'<br>'+
+                '<strong>'+"{{ translate('serverFiles', 'stayHere', data['lang']) }}"+'</strong>'+
+              '</p>'+
+              '<div class="progress" id="upload-progress-bar-parent" style="height:'+height +'px; width:100%; display: block;">'+
+              '</div>'
+                files = document.getElementById("files");
+                uploadWaitDialog = bootbox.dialog({
+                  message: waitMessage,
+                  closeButton: false
+              });
+              let nFiles = files.files.length;
+              for(i=0; i < files.files.length; i++) {
+                if (!doUpload) {
+                  doUpload = true;
                   hideUploadBox();
-                  //$('#upload_file').submit(); //.trigger('submit');
+                  break;
                 }
+                console.log(files.files[i].name);
+                const progressHtml = `
+                <div style="width: 100%; min-width: 100%;">
+                  ${files.files[i].name}:
+                  <br><div
+                    id="upload-progress-bar-${i + 1}"
+                    class="progress-bar progress-bar-striped progress-bar-animated"
+                    role="progressbar"
+                    style="width: 100%; height: 10px;"
+                    aria-valuenow="0"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
+                </div><br>
+                `;
+                $('#upload-progress-bar-parent').append(progressHtml);
+                console.log(files.files.length)
+                sendFile(files.files[i], path, serverId, files.files.length - i - 1, (progress) => {
+                  $(`#upload-progress-bar-${i + 1}`).attr('aria-valuenow', progress)
+                  $(`#upload-progress-bar-${i + 1}`).css('width', progress + '%')
+                });
+              }
+              hideUploadBox();
+              //$('#upload_file').submit(); //.trigger('submit');
             }
+          }
         }
-  });
+      });
 
-  
+      var fileList = document.getElementById("files");
+      fileList.addEventListener("change", function (e) {
+          var list = "";
+          for (var i = 0; i < this.files.length; i++) {
+              list += "<li class='col-xs-12 file-list'>" + this.files[i].name + "</li>"
+          }
 
-  var fileList = document.getElementById("files");
-  fileList.addEventListener("change", function (e) {
-      var list = "";
-      for (var i = 0; i < this.files.length; i++) {
-          list += "<li class='col-xs-12 file-list'>" + this.files[i].name + "</li>"
-      }
+          document.getElementById("fileList").innerHTML = list;
+      }, false);
+    });
+  }
+  function getTreeView(event) {
 
-      document.getElementById("fileList").innerHTML = list;
-  }, false);
-});
+    const path = $('#root_dir').data('path');;
+
+    $.ajax({
+      type: "GET",
+      url: "/files/get_tree?id=" + serverId + "&path=" + path,
+      dataType: 'text',
+      success: function(data){
+        console.log("got response:");
+        console.log(data);
+
+        dataArr = data.split('\n');
+        serverDir = dataArr.shift(); // Remove & return first element (server directory)
+        text = dataArr.join('\n');
+
+        try{
+          document.getElementById(path).innerHTML += text;
+          event.target.parentElement.classList.add("clicked");
+        }catch{
+          document.getElementById('files-tree').innerHTML = text;
+        }
+
+
+        document.getElementsByClassName('files-tree-title')[0].setAttribute('data-path', serverDir);
+        document.getElementsByClassName('files-tree-title')[0].setAttribute('data-name', 'Files');
+
+        setTimeout(function () {setTreeViewContext()}, 1000);
+      },
+    });
+  }
+
+  function getToggleMain(event) {
+    path = event.target.parentElement.getAttribute('data-path');
+        document.getElementById("files-tree").classList.toggle("d-block");
+        document.getElementById(path+"span").classList.toggle("tree-caret-down");
+        document.getElementById(path+"span").classList.toggle("tree-caret");
     }
-    function getTreeView() {
+
+  function getDirView(event) {
+    let path = event.target.parentElement.getAttribute('data-path');
+
+    if (document.getElementById(path).classList.contains('clicked')) {
+
+      var toggler = document.getElementById(path+"span");
+
+      if (toggler.classList.contains('files-tree-title')) {
+        document.getElementById(path+"ul").classList.toggle("d-block");
+        document.getElementById(path+"span").classList.toggle("tree-caret-down");
+      }
+      return;
+    } else {
       $.ajax({
         type: "GET",
-        url: '/ajax/get_tree?id={{ data['server_stats']['server_id']['server_id'] }}',
+        url: "/files/get_dir?id=" + serverId + "&path=" + path,
         dataType: 'text',
-        success: function(data){
+        success: function(data) {
           console.log("got response:");
-          console.log(data);
 
           dataArr = data.split('\n');
           serverDir = dataArr.shift(); // Remove & return first element (server directory)
           text = dataArr.join('\n');
 
-          document.getElementById('files-tree').innerHTML = text;
-
-          document.getElementsByClassName('files-tree-title')[0].setAttribute('data-path', serverDir);
-          document.getElementsByClassName('files-tree-title')[0].setAttribute('data-name', 'Files');
+          try {
+            document.getElementById(path+"span").classList.add('tree-caret-down');
+            document.getElementById(path).innerHTML += text;
+            document.getElementById(path).classList.add("clicked");
+          } catch {
+            console.log("Bad")
+          }
 
           setTimeout(function () {setTreeViewContext()}, 1000);
 
-          var toggler = document.getElementsByClassName("tree-caret");
-          var i;
+          var toggler = document.getElementById(path);
 
-          for (i = 0; i < toggler.length; i++) {
-            if (toggler[i].classList.contains('files-tree-title')) continue;
-            toggler[i].addEventListener("click", function caretListener() {
-              this.parentElement.querySelector(".tree-nested").classList.toggle("d-block");
-              this.classList.toggle("tree-caret-down");
+            if (toggler.classList.contains('files-tree-title')){
+            document.getElementById(path+"span").addEventListener("click", function caretListener() {
+              document.getElementById(path+"ul").classList.toggle("d-block");
+              document.getElementById(path+"span").classList.toggle("tree-caret-down");
             });
           }
         },
       });
     }
-
-    function setTreeViewContext() {
-      var treeItems = document.getElementsByClassName('tree-ctx-item');
-
-      for (var i = 0; i < treeItems.length; i++) {
-        var treeItem = treeItems[i];
-        treeItem.addEventListener('contextmenu', function contextListener(event) {
-          event.preventDefault();
-          var ctxmenuPath = event.target.getAttribute('data-path');
-          var ctxmenuName = event.target.getAttribute('data-name');
-          if (!ctxmenuPath) {
-            console.log({ 'event.target': event.target, ctxmenuPath });
-            return;
-          }
-          $('#renameItem').show();
-
-          var isDir = event.target.classList.contains('tree-folder');
-          $('#createFile').toggle(isDir);
-          $('#createDir').toggle(isDir);
-          $('#deleteDir').toggle(isDir);
-          $('#upload').toggle(isDir);
-
-          var isFile = event.target.classList.contains('tree-file');
-          $('#deleteFile').toggle(isFile);
-          $('#downloadFile').toggle(isFile);
-          console.log({ 'event.target': event.target, isDir, isFile });
-
-          if(event.target.classList.contains('files-tree-title')) {
-            $('#createFile').show();
-            $('#createDir').show();
-            $('#renameItem').hide();
-            $('#deleteDir').hide();
-            $('#deleteFile').hide();
-            $('#downloadFile').hide();
-            $('#upload').show();
-          }
-                      if(event.target.textContent.endsWith('.zip')){
-             $('#unzip').show();
-             console.log(event.target.textContent)
-            }else{
-            $('#unzip').hide();}
-
-        var clientX = event.clientX;
-        var clientY = event.clientY;
-
-
-
-          document.getElementById('files-tree-nav-content')
-            .setAttribute('data-path', ctxmenuPath);
-          document.getElementById('files-tree-nav-content')
-            .setAttribute('data-name', ctxmenuName);
-          document.getElementById("files-tree-nav").style.display = "flex";
-          document.getElementById("files-tree-nav").style.position = "fixed";
-          domRect = document.getElementById("files-tree-nav").getBoundingClientRect();
-          sum = (clientY+domRect['height']) - window.innerHeight
-          if(domRect['height']+clientY > window.innerHeight){
-            clientY = clientY - sum
-          }
-          document.getElementById("files-tree-nav").style.top = clientY + 'px';
-          document.getElementById("files-tree-nav").style.left =  clientX + 'px';
-          console.log(domRect)
-          console.log(window.innerHeight)
-        })
-      }
-    }
-
-    document.addEventListener('click', function(e){
-  let inside = (e.target.closest('#files-tree-nav'));
-  let contextMenu = document.getElementById('files-tree-nav');
-  if(!inside){
-    contextMenu.setAttribute('style', 'display:none');
-  }else{
-    contextMenu.setAttribute('style', 'display:none');
   }
-});
 
-    if (webSocket) {
-      webSocket.on('close_upload_box', function (close_upload_box) {
-        hideUploadBox();
-      });
-    }
-    function hideUploadBox(){
-      if (!uploadWaitDialog) return;
-      uploadWaitDialog.modal('hide');
-      getTreeView();
-    }
+  function setTreeViewContext() {
+    var treeItems = document.getElementsByClassName('tree-ctx-item');
 
-    function createFileE(event) {
-      bootbox.prompt("{% raw translate('serverFiles', 'createFileQuestion', data['lang']) %}", function(result) {
-        path = event.target.parentElement.getAttribute('data-path');
-        name = event.target.parentElement.getAttribute('data-name');
-        if (!result) return;
+    for (var i = 0; i < treeItems.length; i++) {
+      var treeItem = treeItems[i];
+      treeItem.addEventListener('contextmenu', function contextListener(event) {
+        event.preventDefault();
+        var ctxmenuPath = event.target.getAttribute('data-path');
+        var ctxmenuName = event.target.getAttribute('data-name');
+        if (!ctxmenuPath) {
+          console.log({ 'event.target': event.target, ctxmenuPath });
+          return;
+        }
+        $('#renameItem').show();
 
-        createFile(path, result, function () {
-          getTreeView()
-          document.getElementById('files-tree-nav').style.display = 'none';
-        });
+        var isDir = event.target.classList.contains('files-tree-title');
+        $('#createFile').toggle(isDir);
+        $('#createDir').toggle(isDir);
+        $('#deleteDir').toggle(isDir);
+        $('#upload').toggle(isDir);
+
+        var isFile = event.target.classList.contains('tree-file');
+        $('#deleteFile').toggle(isFile);
+        $('#downloadFile').toggle(isFile);
+        console.log({ 'event.target': event.target, isDir, isFile });
+
+        if (event.target.classList.contains('root-dir')) {
+          $('#createFile').show();
+          $('#createDir').show();
+          $('#renameItem').hide();
+          $('#deleteDir').hide();
+          $('#deleteFile').hide();
+          $('#downloadFile').hide();
+          $('#upload').show();
+        }
+        if (event.target.textContent.endsWith('.zip')) {
+          $('#unzip').show();
+          console.log(event.target.textContent)
+        } else {
+          $('#unzip').hide();
+        }
+
+      var clientX = event.clientX;
+      var clientY = event.clientY;
+
+
+
+        document.getElementById('files-tree-nav-content')
+          .setAttribute('data-path', ctxmenuPath);
+        document.getElementById('files-tree-nav-content')
+          .setAttribute('data-name', ctxmenuName);
+        document.getElementById("files-tree-nav").style.display = "flex";
+        document.getElementById("files-tree-nav").style.position = "fixed";
+        domRect = document.getElementById("files-tree-nav").getBoundingClientRect();
+        sum = (clientY+domRect['height']) - window.innerHeight
+        if(domRect['height']+clientY > window.innerHeight){
+          clientY = clientY - sum
+        }
+        document.getElementById("files-tree-nav").style.top = clientY + 'px';
+        document.getElementById("files-tree-nav").style.left =  clientX + 'px';
+        console.log(domRect)
+        console.log(window.innerHeight)
       })
     }
+  }
 
-    function createDirE(event) {
-      bootbox.prompt("{% raw translate('serverFiles', 'createDirQuestion', data['lang']) %}", function(result) {
-        path = event.target.parentElement.getAttribute('data-path');
-        name = event.target.parentElement.getAttribute('data-name');
-        if (!result) return;
+  document.addEventListener('click', function(e){
+    let inside = (e.target.closest('#files-tree-nav'));
+    let contextMenu = document.getElementById('files-tree-nav');
+    if (!inside) {
+      contextMenu.setAttribute('style', 'display:none');
+    } else {
+      contextMenu.setAttribute('style', 'display:none');
+    }
+  });
 
-        createDir(path, result, function () {
-          getTreeView()
-          document.getElementById('files-tree-nav').style.display = 'none';
-        });
-      })
-    }
-    function downloadFileE(event) {
-      path = event.target.parentElement.getAttribute('data-path');
-      name = event.target.parentElement.getAttribute('data-name');
-      window.location.href = '/panel/download_file?id={{ data['server_stats']['server_id']['server_id'] }}&path='+path+'&name='+name;
-    }
-
-    function renameItemE(event) {
-      path = event.target.parentElement.getAttribute('data-path');
-      name = event.target.parentElement.getAttribute('data-name');
-      bootbox.prompt({
-          title: "{% raw translate('serverFiles', 'renameItemQuestion', data['lang']) %}",
-          value: name,
-          callback: function(result) {
-            if (!result) return;
-            renameItem(path, result, function () {
-              getTreeView()
-              document.getElementById('files-tree-nav').style.display = 'none';
-            });
-          }
-      });
-    }
-        function unzipFilesE(event) {
-        path = event.target.parentElement.getAttribute('data-path');
-      unZip(path)
-    }
-
-    function deleteFileE(event) {
-      path = event.target.parentElement.getAttribute('data-path');
-      name = event.target.parentElement.getAttribute('data-name');
-      bootbox.confirm({
-          size: "",
-          title: "{% raw translate('serverFiles', 'deleteItemQuestion', data['lang']) %}",
-          closeButton: false,
-          message: "{% raw translate('serverFiles', 'deleteItemQuestionMessage', data['lang']) %}",
-          buttons: {
-            confirm: {
-              label: "{{ translate('serverFiles', 'yesDelete', data['lang']) }}",
-              className: 'btn-danger'
-            },
-            cancel: {
-              label: "{{ translate('serverFiles', 'noDelete', data['lang']) }}",
-              className: 'btn-link'
-            }
-          },
-          callback: function(result) {
-            if (!result) return;
-            deleteFile(path, function () {
-              getTreeView()
-              document.getElementById('files-tree-nav').style.display = 'none';
-            });
-          }
-      });
-    }
-
-    function deleteDirE(event) {
-      path = event.target.parentElement.getAttribute('data-path');
-      name = event.target.parentElement.getAttribute('data-name');
-      bootbox.confirm({
-          size: "",
-          title: "{% raw translate('serverFiles', 'deleteItemQuestion', data['lang']) %}",
-          closeButton: false,
-          message: "{% raw translate('serverFiles', 'deleteItemQuestionMessage', data['lang']) %}",
-          buttons: {
-            confirm: {
-              label: "{{ translate('serverFiles', 'yesDelete', data['lang']) }}",
-              className: 'btn-danger'
-            },
-            cancel: {
-              label: "{{ translate('serverFiles', 'noDelete', data['lang']) }}",
-              className: 'btn-link'
-            }
-          },
-          callback: function(result) {
-            if (!result) return;
-            deleteDir(path, function () {
-              getTreeView()
-              document.getElementById('files-tree-nav').style.display = 'none';
-            });
-          }
-      });
-    }
-
-    document.getElementsByClassName('files-tree-title')[0].addEventListener("click", function caretListener() {
-      this.parentElement.querySelector(".tree-nested").classList.toggle("d-block");
-      this.classList.toggle("tree-caret-down");
+  if (webSocket) {
+    webSocket.on('close_upload_box', function (close_upload_box) {
+      hideUploadBox();
     });
-
+  }
+  function hideUploadBox(){
+    if (!uploadWaitDialog) return;
+    uploadWaitDialog.modal('hide');
     getTreeView();
-    setTreeViewContext();
+  }
 
-    function setKeyboard(target) {
-      var handlerName = target.getAttribute('data-handler-name');
-      if (handlerName == 'null') handlerName = null;
-      editor.setKeyboardHandler(handlerName);
+  function createFileE(event) {
+    bootbox.prompt("{% raw translate('serverFiles', 'createFileQuestion', data['lang']) %}", function(result) {
+      path = event.target.parentElement.getAttribute('data-path');
+      name = event.target.parentElement.getAttribute('data-name');
+      if (!result) return;
 
-      var nodes = target.parentNode.querySelectorAll("[data-handler-name]");
-      for (var i = 0; i < nodes.length; i++) {
-        nodes[i].classList.remove('btn-primary');
-        nodes[i].classList.add('btn-secondary');
+      createFile(path, result, function () {
+        getTreeView()
+        document.getElementById('files-tree-nav').style.display = 'none';
+      });
+    })
+  }
+
+  function createDirE(event) {
+    bootbox.prompt("{% raw translate('serverFiles', 'createDirQuestion', data['lang']) %}", function(result) {
+      path = event.target.parentElement.getAttribute('data-path');
+      name = event.target.parentElement.getAttribute('data-name');
+      if (!result) return;
+
+      createDir(path, result, function () {
+        getTreeView()
+        document.getElementById('files-tree-nav').style.display = 'none';
+      });
+    })
+  }
+  function downloadFileE(event) {
+    path = event.target.parentElement.getAttribute('data-path');
+    name = event.target.parentElement.getAttribute('data-name');
+    window.location.href = `/panel/download_file?id=${serverId}&path=${path}&name=${name}`;
+  }
+
+  function renameItemE(event) {
+    path = event.target.parentElement.getAttribute('data-path');
+    name = event.target.parentElement.getAttribute('data-name');
+    bootbox.prompt({
+      title: "{% raw translate('serverFiles', 'renameItemQuestion', data['lang']) %}",
+      value: name,
+      callback: function(result) {
+        if (!result) return;
+        renameItem(path, result, function () {
+          getTreeView()
+          document.getElementById('files-tree-nav').style.display = 'none';
+        });
       }
+    });
+  }
+      function unzipFilesE(event) {
+      path = event.target.parentElement.getAttribute('data-path');
+    unZip(path)
+  }
 
-      target.classList.remove('btn-secondary');
-      target.classList.add('btn-primary');
+  function deleteFileE(event) {
+    path = event.target.parentElement.getAttribute('data-path');
+    name = event.target.parentElement.getAttribute('data-name');
+    bootbox.confirm({
+        size: "",
+        title: "{% raw translate('serverFiles', 'deleteItemQuestion', data['lang']) %}",
+        closeButton: false,
+        message: "{% raw translate('serverFiles', 'deleteItemQuestionMessage', data['lang']) %}",
+        buttons: {
+          confirm: {
+            label: "{{ translate('serverFiles', 'yesDelete', data['lang']) }}",
+            className: 'btn-danger'
+          },
+          cancel: {
+            label: "{{ translate('serverFiles', 'noDelete', data['lang']) }}",
+            className: 'btn-link'
+          }
+        },
+        callback: function(result) {
+          if (!result) return;
+          deleteFile(path, function () {
+            getTreeView()
+            document.getElementById('files-tree-nav').style.display = 'none';
+          });
+        }
+    });
+  }
+
+  function deleteDirE(event) {
+    path = event.target.parentElement.getAttribute('data-path');
+    name = event.target.parentElement.getAttribute('data-name');
+    bootbox.confirm({
+      size: "",
+      title: "{% raw translate('serverFiles', 'deleteItemQuestion', data['lang']) %}",
+      closeButton: false,
+      message: "{% raw translate('serverFiles', 'deleteItemQuestionMessage', data['lang']) %}",
+      buttons: {
+        confirm: {
+          label: "{{ translate('serverFiles', 'yesDelete', data['lang']) }}",
+          className: 'btn-danger'
+        },
+        cancel: {
+          label: "{{ translate('serverFiles', 'noDelete', data['lang']) }}",
+          className: 'btn-link'
+        }
+      },
+      callback: function(result) {
+        if (!result) return;
+        deleteDir(path, function () {
+          getTreeView()
+          document.getElementById('files-tree-nav').style.display = 'none';
+        });
+      }
+    });
+  }
+
+  getTreeView();
+  setTreeViewContext();
+
+  function setKeyboard(target) {
+    var handlerName = target.getAttribute('data-handler-name');
+    if (handlerName == 'null') handlerName = null;
+    editor.setKeyboardHandler(handlerName);
+
+    var nodes = target.parentNode.querySelectorAll("[data-handler-name]");
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].classList.remove('btn-primary');
+      nodes[i].classList.add('btn-secondary');
     }
+
+    target.classList.remove('btn-secondary');
+    target.classList.add('btn-primary');
+  }
+
+
 
 </script>
 

@@ -1,31 +1,18 @@
-import os
-import time
 import logging
-import sys
-import yaml
-import asyncio
-import shutil
-import tempfile
-import zipfile
-from distutils import dir_util
 
-from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
-
-from app.classes.shared.main_models import db_helper
 from app.classes.models.server_permissions import  server_permissions, Enum_Permissions_Server
-from app.classes.models.users import users_helper
+from app.classes.models.users import users_helper, ApiKeys
 from app.classes.models.roles import roles_helper
 from app.classes.models.servers import servers_helper
-
-from app.classes.shared.server import Server
-from app.classes.minecraft.server_props import ServerProps
-from app.classes.minecraft.serverjars import server_jar_obj
-from app.classes.minecraft.stats import Stats
+from app.classes.shared.main_models import db_helper
 
 logger = logging.getLogger(__name__)
 
 class Server_Perms_Controller:
+
+    @staticmethod
+    def get_server_user_list(server_id):
+        return server_permissions.get_server_user_list(server_id)
 
     @staticmethod
     def list_defined_permissions():
@@ -43,13 +30,21 @@ class Server_Perms_Controller:
         return permissions_list
 
     @staticmethod
-    def get_server_permissions_foruser(user_id, server_id):
-        permissions_list = server_permissions.get_user_permissions_list(user_id, server_id)
-        return permissions_list
-
-    @staticmethod
     def add_role_server(server_id, role_id, rs_permissions="00000000"):
         return server_permissions.add_role_server(server_id, role_id, rs_permissions)
+
+    @staticmethod
+    def get_server_roles(server_id):
+        return server_permissions.get_server_roles(server_id)
+
+    @staticmethod
+    def backup_role_swap(old_server_id, new_server_id):
+        role_list = server_permissions.get_server_roles(old_server_id)
+        for role in role_list:
+            server_permissions.add_role_server(
+                new_server_id, role.role_id,
+                server_permissions.get_permissions_mask(int(role.role_id), int(old_server_id)))
+            #server_permissions.add_role_server(new_server_id, role.role_id, '00001000')
 
     #************************************************************************************************
     #                                   Servers Permissions Methods
@@ -67,8 +62,17 @@ class Server_Perms_Controller:
         return server_permissions.get_role_permissions_list(role_id)
 
     @staticmethod
-    def get_user_permissions_list(user_id, server_id):
-        return server_permissions.get_user_permissions_list(user_id, server_id)
+    def get_user_id_permissions_list(user_id: str, server_id: str):
+        return server_permissions.get_user_id_permissions_list(user_id, server_id)
+
+    @staticmethod
+    def get_api_key_id_permissions_list(key_id: str, server_id: str):
+        key = users_helper.get_user_api_key(key_id)
+        return server_permissions.get_api_key_permissions_list(key, server_id)
+
+    @staticmethod
+    def get_api_key_permissions_list(key: ApiKeys, server_id: str):
+        return server_permissions.get_api_key_permissions_list(key, server_id)
 
     @staticmethod
     def get_authorized_servers_stats_from_roles(user_id):

@@ -5,17 +5,20 @@ import time
 import argparse
 import logging.config
 import signal
-
-""" Our custom classes / pip packages """
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
+if helper.checkRoot():
+    console.critical("Root detected. Root/Admin access denied. Run Crafty again with non-elevated permissions.")
+    time.sleep(5)
+    console.critical("Crafty shutting down. Root/Admin access denied.")
+    sys.exit(0)
+# pylint: disable=wrong-import-position
 from app.classes.shared.main_models import installer, database
-
 from app.classes.shared.tasks import TasksManager
 from app.classes.shared.main_controller import Controller
 from app.classes.shared.migration import MigrationManager
 
-from app.classes.shared.cmd import MainPrompt
+from app.classes.shared.command import MainPrompt
 
 
 def do_intro():
@@ -44,7 +47,7 @@ def setup_logging(debug=True):
 
     if os.path.exists(logging_config_file):
         # open our logging config file
-        with open(logging_config_file, 'rt') as f:
+        with open(logging_config_file, 'rt', encoding='utf-8') as f:
             logging_config = json.load(f)
             if debug:
                 logging_config['loggers']['']['level'] = 'DEBUG'
@@ -53,11 +56,11 @@ def setup_logging(debug=True):
 
     else:
         logging.basicConfig(level=logging.DEBUG)
-        logging.warning("Unable to read logging config from {}".format(logging_config_file))
-        console.critical("Unable to read logging config from {}".format(logging_config_file))
+        logging.warning(f"Unable to read logging config from {logging_config_file}")
+        console.critical(f"Unable to read logging config from {logging_config_file}")
 
 
-""" Our Main Starter """
+# Our Main Starter
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Crafty Controller - A Server Management System")
 
@@ -84,7 +87,7 @@ if __name__ == '__main__':
 
     # setting up the logger object
     logger = logging.getLogger(__name__)
-    print("Logging set to: {} ".format(logger.level))
+    console.cyan(f"Logging set to: {logger.level}")
 
     # print our pretty start message
     do_intro()
@@ -95,12 +98,14 @@ if __name__ == '__main__':
 
     migration_manager = MigrationManager(database)
     migration_manager.up() # Automatically runs migrations
-    
+
     # do our installer stuff
     fresh_install = installer.is_fresh_install()
 
     if fresh_install:
         console.debug("Fresh install detected")
+        console.warning("We have detected a fresh install. Please be sure to forward Crafty's port, " +
+        f"{helper.get_setting('https_port')}, through your router/firewall if you would like to be able to access Crafty remotely.")
         installer.default_settings()
     else:
         console.debug("Existing install detected")
@@ -128,23 +133,27 @@ if __name__ == '__main__':
     # refresh our cache and schedule for every 12 hoursour cache refresh for serverjars.com
     tasks_manager.serverjar_cache_refresher()
 
-    # this should always be last
-    tasks_manager.start_main_kill_switch_watcher()
-
-    logger.info("Checking Internet/Port Service. This may take a minute.")
-    console.info("Checking Internet/Port Service. This may take a minute.")
+    logger.info("Checking Internet. This may take a minute.")
+    console.info("Checking Internet. This may take a minute.")
 
     if not helper.check_internet():
-            console.error("We have detected the machine running Crafty has no connection to the internet. Client connections to the server may be limited.")
-    elif not helper.check_port(helper.get_setting('https_port')):
-        console.error("We have detected Crafty's port, {} may not be open on the host network or a firewall is blocking it. Remote client connections to Crafty may be limited.".format(helper.get_setting('https_port')))
+        console.warning("We have detected the machine running Crafty has no connection to the internet. " +
+        "Client connections to the server may be limited.")
+
+    if not controller.check_system_user():
+        controller.add_system_user()
 
     Crafty = MainPrompt(tasks_manager, migration_manager)
 
-    def sigterm_handler(signum, current_stack_frame):
+    project_root = os.path.dirname(__file__)
+    controller.set_project_root(project_root)
+    controller.clear_unexecuted_commands()
+
+    def sigterm_handler(*sig):
         print() # for newline
-        logger.info("Recieved SIGTERM, stopping Crafty")
-        console.info("Recieved SIGTERM, stopping Crafty")
+        logger.info(f"Recieved {signal.Signals(sig[0]).name} [{sig[0]}], stopping Crafty...")
+        console.info(f"Recieved {signal.Signals(sig[0]).name} [{sig[0]}], stopping Crafty...")
+        tasks_manager._main_graceful_exit()
         Crafty.universal_exit()
 
     signal.signal(signal.SIGTERM, sigterm_handler)
@@ -154,8 +163,9 @@ if __name__ == '__main__':
             Crafty.cmdloop()
         except KeyboardInterrupt:
             print() # for newline
-            logger.info("Recieved SIGINT, stopping Crafty")
-            console.info("Recieved SIGINT, stopping Crafty")
+            logger.info("Recieved SIGINT, stopping Crafty...")
+            console.info("Recieved SIGINT, stopping Crafty...")
+            tasks_manager._main_graceful_exit()
             Crafty.universal_exit()
     else:
         print("Crafty started in daemon mode, no shell will be printed")
@@ -165,8 +175,8 @@ if __name__ == '__main__':
                     break
                 time.sleep(1)
             except KeyboardInterrupt:
-                logger.info("Recieved SIGINT, stopping Crafty")
-                console.info("Recieved SIGINT, stopping Crafty")
+                logger.info("Recieved SIGINT, stopping Crafty...")
+                console.info("Recieved SIGINT, stopping Crafty...")
                 break
-        
+        tasks_manager._main_graceful_exit()
         Crafty.universal_exit()

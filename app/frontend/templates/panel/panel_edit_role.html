@@ -1,10 +1,9 @@
 {% extends ../base.html %}
 
 {% block meta %}
-<!--  <meta http-equiv="refresh" content="60">-->
 {% end %}
 
-{% block title %}Crafty Controller - Edit Role{% end %}
+{% block title %}Crafty Controller - {{ translate('rolesConfig', 'pageTitle', data['lang']) }}{% end %}
 
 {% block content %}
 
@@ -16,13 +15,13 @@
       <div class="page-header">
         {% if data['new_role'] %}
           <h4 class="page-title">
-            New Role
+            {{ translate('rolesConfig', 'pageTitleNew', data['lang']) }}
               <br />
               <small>RID: N/A</small>
           </h4>
         {% else %}
           <h4 class="page-title">
-            Edit Role - {{ data['role']['role_name'] }}
+            {{ translate('rolesConfig', 'pageTitle', data['lang']) }} - {{ data['role']['role_name'] }}
               <br />
               <small>RID: {{ data['role']['role_id'] }}</small>
           </h4>
@@ -41,7 +40,7 @@
             <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
               <li class="nav-item">
                 <a class="nav-link active" href="/panel/edit_role?id={{ data['role']['role_id'] }}&subpage=config" role="tab" aria-selected="true">
-                  <i class="fas fa-cogs"></i>Config</a>
+                  <i class="fas fa-cogs"></i>{{ translate('rolesConfig', 'config', data['lang']) }}</a>
               </li>
               <!-- <li class="nav-item">
                 <a class="nav-link" href="/panel/edit_role?id={{ data['role']['role_id'] }}&subpage=other" role="tab" aria-selected="false">
@@ -58,22 +57,22 @@
                       {% raw xsrf_form_html() %}
                       <input type="hidden" name="id" value="{{ data['role']['role_id'] }}">
                       <input type="hidden" name="subpage" value="config">
-                      
+
                       <div class="card">
                         <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                          <h4 class="card-title"><i class="fas fa-user-tag"></i> Role Settings</h4>
+                          <h4 class="card-title"><i class="fas fa-user-tag"></i> {{ translate('rolesConfig', 'roleTitle', data['lang']) }}</h4>
                         </div>
                         <div class="card-body">
                           <div class="form-group">
-                            <label for="role_name">Role Name <small class="text-muted ml-1"> - What you wish to call this role</small> </label>
+                            <label for="role_name">{{ translate('rolesConfig', 'roleName', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('rolesConfig', 'roleDesc', data['lang']) }}</small> </label>
                             <input type="text" class="form-control" name="role_name" id="role_name" value="{{ data['role']['role_name']  }}" placeholder="Role Name" >
                           </div>
                         </div>
                       </div>
-                      
+
                       <div class="card">
                         <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                          <h4 class="card-title"><i class="fas fa-server"></i> Allowed Servers  <small class="text-muted ml-1"> - servers this role is allowed to access </small> </h4>
+                          <h4 class="card-title"><i class="fas fa-server"></i> {{ translate('rolesConfig', 'roleServers', data['lang']) }}  <small class="text-muted ml-1"> {{ translate('rolesConfig', 'serversDesc', data['lang']) }}</small> </h4>
                         </div>
                         <div class="card-body">
                           <div class="form-group">
@@ -81,8 +80,8 @@
                               <table class="table table-hover">
                                 <thead>
                                   <tr class="rounded">
-                                    <th>Server Name</th>
-                                    <th>Access?</th>
+                                    <th>{{ translate('rolesConfig', 'serverName', data['lang']) }}</th>
+                                    <th>{{ translate('rolesConfig', 'serverAccess', data['lang']) }}</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -105,19 +104,19 @@
                           </div>
                         </div>
                       </div>
-                      
+
                       <div class="card">
                         <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                          <h4 class="card-title"><i class="fas fa-user-lock"></i> Roles Permissions <small class="text-muted ml-1"> - permissions this role has on this/these servers </small></h4>
+                          <h4 class="card-title"><i class="fas fa-user-lock"></i> {{ translate('rolesConfig', 'rolePerms', data['lang']) }}<small class="text-muted ml-1"> - {{ translate('rolesConfig', 'permsServer', data['lang']) }} </small></h4>
                         </div>
-                        <div class="card-body">                          
+                        <div class="card-body">
                           <div class="form-group">
                             <div class="table-responsive">
                               <table class="table table-hover">
                                 <thead>
                                   <tr class="rounded">
-                                    <th>Permission Name</th>
-                                    <th>Authorized ?</th>
+                                    <th>{{ translate('rolesConfig', 'permName', data['lang']) }}</th>
+                                    <th>{{ translate('rolesConfig', 'permAccess', data['lang']) }}</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -149,14 +148,14 @@
                 <div class="col-md-3 col-sm-12">
                   <div class="card">
                     <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                      <h4  class="card-title"><i class="fas fa-users"></i> Users Assigned to Role:</h4>
+                      <h4  class="card-title"><i class="fas fa-users"></i> {{ translate('rolesConfig', 'roleUsers', data['lang']) }}</h4>
                     </div>
-                    <div class="card-body">                      
+                    <div class="card-body">
                       <div class="table-responsive">
                         <table class="table table-hover">
                           <thead>
                             <tr class="rounded">
-                              <th>User Name</th>
+                              <th>{{ translate('rolesConfig', 'roleUserName', data['lang']) }}</th>
                               <th></th>
                             </tr>
                           </thead>
@@ -183,22 +182,22 @@
                 <div class="col-md-3 col-sm-12">
                   <div class="card">
                     <div class="card-body">
-                      <h4 class="card-title">Role Config Area</h4>
-                      <p class="card-description"> Here is where you can change the configuration of your role</p>
+                      <h4 class="card-title">{{ translate('rolesConfig', 'roleConfigArea', data['lang']) }}</h4>
+                      <p class="card-description"> {{ translate('rolesConfig', 'configDesc', data['lang']) }}</p>
                       <blockquote class="blockquote">
                         <p class="mb-0">
-                            Created: {{ str(data['role']['created']) }}
+                          {{ translate('rolesConfig', 'created', data['lang']) }} {{ str(data['role']['created']) }}
                             <br />
-                            Last updated: {{ str(data['role']['last_update']) }}
+                            {{ translate('rolesConfig', 'configUpdate', data['lang']) }} {{ str(data['role']['last_update']) }}
                             <br />
                         </p>
                       </blockquote>
                       <div class="text-center">
                         {% if data['new_role'] %}
-                          <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i> Delete Role</a><br />
-                          <small>You cannot delete something that does not yet exist</small>
+                          <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i>{{ translate('rolesConfig', 'delRole', data['lang']) }}</a><br />
+                          <small>{{ translate('rolesConfig', 'doesNotExist', data['lang']) }}</small>
                         {% else %}
-                          <a href="/panel/remove_role?id={{ data['role']['role_id'] }}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Delete Role</a>
+                          <a href="/panel/remove_role?id={{ data['role']['role_id'] }}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i>{{ translate('rolesConfig', 'delRole', data['lang']) }}</a>
                         {% end %}
                     </div>
                     </div>
@@ -229,7 +228,6 @@
 
     $( document ).ready(function() {
         console.log( "ready!" );
-
     });
 
 

@@ -1,151 +1,175 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    {% block meta %}{% end %}
-    <title>{% block title %}{{ _('Default') }}{% end %}</title>
+<html lang="{{ data['lang_page'] }}">
 
-      <!-- plugins:css -->
-    <link rel="stylesheet" href="/static/assets/vendors/mdi/css/materialdesignicons.min.css">
-    <link rel="stylesheet" href="/static/assets/vendors/flag-icon-css/css/flag-icon.min.css">
-    <link rel="stylesheet" href="/static/assets/vendors/ti-icons/css/themify-icons.css">
-    <link rel="stylesheet" href="/static/assets/vendors/typicons/typicons.css">
-    <link rel="stylesheet" href="/static/assets/vendors/fontawesome5/css/all.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.22/fh-3.1.7/r-2.2.6/sc-2.0.3/sp-1.2.2/datatables.min.css"/>
-    <link rel="stylesheet" href="/static/assets/vendors/css/vendor.bundle.base.css">
-    <link rel="stylesheet" href="/static/assets/css/crafty.css">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  {% block meta %}{% end %}
+  <title>{% block title %}{{ _('Default') }}{% end %}</title>
 
-    <!-- endinject -->
+  <!-- plugins:css -->
+  <link rel="stylesheet" href="/static/assets/vendors/mdi/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="/static/assets/vendors/flag-icon-css/css/flag-icon.min.css">
+  <link rel="stylesheet" href="/static/assets/vendors/ti-icons/css/themify-icons.css">
+  <link rel="stylesheet" href="/static/assets/vendors/typicons/typicons.css">
+  <link rel="stylesheet" href="/static/assets/vendors/fontawesome5/css/all.css">
+  <link rel="stylesheet" type="text/css"
+    href="https://cdn.datatables.net/v/bs4/dt-1.10.22/fh-3.1.7/r-2.2.6/sc-2.0.3/sp-1.2.2/datatables.min.css" />
+  <link rel="stylesheet" href="/static/assets/vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="/static/assets/css/crafty.css">
 
-    <!-- Plugin css for this page -->
-    <link rel="stylesheet" href="/static/assets/vendors/jvectormap/jquery-jvectormap.css">
-    <!-- End Plugin css for this page -->
+  <!-- endinject -->
 
-    <!-- Layout styles -->
-    <link rel="stylesheet" href="/static/assets/css/dark/style.css">
-    <!-- End Layout styles -->
+  <!-- Plugin css for this page -->
+  <link rel="stylesheet" href="/static/assets/vendors/jvectormap/jquery-jvectormap.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <!-- End Plugin css for this page -->
 
-    <link rel="shortcut icon" href="/static/assets/images/favicon.png" />
-    <link rel="stylesheet" href="/static/assets/css/crafty.css">
-  </head>
+  <!-- Layout styles -->
+  <link rel="stylesheet" href="/static/assets/css/dark/style.css">
+  <!-- End Layout styles -->
 
-  <body class="dark-theme">
-    <div class="container-scroller">
-      <!-- partial:partials/_navbar.html -->
-      <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
-        <div class="text-center navbar-brand-wrapper d-flex align-items-top justify-content-center">
-          <a class="navbar-brand brand-logo" href="/panel/dashboard">
-            <img src="/static/assets/images/logo_long.jpg" alt="logo" /> </a>
-          <a class="navbar-brand brand-logo-mini" href="/panel/dashboard">
-            <img src="/static/assets/images/logo_square.jpg" alt="logo" /> </a>
-        </div>
-        <div class="navbar-menu-wrapper d-flex align-items-center">
-          <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
-            <span class="mdi mdi-menu"></span>
-          </button>
+  <link rel="shortcut icon" type="image/svg+xml" href="/static/assets/images/logo_small.svg">
+  <link rel="alternate icon" href="/static/assets/images/favicon.png" />
+  <link rel="stylesheet" href="/static/assets/css/crafty.css">
+
+  <!-- Alpine.js - The modern jQuery alternative -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- End Alpine.js -->
+
+</head>
+
+<body class="dark-theme">
+  <div class="container-scroller">
+    <!-- partial:partials/_navbar.html -->
+    <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="text-center navbar-brand-wrapper d-flex align-items-top justify-content-center">
+        <a class="navbar-brand brand-logo" href="/panel/dashboard">
+          <img src="/static/assets/images/logo_long.svg" alt="logo" /> </a>
+        <a class="navbar-brand brand-logo-mini" href="/panel/dashboard">
+          <img src="/static/assets/images/logo_small.svg" alt="logo" /> </a>
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center">
+        <style>
+        body:not(.sidebar-icon-only) .navbar-toggler .mdi-chevron-double-right {
+            display: none;
+        }
+        body.sidebar-icon-only .navbar-toggler .mdi-chevron-double-left {
+            display: none;
+        }
+        </style>
+        <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+          <span class="mdi mdi-chevron-double-left"></span>
+          <span class="mdi mdi-chevron-double-right"></span>
+        </button>
 
         {% include notify.html %}
 
-          <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
-            <span class="mdi mdi-menu"></span>
-          </button>
-        </div>
-      </nav>
-
-        {% include main_menu.html %}
-
-        <div class="main-panel">
-
-          <div class="warnings">
-            <noscript class="noscript-warning" style="padding: 20px; background-color: rgb(247, 151, 15);">
-              <div>{% raw translate('base', 'doesNotWorkWithoutJavascript', data['lang']) %}</div>
-            </noscript>
-          </div>
-
-        {% block content %}
-        {% end %}
-
-        {% include footer.html %}
-
-        </div>
-        <!-- main-panel ends -->
-
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button"
+          data-toggle="offcanvas">
+          <span class="mdi mdi-menu"></span>
+        </button>
       </div>
-      <!-- page-body-wrapper ends -->
+    </nav>
+
+    {% include main_menu.html %}
+
+    <div class="main-panel">
+
+      <div class="warnings">
+        <noscript class="noscript-warning" style="padding: 20px; background-color: rgb(247, 151, 15);">
+          <div>{% raw translate('base', 'doesNotWorkWithoutJavascript', data['lang']) %}</div>
+        </noscript>
+      </div>
+
+      {% block content %}
+      {% end %}
+
+      {% include footer.html %}
+
     </div>
+    <!-- main-panel ends -->
+
+  </div>
+  <!-- page-body-wrapper ends -->
+  </div>
 
 
-    <style>
-      .notifications {
-        position: fixed;
-        width: 200px;
-        top: 70px;
-        right: 0px;
-      }
-      .notification {
-        position: relative;
-        box-sizing: border-box;
-        padding: 0.5rem;
-        padding-left: 0.7rem;
-        width: 180px;
-        margin-left: 10px;
-        margin-right: 10px;
-        background: #282a40;
-        transition: right 0.75s, opacity 0.75s, top 0.75s;
-        right: -6rem;
-        opacity: 0.1;
-        margin-bottom: 1rem;
-        z-index: 999;
-        top: 0px;
-      }
-      .notification.active {
-        right: 0rem;
-        opacity: 1;
-      }
-      .notification.remove {
-        right: 0rem;
-        opacity: 0.1;
-        top: -2rem;
-      }
-      .notification p {
-        margin: 0px;
-        width: calc(160.8px - 16px);
-        z-index: inherit;
-      }
-      .notification span {
-        position: absolute;
-        right: 0.5rem;
-        top: 0.46rem;
-        cursor: pointer;
-        font-weight: bold;
-        line-height: 20px;
-        font-size: 22px;
-        user-select: none;
-        z-index: inherit;
-      }
-    </style>
-    <div class="notifications"></div>
+  <style>
+    .notifications {
+      position: fixed;
+      width: 200px;
+      top: 70px;
+      right: 0px;
+    }
+
+    .notification {
+      position: relative;
+      box-sizing: border-box;
+      padding: 0.5rem;
+      padding-left: 0.7rem;
+      width: 180px;
+      margin-left: 10px;
+      margin-right: 10px;
+      background: #282a40;
+      transition: right 0.75s, opacity 0.75s, top 0.75s;
+      right: -6rem;
+      opacity: 0.1;
+      margin-bottom: 1rem;
+      z-index: 999;
+      top: 0px;
+    }
+
+    .notification.active {
+      right: 0rem;
+      opacity: 1;
+    }
+
+    .notification.remove {
+      right: 0rem;
+      opacity: 0.1;
+      top: -2rem;
+    }
+
+    .notification p {
+      margin: 0px;
+      width: calc(160.8px - 16px);
+      z-index: inherit;
+    }
+
+    .notification span {
+      position: absolute;
+      right: 0.5rem;
+      top: 0.46rem;
+      cursor: pointer;
+      font-weight: bold;
+      line-height: 20px;
+      font-size: 22px;
+      user-select: none;
+      z-index: inherit;
+    }
+  </style>
+  <div class="notifications"></div>
 
 
-    <script src="/static/assets/vendors/js/vendor.bundle.base.js"></script>
-    <script src="/static/assets/js/shared/off-canvas.js"></script>
-    <script src="/static/assets/js/shared/hoverable-collapse.js"></script>
-    <script src="/static/assets/js/shared/misc.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.22/fh-3.1.7/r-2.2.6/sc-2.0.3/sp-1.2.2/datatables.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
+  <script src="/static/assets/vendors/js/vendor.bundle.base.js"></script>
+  <script src="/static/assets/js/shared/off-canvas.js"></script>
+  <script src="/static/assets/js/shared/hoverable-collapse.js"></script>
+  <script src="/static/assets/js/shared/misc.js"></script>
+  <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.22/fh-3.1.7/r-2.2.6/sc-2.0.3/sp-1.2.2/datatables.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
+  <script type="text/javascript" src="/static/assets/js/motd.js"></script>
 
-    <script>
-
-      $.extend($.fn.dataTable.defaults, {
-        language: {% raw translate('datatables', 'i18n', data['lang']) %}
+  <script>
+    $.extend($.fn.dataTable.defaults, {
+      language: {% raw translate('datatables', 'i18n', data['lang']) %}
       })
 
-      //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
-      function getCookie(name) {
-        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
-        return r ? r[1] : undefined;
+    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+    function getCookie(name) {
+      var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+      return r ? r[1] : undefined;
     }
 
     // tool tips
@@ -154,13 +178,13 @@
     })
 
     // Notify
-    $(document).ready(function(){
-      $("#notificationDropdown").click(function(){
-        $.get("/ajax/announcements", function(data){
+    $(document).ready(function () {
+      $("#notificationDropdown").click(function () {
+        $.get("/ajax/announcements", function (data) {
           console.log(data);
           bootbox.alert({
-              title: "Notifications",
-              message: data,
+            title: "Notifications",
+            message: data,
 
           });
         });
@@ -168,74 +192,153 @@
     });
 
     // {% if request.protocol == 'https' %}
-      let usingWebSockets = true;
+    let usingWebSockets = true;
 
-      let listenEvents = [];
+    let listenEvents = [];
 
-      try {
-        pageQueryParams = 'page_query_params=' + encodeURIComponent(location.search)
-        page = 'page=' + encodeURIComponent(location.pathname)
-        var wsInternal = new WebSocket('wss://' + location.host + '/ws?' + page + '&' + pageQueryParams);
-        wsInternal.onopen = function() {
-          console.log('opened WebSocket connection:', wsInternal)
-        };
-        wsInternal.onmessage = function (rawMessage) {
-          var message = JSON.parse(rawMessage.data);
+    try {
+      pageQueryParams = 'page_query_params=' + encodeURIComponent(location.search)
+      page = 'page=' + encodeURIComponent(location.pathname)
+      var wsInternal = new WebSocket('wss://' + location.host + '/ws?' + page + '&' + pageQueryParams);
+      wsInternal.onopen = function () {
+        console.log('opened WebSocket connection:', wsInternal)
+      };
+      wsInternal.onmessage = function (rawMessage) {
+        var message = JSON.parse(rawMessage.data);
 
-          console.log('got message: ', message)
+        console.log('got message: ', message)
 
-          listenEvents
-            .filter(listenedEvent => listenedEvent.event == message.event)
-            .forEach(listenedEvent => listenedEvent.callback(message.data))
-        };
-        wsInternal.onerror = function (errorEvent) {
-          console.error('WebSocket Error', errorEvent);
-        };
-        wsInternal.onclose = function (closeEvent) {
-          console.log('Closed WebSocket', closeEvent);
-        };
+        listenEvents
+          .filter(listenedEvent => listenedEvent.event == message.event)
+          .forEach(listenedEvent => listenedEvent.callback(message.data))
+      };
+      wsInternal.onerror = function (errorEvent) {
+        console.error('WebSocket Error', errorEvent);
+      };
+      wsInternal.onclose = function (closeEvent) {
+        console.log('Closed WebSocket', closeEvent);
+      };
 
 
-        webSocket = {
-          on: function (event, callback) {
-            console.log('registered ' + event + ' event');
-            listenEvents.push({ event: event, callback: callback })
-          },
-          emit: function (event, data) {
-            var message = {
-              event: event,
-              data: data
-            }
-
-            wsInternal.send(JSON.stringify(message));
+      webSocket = {
+        on: function (event, callback) {
+          console.log('registered ' + event + ' event');
+          listenEvents.push({ event: event, callback: callback })
+        },
+        emit: function (event, data) {
+          var message = {
+            event: event,
+            data: data
           }
+
+          wsInternal.send(JSON.stringify(message));
         }
-      } catch (error) {
-        console.error('Error while making websocket helpers', error);
-        usingWebSockets = false;
       }
+    } catch (error) {
+      console.error('Error while making websocket helpers', error);
+      usingWebSockets = false;
+    }
     // {% else %}
-      let usingWebSockets = false;
-      warn('WebSockets are not supported in Crafty if not using the https protocol')
-      var webSocket;
+    let usingWebSockets = false;
+    warn('WebSockets are not supported in Crafty if not using the https protocol')
+    var webSocket;
     // {% end%}
 
-if (webSocket) {
-    webSocket.on('send_start_error', function (start_error) {
-            var x = document.querySelector('.bootbox');
-            if(x){
-            x.remove()}
-            var x = document.querySelector('.modal-backdrop');
-            if(x){
-            x.remove()}
-            bootbox.alert({
-              message: start_error.error,
-              callback: function () {
-              location.reload();
+    if (webSocket) {
+      webSocket.on('send_start_error', function (start_error) {
+        var x = document.querySelector('.bootbox');
+        if (x) {
+          x.remove()
+        }
+        var x = document.querySelector('.modal-backdrop');
+        if (x) {
+          x.remove()
+        }
+        bootbox.alert({
+          message: start_error.error,
+          callback: function () {
+            location.reload();
+          }
+        })
+      });
     }
-})
-    });
-  }
+    if (webSocket) {
+      webSocket.on('send_logs_bootbox', function (server_id) {
+        var x = document.querySelector('.bootbox');
+        if (x) {
+          x.remove()
+        }
+        var x = document.querySelector('.modal-backdrop');
+        if (x) {
+          x.remove()
+        }
+        bootbox.alert({
+          title: "{{ translate('notify', 'downloadLogs', data['lang']) }}",
+          message: "{{ translate('notify', 'finishedPreparing', data['lang']) }}",
+          buttons: {
+            ok: {
+              label: 'Download',
+              className: 'btn-info'
+            }
+          },
+          callback: function () {
+            console.log("in callback")
+            location.href = "/panel/download_support_package";
+          }
+        });
+      });
+    }
+
+    if (webSocket) {
+      webSocket.on('send_eula_bootbox', function (server_id) {
+        var x = document.querySelector('.bootbox');
+        if (x) {
+          x.remove()
+        }
+        var x = document.querySelector('.modal-backdrop');
+        if (x) {
+          x.remove()
+        }
+        bootbox.confirm({
+          title: '{% raw translate("error", "eulaTitle", data['lang']) %}',
+          message: '{% raw translate("error", "eulaMsg", data['lang']) %} <br><br><a href="https://account.mojang.com/documents/minecraft_eula" target="_blank">EULA</a><br><br>{% raw translate("error", "eulaAgree", data['lang']) %}',
+          buttons: {
+            confirm: {
+              label: 'Yes',
+              className: 'btn-info'
+            },
+            cancel: {
+              label: 'No',
+              className: 'btn-secondary'
+            }
+          },
+          callback: function (result) {
+            if (result == true) {
+              eulaAgree(server_id.id)
+            }
+            else {
+              location.reload()
+            }
+          }
+        })
+      });
+    }
+
+    function eulaAgree(server_id, command) {
+    //< !--this getCookie function is in base.html-- >
+      var token = getCookie("_xsrf");
+
+      $.ajax({
+        type: "POST",
+        headers: { 'X-XSRFToken': token },
+        url: '/ajax/eula?id=' + server_id,
+        success: function (data) {
+          console.log("got response:");
+          console.log(data);
+          location.reload();
+        }
+      });
+    }
 
 
     function warn(message) {
@@ -255,7 +358,7 @@ if (webSocket) {
       closeEl.style.lineHeight = '20px';
       closeEl.style.cursor = 'pointer';
 
-      closeEl.addEventListener('click', function () {this.parentElement.style.display='none';});
+      closeEl.addEventListener('click', function () { this.parentElement.style.display = 'none'; });
 
       var parentEl = document.createElement('div');
 
@@ -276,14 +379,14 @@ if (webSocket) {
     }
 
     function notify(message) {
-      console.log(`notify(${message}})`);
+      console.log(`notify(${message})`);
       var paragraphEl = document.createElement('p');
       var closeEl = document.createElement('span');
 
       paragraphEl.textContent = message;
 
       closeEl.innerHTML = '&times;';
-      closeEl.addEventListener('click', function () {closeNotification(this)});
+      closeEl.addEventListener('click', function () { closeNotification(this) });
 
       var parentEl = document.createElement('div');
       parentEl.appendChild(paragraphEl);
@@ -311,12 +414,34 @@ if (webSocket) {
     }
     webSocket.on('notification', notify);
 
-    </script>
+    document.addEventListener('alpine:init', () => {
+      console.log('%c[Crafty Controller] %cAlpine.js pre-initialization!', 'font-weight: 900; color: #800080;', 'color: #eee;');
+    })
+    document.addEventListener('alpine:initialized', () => {
+      console.log('%c[Crafty Controller] %cAlpine.js initialized!', 'font-weight: 900; color: #800080;', 'color: #eee;');
+    })
 
-    {% block js %}
-    <!-- Custom js for this page -->
-    <!-- End custom js for this page -->
-    {% end %}
+    $(document).ready(function () {
+      console.log('%c[Crafty Controller] %cReady for JS!', 'font-weight: 900; color: #800080;', 'font-weight: 900; color: #eee;');
+      $('#support_logs').click(function () {
+        var dialog = bootbox.dialog({
+          message: '<p class="text-center mb-0"><i class="fa fa-spin fa-cog"></i>{{ translate('notify', 'preparingLogs', data['lang']) }}</p>',
+          closeButton: false
+        });
+        setTimeout(function () {
+          location.href = "/panel/support_logs";
+        }, 6000);
 
-  </body>
+      });
+    });
+
+  </script>
+
+  {% block js %}
+  <!-- Custom js for base.html page partial pages -->
+  <!-- End custom js for base.html page -->
+  {% end %}
+
+</body>
+
 </html>
