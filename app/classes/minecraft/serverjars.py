@@ -1,4 +1,3 @@
-import sys
 import json
 import threading
 import time
@@ -6,11 +5,10 @@ import shutil
 import logging
 from datetime import datetime
 
-from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
 from app.classes.controllers.servers_controller import Servers_Controller
-from app.classes.web.websocket_helper import websocket_helper
 from app.classes.models.server_permissions import server_permissions
+from app.classes.shared.helpers import helper
+from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +16,7 @@ try:
     import requests
 
 except ModuleNotFoundError as err:
-    logger.critical(f"Import Error: Unable to load {err.name} module", exc_info=True)
-    console.critical(f"Import Error: Unable to load {err.name} module")
-    sys.exit(1)
-
+    helper.auto_installer_fix(err)
 
 class ServerJars:
 

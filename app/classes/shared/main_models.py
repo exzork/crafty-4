@@ -1,18 +1,12 @@
-import sys
 import logging
 
+from app.classes.models.users import Users, users_helper
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 
-from app.classes.models.users import Users, users_helper
-
 # To disable warning about unused import ; Users is imported from here in other places
-#pylint: disable=self-assigning-variable
+# pylint: disable=self-assigning-variable
 Users = Users
-
-logger = logging.getLogger(__name__)
-peewee_logger = logging.getLogger('peewee')
-peewee_logger.setLevel(logging.INFO)
 
 try:
     # pylint: disable=unused-import
@@ -20,11 +14,12 @@ try:
     from playhouse.shortcuts import model_to_dict
 
 except ModuleNotFoundError as err:
-    logger.critical(f"Import Error: Unable to load {err.name} module", exc_info=True)
-    console.critical(f"Import Error: Unable to load {err.name} module")
-    sys.exit(1)
+    helper.auto_installer_fix(err)
 
-database = SqliteDatabase(helper.db_path, pragmas={
+logger = logging.getLogger(__name__)
+peewee_logger = logging.getLogger('peewee')
+peewee_logger.setLevel(logging.INFO)
+database = SqliteDatabase(helper.db_path, pragmas = {
     'journal_mode': 'wal',
     'cache_size': -1024 * 10})
 

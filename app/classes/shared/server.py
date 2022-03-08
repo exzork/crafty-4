@@ -1,5 +1,4 @@
 import os
-import sys
 import re
 import time
 import datetime
@@ -9,35 +8,29 @@ import logging.config
 import subprocess
 import html
 import tempfile
-from apscheduler.schedulers.background import BackgroundScheduler
-#TZLocal is set as a hidden import on win pipeline
-from tzlocal import get_localzone
 
+from app.classes.minecraft.stats import Stats
+from app.classes.minecraft.mc_ping import ping, ping_bedrock
 from app.classes.models.servers import Server_Stats, servers_helper
 from app.classes.models.management import management_helper
 from app.classes.models.users import users_helper
 from app.classes.models.server_permissions import server_permissions
-
-from app.classes.minecraft.stats import Stats
-from app.classes.minecraft.mc_ping import ping, ping_bedrock
-
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
 from app.classes.shared.translation import translation
 from app.classes.shared.file_helpers import file_helper
-
 from app.classes.web.websocket_helper import websocket_helper
-
-logger = logging.getLogger(__name__)
 
 try:
     import psutil
+    #TZLocal is set as a hidden import on win pipeline
+    from tzlocal import get_localzone
+    from apscheduler.schedulers.background import BackgroundScheduler
 
 except ModuleNotFoundError as e:
-    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
-    console.critical(f"Import Error: Unable to load {e.name} module")
-    sys.exit(1)
+    helper.auto_installer_fix(e)
 
+logger = logging.getLogger(__name__)
 
 class ServerOutBuf:
     lines = {}

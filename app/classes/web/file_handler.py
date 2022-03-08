@@ -1,18 +1,21 @@
 import os
 import logging
-import tornado.web
-import tornado.escape
-import bleach
 
+from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
 from app.classes.shared.file_helpers import file_helper
-
 from app.classes.web.base_handler import BaseHandler
-from app.classes.models.server_permissions import Enum_Permissions_Server
+
+try:
+    import bleach
+    import tornado.web
+    import tornado.escape
+
+except ModuleNotFoundError as e:
+    helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
-
 
 class FileHandler(BaseHandler):
 

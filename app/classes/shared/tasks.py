@@ -1,35 +1,29 @@
 import os
-import sys
 import time
 import logging
 import threading
 import asyncio
 import datetime
-from tzlocal import get_localzone
 
+from app.classes.controllers.users_controller import Users_Controller
+from app.classes.minecraft.serverjars import server_jar_obj
+from app.classes.models.management import management_helper
+from app.classes.models.users import users_helper
 from app.classes.shared.helpers import helper
 from app.classes.shared.console import console
-
 from app.classes.web.tornado_handler import Webserver
 from app.classes.web.websocket_helper import websocket_helper
 
-from app.classes.minecraft.serverjars import server_jar_obj
-from app.classes.models.management import management_helper
-from app.classes.controllers.users_controller import Users_Controller
-from app.classes.models.users import users_helper
-
-logger = logging.getLogger('apscheduler')
-
 try:
+    from tzlocal import get_localzone
     from apscheduler.events import EVENT_JOB_EXECUTED
     from apscheduler.schedulers.background import BackgroundScheduler
     from apscheduler.triggers.cron import CronTrigger
 
 except ModuleNotFoundError as err:
-    logger.critical(f"Import Error: Unable to load {err.name} module", exc_info=True)
-    console.critical(f"Import Error: Unable to load {err.name} module")
-    sys.exit(1)
+    helper.auto_installer_fix(err)
 
+logger = logging.getLogger('apscheduler')
 scheduler_intervals = { 'seconds',
                         'minutes',
                         'hours',

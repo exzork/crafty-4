@@ -8,11 +8,10 @@ import logging.config
 import uuid
 import random
 
-from app.classes.shared.console import console
 from app.classes.minecraft.bedrock_ping import BedrockPing
+from app.classes.shared.console import console
 
 logger = logging.getLogger(__name__)
-
 
 class Server:
     def __init__(self, data):

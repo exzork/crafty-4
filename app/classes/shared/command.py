@@ -6,10 +6,10 @@ import logging
 
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
-
 from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
+
 class MainPrompt(cmd.Cmd):
 
     def __init__(self, tasks_manager, migration_manager):

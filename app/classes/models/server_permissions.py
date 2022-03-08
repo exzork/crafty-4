@@ -1,32 +1,24 @@
-import sys
 import logging
-
-from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
-from app.classes.shared.permission_helper import permission_helper
 
 from app.classes.models.servers import Servers
 from app.classes.models.roles import Roles
 from app.classes.models.users import User_Roles, users_helper, ApiKeys, Users
-
-
-logger = logging.getLogger(__name__)
-peewee_logger = logging.getLogger('peewee')
-peewee_logger.setLevel(logging.INFO)
+from app.classes.shared.helpers import helper
+from app.classes.shared.permission_helper import permission_helper
 
 try:
     from peewee import SqliteDatabase, Model, ForeignKeyField, CharField, CompositeKey, JOIN
     from enum import Enum
 
 except ModuleNotFoundError as e:
-    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
-    console.critical(f"Import Error: Unable to load {e.name} module")
-    sys.exit(1)
+    helper.auto_installer_fix(e)
 
-database = SqliteDatabase(helper.db_path, pragmas={
+logger = logging.getLogger(__name__)
+peewee_logger = logging.getLogger('peewee')
+peewee_logger.setLevel(logging.INFO)
+database = SqliteDatabase(helper.db_path, pragmas = {
     'journal_mode': 'wal',
     'cache_size': -1024 * 10})
-
 
 #************************************************************************************************
 #                                  Role Servers Class

@@ -1,30 +1,24 @@
-import sys
 import json
 import logging
 import os
-import libgravatar
-import requests
 
+from app.classes.minecraft.serverjars import server_jar_obj
+from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
 from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
 from app.classes.shared.file_helpers import file_helper
 from app.classes.web.base_handler import BaseHandler
-from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
-from app.classes.minecraft.serverjars import server_jar_obj
-
-
-logger = logging.getLogger(__name__)
 
 try:
     import tornado.web
     import tornado.escape
     import bleach
+    import libgravatar
+    import requests
 
 except ModuleNotFoundError as e:
-    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
-    console.critical(f"Import Error: Unable to load {e.name} module")
-    sys.exit(1)
+    helper.auto_installer_fix(e)
 
+logger = logging.getLogger(__name__)
 
 class ServerHandler(BaseHandler):
 

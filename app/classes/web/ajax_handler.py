@@ -3,21 +3,24 @@ import html
 import re
 import logging
 import time
-import tornado.web
-import tornado.escape
-import bleach
 
+from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
-from app.classes.web.websocket_helper import websocket_helper
 from app.classes.shared.translation import translation
 from app.classes.shared.server import ServerOutBuf
-
+from app.classes.web.websocket_helper import websocket_helper
 from app.classes.web.base_handler import BaseHandler
-from app.classes.models.server_permissions import Enum_Permissions_Server
+
+try:
+    import bleach
+    import tornado.web
+    import tornado.escape
+
+except ModuleNotFoundError as ex:
+    helper.auto_installer_fix(ex)
 
 logger = logging.getLogger(__name__)
-
 
 class AjaxHandler(BaseHandler):
 

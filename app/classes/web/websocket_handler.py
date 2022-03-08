@@ -1,24 +1,19 @@
 import json
 import logging
 import asyncio
-import sys
 from urllib.parse import parse_qsl
 
 from app.classes.shared.authentication import authentication
 from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
 from app.classes.web.websocket_helper import websocket_helper
-
-logger = logging.getLogger(__name__)
 
 try:
     import tornado.websocket
 
 except ModuleNotFoundError as e:
-    logger.critical(f"Import Error: Unable to load {e.name} module", exc_info=True)
-    console.critical(f"Import Error: Unable to load {e.name} module")
-    sys.exit(1)
+    helper.auto_installer_fix(e)
 
+logger = logging.getLogger(__name__)
 
 class SocketHandler(tornado.websocket.WebSocketHandler):
     page = None
