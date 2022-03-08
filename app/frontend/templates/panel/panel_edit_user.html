@@ -87,7 +87,11 @@
                             <label class="form-label" for="language">{{ translate('userConfig', 'userLang', data['lang']) }}</label>
                             <select class="form-select form-control form-control-lg select-css" id="language" name="language" form="user_form">
                             {% for lang in data['languages'] %}
+                            {% if not 'incomplete' in lang %}
                               <option value="{{lang}}">{{lang}}</option>
+                            {% else %}
+                              <option value="{{lang}}" disabled>{{lang}}</option>
+                            {% end %}
                             {% end %}
                             </select>
                           </div>
