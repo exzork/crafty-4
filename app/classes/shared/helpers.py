@@ -22,8 +22,9 @@ import psutil
 from app.classes.shared.console import console
 from app.classes.shared.installer import installer
 from app.classes.shared.file_helpers import file_helper
-from app.classes.shared.helpers import helper
 from app.classes.web.websocket_helper import websocket_helper
+
+logger = logging.getLogger(__name__)
 
 try:
     import requests
@@ -32,9 +33,9 @@ try:
     from argon2 import PasswordHasher
 
 except ModuleNotFoundError as err:
-    helper.auto_installer_fix(err)
-
-logger = logging.getLogger(__name__)
+    logger.critical(f"Import Error: Unable to load {err.name} module", exc_info=True)
+    print(f"Import Error: Unable to load {err.name} module")
+    installer.do_install()
 
 class Helpers:
     allowed_quotes = [

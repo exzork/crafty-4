@@ -151,8 +151,8 @@ if __name__ == '__main__':
 
     def sigterm_handler(*sig):
         print() # for newline
-        logger.info(f"Recieved SIGINT [{sig[0]}], stopping Crafty...")
-        console.info(f"Recieved SIGINT [{sig[0]}], stopping Crafty...")
+        logger.info(f"Recieved {signal.Signals(sig[0]).name} [{sig[0]}], stopping Crafty...")
+        console.info(f"Recieved {signal.Signals(sig[0]).name} [{sig[0]}], stopping Crafty...")
         tasks_manager._main_graceful_exit()
         Crafty.universal_exit()
 
