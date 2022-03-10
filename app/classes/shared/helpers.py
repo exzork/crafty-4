@@ -423,6 +423,18 @@ class Helpers:
     def get_time_as_string():
         now = datetime.now()
         return now.strftime("%m/%d/%Y, %H:%M:%S")
+    
+    @staticmethod
+    def calc_percent(source_path, dest_path):
+        source_size = 0
+        for path, _dirs, files in os.walk(source_path):
+            for f in files:
+                fp = os.path.join(path, f)
+                source_size += os.stat(fp).st_size
+        dest_size = os.path.getsize(str(dest_path))
+        percent = round((dest_size/source_size) * 100)
+        print("per", percent)
+        return percent
 
     @staticmethod
     def check_file_exists(path: str):

@@ -617,6 +617,8 @@ class Server:
                         f" (ID#{self.server_id}, path={self.server_path}) at '{backup_filename}'")
 
             tempDir = tempfile.mkdtemp()
+            self.server_scheduler.add_job(self.backup_status, 'interval', seconds=1, id="backup_"+str(self.server_id), args = [tempDir+'/',
+                                backup_filename+'.zip'])
             # pylint: disable=unexpected-keyword-arg
             file_helper.copy_dir(self.server_path, tempDir, dirs_exist_ok=True)
             excluded_dirs = management_helper.get_excluded_backup_dirs(self.server_id)
@@ -650,6 +652,7 @@ class Server:
             self.is_backingup = False
             file_helper.del_dirs(tempDir)
             logger.info(f"Backup of server: {self.name} completed")
+            self.server_scheduler.remove_job("backup_"+str(self.server_id))
             server_users = server_permissions.get_server_user_list(self.server_id)
             for user in server_users:
                 websocket_helper.broadcast_user(user, 'notification', translation.translate('notify', 'backupComplete',
@@ -658,8 +661,12 @@ class Server:
             return
         except:
             logger.exception(f"Failed to create backup of server {self.name} (ID {self.server_id})")
+            self.server_scheduler.remove_job("backup_"+str(self.server_id))
             self.is_backingup = False
             return
+        
+    def backup_status(self, source_path, dest_path):
+        helper.calc_percent(source_path, dest_path)
 
     def list_backups(self):
         if self.settings['backup_path']:
