@@ -466,6 +466,8 @@ class PanelHandler(BaseHandler):
                 page_data['backup_config'] = self.controller.management.get_backup_config(server_id)
                 exclusions = []
                 page_data['exclusions'] = self.controller.management.get_excluded_backup_dirs(server_id)
+                page_data['backing_up'] = self.controller.get_server_obj(server_id).is_backingup
+                page_data['backup_stats'] = self.controller.get_server_obj(server_id).send_backup_status()
                 #makes it so relative path is the only thing shown
                 for file in page_data['exclusions']:
                     if helper.is_os_windows():
@@ -524,20 +526,6 @@ class PanelHandler(BaseHandler):
 
             self.download_file(file, backup_file)
 
-            self.redirect(f"/panel/server_detail?id={server_id}&subpage=backup")
-
-        elif page == 'backup_now':
-            server_id = self.check_server_id()
-            if server_id is None:
-                return
-
-            server = self.controller.get_server_obj(server_id)
-            management_helper.add_to_audit_log_raw(
-                self.controller.users.get_user_by_id(exec_user['user_id'])['username'], exec_user['user_id'], server_id,
-                f"Backup now executed for server {server_id} ",
-                source_ip=self.get_remote_ip())
-
-            server.backup_server()
             self.redirect(f"/panel/server_detail?id={server_id}&subpage=backup")
 
         elif page == 'panel_config':
