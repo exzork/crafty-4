@@ -594,6 +594,7 @@ class Server:
         if not self.is_backingup:
             try:
                 backup_thread.start()
+                self.is_backingup = True
             except Exception as ex:
                 logger.error(f"Failed to start backup: {ex}")
                 return False
@@ -603,13 +604,24 @@ class Server:
         logger.info(f"Backup Thread started for server {self.settings['server_name']}.")
 
     def a_backup_server(self):
+        if len(websocket_helper.clients) > 0:
+                websocket_helper.broadcast_page_params(
+            '/panel/server_detail',
+            {
+                'id': str(self.server_id)
+            },
+            'backup_reload',
+            {
+                "percent": 0,
+                "total_files": 0
+            }
+        )
         logger.info(f"Starting server {self.name} (ID {self.server_id}) backup")
         server_users = server_permissions.get_server_user_list(self.server_id)
         for user in server_users:
             websocket_helper.broadcast_user(user, 'notification', translation.translate('notify',
             'backupStarted', users_helper.get_user_lang_by_id(user)).format(self.name))
         time.sleep(3)
-        self.is_backingup = True
         conf = management_helper.get_backup_config(self.server_id)
         try:
             backup_filename = f"{self.settings['backup_path']}/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
@@ -666,7 +678,26 @@ class Server:
             return
         
     def backup_status(self, source_path, dest_path):
-        helper.calc_percent(source_path, dest_path)
+        results = helper.calc_percent(source_path, dest_path)
+        self.backup_stats = results
+        if len(websocket_helper.clients) > 0:
+            websocket_helper.broadcast_page_params(
+            '/panel/server_detail',
+            {
+                'id': str(self.server_id)
+            },
+            'backup_status',
+            results
+        )
+        
+    def send_backup_status(self):
+        try:
+            return self.backup_stats
+        except:
+            return {
+                'percent': 0,
+                'total_files': 0
+            }
 
     def list_backups(self):
         if self.settings['backup_path']:

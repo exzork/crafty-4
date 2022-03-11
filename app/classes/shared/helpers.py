@@ -426,15 +426,27 @@ class Helpers:
     
     @staticmethod
     def calc_percent(source_path, dest_path):
+        #calculates percentable of zip from drive. Not with compression. For backups and support logs
         source_size = 0
+        files_count = 0
         for path, _dirs, files in os.walk(source_path):
             for f in files:
                 fp = os.path.join(path, f)
                 source_size += os.stat(fp).st_size
+                files_count += 1
         dest_size = os.path.getsize(str(dest_path))
         percent = round((dest_size/source_size) * 100)
-        print("per", percent)
-        return percent
+        if percent >= 0:
+            results = {
+                "percent": percent,
+                "total_files": files_count
+            }
+        else:
+            results = {
+                "percent": 0,
+                "total_files": 0
+            }
+        return results
 
     @staticmethod
     def check_file_exists(path: str):

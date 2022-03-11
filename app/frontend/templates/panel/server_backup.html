@@ -42,9 +42,20 @@
                       <input type="hidden" name="id" value="{{ data['server_stats']['server_id']['server_id'] }}">
                       <input type="hidden" name="subpage" value="backup">
 
-                      <div class="form-group">
-                        <a href="/panel/backup_now?id={{ data['server_stats']['server_id']['server_id'] }}" class="btn btn-primary" onclick="backup_started()">{{ translate('serverBackups', 'backupNow', data['lang']) }}</a>
+
+                      {% if data['backing_up'] %}
+                      <div class="progress" style="height: 15px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" id="backup_progress_bar" role="progressbar" style="width:{{data['backup_stats']['percent']}}%;" aria-valuenow="{{data['backup_stats']['percent']}}" aria-valuemin="0" aria-valuemax="100">{{ data['backup_stats']['percent'] }}%</div>
                       </div>
+                      <p>Backing up <span id="total_files">{{data['backup_stats']['total_files']}}</span> Files</p>
+                      {% end %}
+
+                      <br>
+                      {% if not data['backing_up'] %}
+                      <div id="backup_button" class="form-group">
+                        <button class="btn btn-primary" id="backup_now_button">{{ translate('serverBackups', 'backupNow', data['lang']) }}</button>
+                      </div>
+                      {% end %}
                       <div class="form-group">
                         {% if data['super_user'] %}
                         <label for="server_name">{{ translate('serverBackups', 'storageLocation', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverBackups', 'storageLocationDesc', data['lang']) }}</small> </label>
@@ -224,12 +235,21 @@ const server_id = new URLSearchParams(document.location.search).get('id')
     return r ? r[1] : undefined;
   }
 
-  function backup_started(time='5-10') {
-    bootbox.alert({
+  function backup_started() {
+    var token = getCookie("_xsrf")
+    document.getElementById('backup_button').style.visibility = 'hidden';
+    var dialog = bootbox.dialog({
       message: "{{ translate('serverBackups', 'backupTask', data['lang']) }}",
-      backdrop: true
-    });
-  }
+      closeButton: false
+  });
+  $.ajax({
+    type: "POST",
+    headers: {'X-XSRFToken': token},
+    url: '/ajax/backup_now?id='+server_id,
+    success: function(data) {
+    },
+  });
+}
 
   function del_backup(filename, id){
     var token = getCookie("_xsrf")
@@ -350,6 +370,9 @@ const server_id = new URLSearchParams(document.location.search).get('id')
         }
       });
     });
+    $( "#backup_now_button" ).click(function() {
+      backup_started();
+    });
 
   });
 
@@ -400,6 +423,26 @@ document.getElementById("modal-cancel").addEventListener("click", function(){
         show_file_tree();
 
     }, 5000);
+    });
+  }
+  if (webSocket) {
+    webSocket.on('backup_status', function (backup) {
+      if(backup.percent >= 100){
+        document.getElementById('backup_progress_bar').innerHTML = '100%';
+        document.getElementById('backup_progress_bar').style.width = '100%';
+        setTimeout(function(){
+          window.location.reload(1);
+       }, 5000);
+      }else{
+        document.getElementById('backup_progress_bar').innerHTML = backup.percent +'%';
+        document.getElementById('backup_progress_bar').style.width = backup.percent + '%';
+        document.getElementById('total_files').innerHTML = backup.total_files;
+      }
+    });
+  }
+  if (webSocket) {
+    webSocket.on('backup_reload', function (backup) {
+      location.reload()
     });
   }
 
