@@ -111,16 +111,16 @@
 
             {% end %}
             {% if len(data['servers']) > 0 %}
-            <table class="table table-hover">
+            <table id="servers_table" class="table table-hover">
               <thead>
-                <tr class="rounded">
-                  <th>{{ translate('dashboard', 'server', data['lang']) }}</th>
-                  <th>{{ translate('dashboard', 'actions', data['lang']) }}</th>
-                  <th>{{ translate('dashboard', 'cpuUsage', data['lang']) }}</th>
-                  <th>{{ translate('dashboard', 'memUsage', data['lang']) }}</th>
-                  <th>{{ translate('dashboard', 'size', data['lang']) }}</th>
-                  <th>{{ translate('dashboard', 'players', data['lang']) }}</th>
-                  <th>{{ translate('dashboard', 'status', data['lang']) }}</th>
+                <tr class="rounded" id="first" draggable="false">
+                  <th draggable="false">{{ translate('dashboard', 'server', data['lang']) }}</th>
+                  <th draggable="false">{{ translate('dashboard', 'actions', data['lang']) }}</th>
+                  <th draggable="false">{{ translate('dashboard', 'cpuUsage', data['lang']) }}</th>
+                  <th draggable="false">{{ translate('dashboard', 'memUsage', data['lang']) }}</th>
+                  <th draggable="false">{{ translate('dashboard', 'size', data['lang']) }}</th>
+                  <th draggable="false">{{ translate('dashboard', 'players', data['lang']) }}</th>
+                  <th draggable="false">{{ translate('dashboard', 'status', data['lang']) }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -228,7 +228,7 @@
                     data['lang']) }} <br />
 
                     {% if server['stats']['desc'] != 'False' %}
-                    {{ server['stats']['desc'] }} <br />
+                    <div style="overflow-wrap: break-word !important; max-width: 70px !important; overflow: scroll;">{{ server['stats']['desc'] }}</div> <br />
                     {% end %}
 
                     {% if server['stats']['version'] != 'False' %}
@@ -438,7 +438,7 @@
       var motd = "";
       if (server.desc) {
         motd = `<span id="input_motd_` + server.id + `" class="input_motd">` + server.desc + `</span>`;
-        server_infos = server_infos + motd + "<br />";
+        server_infos = server_infos + '<div style="word-wrap: break-word; max-width: 70px !important; overflow: auto;">' + motd + '</div>' + "<br />";
       }
 
       /* Version */
@@ -464,7 +464,11 @@
   }
 
   function update_servers_status(data) {
+    try{
     update_one_server_status(data[0]);
+  }catch{
+    
+  }
     display_motd();
   }
 
@@ -617,8 +621,13 @@
       }
     }
     console.log(id_string)
-    sendOrder(id_string)
+    if($('#servers_table').find('input[type=search]').length == 0){
+      sendOrder(id_string)
+    }else{
+      console.log("Will not reorder when servers are filtered")
+    }
   }
+
   function sendOrder(id_string) {
     var token = getCookie("_xsrf")
     $.ajax({
@@ -634,7 +643,28 @@
       },
     });
   }
-
+  $(document).ready(function () {
+    var servers_table = $('#servers_table').DataTable({
+    "ordering": false, // false to disable sorting (or any other option)
+    "paging": false
+    });
+    document.getElementById('first').setAttribute('draggable', false);
+    $('.dataTables_length').addClass('bs-select');
+    });
+    $('#servers_table').on('search.dt', function() {
+      let value = $('.dataTables_filter input').val()
+      if(value == ''){
+        const table = document.querySelector("table");
+        for (const row of table.rows) {
+          row.setAttribute('draggable', true)
+        }
+      }else{
+        const table = document.querySelector("table");
+        for (const row of table.rows) {
+          row.setAttribute('draggable', false)
+        }
+      }
+  } );
 </script>
 
 {% end %}
