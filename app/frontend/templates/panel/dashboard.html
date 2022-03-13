@@ -653,7 +653,7 @@
     });
     $('#servers_table').on('search.dt', function() {
       let value = $('.dataTables_filter input').val()
-      if(value == ''){
+      if(value === ''){
         const table = document.querySelector("table");
         for (const row of table.rows) {
           row.setAttribute('draggable', true)
