@@ -37,6 +37,7 @@ class Users(Model):
     support_logs = CharField(default = '')
     valid_tokens_from = DateTimeField(default=datetime.datetime.now)
     server_order = CharField(default="")
+    preparing = BooleanField(default=False)
 
     class Meta:
         table_name = "users"
@@ -196,6 +197,19 @@ class helper_users:
     @staticmethod
     def set_support_path(user_id, support_path):
         Users.update(support_logs = support_path).where(Users.user_id == user_id).execute()
+
+    @staticmethod
+    def set_prepare(user_id):
+        Users.update(preparing = True).where(Users.user_id == user_id).execute()
+
+    @staticmethod
+    def stop_prepare(user_id):
+        Users.update(preparing = False).where(Users.user_id == user_id).execute()
+
+    @staticmethod
+    def clear_support_status():
+        #pylint: disable=singleton-comparison
+        Users.update(preparing = False).where(Users.preparing == True).execute()
 
     @staticmethod
     def user_id_exists(user_id):

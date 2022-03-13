@@ -148,6 +148,7 @@ if __name__ == '__main__':
     project_root = os.path.dirname(__file__)
     controller.set_project_root(project_root)
     controller.clear_unexecuted_commands()
+    controller.clear_support_status()
 
     def sigterm_handler(*sig):
         print() # for newline

@@ -309,6 +309,19 @@ class AjaxHandler(BaseHandler):
             self.controller.users.update_server_order(exec_user['user_id'], bleach.clean(self.get_argument('order')))
             return
 
+        elif page == "backup_now":
+            server_id = self.get_argument('id', None)
+            if server_id is None:
+                return
+
+            server = self.controller.get_server_obj(server_id)
+            self.controller.management.add_to_audit_log_raw(
+                self.controller.users.get_user_by_id(exec_user['user_id'])['username'], exec_user['user_id'], server_id,
+                f"Backup now executed for server {server_id} ",
+                source_ip=self.get_remote_ip())
+
+            server.backup_server()
+
         elif page == "clear_comms":
             if exec_user['superuser']:
                 self.controller.clear_unexecuted_commands()
