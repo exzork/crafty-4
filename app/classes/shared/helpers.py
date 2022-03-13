@@ -435,7 +435,7 @@ class Helpers:
                 source_size += os.stat(fp).st_size
                 files_count += 1
         dest_size = os.path.getsize(str(dest_path))
-        percent = round((dest_size/source_size) * 100)
+        percent = round((dest_size/source_size) * 100, 1)
         if percent >= 0:
             results = {
                 "percent": percent,

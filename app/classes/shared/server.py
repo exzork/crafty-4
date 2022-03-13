@@ -665,6 +665,20 @@ class Server:
             file_helper.del_dirs(tempDir)
             logger.info(f"Backup of server: {self.name} completed")
             self.server_scheduler.remove_job("backup_"+str(self.server_id))
+            results = {
+                "percent": 100,
+                "total_files": 0,
+                "current_file": 0
+            }
+            if len(websocket_helper.clients) > 0:
+                websocket_helper.broadcast_page_params(
+                '/panel/server_detail',
+                {
+                    'id': str(self.server_id)
+                },
+                'backup_status',
+                results
+            )
             server_users = server_permissions.get_server_user_list(self.server_id)
             for user in server_users:
                 websocket_helper.broadcast_user(user, 'notification', translation.translate('notify', 'backupComplete',
@@ -674,6 +688,20 @@ class Server:
         except:
             logger.exception(f"Failed to create backup of server {self.name} (ID {self.server_id})")
             self.server_scheduler.remove_job("backup_"+str(self.server_id))
+            results = {
+                "percent": 100,
+                "total_files": 0,
+                "current_file": 0
+            }
+            if len(websocket_helper.clients) > 0:
+                websocket_helper.broadcast_page_params(
+                '/panel/server_detail',
+                {
+                    'id': str(self.server_id)
+                },
+                'backup_status',
+                results
+            )
             self.is_backingup = False
             return
         
