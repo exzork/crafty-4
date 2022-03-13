@@ -6,7 +6,6 @@ import time
 import logging
 import tempfile
 from typing import Union
-from urllib import request
 
 from app.classes.controllers.crafty_perms_controller import Crafty_Perms_Controller
 from app.classes.controllers.management_controller import Management_Controller
@@ -174,7 +173,7 @@ class Controller:
         self.support_scheduler.add_job(self.log_status, 'interval', seconds=1, id="logs_"+str(exec_user['user_id']), args = [full_temp,
                 tempZipStorage +'.zip', exec_user])
         file_helper.make_archive(tempZipStorage, tempDir)
-        
+
         if len(websocket_helper.clients) > 0:
             websocket_helper.broadcast_user(exec_user['user_id'], 'support_status_update', helper.calc_percent(full_temp, tempZipStorage +'.zip'))
 
@@ -183,7 +182,7 @@ class Controller:
                 })
 
         self.users.set_support_path(exec_user['user_id'], tempZipStorage)
-        
+
         self.users.stop_prepare(exec_user['user_id'])
         self.support_scheduler.remove_job('logs_'+str(exec_user["user_id"]))
 
@@ -207,14 +206,14 @@ class Controller:
             svr.start_crash_detection()
         else:
             svr.stop_crash_detection()
-            
+
     def log_status(self, source_path, dest_path, exec_user):
         results = helper.calc_percent(source_path, dest_path)
         self.log_stats = results
 
         if len(websocket_helper.clients) > 0:
             websocket_helper.broadcast_user(exec_user['user_id'], 'support_status_update', results)
-        
+
     def send_log_status(self):
         try:
             return self.log_stats
@@ -637,7 +636,7 @@ class Controller:
     @staticmethod
     def clear_unexecuted_commands():
         helpers_management.clear_unexecuted_commands()
-        
+
     @staticmethod
     def clear_support_status():
         helper_users.clear_support_status()

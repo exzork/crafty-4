@@ -308,7 +308,7 @@ class AjaxHandler(BaseHandler):
         elif page == "send_order":
             self.controller.users.update_server_order(exec_user['user_id'], bleach.clean(self.get_argument('order')))
             return
-        
+
         elif page == "backup_now":
             server_id = self.get_argument('id', None)
             if server_id is None:

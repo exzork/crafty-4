@@ -423,7 +423,7 @@ class Helpers:
     def get_time_as_string():
         now = datetime.now()
         return now.strftime("%m/%d/%Y, %H:%M:%S")
-    
+
     @staticmethod
     def calc_percent(source_path, dest_path):
         #calculates percentable of zip from drive. Not with compression. For backups and support logs

@@ -605,7 +605,7 @@ class Server:
 
     def a_backup_server(self):
         if len(websocket_helper.clients) > 0:
-                websocket_helper.broadcast_page_params(
+            websocket_helper.broadcast_page_params(
             '/panel/server_detail',
             {
                 'id': str(self.server_id)
@@ -705,7 +705,7 @@ class Server:
             )
             self.is_backingup = False
             return
-        
+
     def backup_status(self, source_path, dest_path):
         results = helper.calc_percent(source_path, dest_path)
         self.backup_stats = results
@@ -718,7 +718,7 @@ class Server:
             'backup_status',
             results
         )
-        
+
     def send_backup_status(self):
         try:
             return self.backup_stats

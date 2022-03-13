@@ -106,11 +106,11 @@ class Users_Controller:
     @staticmethod
     def user_id_exists(user_id):
         return users_helper.user_id_exists(user_id)
-    
+
     @staticmethod
     def set_prepare(user_id):
         return users_helper.set_prepare(user_id)
-    
+
     @staticmethod
     def stop_prepare(user_id):
         return users_helper.stop_prepare(user_id)
