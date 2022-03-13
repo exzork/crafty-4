@@ -214,9 +214,14 @@
       };
       wsInternal.onerror = function (errorEvent) {
         console.error('WebSocket Error', errorEvent);
+        warn('WebSockets are required for Crafty to work. This websocket connection has been closed. Are you using a reverse proxy? See our'+
+              ' documentation for details')
+
       };
       wsInternal.onclose = function (closeEvent) {
         console.log('Closed WebSocket', closeEvent);
+        warn('WebSockets are required for Crafty to work. This websocket connection has been closed. Are you using a reverse proxy? See our'+
+              ' documentation for details')
       };
 
 
