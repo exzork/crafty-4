@@ -228,7 +228,7 @@
                     data['lang']) }} <br />
 
                     {% if server['stats']['desc'] != 'False' %}
-                    <div style="overflow-wrap: break-word !important; max-width: 70px !important; overflow: scroll;">{{ server['stats']['desc'] }}</div> <br />
+                    <div style="overflow-wrap: break-word !important; max-width: 85px !important; overflow: scroll;">{{ server['stats']['desc'] }}</div> <br />
                     {% end %}
 
                     {% if server['stats']['version'] != 'False' %}
@@ -438,7 +438,7 @@
       var motd = "";
       if (server.desc) {
         motd = `<span id="input_motd_` + server.id + `" class="input_motd">` + server.desc + `</span>`;
-        server_infos = server_infos + '<div style="word-wrap: break-word; max-width: 70px !important; overflow: auto;">' + motd + '</div>' + "<br />";
+        server_infos = server_infos + '<div style="word-wrap: break-word; max-width: 85px !important; overflow: auto;">' + motd + '</div>' + "<br />";
       }
 
       /* Version */
