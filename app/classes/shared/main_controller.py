@@ -6,6 +6,7 @@ import time
 import logging
 import tempfile
 from typing import Union
+from urllib import request
 
 from app.classes.controllers.crafty_perms_controller import Crafty_Perms_Controller
 from app.classes.controllers.management_controller import Management_Controller
@@ -28,6 +29,9 @@ from app.classes.web.websocket_helper import websocket_helper
 
 try:
     from peewee import DoesNotExist
+    #TZLocal is set as a hidden import on win pipeline
+    from tzlocal import get_localzone
+    from apscheduler.schedulers.background import BackgroundScheduler
 
 except ModuleNotFoundError as err:
     helper.auto_installer_fix(err)
@@ -45,6 +49,9 @@ class Controller:
         self.server_perms = Server_Perms_Controller()
         self.servers = Servers_Controller()
         self.users = Users_Controller()
+        tz = get_localzone()
+        self.support_scheduler = BackgroundScheduler(timezone=str(tz))
+        self.support_scheduler.start()
 
     def check_server_loaded(self, server_id_to_check: int):
 
@@ -128,6 +135,9 @@ class Controller:
 
 
     def package_support_logs(self, exec_user):
+        if exec_user['preparing']:
+            return
+        self.users.set_prepare(exec_user['user_id'])
         #pausing so on screen notifications can run for user
         time.sleep(7)
         websocket_helper.broadcast_user(exec_user['user_id'], 'notification', 'Preparing your support logs')
@@ -161,13 +171,21 @@ class Controller:
         #Copy crafty logs to archive dir
         full_log_name = os.path.join(crafty_path, 'logs')
         file_helper.copy_dir(os.path.join(self.project_root, 'logs'), full_log_name)
+        self.support_scheduler.add_job(self.log_status, 'interval', seconds=1, id="logs_"+str(exec_user['user_id']), args = [full_temp,
+                tempZipStorage +'.zip', exec_user])
         file_helper.make_archive(tempZipStorage, tempDir)
+        
+        if len(websocket_helper.clients) > 0:
+            websocket_helper.broadcast_user(exec_user['user_id'], 'support_status_update', helper.calc_percent(full_temp, tempZipStorage +'.zip'))
 
         tempZipStorage += '.zip'
         websocket_helper.broadcast_user(exec_user['user_id'], 'send_logs_bootbox', {
                 })
 
         self.users.set_support_path(exec_user['user_id'], tempZipStorage)
+        
+        self.users.stop_prepare(exec_user['user_id'])
+        self.support_scheduler.remove_job('logs_'+str(exec_user["user_id"]))
 
     @staticmethod
     def add_system_user():
@@ -189,6 +207,22 @@ class Controller:
             svr.start_crash_detection()
         else:
             svr.stop_crash_detection()
+            
+    def log_status(self, source_path, dest_path, exec_user):
+        results = helper.calc_percent(source_path, dest_path)
+        self.log_stats = results
+
+        if len(websocket_helper.clients) > 0:
+            websocket_helper.broadcast_user(exec_user['user_id'], 'support_status_update', results)
+        
+    def send_log_status(self):
+        try:
+            return self.log_stats
+        except:
+            return {
+                'percent': 0,
+                'total_files': 0
+            }
 
     def get_server_obj(self, server_id: Union[str, int]) -> Union[bool, Server]:
         for s in self.servers_list:
@@ -603,3 +637,7 @@ class Controller:
     @staticmethod
     def clear_unexecuted_commands():
         helpers_management.clear_unexecuted_commands()
+        
+    @staticmethod
+    def clear_support_status():
+        helper_users.clear_support_status()

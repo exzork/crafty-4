@@ -623,6 +623,7 @@ class Server:
             'backupStarted', users_helper.get_user_lang_by_id(user)).format(self.name))
         time.sleep(3)
         conf = management_helper.get_backup_config(self.server_id)
+        helper.ensure_dir_exists(self.settings['backup_path'])
         try:
             backup_filename = f"{self.settings['backup_path']}/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
             logger.info(f"Creating backup of server '{self.settings['server_name']}'" +

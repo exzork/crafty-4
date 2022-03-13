@@ -263,6 +263,17 @@
       });
     }
     if (webSocket) {
+      webSocket.on('support_status_update', function (logs) {
+        if(logs.percent >= 100){
+          document.getElementById('logs_progress_bar').innerHTML = '100%';
+          document.getElementById('logs_progress_bar').style.width = '100%';
+        }else{
+          document.getElementById('logs_progress_bar').innerHTML = logs.percent +'%';
+          document.getElementById('logs_progress_bar').style.width = logs.percent + '%';
+        }
+      });
+    }
+    if (webSocket) {
       webSocket.on('send_logs_bootbox', function (server_id) {
         var x = document.querySelector('.bootbox');
         if (x) {
