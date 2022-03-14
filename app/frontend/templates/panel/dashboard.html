@@ -133,7 +133,7 @@
                     </a>
                   </td>
 
-                  <td id="controls{{server['server_data']['server_id']}}" class="actions_serverlist">
+                  <td draggable="false" id="controls{{server['server_data']['server_id']}}" class="actions_serverlist">
                     {% if server['user_command_permission'] %}
                     {% if server['stats']['running'] %}
                     <a data-id="{{server['server_data']['server_id']}}" class="stop_button"
@@ -180,7 +180,7 @@
                     {% end %}
                   </td>
 
-                  <td id="server_cpu_{{server['server_data']['server_id']}}">
+                  <td draggable="false" id="server_cpu_{{server['server_data']['server_id']}}">
                     <div class="progress mb-1" data-toggle="tooltip" data-placement="top"
                       title="{{server['stats']['cpu']}}">
                       <div class="progress-bar
@@ -197,7 +197,7 @@
                     {{server['stats']['cpu']}}%
                   </td>
 
-                  <td id="server_mem_{{server['server_data']['server_id']}}">
+                  <td draggable="false" id="server_mem_{{server['server_data']['server_id']}}">
                     <div class="progress mb-1" data-toggle="tooltip" data-placement="top"
                       title="{{server['stats']['mem']}}">
                       <div class="progress-bar
@@ -219,16 +219,16 @@
                     {{server['stats']['mem']}}
                     {% end %}
                   </td>
-                  <td id="server_world_{{server['server_data']['server_id']}}">
+                  <td draggable="false" id="server_world_{{server['server_data']['server_id']}}">
                     {{ server['stats']['world_size'] }}
                   </td>
-                  <td id="server_desc_{{server['server_data']['server_id']}}">
+                  <td draggable="false" id="server_desc_{{server['server_data']['server_id']}}">
                     {% if server['stats']['int_ping_results'] %}
                     {{ server['stats']['online'] }} / {{ server['stats']['max'] }} {{ translate('dashboard', 'max',
                     data['lang']) }} <br />
 
                     {% if server['stats']['desc'] != 'False' %}
-                    <div style="overflow-wrap: break-word !important; max-width: 70px !important; overflow: scroll;">{{ server['stats']['desc'] }}</div> <br />
+                    <div style="overflow-wrap: break-word !important; max-width: 85px !important; overflow: scroll;">{{ server['stats']['desc'] }}</div> <br />
                     {% end %}
 
                     {% if server['stats']['version'] != 'False' %}
@@ -237,7 +237,7 @@
                     {% end %}
 
                   </td>
-                  <td id="server_running_status_{{server['server_data']['server_id']}}">
+                  <td draggable="false" id="server_running_status_{{server['server_data']['server_id']}}">
                     {% if server['stats']['running'] %}
                     <span class="text-success"><i class="fas fa-signal"></i>  {{ translate('dashboard', 'online',
                       data['lang']) }}</span>
@@ -438,7 +438,7 @@
       var motd = "";
       if (server.desc) {
         motd = `<span id="input_motd_` + server.id + `" class="input_motd">` + server.desc + `</span>`;
-        server_infos = server_infos + '<div style="word-wrap: break-word; max-width: 70px !important; overflow: auto;">' + motd + '</div>' + "<br />";
+        server_infos = server_infos + '<div style="word-wrap: break-word; max-width: 85px !important; overflow: auto;">' + motd + '</div>' + "<br />";
       }
 
       /* Version */
@@ -651,20 +651,20 @@
     document.getElementById('first').setAttribute('draggable', false);
     $('.dataTables_length').addClass('bs-select');
     });
-    $('#servers_table').on('search.dt', function() {
-      let value = $('.dataTables_filter input').val()
-      if(value === ''){
-        const table = document.querySelector("table");
-        for (const row of table.rows) {
-          row.setAttribute('draggable', true)
-        }
-      }else{
-        const table = document.querySelector("table");
-        for (const row of table.rows) {
-          row.setAttribute('draggable', false)
-        }
+  $(document).mousedown(function( event ) {
+    let value = $('.dataTables_filter input').val()
+    if(value === ''){
+      const table = document.querySelector("table");
+      for (const row of table.rows) {
+        row.setAttribute('draggable', true)
       }
-  } );
+    }else{
+      const table = document.querySelector("table");
+      for (const row of table.rows) {
+        row.setAttribute('draggable', false)
+      }
+    }
+} );
 </script>
 
 {% end %}
