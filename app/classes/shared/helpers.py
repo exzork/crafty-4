@@ -629,11 +629,15 @@ class Helpers:
         cert.get_subject().O = "Crafty Controller"
         cert.get_subject().OU = "Server Ops"
         cert.get_subject().CN = gethostname()
+        cert.add_extensions([
+            crypto.X509Extension(b'subjectAltName', False, ','.join([ 'DNS:%s' % socket.gethostname(), 'DNS:*.%s' % socket.gethostname(), 'DNS:localhost', 'DNS:*.localhost', 'DNS:127.0.0.1']).encode()),
+            crypto.X509Extension(b"basicConstraints", True, b"CA:false")]),
         cert.set_serial_number(random.randint(1,255))
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(365 * 24 * 60 * 60)
         cert.set_issuer(cert.get_subject())
         cert.set_pubkey(k)
+        cert.set_version(2)
         cert.sign(k, 'sha256')
 
         f = open(cert_file, "w", encoding='utf-8')
