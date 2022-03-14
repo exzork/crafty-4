@@ -1587,7 +1587,6 @@ class PanelHandler(BaseHandler):
             user_data = {
                 "roles": roles,
                 'lang': lang,
-                'lang_page': helper.getLangPage(lang),
             }
             user_crafty_data = {
                 "permissions_mask": permissions_mask,
