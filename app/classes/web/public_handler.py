@@ -1,4 +1,3 @@
-from lib2to3.pgen2 import token
 import logging
 
 from app.classes.models.users import Users
