@@ -184,7 +184,7 @@ class PanelHandler(BaseHandler):
         # pylint: disable=unused-variable
         api_key, token_data, exec_user = self.current_user
         superuser = exec_user['superuser']
-        preparing = exec_user['preparing']
+        print()
         if api_key is not None:
             superuser = superuser and api_key.superuser
 
@@ -255,7 +255,6 @@ class PanelHandler(BaseHandler):
             'lang': self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
             'lang_page': helper.getLangPage(self.controller.users.get_user_lang_by_id(exec_user["user_id"])),
             'super_user': superuser,
-            'preparing': preparing,
             'api_key': {
                 'name': api_key.name,
                 'created': api_key.created,
