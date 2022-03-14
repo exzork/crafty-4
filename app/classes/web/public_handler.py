@@ -1,3 +1,4 @@
+from lib2to3.pgen2 import token
 import logging
 
 from app.classes.models.users import Users
@@ -28,6 +29,8 @@ class PublicHandler(BaseHandler):
             self.set_cookie("token", authentication.generate(user_id), expires_days=int(expire_days))
         else:
             self.clear_cookie("token")
+            #self.clear_cookie("user")
+            #self.clear_cookie("user_data")
 
     def get(self, page=None):
 
@@ -57,6 +60,8 @@ class PublicHandler(BaseHandler):
 
         elif page == "logout":
             self.clear_cookie("token")
+            #self.clear_cookie("user")
+            #self.clear_cookie("user_data")
             self.redirect('/public/login')
             return
 
@@ -105,6 +110,8 @@ class PublicHandler(BaseHandler):
             # if we don't have a user
             if not user_data:
                 error_msg = "Incorrect username or password. Please try again."
+                #self.clear_cookie("user")
+                #self.clear_cookie("user_data")
                 self.clear_cookie("token")
                 if (self.request.query):
                     self.redirect(f'/public/login?error_msg={error_msg}&{self.request.query}')
@@ -115,6 +122,8 @@ class PublicHandler(BaseHandler):
             # if they are disabled
             if not user_data.enabled:
                 error_msg = "User account disabled. Please contact your system administrator for more info."
+                #self.clear_cookie("user")
+                #self.clear_cookie("user_data")
                 self.clear_cookie("token")
                 if (self.request.query):
                     self.redirect(f'/public/login?error_msg={error_msg}&{self.request.query}')
@@ -146,6 +155,8 @@ class PublicHandler(BaseHandler):
 
                 self.redirect(next_page)
             else:
+                #self.clear_cookie("user")
+                #self.clear_cookie("user_data")
                 self.clear_cookie("token")
                 error_msg = "Inncorrect username or password. Please try again."
                 # log this failed login attempt
