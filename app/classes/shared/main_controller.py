@@ -162,7 +162,11 @@ class Controller:
         #we'll iterate through our list of log paths from auth servers.
         for server in auth_servers:
             final_path = os.path.join(server_path, str(server['server_name']))
-            os.mkdir(final_path)
+            try:
+                os.mkdir(final_path)
+            except FileExistsError:
+                final_path += '_'+server['server_uuid']
+                os.mkdir(final_path)
             try:
                 file_helper.copy_file(server['log_path'], final_path)
             except Exception as e:
