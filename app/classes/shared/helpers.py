@@ -596,20 +596,20 @@ class Helpers:
     def create_self_signed_cert(self, cert_dir=None):
 
         if cert_dir is None:
-            cert_dir = os.path.join(self.config_dir, 'web', 'certs')
+            cert_dir = os.path.join(self.config_dir, "web", "certs")
 
         # create a directory if needed
         self.ensure_dir_exists(cert_dir)
 
-        cert_file = os.path.join(cert_dir, 'commander.cert.pem')
-        key_file = os.path.join(cert_dir, 'commander.key.pem')
+        cert_file = os.path.join(cert_dir, "commander.cert.pem")
+        key_file = os.path.join(cert_dir, "commander.key.pem")
 
         logger.info(f"SSL Cert File is set to: {cert_file}")
         logger.info(f"SSL Key File is set to: {key_file}")
 
         # don't create new files if we already have them.
         if self.check_file_exists(cert_file) and self.check_file_exists(key_file):
-            logger.info('Cert and Key files already exists, not creating them.')
+            logger.info("Cert and Key files already exists, not creating them.")
             return True
 
         console.info("Generating a self signed SSL")
@@ -629,23 +629,33 @@ class Helpers:
         cert.get_subject().O = "Crafty Controller"
         cert.get_subject().OU = "Server Ops"
         cert.get_subject().CN = gethostname()
-        alt_names = ','.join([ f'DNS:{socket.gethostname()}', f'DNS:*.{socket.gethostname()}', 'DNS:localhost', 'DNS:*.localhost', 'DNS:127.0.0.1']).encode()
-        subjectAltNames_Ext = crypto.X509Extension(b'subjectAltName', False, alt_names)
-        basicConstraints_Ext = crypto.X509Extension(b"basicConstraints", True, b"CA:false")
+        alt_names = ",".join(
+            [
+                f"DNS:{socket.gethostname()}",
+                f"DNS:*.{socket.gethostname()}",
+                "DNS:localhost",
+                "DNS:*.localhost",
+                "DNS:127.0.0.1",
+            ]
+        ).encode()
+        subjectAltNames_Ext = crypto.X509Extension(b"subjectAltName", False, alt_names)
+        basicConstraints_Ext = crypto.X509Extension(
+            b"basicConstraints", True, b"CA:false"
+        )
         cert.add_extensions([subjectAltNames_Ext, basicConstraints_Ext])
-        cert.set_serial_number(random.randint(1,255))
+        cert.set_serial_number(random.randint(1, 255))
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(365 * 24 * 60 * 60)
         cert.set_issuer(cert.get_subject())
         cert.set_pubkey(k)
         cert.set_version(2)
-        cert.sign(k, 'sha256')
+        cert.sign(k, "sha256")
 
-        f = open(cert_file, "w", encoding='utf-8')
+        f = open(cert_file, "w", encoding="utf-8")
         f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode())
         f.close()
 
-        f = open(key_file, "w", encoding='utf-8')
+        f = open(key_file, "w", encoding="utf-8")
         f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, k).decode())
         f.close()
 
