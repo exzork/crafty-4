@@ -632,7 +632,7 @@ class Helpers:
         alt_names = ','.join([ 'DNS:%s' % socket.gethostname(), 'DNS:*.%s' % socket.gethostname(), 'DNS:localhost', 'DNS:*.localhost', 'DNS:127.0.0.1']).encode()
         subjectAltNames_Ext = crypto.X509Extension(b'subjectAltName', False, ','.join([ 'DNS:%s' % socket.gethostname(), 'DNS:*.%s' % socket.gethostname(), 'DNS:localhost', 'DNS:*.localhost', 'DNS:127.0.0.1']).encode())
         basicConstraints_Ext = crypto.X509Extension(b"basicConstraints", True, b"CA:false")
-        cert.add_extensions([subjectAltNames_Ext, basicConstraints_Ext]),
+        cert.add_extensions([subjectAltNames_Ext, basicConstraints_Ext])
         cert.set_serial_number(random.randint(1,255))
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(365 * 24 * 60 * 60)
