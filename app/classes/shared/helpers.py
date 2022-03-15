@@ -630,9 +630,9 @@ class Helpers:
         cert.get_subject().OU = "Server Ops"
         cert.get_subject().CN = gethostname()
         alt_names = ','.join([ 'DNS:%s' % socket.gethostname(), 'DNS:*.%s' % socket.gethostname(), 'DNS:localhost', 'DNS:*.localhost', 'DNS:127.0.0.1']).encode()
-        cert.add_extensions([
-            crypto.X509Extension(b'subjectAltName', False, alt_names),
-            crypto.X509Extension(b"basicConstraints", True, b"CA:false")]),
+        subjectAltNames_Ext = crypto.X509Extension(b'subjectAltName', False, ','.join([ 'DNS:%s' % socket.gethostname(), 'DNS:*.%s' % socket.gethostname(), 'DNS:localhost', 'DNS:*.localhost', 'DNS:127.0.0.1']).encode())
+        basicConstraints_Ext = crypto.X509Extension(b"basicConstraints", True, b"CA:false")
+        cert.add_extensions([subjectAltNames_Ext, basicConstraints_Ext]),
         cert.set_serial_number(random.randint(1,255))
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(365 * 24 * 60 * 60)
