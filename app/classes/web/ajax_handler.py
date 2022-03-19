@@ -336,6 +336,9 @@ class AjaxHandler(BaseHandler):
             svr = self.controller.get_server_obj(server_id)
             try:
                 svr.kill()
+                time.sleep(5)
+                svr.cleanup_server_object()
+                svr.record_server_stats()
             except Exception as e:
                 logger.error(f"Could not find PID for requested termsig. Full error: {e}")
             return
