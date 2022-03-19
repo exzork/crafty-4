@@ -13,7 +13,7 @@
   <div class="row page-title-header">
     <div class="col-12">
       <div class="page-header">
-        <h4 class="page-title">{{ translate('dashboard', 'dashboard', data['lang']) }} 
+        <h4 class="page-title">{{ translate('dashboard', 'dashboard', data['lang']) }}
           {% if data['server_stats']['running'] != 0 %}
           <span id="sync" style="margin-left: 5px;"><i class="fas fa-sync fa-spin"></i></span></h4>
           {% end %}
@@ -125,7 +125,7 @@
               </thead>
               <tbody>
                 {% for server in data['servers'] %}
-                <tr id="{{server['server_data']['server_id']}}" draggable="true" ondragstart="start()"  ondragover="dragover()" ondragend="dragend()">
+                <tr id="{{server['server_data']['server_id']}}" draggable="true">
                   <td draggable="false">
                     <i class="fas fa-server"></i>
                     <a draggable="false" href="/panel/server_detail?id={{server['server_data']['server_id']}}">
@@ -289,25 +289,26 @@
 <script src="/static/assets/js/motd.js"></script>
 <script>
   function display_motd() {
-    var all_motds = Array.from(document.getElementsByClassName('input_motd'));
+    let all_motds = Array.from(document.getElementsByClassName('input_motd'));
     for (element of all_motds) {
       initParser(element.id, element.id);
     };
   }
 
-  $(document).ready(function () {
+  $(document).ready(function() {
     $('[data-toggle="popover"]').popover();
     if ($(window).width() < 1000) {
       $('.too_small').popover("show");
     }
-
   });
-  $(window).ready(function () {
-    $('body').click(function () {
+
+  $(window).ready(function() {
+    $('body').click(function() {
       $('.too_small').popover("hide");
     });
   });
-  $(window).resize(function () {
+
+  $(window).resize(function() {
     // This will execute whenever the window is resized
     if ($(window).width() < 1000) {
       $('.too_small').popover("show");
@@ -321,7 +322,7 @@
 
   function send_command(server_id, command) {
     /* this getCookie function is in base.html */
-    var token = getCookie("_xsrf");
+    const token = getCookie("_xsrf");
 
     $.ajax({
       type: "POST",
@@ -341,7 +342,7 @@
 
   function send_kill(server_id) {
     /* this getCookie function is in base.html */
-    var token = getCookie("_xsrf");
+    const token = getCookie("_xsrf");
 
     $.ajax({
       type: "POST",
@@ -370,43 +371,27 @@
     /* TODO Update each element */
 
     /* Update CPU */
-    cpu_status = "";
-    if (server.cpu <= 33)
-    {
+    cpu_status = "bg-danger";
+    if (server.cpu <= 33) {
       cpu_status = "bg-success";
-    }
-    else if (server.cpu > 33 && server.cpu <= 66)
-    {
+    } else if (server.cpu > 33 && server.cpu <= 66) {
       cpu_status = "bg-warning";
     }
-    else
-    {
-      cpu_status = "bg-danger";
-    }
+
     server_cpu.innerHTML = `<div class="progress mb-1" data-toggle="tooltip" data-placement="top" title="`+ server.cpu +`"><div class="progress-bar `+ cpu_status + `" role="progressbar" style="width: `+ server.cpu + `%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>`+ server.cpu +`%`;
 
 
     /* Update Memory */
-    mem_status = "";
-    total_mem = "";
-    if (server.mem_percent <= 33)
-    {
+    mem_status = "bg-danger";
+    total_mem = "0 MB";
+
+    if (server.mem_percent <= 33) {
       mem_status = "bg-success";
-    } else if (server.mem_percent > 33 && server.mem_percent <= 66)
-    {
+    } else if (server.mem_percent > 33 && server.mem_percent <= 66) {
       mem_status = "bg-warning";
     }
-    else
-    {
-      mem_status = "bg-danger";
-    }
 
-    if (server.mem == 0)
-    {
-      total_mem = "0 MB";
-    }
-    else
-    {
+    if (server.mem !== 0) {
       total_mem = server.mem;
     }
 
@@ -426,11 +411,11 @@
         let servers = document.getElementsByClassName("server-player-totals");
         let all_total_players = 0;
         let all_total_max_players = 0;
-        for(var i = 0; i < servers.length; i++){
-          try{
+        for(let i = 0; i < servers.length; i++) {
+          try {
             all_total_players += parseInt(servers[i].getAttribute('data-players'));
             all_total_max_players += parseInt(servers[i].getAttribute('data-max'));
-          }catch{
+          } catch {
             console.log("Player totals are not of type int");
           }
         }
@@ -444,7 +429,7 @@
       }
 
       /* Update Motd */
-      var motd = "";
+      let motd = "";
       if (server.desc) {
         motd = `<span id="input_motd_` + server.id + `" class="input_motd">` + server.desc + `</span>`;
         server_infos = server_infos + '<div id="desc_id" style="word-wrap: break-word; max-width: 85px !important; overflow: auto;">' + motd + '</div>' + "<br />";
@@ -458,33 +443,32 @@
     }
 
     /* Update Online Status */
-    var online_status = "";
+    let online_status = `<span class="text-warning"><i class="fas fa-ban"></i> {{ translate('dashboard', 'offline', data['lang'])}}</span>`;
+
     if (server.running) {
       online_status = `<span class="text-success"><i class="fas fa-signal"></i> {{ translate('dashboard', 'online', data['lang'])}}</span>`;
     }
-    else {
-      if (server.crashed){
-        online_status = `<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang'])}}</span>`
-      }else{
-      online_status = `<span class="text-warning"><i class="fas fa-ban"></i> {{ translate('dashboard', 'offline', data['lang'])}}</span>`;
-      }
+
+    if (server.crashed) {
+      online_status = `<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang'])}}</span>`
     }
+
     server_online_status.innerHTML = online_status;
   }
 
   function update_servers_status(data) {
-    try{
+    try {
     update_one_server_status(data[0]);
-  }catch{
-    
-  }
+    } catch (e) {
+      console.log ('Failed to update server stats', e)
+    }
     display_motd();
   }
 
-  $(document).ready(function () {
+  $(document).ready(function() {
     console.log('ready for JS!')
 
-    $(".play_button").click(function () {
+    $(".play_button").click(function() {
       server_id = $(this).attr("data-id");
       send_command(server_id, 'start_server');
       bootbox.alert({
@@ -494,7 +478,7 @@
       });
     });
 
-    $(".stop_button").click(function () {
+    $(".stop_button").click(function() {
       console.log("stopping server");
       server_id = $(this).attr("data-id");
       send_command(server_id, 'stop_server');
@@ -505,7 +489,7 @@
       });
     });
 
-    $(".restart_button").click(function () {
+    $(".restart_button").click(function() {
       server_id = $(this).attr("data-id");
       send_command(server_id, 'restart_server');
       bootbox.alert({
@@ -514,7 +498,7 @@
         message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientRestart", data["lang"]) %} </div>'
       });
     });
-    $(".kill_button").click(function () {
+    $(".kill_button").click(function() {
       server_id = $(this).attr("data-id");
       bootbox.confirm({
         message: "This will kill the server process and all it's subprocesses. Killing a process can potentially corrupt files. Only do this in extreme circumstances. Are you sure you would like to continue?",
@@ -528,16 +512,16 @@
             className: 'btn-secondary'
           }
         },
-        callback: function (result) {
+        callback: function(result) {
           if (result) {
             send_kill(server_id);
-            var dialog = bootbox.dialog({
+            let dialog = bootbox.dialog({
               title: '{% raw translate("dashboard", "killing", data["lang"]) %}',
               message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>'
             });
 
-            dialog.init(function () {
-              setTimeout(function () {
+            dialog.init(function() {
+              setTimeout(function() {
                 location.reload();
               }, 15000);
             });
@@ -550,10 +534,10 @@
       cpu_usage = document.getElementById('cpu_usage');
       mem_usage = document.getElementById('mem_usage');
       mem_percent = document.getElementById('mem_percent');
-      
 
-      webSocket.on('update_host_stats', function (hostStats) {
-        var cpuDataTitle = `{% raw translate('dashboard', 'cpuCores', data['lang']) %}: ${hostStats.cpu_cores} <br /> {% raw translate("dashboard", "cpuCurFreq", data['lang']) %}: ${hostStats.cpu_cur_freq} <br /> {% raw translate("dashboard", "cpuMaxFreq", data['lang']) %}: ${hostStats.cpu_max_freq}`;
+
+      webSocket.on('update_host_stats', function(hostStats) {
+        let cpuDataTitle = `{% raw translate('dashboard', 'cpuCores', data['lang']) %}: ${hostStats.cpu_cores} <br /> {% raw translate("dashboard", "cpuCurFreq", data['lang']) %}: ${hostStats.cpu_cur_freq} <br /> {% raw translate("dashboard", "cpuMaxFreq", data['lang']) %}: ${hostStats.cpu_max_freq}`;
         cpu_data.setAttribute('data-original-title', cpuDataTitle);
         cpu_usage.textContent = hostStats.cpu_usage;
         mem_usage.setAttribute('data-original-title', `{% raw translate("dashboard", "memUsage", data['lang']) %}: ${hostStats.mem_usage}`);
@@ -562,13 +546,13 @@
     }
 
     if (webSocket) {
-      webSocket.on('send_start_reload', function () {
+      webSocket.on('send_start_reload', function() {
         location.reload()
       });
     }
 
     if (webSocket) {
-      webSocket.on('update_button_status', function (updateButton) {
+      webSocket.on('update_button_status', function(updateButton) {
         let serverId = updateButton.server_id;
         let message = updateButton.string;
         let updating = updateButton.isUpdating;
@@ -587,7 +571,7 @@
       webSocket.on('update_server_status', update_servers_status);
     }
 
-    $(".clone_button").click(function () {
+    $(".clone_button").click(function() {
       server_id = $(this).attr("data-id");
       send_command(server_id, 'clone_server');
       bootbox.alert({
@@ -599,46 +583,36 @@
 
   });
 </script>
+<script src="/static/assets/js/jquery-ui.js"></script>
+<link rel="stylesheet" href="/static/assets/css/jquery-ui.css">
+<link rel="stylesheet" href="/static/assets/css/jquery-ui.structure.css">
 <script>
-  var row;
 
-  function start(){
-    row = event.target;
-  }
-  function dragover(){
-    var e = event;
-    e.preventDefault();
+  /* Search Bar */
+  $(document).ready(function() {
+    let servers_table = $('#servers_table').DataTable({
+      "ordering": false, // false to disable sorting (or any other option)
+      "paging": false
+    });
+    document.getElementById('first').setAttribute('draggable', false);
+    $('.dataTables_length').addClass('bs-select');
+  });
+  /* Search Bar End */
 
-    let children= Array.from(e.target.parentNode.parentNode.children);
+  $(document).on("mousedown keyup click", function(event) {
+    const value = $('.dataTables_filter input').val();
 
-    if(children.indexOf(e.target.parentNode)>children.indexOf(row))
-      e.target.parentNode.after(row);
-    else
-      e.target.parentNode.before(row);
-  }
-
-  function dragend(){
-    var id_string = '';
-    const table = document.querySelector("table");
-    for (const row of table.rows) {
-      if (row.getAttribute('id') != null){
-        if (id_string != ''){
-          id_string += ',' + String(row.getAttribute('id'));
-        }else{
-          id_string +=String(row.getAttribute('id'));
-        }
-      }
+    if ($("table#servers_table tbody").sortable("toArray").length > 1 && value === '') {
+      $("table#servers_table tbody").sortable("enable");
+    } else {
+      $("table#servers_table tbody").sortable("disable");
     }
-    console.log(id_string)
-    if($('#servers_table').find('input[type=search]').length == 0){
-      sendOrder(id_string)
-    }else{
-      console.log("Will not reorder when servers are filtered")
-    }
-  }
+  });
 
+$(document).ready(function() {
   function sendOrder(id_string) {
-    var token = getCookie("_xsrf")
+    const token = getCookie("_xsrf")
+
     $.ajax({
       type: "POST",
       headers: {'X-XSRFToken': token},
@@ -646,34 +620,46 @@
       data: {
         order: id_string,
       },
-      success: function(data){
+      success: function(data) {
         console.log("got response:");
         console.log(data);
       },
     });
   }
-  $(document).ready(function () {
-    var servers_table = $('#servers_table').DataTable({
-    "ordering": false, // false to disable sorting (or any other option)
-    "paging": false
-    });
-    document.getElementById('first').setAttribute('draggable', false);
-    $('.dataTables_length').addClass('bs-select');
-    });
-  $(document).mousedown(function( event ) {
-    let value = $('.dataTables_filter input').val()
-    if(value === ''){
-      const table = document.querySelector("table");
-      for (const row of table.rows) {
-        row.setAttribute('draggable', true)
-      }
-    }else{
-      const table = document.querySelector("table");
-      for (const row of table.rows) {
-        row.setAttribute('draggable', false)
-      }
-    }
-} );
+
+  // Inits the sortable
+  $("table#servers_table tbody")
+    .sortable({
+      items: '> tr',
+      cursor: "move",
+      axis: "y",
+      revert: true,
+      forcePlaceholderSize: true,
+      placeholder:'table-placeholder',
+      deactivate: function(event, ui) {
+        // Gets the list of ids in the server list as an array,
+        // and joins the elements with an [,] and sends to the server.
+        const ids = $("table#servers_table tbody").sortable("toArray").join();
+        try {
+          sendOrder(ids);
+        } catch {
+          console.log("Search is actively supressing order change")
+        }
+      },
+  });
+
+  // Give the table an actual width so the draggable does't collapse when dragged
+  $("table#servers_table")
+      .children()
+      .find("td")
+      .each(function () {
+        $(this).css("width", "").css("width", $(this).outerWidth());
+  });
+
+  // Fixes the appearance of a scrollbar when a user tries to drag an item too low
+  $("div#servers_table_wrapper").css({ overflow: "hidden" });
+});
+
 </script>
 
 {% end %}
