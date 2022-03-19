@@ -172,6 +172,7 @@ class helper_users:
             Users.superuser: superuser,
             Users.created: helper.get_time_as_string()
         }).execute()
+        return user_id
 
     @staticmethod
     def update_user(user_id, up_data=None):

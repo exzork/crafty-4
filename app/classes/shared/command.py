@@ -59,8 +59,7 @@ class MainPrompt(cmd.Cmd):
             else:
                 print(f'Name: {thread.name} Identifier: {thread.ident}')
 
-    @staticmethod
-    def do_import3():
+    def do_import3(self, _line):
         import3.start_import()
 
     def universal_exit(self):
