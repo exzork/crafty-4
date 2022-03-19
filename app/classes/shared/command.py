@@ -6,6 +6,7 @@ import logging
 
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
+from app.classes.shared.import3 import import3
 from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,10 @@ class MainPrompt(cmd.Cmd):
             else:
                 print(f'Name: {thread.name} Identifier: {thread.ident}')
 
+    @staticmethod
+    def do_import3():
+        import3.start_import()
+
     def universal_exit(self):
         logger.info("Stopping all server daemons / threads")
         console.info("Stopping all server daemons / threads - This may take a few seconds")
@@ -75,3 +80,7 @@ class MainPrompt(cmd.Cmd):
     @staticmethod
     def help_migrations():
         console.help("Only for advanced users. Use with caution")
+    
+    @staticmethod
+    def help_import3():
+        console.help("Import users and servers from Crafty 3")
