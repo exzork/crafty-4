@@ -10,10 +10,8 @@ variables:
 pylint:
   stage: test
   image: python:3.7-slim
-  services:
-    - name: docker:dind
   tags:
-    - 'docker_testers'
+    - 'docker'
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
@@ -43,7 +41,7 @@ docker-build-dev:
     - name: docker:dind
   stage: dev-deployment
   tags:
-    - docker
+    - 'docker_priv'
   rules:
     - if: $CI_COMMIT_BRANCH == 'dev'
   environment:
@@ -86,7 +84,7 @@ docker-build-prod:
     - name: docker:dind
   stage: prod-deployment
   tags:
-    - docker
+    - 'docker_priv'
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   environment:
