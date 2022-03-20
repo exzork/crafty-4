@@ -181,8 +181,7 @@ class PanelHandler(BaseHandler):
         now = time.time()
         formatted_time = str(datetime.datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S'))
 
-        # pylint: disable=unused-variable
-        api_key, token_data, exec_user = self.current_user
+        api_key, _token_data, exec_user = self.current_user
         superuser = exec_user['superuser']
         if api_key is not None:
             superuser = superuser and api_key.superuser
@@ -531,8 +530,6 @@ class PanelHandler(BaseHandler):
         elif page == 'panel_config':
             auth_servers = {}
             auth_role_servers = {}
-            users_list = []
-            role_users = {}
             roles = self.controller.roles.get_all_roles()
             user_roles = {}
             for user in self.controller.users.get_all_users():
@@ -951,8 +948,7 @@ class PanelHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, page):
-        # pylint: disable=unused-variable
-        api_key, token_data, exec_user = self.current_user
+        api_key, _token_data, exec_user = self.current_user
         superuser = exec_user['superuser']
         if api_key is not None:
             superuser = superuser and api_key.superuser
@@ -1681,8 +1677,7 @@ class PanelHandler(BaseHandler):
 
     @tornado.web.authenticated
     def delete(self, page):
-        # pylint: disable=unused-variable
-        api_key, token_data, exec_user = self.current_user
+        api_key, _token_data, exec_user = self.current_user
         superuser = exec_user['superuser']
         if api_key is not None:
             superuser = superuser and api_key.superuser
