@@ -265,6 +265,7 @@
 
 </div>
 <!-- content-wrapper ends -->
+<div id="mobile"></div>
 <style>
   .popover-body {
     color: white !important;
@@ -586,6 +587,11 @@
 <script src="/static/assets/js/jquery-ui.js"></script>
 <link rel="stylesheet" href="/static/assets/css/jquery-ui.css">
 <link rel="stylesheet" href="/static/assets/css/jquery-ui.structure.css">
+<style>
+  @media only screen and (max-width: 760px) {
+    #mobile { display: none; }
+  }
+</style>
 <script>
 
   /* Search Bar */
@@ -601,8 +607,9 @@
 
   $(document).on("mousedown keyup click", function(event) {
     const value = $('.dataTables_filter input').val();
+    const is_mobile = $('#some-element').css('display')=='none';
 
-    if ($("table#servers_table tbody").sortable("toArray").length > 1 && value === '') {
+    if ($("table#servers_table tbody").sortable("toArray").length > 1 && value === '' && !is_mobile) {
       $("table#servers_table tbody").sortable("enable");
     } else {
       $("table#servers_table tbody").sortable("disable");
