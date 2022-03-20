@@ -98,7 +98,7 @@ class Users_Controller:
     @staticmethod
     def add_user(username, password, email="default@example.com", enabled: bool = True, superuser: bool = False):
         return users_helper.add_user(username, password=password, email=email, enabled=enabled, superuser=superuser)
-    
+
     @staticmethod
     def add_rawpass_user(username, password, email="default@example.com", enabled: bool = True, superuser: bool = False):
         return users_helper.add_rawpass_user(username, password=password, email=email, enabled=enabled, superuser=superuser)

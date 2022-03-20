@@ -161,7 +161,7 @@ class helper_users:
             Users.created: helper.get_time_as_string()
         }).execute()
         return user_id
-    
+
     @staticmethod
     def add_rawpass_user(username: str, password: str = None, email: Optional[str] = None, enabled: bool = True, superuser: bool = False) -> str:
         user_id = Users.insert({
