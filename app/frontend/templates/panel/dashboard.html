@@ -591,6 +591,14 @@
   @media only screen and (max-width: 760px) {
     #mobile { display: none; }
   }
+  .ui-sortable-handle {
+    cursor: default;
+    padding:2px;
+  }
+  .ui-sortable-handle:hover {
+    cursor: grab !important;
+    padding:2px;
+  }
 </style>
 <script>
 
@@ -607,7 +615,7 @@
 
   $(document).on("mousedown keyup click", function(event) {
     const value = $('.dataTables_filter input').val();
-    const is_mobile = $('#some-element').css('display')=='none';
+    const is_mobile = $('#mobile').css('display')=='none';
 
     if ($("table#servers_table tbody").sortable("toArray").length > 1 && value === '' && !is_mobile) {
       $("table#servers_table tbody").sortable("enable");
@@ -638,9 +646,10 @@ $(document).ready(function() {
   $("table#servers_table tbody")
     .sortable({
       items: '> tr',
-      cursor: "move",
+      cursor: "grabbing",
       axis: "y",
       revert: true,
+      handle:"i.fas.fa-server,a",
       forcePlaceholderSize: true,
       placeholder:'table-placeholder',
       deactivate: function(event, ui) {
@@ -664,7 +673,10 @@ $(document).ready(function() {
   });
 
   // Fixes the appearance of a scrollbar when a user tries to drag an item too low
-  $("div#servers_table_wrapper").css({ overflow: "hidden" });
+  // Disabled on mobile since sorting is disabled on mobile
+  if($('#mobile').css('display') != 'none'){
+    $("div#servers_table_wrapper").css({ overflow: "hidden" });
+  }
 });
 
 </script>
