@@ -111,7 +111,8 @@
 
             {% end %}
             {% if len(data['servers']) > 0 %}
-            <table id="servers_table" class="table table-hover">
+            <!-- View for Large screen -->
+            <table id="servers_table" class="table table-hover d-none d-sm-block">
               <thead>
                 <tr class="rounded" id="first" draggable="false">
                   <th draggable="false">{{ translate('dashboard', 'server', data['lang']) }}</th>
@@ -252,7 +253,164 @@
                   <span class="server-player-totals" id="server_players_{{server['server_data']['server_id']}}" data-players="{{ server['stats']['online']}}" data-max="{{ server['stats']['max'] }}"></span>
                 </tr>
                 {% end %}
+              </tbody>
+            </table>
+            <!-- View for Small screen -->
+            <table id="servers_table" class="table table-hover d-block d-sm-none">
+              <thead>
+                <tr class="rounded" id="first" draggable="false">
+                  <th scope="col" draggable="false">{{ translate('dashboard', 'server', data['lang']) }}</th>
+                  <th scope="col" draggable="false">{{ translate('dashboard', 'actions', data['lang']) }}</th>
+                  <th scope="col" draggable="false">{{ translate('dashboard', 'status', data['lang']) }}</th>
+                  <th scope="col" draggable="false"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for server in data['servers'] %}
+                <tr id="{{server['server_data']['server_id']}}" draggable="false">
+                  <td scope="row"><i class="fas fa-server"></i>
+                    <a draggable="false" href="/panel/server_detail?id={{server['server_data']['server_id']}}">
+                      {{ server['server_data']['server_name'] }}
+                    </a>
+                  </td>
+                  <td draggable="false" id="controls{{server['server_data']['server_id']}}" class="actions_serverlist">
+                    {% if server['user_command_permission'] %}
+                    {% if server['stats']['running'] %}
+                    <a data-id="{{server['server_data']['server_id']}}" class="stop_button"
+                      data-toggle="tooltip" title="{{ translate('dashboard', 'stop' , data['lang']) }}">
+                      <i class="fas fa-stop"></i>
+                    </a> &nbsp;
 
+                    <a data-id="{{server['server_data']['server_id']}}" class="restart_button"
+                      data-toggle="tooltip" title="{{ translate('dashboard', 'restart' , data['lang']) }}">
+                      <i class="fas fa-sync"></i>
+                    </a> &nbsp;
+
+                    <a data-id="{{server['server_data']['server_id']}}" class="kill_button"
+                      data-toggle="tooltip" title="{{ translate('dashboard', 'kill' , data['lang']) }}">
+                      <i class="fas fa-skull"></i>
+                    </a> &nbsp;
+
+                    {% elif server['stats']['updating']%}
+                    <!-- WHAT HAPPENED HERE -->
+                    <a data-id="{{server['server_data']['server_id']}}" class="">{{ translate('serverTerm', 'updating', data['lang']) }}</i></a>
+                    {% elif server['stats']['waiting_start']%}
+                    <!-- WHAT HAPPENED HERE -->
+                    <a data-id="{{server['server_data']['server_id']}}" class="" title="{{
+                      translate('dashboard', 'delay-explained' , data['lang'])}}">{{ translate('dashboard', 'starting', data['lang']) }}</i></a>
+                      {% elif server['stats']['downloading']%}
+                      <a data-id="{{server['server_data']['server_id']}}" class=""><i class="fa fa-spinner fa-spin"></i> {{ translate('serverTerm', 'downloading', data['lang']) }}</a>
+                    {% else %}
+                    <a data-id="{{server['server_data']['server_id']}}" class="play_button"
+                      data-toggle="tooltip" title="{{ translate('dashboard', 'start' , data['lang']) }}">
+                      <i class="fas fa-play"></i>
+                    </a> &nbsp;
+                    <a data-id="{{server['server_data']['server_id']}}" class="clone_button"
+                      data-toggle="tooltip" title="{{ translate('dashboard', 'clone' , data['lang']) }}">
+                      <i class="fas fa-clone"></i>
+                    </a> &nbsp;
+                    <a data-id="{{server['server_data']['server_id']}}" class="kill_button"
+                      data-toggle="tooltip" title="{{ translate('dashboard', 'kill' , data['lang']) }}">
+                      <i class="fas fa-skull"></i>
+                    </a> &nbsp;
+                    {% end %}
+                    {% end %}
+                  </td>
+                  <td draggable="false" id="m_server_running_status_{{server['server_data']['server_id']}}">
+                    {% if server['stats']['running'] %}
+                    <span class="text-success"><i class="fas fa-signal"></i>  {{ translate('dashboard', 'online',
+                      data['lang']) }}</span>
+                    {% elif server['stats']['crashed'] %}
+                      <span class="text-danger"><i class="fas fa-exclamation-triangle"></i>  {{ translate('dashboard', 'crashed',
+                        data['lang']) }}</span>
+                    {% else %}
+                     <span class="text-warning"><i class="fas fa-ban"></i> {{ translate('dashboard', 'offline',
+                      data['lang']) }}</span>
+                    {% end %}
+                  </td>
+                  <td>
+                    <span data-toggle="collapse" data-target="#details_{{server['server_data']['server_id']}}" aria-expanded="false" aria-controls="details_{{server['server_data']['server_id']}}"><i class="fas fa-chevron-down"></i></span>
+                  </td>
+                </tr>
+                <tr id="details_{{server['server_data']['server_id']}}" class="collapse"  draggable="false">
+                  <td colspan="4">
+                    <div class="collapse" id="details_{{server['server_data']['server_id']}}">
+                      <div class="row">
+                        <div class="col-6">
+                          <h6>{{ translate('dashboard', 'cpuUsage', data['lang']) }}</h6>
+                          <div id="m_server_cpu_{{server['server_data']['server_id']}}">
+                            <div class="progress mb-1" data-toggle="tooltip" data-placement="top"
+                              title="{{server['stats']['cpu']}}">
+                              <div class="progress-bar
+                              {% if server['stats']['cpu'] <= 33 %}
+                              bg-success
+                              {% elif 34 <= server['stats']['cpu'] <= 66 %}
+                              bg-warning
+                              {% else %}
+                              bg-danger
+                              {% end %}
+                              " role="progressbar" style="width: {{server['stats']['cpu']}}%" aria-valuenow="0"
+                                aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            {{server['stats']['cpu']}}%
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <h6>{{ translate('dashboard', 'memUsage', data['lang']) }}</h6>
+                          <div draggable="false" id="m_server_mem_{{server['server_data']['server_id']}}">
+                            <div class="progress mb-1" data-toggle="tooltip" data-placement="top"
+                              title="{{server['stats']['mem']}}">
+                              <div class="progress-bar
+                              {% if server['stats']['mem_percent'] <= 33 %}
+                              bg-success
+                              {% elif 34 <= server['stats']['mem_percent'] <= 66 %}
+                              bg-warning
+                              {% else %}
+                              bg-danger
+                              {% end %}
+                              " role="progressbar" style="width: {{server['stats']['mem_percent']}}%" aria-valuenow="0"
+                                aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            {{server['stats']['mem_percent']}}% -
+
+                            {% if server['stats']['mem'] == 0 %}
+                            0 MB
+                            {% else %}
+                            {{server['stats']['mem']}}
+                            {% end %}
+                          </div>
+                        </div>
+                      </div>
+                      <br />
+                      <div class="row">
+                        <div class="col-6">
+                          <h6>{{ translate('dashboard', 'size', data['lang']) }}</h6>
+                          <div draggable="false" id="m_server_world_{{server['server_data']['server_id']}}">
+                            {{ server['stats']['world_size'] }}
+                          </div>
+                        </div>
+                        <div class="col-6" style="width: auto;">
+                          <h6>{{ translate('dashboard', 'players', data['lang']) }}</h6>
+                          <div draggable="false" id="m_server_desc_{{server['server_data']['server_id']}}">
+                            {% if server['stats']['int_ping_results'] %}
+                            {{ server['stats']['online'] }} / {{ server['stats']['max'] }} {{ translate('dashboard', 'max',
+                            data['lang']) }} <br />
+
+                            {% if server['stats']['desc'] != 'False' %}
+                            <div id="desc_id" style="overflow-wrap: break-word !important; max-width: 85px !important; overflow: scroll;">{{ server['stats']['desc'] }}</div> <br />
+                            {% end %}
+
+                            {% if server['stats']['version'] != 'False' %}
+                            {{ server['stats']['version'] }}
+                            {% end %}
+                            {% end %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {% end %}
               </tbody>
             </table>
             {% end %}
@@ -273,7 +431,7 @@
   #desc_id {
     -ms-overflow-style: none; /* for Internet Explorer, Edge */
     scrollbar-width: none; /* for Firefox */
-    overflow-y: scroll; 
+    overflow-y: scroll;
 }
 
 #desc_id::-webkit-scrollbar {
@@ -359,6 +517,7 @@
   }
 
   function update_one_server_status(server) {
+    /* Mobile view update */
     server_cpu = document.getElementById('server_cpu_' + server.id);
     server_mem = document.getElementById('server_mem_' + server.id);
     server_world = document.getElementById('server_world_' + server.id);
@@ -366,6 +525,13 @@
     server_online_status = document.getElementById('server_running_status_' + server.id);
     server_players = document.getElementById('server_players_' + server.id);
     total_players = document.getElementById('total_players');
+
+    /* Mobile view update */
+    m_server_cpu = document.getElementById('m_server_cpu_' + server.id);
+    m_server_mem = document.getElementById('m_server_mem_' + server.id);
+    m_server_world = document.getElementById('m_server_world_' + server.id);
+    m_server_desc = document.getElementById('m_server_desc_' + server.id);
+    m_server_online_status = document.getElementById('m_server_running_status_' + server.id);
 
     console.log("Received Data : " + server.id + ": " + server);
     /* TODO Update each element */
@@ -379,6 +545,7 @@
     }
 
     server_cpu.innerHTML = `<div class="progress mb-1" data-toggle="tooltip" data-placement="top" title="`+ server.cpu +`"><div class="progress-bar `+ cpu_status + `" role="progressbar" style="width: `+ server.cpu + `%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>`+ server.cpu +`%`;
+    m_server_cpu.innerHTML = `<div class="progress mb-1" data-toggle="tooltip" data-placement="top" title="`+ server.cpu +`"><div class="progress-bar `+ cpu_status + `" role="progressbar" style="width: `+ server.cpu + `%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>`+ server.cpu +`%`;
 
 
     /* Update Memory */
@@ -396,15 +563,18 @@
     }
 
     server_mem.innerHTML = `<div class="progress mb-1" data-toggle="tooltip" data-placement="top" title="`+ server_mem +`"><div class="progress-bar `+ mem_status + `" role="progressbar" style="width: `+ server.mem_percent + `%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>`+ server.mem_percent +`% - ` + total_mem;
+    m_server_mem.innerHTML = `<div class="progress mb-1" data-toggle="tooltip" data-placement="top" title="`+ server_mem +`"><div class="progress-bar `+ mem_status + `" role="progressbar" style="width: `+ server.mem_percent + `%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>`+ server.mem_percent +`% - ` + total_mem;
 
     /* Update World Infos */
     server_world.innerHTML = server.world_size
+    m_server_world.innerHTML = server.world_size
 
     /* Update Server Infos */
     if (server.int_ping_results) {
       /* Update Players */
       if (server.players) {
         server_desc.innerHTML = server.online + ` / ` + server.max + ` {{ translate('dashboard', 'max', data['lang']) }}<br />`
+        m_server_desc.innerHTML = server.online + ` / ` + server.max + ` {{ translate('dashboard', 'max', data['lang']) }}<br />`
 
         server_players.setAttribute('data-players', server.online);
         server_players.setAttribute('data-max', server.max);
@@ -425,6 +595,7 @@
 
 
         server_infos = "";
+        m_server_infos = "";
         server_infos = server.online + " / " + server.max + " {{ translate('dashboard', 'max', data['lang']) }}<br />"
       }
 
@@ -432,14 +603,17 @@
       let motd = "";
       if (server.desc) {
         motd = `<span id="input_motd_` + server.id + `" class="input_motd">` + server.desc + `</span>`;
+        m_server_infos = server_infos + '<div id="desc_id" style="word-wrap: break-word; overflow: auto;">' + motd + '</div>' + "<br />";
         server_infos = server_infos + '<div id="desc_id" style="word-wrap: break-word; max-width: 85px !important; overflow: auto;">' + motd + '</div>' + "<br />";
       }
 
       /* Version */
       if (server.version) {
         server_infos = server_infos + server.version
+        m_server_infos = m_server_infos + server.version
       }
       server_desc.innerHTML = server_infos;
+      m_server_desc.innerHTML = m_server_infos;
     }
 
     /* Update Online Status */
