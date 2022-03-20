@@ -79,7 +79,7 @@ class MainPrompt(cmd.Cmd):
     @staticmethod
     def help_migrations():
         console.help("Only for advanced users. Use with caution")
-    
+
     @staticmethod
     def help_import3():
         console.help("Import users and servers from Crafty 3")

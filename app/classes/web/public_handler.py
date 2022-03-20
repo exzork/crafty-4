@@ -96,7 +96,7 @@ class PublicHandler(BaseHandler):
         if page == 'login':
 
             next_page = "/public/login"
-            if (self.request.query):
+            if self.request.query:
                 next_page = '/public/login?'+self.request.query
 
             entered_username = bleach.clean(self.get_argument('username'))
@@ -112,7 +112,7 @@ class PublicHandler(BaseHandler):
                 #self.clear_cookie("user")
                 #self.clear_cookie("user_data")
                 self.clear_cookie("token")
-                if (self.request.query):
+                if self.request.query:
                     self.redirect(f'/public/login?error_msg={error_msg}&{self.request.query}')
                 else:
                     self.redirect(f'/public/login?error_msg={error_msg}')
@@ -124,7 +124,7 @@ class PublicHandler(BaseHandler):
                 #self.clear_cookie("user")
                 #self.clear_cookie("user_data")
                 self.clear_cookie("token")
-                if (self.request.query):
+                if self.request.query:
                     self.redirect(f'/public/login?error_msg={error_msg}&{self.request.query}')
                 else:
                     self.redirect(f'/public/login?error_msg={error_msg}')
@@ -160,7 +160,7 @@ class PublicHandler(BaseHandler):
                 error_msg = "Inncorrect username or password. Please try again."
                 # log this failed login attempt
                 self.controller.management.add_to_audit_log(user_data.user_id, "Tried to log in", 0, self.get_remote_ip())
-                if (self.request.query):
+                if self.request.query:
                     self.redirect(f'/public/login?error_msg={error_msg}&{self.request.query}')
                 else:
                     self.redirect(f'/public/login?error_msg={error_msg}')
