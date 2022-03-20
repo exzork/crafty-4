@@ -21,7 +21,7 @@ class import3:
         else:
             with open (os.path.join(folder, "users.json"), encoding="utf-8") as f:
                 user_json = json.loads(f.read())
-            with open (os.path.join(folder, "mc_settings.json", encoding="utf-8")) as f:
+            with open (os.path.join(folder, "mc_settings.json"), encoding="utf-8") as f:
                 servers_json = json.loads(f.read())
             self.import_users(user_json)
             self.import_servers(servers_json, self.controller)
