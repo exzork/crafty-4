@@ -184,7 +184,6 @@ class PanelHandler(BaseHandler):
         # pylint: disable=unused-variable
         api_key, token_data, exec_user = self.current_user
         superuser = exec_user['superuser']
-        print()
         if api_key is not None:
             superuser = superuser and api_key.superuser
 
@@ -1037,7 +1036,6 @@ class PanelHandler(BaseHandler):
                 server_obj.path = server_obj.path
                 server_obj.log_path = server_obj.log_path
                 server_obj.executable = server_obj.executable
-                print(server_obj.execution_command)
                 server_obj.execution_command = server_obj.execution_command
                 server_obj.server_ip = server_obj.server_ip
                 server_obj.server_port = server_obj.server_port
