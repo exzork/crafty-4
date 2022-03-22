@@ -312,6 +312,7 @@ class AjaxHandler(BaseHandler):
         elif page == "backup_now":
             server_id = self.get_argument('id', None)
             if server_id is None:
+                logger.error("Server ID is none. Canceling backup!")
                 return
 
             server = self.controller.get_server_obj(server_id)
