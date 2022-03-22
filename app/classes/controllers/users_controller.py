@@ -96,8 +96,12 @@ class Users_Controller:
         users_helper.update_user(user_id, up_data)
 
     @staticmethod
-    def add_user(username, password=None, email="default@example.com", enabled: bool = True, superuser: bool = False):
+    def add_user(username, password, email="default@example.com", enabled: bool = True, superuser: bool = False):
         return users_helper.add_user(username, password=password, email=email, enabled=enabled, superuser=superuser)
+
+    @staticmethod
+    def add_rawpass_user(username, password, email="default@example.com", enabled: bool = True, superuser: bool = False):
+        return users_helper.add_rawpass_user(username, password=password, email=email, enabled=enabled, superuser=superuser)
 
     @staticmethod
     def remove_user(user_id):
