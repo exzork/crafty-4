@@ -163,7 +163,6 @@
                   cursor: pointer;
                   user-select: none; /* Prevent text selection */
                 }
-
                 /* Create the caret/arrow with a unicode, and style it */
                 .tree-caret .fa-folder {
                   display: inline-block;
@@ -377,6 +376,99 @@
     }
   }
 
+  var onlongtouch; 
+  var timer;
+  var touchduration = 500; //length of time we want the user to touch before we do something
+  const longtouch = new Event('longtouch');
+  
+  function touchstart(event) {
+      if (!timer) {
+          timer = setTimeout(onlongtouch, touchduration, event);
+      }
+  }
+  
+  function touchend(event) {
+      //stops short touches from firing the event
+      if (timer) {
+          clearTimeout(timer);
+          console.log('Timer: ' + timer)
+          timer = null;
+      }
+  }
+  
+    onlongtouch = function(e) {
+        console.log('iOS long touch detected!');
+        if([
+          'iPad Simulator',
+          'iPhone Simulator',
+          'iPod Simulator',
+          'iPad',
+          'iPhone',
+          'iPod'
+        ].includes(navigator.platform)
+        // iPad on iOS 13 detection
+        || (navigator.userAgent.includes("Mac") && "ontouchend" in document)){
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            var ctxmenuPath = e.target.getAttribute('data-path');
+            var ctxmenuName = e.target.getAttribute('data-name');
+            if (!ctxmenuPath) {
+              console.log({ 'event.target': e.target, ctxmenuPath });
+              return;
+            }
+            $('#renameItem').show();
+        
+            var isDir = e.target.classList.contains('files-tree-title');
+            $('#createFile').toggle(isDir);
+            $('#createDir').toggle(isDir);
+            $('#deleteDir').toggle(isDir);
+            $('#upload').toggle(isDir);
+        
+            var isFile = e.target.classList.contains('tree-file');
+            $('#deleteFile').toggle(isFile);
+            $('#downloadFile').toggle(isFile);
+            console.log({ 'event.target': e.target, isDir, isFile });
+        
+            if (e.target.classList.contains('root-dir')) {
+              $('#createFile').show();
+              $('#createDir').show();
+              $('#renameItem').hide();
+              $('#deleteDir').hide();
+              $('#deleteFile').hide();
+              $('#downloadFile').hide();
+              $('#upload').show();
+            }
+            if (e.target.textContent.endsWith('.zip')) {
+              $('#unzip').show();
+              console.log(e.target.textContent)
+            } else {
+              $('#unzip').hide();
+            }
+        
+            var clientX = e.layerX + 2;
+            var clientY = e.layerY + 5;
+        
+        
+        
+            document.getElementById('files-tree-nav-content')
+              .setAttribute('data-path', ctxmenuPath);
+            document.getElementById('files-tree-nav-content')
+              .setAttribute('data-name', ctxmenuName);
+            document.getElementById("files-tree-nav").style.display = "flex";
+            document.getElementById("files-tree-nav").style.position = "fixed";
+            domRect = document.getElementById("files-tree-nav").getBoundingClientRect();
+            sum = (clientY+domRect['height']) - window.innerHeight
+            if(domRect['height']+clientY > window.innerHeight){
+              clientY = clientY - sum;
+            }
+            document.getElementById("files-tree-nav").style.top = clientY + 'px';
+            document.getElementById("files-tree-nav").style.left =  clientX + 'px';
+            console.log(window.innerHeight)
+            timer = null;
+        };
+      }
+
+  
   setFileName();
   $('#editorParent').toggle(false) // show
   $('#fileError').toggle(false)    // hide
@@ -739,6 +831,19 @@
 
     for (var i = 0; i < treeItems.length; i++) {
       var treeItem = treeItems[i];
+      if([
+          'iPad Simulator',
+          'iPhone Simulator',
+          'iPod Simulator',
+          'iPad',
+          'iPhone',
+          'iPod'
+        ].includes(navigator.platform)
+        // iPad on iOS 13 detection
+        || (navigator.userAgent.includes("Mac") && "ontouchend" in document)){
+        treeItem.addEventListener("touchstart", touchstart, false);
+        treeItem.addEventListener("touchend", touchend, false);
+  }
       treeItem.addEventListener('contextmenu', function contextListener(event) {
         event.preventDefault();
         var ctxmenuPath = event.target.getAttribute('data-path');
