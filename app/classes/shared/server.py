@@ -67,7 +67,8 @@ class ServerOutBuf:
         while True:
             if self.proc.poll() is None:
                 char = self.proc.stdout.read(1).decode("utf-8", "ignore")
-                # TODO: we may want to benchmark reading in blocks and userspace processing it later, reads are kind of expensive as a syscall
+                # TODO: we may want to benchmark reading in blocks and userspace
+                # processing it later, reads are kind of expensive as a syscall
                 self.process_byte(char)
             else:
                 flush = self.proc.stdout.read().decode("utf-8", "ignore")
@@ -82,7 +83,8 @@ class ServerOutBuf:
 
         logger.debug("Broadcasting new virtual terminal line")
 
-        # TODO: Do not send data to clients who do not have permission to view this server's console
+        # TODO: Do not send data to clients who do not have permission to view
+        # this server's console
         websocket_helper.broadcast_page_params(
             "/panel/server_detail",
             {"id": self.server_id},
@@ -91,9 +93,9 @@ class ServerOutBuf:
         )
 
 
-# ************************************************************************************************
+# **********************************************************************************
 #                               Minecraft Server Class
-# ************************************************************************************************
+# **********************************************************************************
 class Server:
     def __init__(self, stats):
         # holders for our process
@@ -122,9 +124,9 @@ class Server:
         servers_helper.server_crash_reset(self.server_id)
         servers_helper.set_update(self.server_id, False)
 
-    # ************************************************************************************************
+    # **********************************************************************************
     #                               Minecraft Server Management
-    # ************************************************************************************************
+    # **********************************************************************************
     def reload_server_settings(self):
         server_data = servers_helper.get_server_data_by_id(self.server_id)
         self.settings = server_data
@@ -135,7 +137,9 @@ class Server:
         autoStart = server_data_obj["auto_start"]
 
         logger.info(
-            f"Creating Server object: {serverId} | Server Name: {serverName} | Auto Start: {autoStart}"
+            f"Creating Server object: {serverId} | "
+            f"Server Name: {serverName} | "
+            f"Auto Start: {autoStart}"
         )
         self.server_id = serverId
         self.name = serverName
@@ -259,7 +263,7 @@ class Server:
         console.info(f"Launching Server {self.name} with command {self.server_command}")
 
         # Checks for eula. Creates one if none detected.
-        # If EULA is detected and not set to one of these true vaiants we offer to set it true.
+        # If EULA is detected and not set to true we offer to set it true.
         if helper.check_file_exists(os.path.join(self.settings["path"], "eula.txt")):
             f = open(
                 os.path.join(self.settings["path"], "eula.txt"), "r", encoding="utf-8"
@@ -289,7 +293,8 @@ class Server:
                 )
             else:
                 logger.error(
-                    "Autostart failed due to EULA being false. Agree not sent due to auto start."
+                    "Autostart failed due to EULA being false. "
+                    "Agree not sent due to auto start."
                 )
                 return False
             return False
@@ -334,7 +339,8 @@ class Server:
             == "minecraft-bedrock"
         ):
             logger.info(
-                f"Bedrock and Unix detected for server {self.name}. Switching to appropriate execution string"
+                f"Bedrock and Unix detected for server {self.name}. "
+                f"Switching to appropriate execution string"
             )
             my_env = os.environ
             my_env["LD_LIBRARY_PATH"] = self.server_path
@@ -456,18 +462,22 @@ class Server:
                     websocket_helper.broadcast_user(user, "send_start_reload", {})
         else:
             logger.warning(
-                f"Server PID {self.process.pid} died right after starting - is this a server config issue?"
+                f"Server PID {self.process.pid} died right after starting "
+                f"- is this a server config issue?"
             )
             console.warning(
-                f"Server PID {self.process.pid} died right after starting - is this a server config issue?"
+                f"Server PID {self.process.pid} died right after starting "
+                f"- is this a server config issue?"
             )
 
         if self.settings["crash_detection"]:
             logger.info(
-                f"Server {self.name} has crash detection enabled - starting watcher task"
+                f"Server {self.name} has crash detection enabled "
+                f"- starting watcher task"
             )
             console.info(
-                f"Server {self.name} has crash detection enabled - starting watcher task"
+                f"Server {self.name} has crash detection enabled "
+                f"- starting watcher task"
             )
 
             self.server_scheduler.add_job(
@@ -484,24 +494,29 @@ class Server:
                 )
 
     def stop_crash_detection(self):
-        # This is only used if the crash detection settings change while the server is running.
+        # This is only used if the crash detection settings change
+        # while the server is running.
         if self.check_running():
             logger.info(f"Detected crash detection shut off for server {self.name}")
             try:
                 self.server_scheduler.remove_job("c_" + str(self.server_id))
             except:
                 logger.error(
-                    f"Removing crash watcher for server {self.name} failed. Assuming it was never started."
+                    f"Removing crash watcher for server {self.name} failed. "
+                    f"Assuming it was never started."
                 )
 
     def start_crash_detection(self):
-        # This is only used if the crash detection settings change while the server is running.
+        # This is only used if the crash detection settings change
+        # while the server is running.
         if self.check_running():
             logger.info(
-                f"Server {self.name} has crash detection enabled - starting watcher task"
+                f"Server {self.name} has crash detection enabled "
+                f"- starting watcher task"
             )
             console.info(
-                f"Server {self.name} has crash detection enabled - starting watcher task"
+                f"Server {self.name} has crash detection enabled "
+                "- starting watcher task"
             )
             self.server_scheduler.add_job(
                 self.detect_crash, "interval", seconds=30, id=f"c_{self.server_id}"
@@ -523,7 +538,8 @@ class Server:
                     self.server_scheduler.remove_job("c_" + str(self.server_id))
                 except:
                     logger.error(
-                        f"Removing crash watcher for server {self.name} failed. Assuming it was never started."
+                        f"Removing crash watcher for server {self.name} failed. "
+                        f"Assuming it was never started."
                     )
         else:
             # windows will need to be handled separately for Ctrl+C
@@ -541,7 +557,11 @@ class Server:
 
         while running:
             x = x + 1
-            logstr = f"Server {server_name} is still running - waiting 2s to see if it stops ({int(60-(x*2))} seconds until force close)"
+            logstr = (
+                f"Server {server_name} is still running "
+                f"- waiting 2s to see if it stops ({int(60-(x*2))} "
+                f"seconds until force close)"
+            )
             logger.info(logstr)
             console.info(logstr)
             running = self.check_running()
@@ -624,19 +644,23 @@ class Server:
 
         if self.settings["crash_detection"]:
             logger.warning(
-                f"The server {name} has crashed and will be restarted. Restarting server"
+                f"The server {name} has crashed and will be restarted. "
+                f"Restarting server"
             )
             console.warning(
-                f"The server {name} has crashed and will be restarted. Restarting server"
+                f"The server {name} has crashed and will be restarted. "
+                f"Restarting server"
             )
             self.run_threaded_server(None)
             return True
         else:
             logger.critical(
-                f"The server {name} has crashed, crash detection is disabled and it will not be restarted"
+                f"The server {name} has crashed, "
+                f"crash detection is disabled and it will not be restarted"
             )
             console.critical(
-                f"The server {name} has crashed, crash detection is disabled and it will not be restarted"
+                f"The server {name} has crashed, "
+                f"crash detection is disabled and it will not be restarted"
             )
             return False
 
@@ -646,7 +670,7 @@ class Server:
 
         # for every sub process...
         for proc in process.children(recursive=True):
-            # kill all the child processes - it sounds too wrong saying kill all the children (kevdagoat: lol!)
+            # kill all the child processes
             logger.info(f"Sending SIGKILL to server {proc.name}")
             proc.kill()
         # kill the main process we are after
@@ -678,8 +702,9 @@ class Server:
         # check the exit code -- This could be a fix for /stop
         if self.process.returncode == 0:
             logger.warning(
-                f"Process {self.process.pid} exited with code {self.process.returncode}. This is considered a clean exit"
-                + " supressing crash handling."
+                f"Process {self.process.pid} exited with code "
+                f"{self.process.returncode}. This is considered a clean exit"
+                f" supressing crash handling."
             )
             # cancel the watcher task
             self.server_scheduler.remove_job("c_" + str(self.server_id))
@@ -699,10 +724,12 @@ class Server:
         # we have tried to restart 4 times...
         elif self.restart_count == 4:
             logger.critical(
-                f"Server {self.name} has been restarted {self.restart_count} times. It has crashed, not restarting."
+                f"Server {self.name} has been restarted {self.restart_count}"
+                f" times. It has crashed, not restarting."
             )
             console.critical(
-                f"Server {self.name} has been restarted {self.restart_count} times. It has crashed, not restarting."
+                f"Server {self.name} has been restarted {self.restart_count}"
+                f" times. It has crashed, not restarting."
             )
 
             self.restart_count = 0
@@ -740,7 +767,8 @@ class Server:
         if self.server_path is None:
             self.server_path = helper.get_os_understandable_path(self.settings["path"])
             logger.info(
-                "Backup Thread - Local server path not defined. Setting local server path variable."
+                "Backup Thread - Local server path not defined. "
+                "Setting local server path variable."
             )
         # checks if the backup thread is currently alive for this server
         if not self.is_backingup:
@@ -752,7 +780,8 @@ class Server:
                 return False
         else:
             logger.error(
-                f"Backup is already being processed for server {self.settings['server_name']}. Canceling backup request"
+                f"Backup is already being processed for server "
+                f"{self.settings['server_name']}. Canceling backup request"
             )
             return False
         logger.info(f"Backup Thread started for server {self.settings['server_name']}.")
@@ -779,10 +808,14 @@ class Server:
         conf = management_helper.get_backup_config(self.server_id)
         helper.ensure_dir_exists(self.settings["backup_path"])
         try:
-            backup_filename = f"{self.settings['backup_path']}/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+            backup_filename = (
+                f"{self.settings['backup_path']}/"
+                f"{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+            )
             logger.info(
                 f"Creating backup of server '{self.settings['server_name']}'"
-                + f" (ID#{self.server_id}, path={self.server_path}) at '{backup_filename}'"
+                f" (ID#{self.server_id}, path={self.server_path}) "
+                f"at '{backup_filename}'"
             )
 
             tempDir = tempfile.mkdtemp()
@@ -799,14 +832,17 @@ class Server:
             server_dir = helper.get_os_understandable_path(self.settings["path"])
 
             for my_dir in excluded_dirs:
-                # Take the full path of the excluded dir and replace the server path with the temp path
-                # This is so that we're only deleting excluded dirs from the temp path and not the server path
+                # Take the full path of the excluded dir and replace the
+                # server path with the temp path, this is so that we're
+                # only deleting excluded dirs from the temp path
+                # and not the server path
                 excluded_dir = helper.get_os_understandable_path(my_dir).replace(
                     server_dir, helper.get_os_understandable_path(tempDir)
                 )
                 # Next, check to see if it is a directory
                 if os.path.isdir(excluded_dir):
-                    # If it is a directory, recursively delete the entire directory from the backup
+                    # If it is a directory,
+                    # recursively delete the entire directory from the backup
                     file_helper.del_dirs(excluded_dir)
                 else:
                     # If not, just remove the file
@@ -945,7 +981,8 @@ class Server:
         if self.check_running():
             wasStarted = True
             logger.info(
-                f"Server with PID {self.process.pid} is running. Sending shutdown command"
+                f"Server with PID {self.process.pid} is running. "
+                f"Sending shutdown command"
             )
             self.stop_threaded_server()
         else:
@@ -976,7 +1013,8 @@ class Server:
             backup_executable = os.path.join(backup_dir, "old_server.jar")
         else:
             logger.info(
-                f"Executable backup directory not found for Server: {self.name}. Creating one."
+                f"Executable backup directory not found for Server: {self.name}."
+                f" Creating one."
             )
             os.mkdir(backup_dir)
             backup_executable = os.path.join(backup_dir, "old_server.jar")
@@ -1062,9 +1100,9 @@ class Server:
                     )
                 logger.error("Executable download failed.")
 
-    # ************************************************************************************************
+    # **********************************************************************************
     #                               Minecraft Servers Statistics
-    # ************************************************************************************************
+    # **********************************************************************************
 
     def realtime_stats(self):
         total_players = 0
@@ -1180,7 +1218,8 @@ class Server:
                 ping_data = Stats.parse_server_RakNet_ping(int_mc_ping)
             else:
                 ping_data = Stats.parse_server_ping(int_mc_ping)
-        # Makes sure we only show stats when a server is online otherwise people have gotten confused.
+        # Makes sure we only show stats when a server is online
+        # otherwise people have gotten confused.
         if self.check_running():
             server_stats = {
                 "id": server_id,
@@ -1302,7 +1341,8 @@ class Server:
 
         int_data = False
         ping_data = {}
-        # Makes sure we only show stats when a server is online otherwise people have gotten confused.
+        # Makes sure we only show stats when a server is online
+        # otherwise people have gotten confused.
         if self.check_running():
             # if we got a good ping return, let's parse it
             if servers_helper.get_server_type_by_id(server_id) != "minecraft-bedrock":

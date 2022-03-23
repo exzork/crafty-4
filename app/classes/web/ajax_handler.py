@@ -173,7 +173,8 @@ class AjaxHandler(BaseHandler):
                         data-path="{dpath}"
                         data-name="{filename}"
                         onclick=""><input type='checkbox' class="checkBoxClass" name='root_path' value="{dpath}">
-                        <span style="margin-right: 6px;"><i class="far fa-file"></i></span></input>{filename}</li>"""
+                        <span style="margin-right: 6px;"><i class="far fa-file">
+                        </i></span></input>{filename}</li>"""
             self.write(helper.get_os_understandable_path(folder) + "\n" + output)
             self.finish()
 
@@ -236,7 +237,8 @@ class AjaxHandler(BaseHandler):
                         data-path="{dpath}"
                         data-name="{filename}"
                         onclick=""><input type='checkbox' name='root_path' value='{dpath}'>
-                        <span style="margin-right: 6px;"><i class="far fa-file"></i></span></input>{filename}</li>"""
+                        <span style="margin-right: 6px;"><i class="far fa-file">
+                        </i></span></input>{filename}</li>"""
 
             self.write(helper.get_os_understandable_path(folder) + "\n" + output)
             self.finish()
@@ -320,7 +322,9 @@ class AjaxHandler(BaseHandler):
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
-                f"Sent command to {self.controller.servers.get_server_friendly_name(server_id)} terminal: {command}",
+                f"Sent command to "
+                f"{self.controller.servers.get_server_friendly_name(server_id)} "
+                f"terminal: {command}",
                 server_id,
                 self.get_remote_ip(),
             )
@@ -516,7 +520,8 @@ class AjaxHandler(BaseHandler):
                     return
             server_id = self.get_argument("id", None)
             logger.info(
-                f"Removing server from panel for server: {self.controller.servers.get_server_friendly_name(server_id)}"
+                f"Removing server from panel for server: "
+                f"{self.controller.servers.get_server_friendly_name(server_id)}"
             )
 
             server_data = self.controller.get_server_data(server_id)
@@ -539,7 +544,8 @@ class AjaxHandler(BaseHandler):
                     return
             server_id = self.get_argument("id", None)
             logger.info(
-                f"Removing server and all associated files for server: {self.controller.servers.get_server_friendly_name(server_id)}"
+                f"Removing server and all associated files for server: "
+                f"{self.controller.servers.get_server_friendly_name(server_id)}"
             )
 
             server_data = self.controller.get_server_data(server_id)

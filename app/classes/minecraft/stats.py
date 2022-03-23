@@ -67,7 +67,7 @@ class Stats:
 
         except Exception as e:
             logger.error(
-                f"Unable to get process details for pid: {process_pid} due to error: {e}"
+                f"Unable to get process details for pid: {process_pid} Error: {e}"
             )
 
             # Dummy Data
@@ -77,7 +77,7 @@ class Stats:
             }
             return process_stats
 
-    # shamelessly stolen from https://github.com/giampaolo/psutil/blob/master/scripts/disk_usage.py
+    # Source: https://github.com/giampaolo/psutil/blob/master/scripts/disk_usage.py
     @staticmethod
     def _all_disk_usage():
         disk_data = []
@@ -207,26 +207,29 @@ class Stats:
             }
         ).execute()
 
-        #        server_stats = stats_to_send.get('servers')#
-        #
-        #        for server in server_stats:
-        #            Server_Stats.insert({
-        #                Server_Stats.server_id: server.get('id', 0),
-        #                Server_Stats.started: server.get('started', ""),
-        #                Server_Stats.running: server.get('running', False),
-        #                Server_Stats.cpu: server.get('cpu', 0),
-        #                Server_Stats.mem: server.get('mem', 0),
-        #                Server_Stats.mem_percent: server.get('mem_percent', 0),
-        #                Server_Stats.world_name: server.get('world_name', ""),
-        #                Server_Stats.world_size: server.get('world_size', ""),
-        #                Server_Stats.server_port: server.get('server_port', ""),
-        #                Server_Stats.int_ping_results: server.get('int_ping_results', False),
-        #                Server_Stats.online: server.get("online", False),
-        #                Server_Stats.max: server.get("max", False),
-        #                Server_Stats.players: server.get("players", False),
-        #                Server_Stats.desc: server.get("desc", False),
-        #                Server_Stats.version: server.get("version", False)
-        #            }).execute()
+        # server_stats = stats_to_send.get("servers")
+        # for server in server_stats:
+        #     Server_Stats.insert(
+        #         {
+        #             Server_Stats.server_id: server.get("id", 0),
+        #             Server_Stats.started: server.get("started", ""),
+        #             Server_Stats.running: server.get("running", False),
+        #             Server_Stats.cpu: server.get("cpu", 0),
+        #             Server_Stats.mem: server.get("mem", 0),
+        #             Server_Stats.mem_percent: server.get("mem_percent", 0),
+        #             Server_Stats.world_name: server.get("world_name", ""),
+        #             Server_Stats.world_size: server.get("world_size", ""),
+        #             Server_Stats.server_port: server.get("server_port", ""),
+        #             Server_Stats.int_ping_results: server.get(
+        #                 "int_ping_results", False
+        #             ),
+        #             Server_Stats.online: server.get("online", False),
+        #             Server_Stats.max: server.get("max", False),
+        #             Server_Stats.players: server.get("players", False),
+        #             Server_Stats.desc: server.get("desc", False),
+        #             Server_Stats.version: server.get("version", False),
+        #         }
+        #     ).execute()
 
         # delete old data
         max_age = helper.get_setting("history_max_age")

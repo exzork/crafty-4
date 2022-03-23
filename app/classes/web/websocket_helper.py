@@ -24,14 +24,16 @@ class WebSocketHelper:
 
     def broadcast(self, event_type: str, data):
         logger.debug(
-            f"Sending to {len(self.clients)} clients: {json.dumps({'event': event_type, 'data': data})}"
+            f"Sending to {len(self.clients)} clients: "
+            f"{json.dumps({'event': event_type, 'data': data})}"
         )
         for client in self.clients:
             try:
                 self.send_message(client, event_type, data)
             except Exception as e:
                 logger.exception(
-                    f"Error caught while sending WebSocket message to {client.get_remote_ip()} {e}"
+                    f"Error caught while sending WebSocket message to "
+                    f"{client.get_remote_ip()} {e}"
                 )
 
     def broadcast_page(self, page: str, event_type: str, data):
@@ -85,7 +87,8 @@ class WebSocketHelper:
     def broadcast_with_fn(self, filter_fn, event_type: str, data):
         clients = list(filter(filter_fn, self.clients))
         logger.debug(
-            f"Sending to {len(clients)} out of {len(self.clients)} clients: {json.dumps({'event': event_type, 'data': data})}"
+            f"Sending to {len(clients)} out of {len(self.clients)} "
+            f"clients: {json.dumps({'event': event_type, 'data': data})}"
         )
 
         for client in clients:
@@ -93,7 +96,8 @@ class WebSocketHelper:
                 self.send_message(client, event_type, data)
             except Exception as e:
                 logger.exception(
-                    f"Error catched while sending WebSocket message to {client.get_remote_ip()} {e}"
+                    f"Error catched while sending WebSocket message to "
+                    f"{client.get_remote_ip()} {e}"
                 )
 
     def disconnect_all(self):

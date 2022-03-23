@@ -26,9 +26,9 @@ database = SqliteDatabase(
 )
 
 
-# ************************************************************************************************
+# **********************************************************************************
 #                                  User_Crafty Class
-# ************************************************************************************************
+# **********************************************************************************
 class User_Crafty(Model):
     user_id = ForeignKeyField(Users, backref="users_crafty")
     permissions = CharField(default="00000000")
@@ -44,9 +44,9 @@ class User_Crafty(Model):
         database = database
 
 
-# ************************************************************************************************
+# **********************************************************************************
 #                                  Crafty Permissions Class
-# ************************************************************************************************
+# **********************************************************************************
 class Enum_Permissions_Crafty(Enum):
     Server_Creation = 0
     User_Config = 1
@@ -54,10 +54,9 @@ class Enum_Permissions_Crafty(Enum):
 
 
 class Permissions_Crafty:
-
-    # ************************************************************************************************
+    # **********************************************************************************
     #                                  Crafty Permissions Methods
-    # ************************************************************************************************
+    # **********************************************************************************
     @staticmethod
     def get_permissions_list():
         permissions_list = []
@@ -113,15 +112,15 @@ class Permissions_Crafty:
     def get_permission_quantity_list(user_id):
         user_crafty = crafty_permissions.get_User_Crafty(user_id)
         quantity_list = {
-            Enum_Permissions_Crafty.Server_Creation.name: user_crafty.limit_server_creation,
+            Enum_Permissions_Crafty.Server_Creation.name: user_crafty.limit_server_creation,  # pylint: disable=line-too-long
             Enum_Permissions_Crafty.User_Config.name: user_crafty.limit_user_creation,
             Enum_Permissions_Crafty.Roles_Config.name: user_crafty.limit_role_creation,
         }
         return quantity_list
 
-    # ************************************************************************************************
+    # **********************************************************************************
     #                                   User_Crafty Methods
-    # ************************************************************************************************
+    # **********************************************************************************
     @staticmethod
     def get_User_Crafty(user_id):
         try:

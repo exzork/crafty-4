@@ -142,28 +142,26 @@ class Helpers:
         ci = -1  # command index - pointer to the argument we're building in cmd_out
         np = True  # whether we're creating a new argument/parameter
         esc = False  # whether an escape character was encountered
-        stch = None  # if we're dealing with a quote, save the quote type here.  Nested quotes to be dealt with by the command
+        stch = None  # if we're dealing with a quote, save the quote type here.
+        # Nested quotes to be dealt with by the command
         for c in cmd_in:  # for character in string
-            if (
-                np
-            ):  # if set, begin a new argument and increment the command index.  Continue the loop.
+            if np:  # if set, begin a new argument and increment the command index.
+                # Continue the loop.
                 if c == " ":
                     continue
                 else:
                     ci += 1
                     cmd_out.append("")
                     np = False
-            if (
-                esc
-            ):  # if we encountered an escape character on the last loop, append this char regardless of what it is
+            if esc:  # if we encountered an escape character on the last loop,
+                # append this char regardless of what it is
                 if c not in Helpers.allowed_quotes:
                     cmd_out[ci] += "\\"
                 cmd_out[ci] += c
                 esc = False
             else:
-                if (
-                    c == "\\"
-                ):  # if the current character is an escape character, set the esc flag and continue to next loop
+                if c == "\\":  # if the current character is an escape character,
+                    # set the esc flag and continue to next loop
                     esc = True
                 elif (
                     c == " " and stch is None
@@ -172,12 +170,13 @@ class Helpers:
                     np = True
                 elif (
                     c == stch
-                ):  # if we encounter the character that matches our start quote, end the quote and continue to next loop
+                ):  # if we encounter the character that matches our start quote,
+                    # end the quote and continue to next loop
                     stch = None
                 elif stch is None and (
                     c in Helpers.allowed_quotes
-                ):  # if we're not in the middle of a quote and we get a quotable character,
-                    # start a quote and proceed to the next loop
+                ):  # if we're not in the middle of a quote and we get a quotable
+                    # character, start a quote and proceed to the next loop
                     stch = c
                 else:  # else, just store the character in the current arg
                     cmd_out[ci] += c
@@ -236,8 +235,9 @@ class Helpers:
     def get_announcements():
         r = requests.get("https://craftycontrol.com/notify.json", timeout=2)
         data = (
-            '[{"id":"1","date":"Unknown","title":"Error getting Announcements","desc":"Error getting '
-            'Announcements","link":""}] '
+            '[{"id":"1","date":"Unknown",'
+            '"title":"Error getting Announcements",'
+            '"desc":"Error getting Announcements","link":""}]'
         )
 
         if r.status_code in [200, 201]:
@@ -337,7 +337,8 @@ class Helpers:
             # get file size
             fsize = f.tell()
 
-            # set pos @ last n chars (buffer from above = number of lines * avg_line_length)
+            # set pos @ last n chars
+            # (buffer from above = number of lines * avg_line_length)
             f.seek(max(fsize - line_buffer, 0), 0)
 
             # read file til the end
@@ -455,7 +456,8 @@ class Helpers:
 
     @staticmethod
     def calc_percent(source_path, dest_path):
-        # calculates percentable of zip from drive. Not with compression. For backups and support logs
+        # calculates percentable of zip from drive. Not with compression.
+        # (For backups and support logs)
         source_size = 0
         files_count = 0
         for path, _dirs, files in os.walk(source_path):
@@ -539,13 +541,15 @@ class Helpers:
                 started = data.get("started")
                 if psutil.pid_exists(pid):
                     console.critical(
-                        f"Another Crafty Controller agent seems to be running...\npid: {pid} \nstarted on: {started}"
+                        f"Another Crafty Controller agent seems to be running..."
+                        f"\npid: {pid} \nstarted on: {started}"
                     )
                     logger.critical("Found running crafty process. Exiting.")
                     sys.exit(1)
                 else:
                     logger.info(
-                        "No process found for pid. Assuming crafty crashed. Deleting stale session.lock"
+                        "No process found for pid. Assuming "
+                        "crafty crashed. Deleting stale session.lock"
                     )
                     os.remove(self.session_file)
 
@@ -564,7 +568,8 @@ class Helpers:
         with open(self.session_file, "w", encoding="utf-8") as f:
             json.dump(session_data, f, indent=True)
 
-    # because this is a recursive function, we will return bytes, and set human readable later
+    # because this is a recursive function, we will return bytes,
+    # and set human readable later
     def get_dir_size(self, path: str):
         total = 0
         for entry in os.scandir(path):
@@ -610,7 +615,8 @@ class Helpers:
         """
         ensures a directory exists
 
-        Checks for the existence of a directory, if the directory isn't there, this function creates the directory
+        Checks for the existence of a directory, if the directory isn't there,
+        this function creates the directory
 
         Args:
             path (string): the path you are checking for
@@ -769,7 +775,8 @@ class Helpers:
                     class="tree-nested d-block tree-ctx-item tree-file tree-item"
                     data-path="{dpath}"
                     data-name="{filename}"
-                    onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{filename}</li>"""
+                    onclick="clickOnFile(event)"><span style="margin-right: 6px;">
+                    <i class="far fa-file"></i></span>{filename}</li>"""
         return output
 
     @staticmethod
@@ -805,7 +812,8 @@ class Helpers:
                     class="tree-nested d-block tree-ctx-item tree-file tree-item"
                     data-path="{dpath}"
                     data-name="{filename}"
-                    onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>{filename}</li>"""
+                    onclick="clickOnFile(event)"><span style="margin-right: 6px;">
+                    <i class="far fa-file"></i></span>{filename}</li>"""
         output += "</ul>\n"
         return output
 
@@ -883,13 +891,16 @@ class Helpers:
 
     @staticmethod
     def in_path(parent_path, child_path):
-        # Smooth out relative path names, note: if you are concerned about symbolic links, you should use os.path.realpath too
+        # Smooth out relative path names, note: if you are concerned about
+        # symbolic links, you should use os.path.realpath too
         parent_path = os.path.abspath(parent_path)
         child_path = os.path.abspath(child_path)
 
-        # Compare the common path of the parent and child path with the common path of just the parent path.
-        # Using the commonpath method on just the parent path will regularise the path name in the same way
-        # as the comparison that deals with both paths, removing any trailing path separator
+        # Compare the common path of the parent and child path with the
+        # common path of just the parent path. Using the commonpath method
+        # on just the parent path will regularise the path name in the same way
+        # as the comparison that deals with both paths, removing any trailing
+        # path separator
         return os.path.commonpath([parent_path]) == os.path.commonpath(
             [parent_path, child_path]
         )

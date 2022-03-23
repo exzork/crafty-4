@@ -75,10 +75,12 @@ class UploadHandler(BaseHandler):
 
         if Enum_Permissions_Server.Files not in exec_user_server_permissions:
             logger.warning(
-                f"User {user_id} tried to upload a file to {server_id} without permissions!"
+                f"User {user_id} tried to upload a file to "
+                f"{server_id} without permissions!"
             )
             console.warning(
-                f"User {user_id} tried to upload a file to {server_id} without permissions!"
+                f"User {user_id} tried to upload a file to "
+                f"{server_id} without permissions!"
             )
             self.do_upload = False
 
@@ -101,10 +103,12 @@ class UploadHandler(BaseHandler):
                 full_path,
             )
             logger.warning(
-                f"User {user_id} tried to upload a file to {server_id} but the path is not inside of the server!"
+                f"User {user_id} tried to upload a file to {server_id} "
+                f"but the path is not inside of the server!"
             )
             console.warning(
-                f"User {user_id} tried to upload a file to {server_id} but the path is not inside of the server!"
+                f"User {user_id} tried to upload a file to {server_id} "
+                f"but the path is not inside of the server!"
             )
             self.do_upload = False
 

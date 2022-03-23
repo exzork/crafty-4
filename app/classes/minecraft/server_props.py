@@ -8,7 +8,7 @@ class ServerProps:
         self.props = self._parse()
 
     def _parse(self):
-        """Loads and parses the file specified in self.filepath"""
+        # Loads and parses the file specified in self.filepath
         with open(self.filepath, encoding="utf-8") as fp:
             line = fp.readline()
             d = {}
@@ -30,15 +30,16 @@ class ServerProps:
         return d
 
     def print(self):
-        """Prints the properties dictionary (using pprint)"""
+        # Prints the properties dictionary (using pprint)
         pprint.pprint(self.props)
 
     def get(self):
-        """Returns the properties dictionary"""
+        # Returns the properties dictionary
         return self.props
 
     def update(self, key, val):
-        """Updates property in the properties dictionary [ update("pvp", "true") ] and returns boolean condition"""
+        # Updates property in the properties dictionary [ update("pvp", "true") ]
+        # and returns boolean condition
         if key in self.props.keys():
             self.props[key] = val
             return True
@@ -46,7 +47,7 @@ class ServerProps:
             return False
 
     def save(self):
-        """Writes to the new file"""
+        # Writes to the new file
         with open(self.filepath, "a+", encoding="utf-8") as f:
             f.truncate(0)
             with open(".header", encoding="utf-8") as header:

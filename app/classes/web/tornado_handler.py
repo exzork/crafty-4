@@ -61,12 +61,15 @@ class Webserver:
     @staticmethod
     def _asyncio_patch():
         """
-        As of Python 3.8 (on Windows), the asyncio default event handler has changed to "proactor",
+        As of Python 3.8 (on Windows),
+        the asyncio default event handler has changed to "proactor",
         where tornado expects the "selector" handler.
 
-        This function checks if the platform is windows and changes the event handler to suit.
+        This function checks if the platform is windows and
+        changes the event handler to suit.
 
-        (Taken from https://github.com/mkdocs/mkdocs/commit/cf2b136d4257787c0de51eba2d9e30ded5245b31)
+        (Taken from
+        https://github.com/mkdocs/mkdocs/commit/cf2b136d4257787c0de51eba2d9e30ded5245b31)
         """
         logger.debug("Checking if asyncio patch is required")
         if sys.platform.startswith("win") and sys.version_info >= (3, 8):
@@ -189,10 +192,12 @@ class Webserver:
         self.HTTPS_Server.listen(https_port)
 
         logger.info(
-            f"https://{helper.get_local_ip()}:{https_port} is up and ready for connections."
+            f"https://{helper.get_local_ip()}:{https_port} "
+            f"is up and ready for connections."
         )
         console.info(
-            f"https://{helper.get_local_ip()}:{https_port} is up and ready for connections."
+            f"https://{helper.get_local_ip()}:{https_port} "
+            f"is up and ready for connections."
         )
 
         console.info("Server Init Complete: Listening For Connections:")

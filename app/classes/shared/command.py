@@ -56,7 +56,8 @@ class MainPrompt(cmd.Cmd):
         for thread in threading.enumerate():
             if sys.version_info >= (3, 8):
                 print(
-                    f"Name: {thread.name} Identifier: {thread.ident} TID/PID: {thread.native_id}"
+                    f"Name: {thread.name} Identifier: "
+                    f"{thread.ident} TID/PID: {thread.native_id}"
                 )
             else:
                 print(f"Name: {thread.name} Identifier: {thread.ident}")

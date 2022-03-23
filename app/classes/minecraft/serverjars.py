@@ -137,7 +137,8 @@ class ServerJars:
                     # jar versions for this server
                     versions = self._get_jar_details(s)
 
-                    # add these versions (a list) to the dict with a key of the server type
+                    # add these versions (a list) to the dict with
+                    # a key of the server type
                     data["servers"].update({s: versions})
 
             # save our cache
@@ -177,7 +178,8 @@ class ServerJars:
         fetch_url = f"{self.base_url}/api/fetchJar/{server}/{version}"
         server_users = server_permissions.get_server_user_list(server_id)
 
-        # We need to make sure the server is registered before we submit a db update for it's stats.
+        # We need to make sure the server is registered before
+        # we submit a db update for it's stats.
         while True:
             try:
                 Servers_Controller.set_download(server_id)

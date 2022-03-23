@@ -45,7 +45,8 @@ class Roles_Controller:
             server_permissions.get_or_create(role_id, server, permissions_mask)
         for server in base_data["servers"]:
             server_permissions.update_role_permission(role_id, server, permissions_mask)
-            # TODO: This is horribly inefficient and we should be using bulk queries but im going for functionality at this point
+            # TODO: This is horribly inefficient and we should be using bulk queries
+            # but im going for functionality at this point
         server_permissions.delete_roles_permissions(role_id, removed_servers)
         if up_data:
             roles_helper.update_role(role_id, up_data)

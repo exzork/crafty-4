@@ -92,7 +92,8 @@ class TasksManager:
                     svr = self.controller.get_server_obj(c.server_id)
                 except:
                     logger.error(
-                        "Server value requested does note exist purging item from waiting commands."
+                        "Server value requested does note exist! "
+                        "Purging item from waiting commands."
                     )
                     management_helper.mark_command_complete(c.command_id)
 
@@ -162,7 +163,9 @@ class TasksManager:
     def scheduler_thread(self):
         schedules = management_helper.get_schedules_enabled()
         self.scheduler.add_listener(self.schedule_watcher, mask=EVENT_JOB_EXECUTED)
-        # self.scheduler.add_job(self.scheduler.print_jobs, 'interval', seconds=10, id='-1')
+        # self.scheduler.add_job(
+        #    self.scheduler.print_jobs, "interval", seconds=10, id="-1"
+        # )
 
         # load schedules from DB
         for schedule in schedules:
@@ -254,7 +257,8 @@ class TasksManager:
             job_data["parent"],
             job_data["delay"],
         )
-        # Checks to make sure some doofus didn't actually make the newly created task a child of itself.
+        # Checks to make sure some doofus didn't actually make the newly
+        # created task a child of itself.
         if str(job_data["parent"]) == str(sch_id):
             management_helper.update_scheduled_task(sch_id, {"parent": None})
             # Check to see if it's enabled and is not a chain reaction.
@@ -349,12 +353,14 @@ class TasksManager:
         else:
             logger.info(
                 f"Job with ID {sch_id} was deleted from DB, but was not enabled."
-                + "Not going to try removing something that doesn't exist from active schedules."
+                f"Not going to try removing something "
+                f"that doesn't exist from active schedules."
             )
 
     def update_job(self, sch_id, job_data):
         management_helper.update_scheduled_task(sch_id, job_data)
-        # Checks to make sure some doofus didn't actually make the newly created task a child of itself.
+        # Checks to make sure some doofus didn't actually make the newly
+        # created task a child of itself.
         if str(job_data["parent"]) == str(sch_id):
             management_helper.update_scheduled_task(sch_id, {"parent": None})
         try:
@@ -362,7 +368,8 @@ class TasksManager:
                 self.scheduler.remove_job(str(sch_id))
         except:
             logger.info(
-                "No job found in update job. Assuming it was previously disabled. Starting new job."
+                "No job found in update job. "
+                "Assuming it was previously disabled. Starting new job."
             )
 
         if job_data["enabled"]:
@@ -436,7 +443,8 @@ class TasksManager:
                 self.scheduler.remove_job(str(sch_id))
             except:
                 logger.info(
-                    f"APScheduler found no scheduled job on schedule update for schedule with id: {sch_id} Assuming it was already disabled."
+                    f"APScheduler found no scheduled job on schedule update for "
+                    f"schedule with id: {sch_id} Assuming it was already disabled."
                 )
 
     def schedule_watcher(self, event):
@@ -454,11 +462,14 @@ class TasksManager:
                 if task.one_time:
                     self.remove_job(task.schedule_id)
                     logger.info("one time task detected. Deleting...")
-                # check for any child tasks for this. It's kind of backward, but this makes DB management a lot easier. One to one instead of one to many.
+                # check for any child tasks for this. It's kind of backward,
+                # but this makes DB management a lot easier. One to one
+                # instead of one to many.
                 for schedule in management_helper.get_child_schedules_by_server(
                     task.schedule_id, task.server_id
                 ):
-                    # event job ID's are strings so we need to look at this as the same data type.
+                    # event job ID's are strings so we need to look at
+                    # this as the same data type.
                     if str(schedule.parent) == str(event.job_id):
                         if schedule.enabled:
                             delaytime = datetime.datetime.now() + datetime.timedelta(
@@ -478,7 +489,8 @@ class TasksManager:
                             )
             else:
                 logger.info(
-                    "Event job ID is not numerical. Assuming it's stats - not stored in DB. Moving on."
+                    "Event job ID is not numerical. Assuming it's stats "
+                    "- not stored in DB. Moving on."
                 )
         else:
             logger.error(f"Task failed with error: {event.exception}")

@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 import time
 import datetime
 import os
@@ -36,7 +37,8 @@ class PanelHandler(BaseHandler):
         user_roles = {}
         for user in self.controller.users.get_all_users():
             user_roles_list = self.controller.users.get_user_roles_names(user.user_id)
-            # user_servers = self.controller.servers.get_authorized_servers(user.user_id)
+            # user_servers =
+            # self.controller.servers.get_authorized_servers(user.user_id)
             user_roles[user.user_id] = user_roles_list
         return user_roles
 
@@ -142,7 +144,8 @@ class PanelHandler(BaseHandler):
         api_key, _, exec_user = self.current_user
         superuser = exec_user["superuser"]
 
-        # Commented out because there is no server access control for API keys, they just inherit from the host user
+        # Commented out because there is no server access control for API keys,
+        # they just inherit from the host user
         # if api_key is not None:
         #     superuser = superuser and api_key.superuser
 
@@ -162,7 +165,8 @@ class PanelHandler(BaseHandler):
                         server_id, api_key
                     ):
                         print(
-                            f"API key {api_key.name} (id: {api_key.token_id}) does not have permission"
+                            f"API key {api_key.name} (id: {api_key.token_id}) "
+                            f"does not have permission"
                         )
                         self.redirect("/panel/error?error=Invalid Server ID")
                         return None
@@ -434,7 +438,8 @@ class PanelHandler(BaseHandler):
                         page_servers.append(server)
                         un_used_servers.remove(server)
                         user_order.remove(server_id)
-                # we only want to set these server stats values once. We need to update the flag so it only hits that if once.
+                # we only want to set these server stats values once.
+                # We need to update the flag so it only hits that if once.
                 flag += 1
 
             for server in un_used_servers:
@@ -447,7 +452,8 @@ class PanelHandler(BaseHandler):
                     user_order.remove(server_id)
             page_data["servers"] = page_servers
 
-            # num players is set to zero here. If we poll all servers while dashboard is loading it takes FOREVER. We leave this to the
+            # num players is set to zero here. If we poll all servers while
+            # dashboard is loading it takes FOREVER. We leave this to the
             # async polling once dashboard is served.
             page_data["num_players"] = 0
 
@@ -778,7 +784,7 @@ class PanelHandler(BaseHandler):
             page_data[
                 "quantity_server"
             ] = (
-                self.controller.crafty_perms.list_all_crafty_permissions_quantity_limits()
+                self.controller.crafty_perms.list_all_crafty_permissions_quantity_limits()  # pylint: disable=line-too-long
             )
             page_data["languages"] = []
             page_data["languages"].append(
@@ -843,7 +849,8 @@ class PanelHandler(BaseHandler):
             page_data["schedule"]["cron_string"] = ""
             page_data["schedule"]["time"] = ""
             page_data["schedule"]["interval"] = ""
-            # we don't need to check difficulty here. We'll just default to basic for new schedules
+            # we don't need to check difficulty here.
+            # We'll just default to basic for new schedules
             page_data["schedule"]["difficulty"] = "basic"
             page_data["schedule"]["interval_type"] = "days"
 
@@ -898,7 +905,8 @@ class PanelHandler(BaseHandler):
                 "children"
             ] = self.controller.management.get_child_schedules(sch_id)
             # We check here to see if the command is any of the default ones.
-            # We do not want a user changing to a custom command and seeing our command there.
+            # We do not want a user changing to a custom command
+            # and seeing our command there.
             if (
                 schedule.action != "start"
                 or schedule.action != "stop"
@@ -1192,7 +1200,8 @@ class PanelHandler(BaseHandler):
 
         elif page == "support_logs":
             logger.info(
-                f"Support logs requested. Packinging logs for user with ID: {exec_user['user_id']}"
+                f"Support logs requested. "
+                f"Packinging logs for user with ID: {exec_user['user_id']}"
             )
             logs_thread = threading.Thread(
                 target=self.controller.package_support_logs,
@@ -1243,7 +1252,8 @@ class PanelHandler(BaseHandler):
                     exec_user["user_id"]
                 )
             )
-            # defined_servers = self.controller.servers.get_authorized_servers(exec_user["user_id"])
+            # defined_servers =
+            # self.controller.servers.get_authorized_servers(exec_user["user_id"])
             for r in exec_user["roles"]:
                 role = self.controller.roles.get_role(r)
                 exec_user_role.add(role["role_name"])
@@ -1289,7 +1299,8 @@ class PanelHandler(BaseHandler):
 
             server_obj = self.controller.servers.get_server_obj(server_id)
             stale_executable = server_obj.executable
-            # Compares old jar name to page data being passed. If they are different we replace the executable name in the
+            # Compares old jar name to page data being passed.
+            # If they are different we replace the executable name in the
             if str(stale_executable) != str(executable):
                 execution_command = execution_command.replace(
                     str(stale_executable), str(executable)
@@ -1711,7 +1722,8 @@ class PanelHandler(BaseHandler):
         elif page == "edit_user":
             if bleach.clean(self.get_argument("username", None)) == "system":
                 self.redirect(
-                    "/panel/error?error=Unauthorized access: system user is not editable"
+                    "/panel/error?error=Unauthorized access: "
+                    "system user is not editable"
                 )
             user_id = bleach.clean(self.get_argument("id", None))
             username = bleach.clean(self.get_argument("username", None))
@@ -1724,8 +1736,9 @@ class PanelHandler(BaseHandler):
             )
 
             if superuser:
-                # Checks if user is trying to change super user status of self. We don't want that.
-                # Automatically make them stay super user since we know they are.
+                # Checks if user is trying to change super user status of self.
+                # We don't want that. Automatically make them stay super user
+                # since we know they are.
                 if str(exec_user["user_id"]) != str(user_id):
                     superuser = bleach.clean(self.get_argument("superuser", "0"))
                 else:
@@ -1800,7 +1813,8 @@ class PanelHandler(BaseHandler):
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
-                f"Edited user {username} (UID:{user_id}) with roles {roles} and permissions {permissions_mask}",
+                f"Edited user {username} (UID:{user_id}) with roles {roles} "
+                f"and permissions {permissions_mask}",
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )
@@ -1836,8 +1850,9 @@ class PanelHandler(BaseHandler):
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
-                f"Added API key {name} with crafty permissions {crafty_permissions_mask}"
-                + f" and {server_permissions_mask} for user with UID: {user_id}",
+                f"Added API key {name} with crafty permissions "
+                f"{crafty_permissions_mask}"
+                f" and {server_permissions_mask} for user with UID: {user_id}",
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )
@@ -1858,7 +1873,8 @@ class PanelHandler(BaseHandler):
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
-                f"Generated a new API token for the key {key.name} from user with UID: {key.user.user_id}",
+                f"Generated a new API token for the key {key.name} "
+                f"from user with UID: {key.user.user_id}",
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )
@@ -1871,8 +1887,9 @@ class PanelHandler(BaseHandler):
         elif page == "add_user":
             if bleach.clean(self.get_argument("username", None)).lower() == "system":
                 self.redirect(
-                    "/panel/error?error=Unauthorized access: username system is reserved for the Crafty system."
-                    + " Please choose a different username."
+                    "/panel/error?error=Unauthorized access: "
+                    "username system is reserved for the Crafty system."
+                    " Please choose a different username."
                 )
                 return
             username = bleach.clean(self.get_argument("username", None))
@@ -2074,7 +2091,8 @@ class PanelHandler(BaseHandler):
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
-                f"Removed API key {target_key} (ID: {key_id}) from user {exec_user['user_id']}",
+                f"Removed API key {target_key} "
+                f"(ID: {key_id}) from user {exec_user['user_id']}",
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )

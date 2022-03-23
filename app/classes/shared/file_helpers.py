@@ -76,7 +76,8 @@ class FileHelpers:
 
                     except Exception as e:
                         logger.warning(
-                            f"Error backing up: {os.path.join(root, file)}! - Error was: {e}"
+                            f"Error backing up: {os.path.join(root, file)}!"
+                            f" - Error was: {e}"
                         )
 
         return True
@@ -104,7 +105,8 @@ class FileHelpers:
 
                     except Exception as e:
                         logger.warning(
-                            f"Error backing up: {os.path.join(root, file)}! - Error was: {e}"
+                            f"Error backing up: {os.path.join(root, file)}!"
+                            f" - Error was: {e}"
                         )
 
         return True

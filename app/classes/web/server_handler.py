@@ -126,7 +126,8 @@ class ServerHandler(BaseHandler):
                 exec_user["user_id"]
             ):
                 self.redirect(
-                    "/panel/error?error=Unauthorized access: not a server creator or server limit reached"
+                    "/panel/error?error=Unauthorized access: "
+                    "not a server creator or server limit reached"
                 )
                 return
 
@@ -141,7 +142,8 @@ class ServerHandler(BaseHandler):
                 exec_user["user_id"]
             ):
                 self.redirect(
-                    "/panel/error?error=Unauthorized access: not a server creator or server limit reached"
+                    "/panel/error?error=Unauthorized access: "
+                    "not a server creator or server limit reached"
                 )
                 return
 
@@ -286,7 +288,7 @@ class ServerHandler(BaseHandler):
                 )
                 self.controller.management.add_to_audit_log(
                     exec_user["user_id"],
-                    f'imported a jar server named "{server_name}"',  # Example: Admin imported a server named "old creative"
+                    f'imported a jar server named "{server_name}"',
                     new_server_id,
                     self.get_remote_ip(),
                 )
@@ -303,13 +305,15 @@ class ServerHandler(BaseHandler):
                 )
                 if new_server_id == "false":
                     self.redirect(
-                        "/panel/error?error=Zip file not accessible! You can fix this permissions issue with"
-                        + f"sudo chown -R crafty:crafty {import_server_path} And sudo chmod 2775 -R {import_server_path}"
+                        f"/panel/error?error=Zip file not accessible! "
+                        f"You can fix this permissions issue with "
+                        f"sudo chown -R crafty:crafty {import_server_path} "
+                        f"And sudo chmod 2775 -R {import_server_path}"
                     )
                     return
                 self.controller.management.add_to_audit_log(
                     exec_user["user_id"],
-                    f'imported a zip server named "{server_name}"',  # Example: Admin imported a server named "old creative"
+                    f'imported a zip server named "{server_name}"',
                     new_server_id,
                     self.get_remote_ip(),
                 )
@@ -320,20 +324,23 @@ class ServerHandler(BaseHandler):
                     self.redirect("/panel/error?error=Invalid server data")
                     return
                 server_type, server_version = server_parts
-                # TODO: add server type check here and call the correct server add functions if not a jar
+                # TODO: add server type check here and call the correct server
+                # add functions if not a jar
                 role_ids = self.controller.users.get_user_roles_id(exec_user["user_id"])
                 new_server_id = self.controller.create_jar_server(
                     server_type, server_version, server_name, min_mem, max_mem, port
                 )
                 self.controller.management.add_to_audit_log(
                     exec_user["user_id"],
-                    f'created a {server_version} {str(server_type).capitalize()} server named "{server_name}"',
+                    f"created a {server_version} {str(server_type).capitalize()}"
+                    f' server named "{server_name}"',
                     # Example: Admin created a 1.16.5 Bukkit server named "survival"
                     new_server_id,
                     self.get_remote_ip(),
                 )
 
-            # These lines create a new Role for the Server with full permissions and add the user to it if he's not a superuser
+            # These lines create a new Role for the Server with full permissions
+            # and add the user to it if he's not a superuser
             if len(captured_roles) == 0:
                 if not superuser:
                     new_server_uuid = self.controller.servers.get_server_data_by_id(
@@ -399,7 +406,7 @@ class ServerHandler(BaseHandler):
                 )
                 self.controller.management.add_to_audit_log(
                     exec_user["user_id"],
-                    f'imported a jar server named "{server_name}"',  # Example: Admin imported a server named "old creative"
+                    f'imported a jar server named "{server_name}"',
                     new_server_id,
                     self.get_remote_ip(),
                 )
@@ -416,13 +423,15 @@ class ServerHandler(BaseHandler):
                 )
                 if new_server_id == "false":
                     self.redirect(
-                        "/panel/error?error=Zip file not accessible! You can fix this permissions issue with"
-                        + f"sudo chown -R crafty:crafty {import_server_path} And sudo chmod 2775 -R {import_server_path}"
+                        f"/panel/error?error=Zip file not accessible! "
+                        f"You can fix this permissions issue with"
+                        f"sudo chown -R crafty:crafty {import_server_path} "
+                        f"And sudo chmod 2775 -R {import_server_path}"
                     )
                     return
                 self.controller.management.add_to_audit_log(
                     exec_user["user_id"],
-                    f'imported a zip server named "{server_name}"',  # Example: Admin imported a server named "old creative"
+                    f'imported a zip server named "{server_name}"',
                     new_server_id,
                     self.get_remote_ip(),
                 )
@@ -433,20 +442,23 @@ class ServerHandler(BaseHandler):
                     self.redirect("/panel/error?error=Invalid server data")
                     return
                 server_type, server_version = server_parts
-                # TODO: add server type check here and call the correct server add functions if not a jar
+                # TODO: add server type check here and call the correct server
+                # add functions if not a jar
                 role_ids = self.controller.users.get_user_roles_id(exec_user["user_id"])
                 new_server_id = self.controller.create_jar_server(
                     server_type, server_version, server_name, min_mem, max_mem, port
                 )
                 self.controller.management.add_to_audit_log(
                     exec_user["user_id"],
-                    f'created a {server_version} {str(server_type).capitalize()} server named "{server_name}"',
+                    f"created a {server_version} {str(server_type).capitalize()} "
+                    f'server named "{server_name}"',
                     # Example: Admin created a 1.16.5 Bukkit server named "survival"
                     new_server_id,
                     self.get_remote_ip(),
                 )
 
-            # These lines create a new Role for the Server with full permissions and add the user to it if he's not a superuser
+            # These lines create a new Role for the Server with full permissions
+            # and add the user to it if he's not a superuser
             if len(captured_roles) == 0:
                 if not superuser:
                     new_server_uuid = self.controller.servers.get_server_data_by_id(

@@ -51,11 +51,11 @@ class Server_Perms_Controller:
                     int(role.role_id), int(old_server_id)
                 ),
             )
-            # server_permissions.add_role_server(new_server_id, role.role_id, '00001000')
+            # server_permissions.add_role_server(new_server_id, role.role_id,"00001000")
 
-    # ************************************************************************************************
+    # **********************************************************************************
     #                                   Servers Permissions Methods
-    # ************************************************************************************************
+    # **********************************************************************************
     @staticmethod
     def get_permissions_mask(role_id, server_id):
         return server_permissions.get_permissions_mask(role_id, server_id)

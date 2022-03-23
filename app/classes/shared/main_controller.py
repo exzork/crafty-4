@@ -64,7 +64,8 @@ class Controller:
 
             if known_server == server_id_to_check:
                 logger.info(
-                    f"skipping initialization of server {server_id_to_check} because it is already loaded"
+                    f"skipping initialization of server {server_id_to_check} "
+                    f"because it is already loaded"
                 )
                 return True
 
@@ -86,11 +87,13 @@ class Controller:
                 helper.get_os_understandable_path(s["path"])
             ):
                 logger.warning(
-                    f"Unable to find server {s['server_name']} at path {s['path']}. Skipping this server"
+                    f"Unable to find server {s['server_name']} at path {s['path']}. "
+                    f"Skipping this server"
                 )
 
                 console.warning(
-                    f"Unable to find server {s['server_name']} at path {s['path']}. Skipping this server"
+                    f"Unable to find server {s['server_name']} at path {s['path']}. "
+                    f"Skipping this server"
                 )
                 continue
 
@@ -180,7 +183,8 @@ class Controller:
                     auth_servers.append(server)
                 else:
                     logger.info(
-                        f"Logs permission not available for server {server['server_name']}. Skipping."
+                        f"Logs permission not available for server "
+                        f"{server['server_name']}. Skipping."
                     )
         # we'll iterate through our list of log paths from auth servers.
         for server in auth_servers:
@@ -242,7 +246,8 @@ class Controller:
     def crash_detection(self, server_obj):
         svr = self.get_server_obj(server_obj.server_id)
         # start or stop crash detection depending upon user preference
-        # The below functions check to see if the server is running. They only execute if it's running.
+        # The below functions check to see if the server is running.
+        # They only execute if it's running.
         if server_obj.crash_detection == 1:
             svr.start_crash_detection()
         else:
@@ -366,11 +371,18 @@ class Controller:
             logger.error(f"Unable to create required server files due to :{e}")
             return False
 
-        # must remain non-fstring due to string addtion
         if helper.is_os_windows():
-            server_command = f'java -Xms{helper.float_to_string(min_mem)}M -Xmx{helper.float_to_string(max_mem)}M -jar "{full_jar_path}" nogui'
+            server_command = (
+                f"java -Xms{helper.float_to_string(min_mem)}M "
+                f"-Xmx{helper.float_to_string(max_mem)}M "
+                f'-jar "{full_jar_path}" nogui'
+            )
         else:
-            server_command = f"java -Xms{helper.float_to_string(min_mem)}M -Xmx{helper.float_to_string(max_mem)}M -jar {full_jar_path} nogui"
+            server_command = (
+                f"java -Xms{helper.float_to_string(min_mem)}M "
+                f"-Xmx{helper.float_to_string(max_mem)}M "
+                f"-jar {full_jar_path} nogui"
+            )
         server_log_file = f"{server_dir}/logs/latest.log"
         server_stop = "stop"
 
@@ -441,7 +453,8 @@ class Controller:
                 has_properties = True
         if not has_properties:
             logger.info(
-                f"No server.properties found on zip file import. Creating one with port selection of {str(port)}"
+                f"No server.properties found on zip file import. "
+                f"Creating one with port selection of {str(port)}"
             )
             with open(
                 os.path.join(new_server_dir, "server.properties"), "w", encoding="utf-8"
@@ -451,11 +464,18 @@ class Controller:
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
 
-        # due to adding strings this must not be an fstring
         if helper.is_os_windows():
-            server_command = f'java -Xms{helper.float_to_string(min_mem)}M -Xmx{helper.float_to_string(max_mem)}M -jar "{full_jar_path}" nogui'
+            server_command = (
+                f"java -Xms{helper.float_to_string(min_mem)}M "
+                f"-Xmx{helper.float_to_string(max_mem)}M "
+                f'-jar "{full_jar_path}" nogui'
+            )
         else:
-            server_command = f"java -Xms{helper.float_to_string(min_mem)}M -Xmx{helper.float_to_string(max_mem)}M -jar {full_jar_path} nogui"
+            server_command = (
+                f"java -Xms{helper.float_to_string(min_mem)}M "
+                f"-Xmx{helper.float_to_string(max_mem)}M "
+                f"-jar {full_jar_path} nogui"
+            )
         server_log_file = f"{new_server_dir}/logs/latest.log"
         server_stop = "stop"
 
@@ -512,7 +532,8 @@ class Controller:
                 logger.error(f"ERROR IN ZIP IMPORT: {ex}")
         if not has_properties:
             logger.info(
-                f"No server.properties found on zip file import. Creating one with port selection of {str(port)}"
+                f"No server.properties found on zip file import. "
+                f"Creating one with port selection of {str(port)}"
             )
             with open(
                 os.path.join(new_server_dir, "server.properties"), "w", encoding="utf-8"
@@ -522,11 +543,18 @@ class Controller:
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
 
-        # due to strings being added we need to leave this as not an fstring
         if helper.is_os_windows():
-            server_command = f'java -Xms{helper.float_to_string(min_mem)}M -Xmx{helper.float_to_string(max_mem)}M -jar "{full_jar_path}" nogui'
+            server_command = (
+                f"java -Xms{helper.float_to_string(min_mem)}M "
+                f"-Xmx{helper.float_to_string(max_mem)}M "
+                f'-jar "{full_jar_path}" nogui'
+            )
         else:
-            server_command = f"java -Xms{helper.float_to_string(min_mem)}M -Xmx{helper.float_to_string(max_mem)}M -jar {full_jar_path} nogui"
+            server_command = (
+                f"java -Xms{helper.float_to_string(min_mem)}M "
+                f"-Xmx{helper.float_to_string(max_mem)}M "
+                f"-jar {full_jar_path} nogui"
+            )
         logger.debug("command: " + server_command)
         server_log_file = f"{new_server_dir}/logs/latest.log"
         server_stop = "stop"
@@ -545,9 +573,9 @@ class Controller:
         )
         return new_id
 
-    # ************************************************************************************************
+    # **********************************************************************************
     #                                   BEDROCK IMPORTS
-    # ************************************************************************************************
+    # **********************************************************************************
 
     def import_bedrock_server(
         self, server_name: str, server_path: str, server_exe: str, port: int
@@ -575,7 +603,8 @@ class Controller:
                 has_properties = True
         if not has_properties:
             logger.info(
-                f"No server.properties found on zip file import. Creating one with port selection of {str(port)}"
+                f"No server.properties found on zip file import. "
+                f"Creating one with port selection of {str(port)}"
             )
             with open(
                 os.path.join(new_server_dir, "server.properties"), "w", encoding="utf-8"
@@ -585,7 +614,6 @@ class Controller:
 
         full_jar_path = os.path.join(new_server_dir, server_exe)
 
-        # due to adding strings this must not be an fstring
         if helper.is_os_windows():
             server_command = f'"{full_jar_path}"'
         else:
@@ -644,7 +672,8 @@ class Controller:
                 logger.error(f"ERROR IN ZIP IMPORT: {ex}")
         if not has_properties:
             logger.info(
-                f"No server.properties found on zip file import. Creating one with port selection of {str(port)}"
+                f"No server.properties found on zip file import. "
+                f"Creating one with port selection of {str(port)}"
             )
             with open(
                 os.path.join(new_server_dir, "server.properties"), "w", encoding="utf-8"
@@ -654,7 +683,6 @@ class Controller:
 
         full_jar_path = os.path.join(new_server_dir, server_exe)
 
-        # due to strings being added we need to leave this as not an fstring
         if helper.is_os_windows():
             server_command = f'"{full_jar_path}"'
         else:
@@ -681,9 +709,9 @@ class Controller:
 
         return new_id
 
-    # ************************************************************************************************
+    # **********************************************************************************
     #                                   BEDROCK IMPORTS END
-    # ************************************************************************************************
+    # **********************************************************************************
 
     def rename_backup_dir(self, old_server_id, new_server_id, new_uuid):
         server_data = self.servers.get_server_data_by_id(old_server_id)
@@ -743,7 +771,8 @@ class Controller:
                     encoding="utf-8",
                 ) as f:
                     f.write(
-                        "The server is managed by Crafty Controller.\n Leave this directory/files alone please"
+                        "The server is managed by Crafty Controller.\n "
+                        "Leave this directory/files alone please"
                     )
                     f.close()
 
@@ -782,7 +811,8 @@ class Controller:
                         )
                     except Exception as e:
                         logger.error(
-                            f"Unable to delete server files for server with ID: {server_id} with error logged: {e}"
+                            f"Unable to delete server files for server with ID: "
+                            f"{server_id} with error logged: {e}"
                         )
                     if helper.check_path_exists(
                         self.servers.get_server_data_by_id(server_id)["backup_path"]

@@ -127,7 +127,10 @@ class PublicHandler(BaseHandler):
 
             # if they are disabled
             if not user_data.enabled:
-                error_msg = "User account disabled. Please contact your system administrator for more info."
+                error_msg = (
+                    "User account disabled. Please contact "
+                    "your system administrator for more info."
+                )
                 # self.clear_cookie("user")
                 # self.clear_cookie("user_data")
                 self.clear_cookie("token")

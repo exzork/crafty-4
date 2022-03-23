@@ -16,12 +16,14 @@ class import3:
     def start_import(self):
         folder = os.path.normpath(
             input(
-                "Please input the path to the migrations folder in your installation of Crafty 3: "
+                "Please input the path to the migrations folder "
+                "in your installation of Crafty 3: "
             )
         )
         if not os.path.exists(folder):
             console.info(
-                "Crafty cannot find the path you entered. Does Crafty's user have permission to access it?"
+                "Crafty cannot find the path you entered. "
+                "Does Crafty's user have permission to access it?"
             )
             console.info("Please run the import3 command again and enter a valid path.")
         else:
@@ -42,10 +44,12 @@ class import3:
                 logger.info(f"Imported user {user['username']} from Crafty 3")
         else:
             console.info(
-                "There is only one user detected. Cannot create duplicate Admin account."
+                "There is only one user detected. "
+                "Cannot create duplicate Admin account."
             )
             logger.info(
-                "There is only one user detected. Cannot create duplicate Admin account."
+                "There is only one user detected. "
+                "Cannot create duplicate Admin account."
             )
 
     @staticmethod
@@ -62,10 +66,12 @@ class import3:
                     port=server["server_port"],
                 )
                 console.info(
-                    f"Imported server {server['server_name']}[{server['id']}] from Crafty 3 to new server id {new_server_id}"
+                    f"Imported server {server['server_name']}[{server['id']}] "
+                    f"from Crafty 3 to new server id {new_server_id}"
                 )
                 logger.info(
-                    f"Imported server {server['server_name']}[{server['id']}] from Crafty 3 to new server id {new_server_id}"
+                    f"Imported server {server['server_name']}[{server['id']}] "
+                    f"from Crafty 3 to new server id {new_server_id}"
                 )
         else:
             new_server_id = controller.import_jar_server(
@@ -77,10 +83,12 @@ class import3:
                 port=json_data["server_port"],
             )
             console.info(
-                f"Imported server {json_data['server_name']}[{json_data['id']}] from Crafty 3 to new server id {new_server_id}"
+                f"Imported server {json_data['server_name']}[{json_data['id']}] "
+                f"from Crafty 3 to new server id {new_server_id}"
             )
             logger.info(
-                f"Imported server {json_data['server_name']}[{json_data['id']}] from Crafty 3 to new server id {new_server_id}"
+                f"Imported server {json_data['server_name']}[{json_data['id']}] "
+                f"from Crafty 3 to new server id {new_server_id}"
             )
 
 

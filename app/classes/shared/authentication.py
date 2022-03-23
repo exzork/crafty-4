@@ -63,7 +63,8 @@ class Authentication:
                 return None
         user_id: str = data["user_id"]
         user = users_helper.get_user(user_id)
-        # TODO: Have a cache or something so we don't constantly have to query the database
+        # TODO: Have a cache or something so we don't constantly
+        # have to query the database
         if int(user.get("valid_tokens_from").timestamp()) < iat:
             # Success!
             return key, data, user
