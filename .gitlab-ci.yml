@@ -246,4 +246,3 @@ win-prod-build:
       - .\crafty_commander.exe
     exclude:
       - app\classes\**\*
-
