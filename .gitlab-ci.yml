@@ -7,6 +7,12 @@ variables:
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: "/certs"
 
+yamllint:
+  stage: lint
+  image: registry.gitlab.com/pipeline-components/yamllint:latest
+  script:
+    - yamllint .
+
 jsonlint:
   stage: lint
   image: registry.gitlab.com/pipeline-components/jsonlint:latest
