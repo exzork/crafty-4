@@ -1,3 +1,4 @@
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 # Crafty Controller 4.0.0-alpha.3.5
 > Python based Control Panel for your Minecraft Server
 
