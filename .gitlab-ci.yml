@@ -4,9 +4,9 @@
 # yamllint disable rule:line-length
 ---
 stages:
-- lint
-- prod-deployment
-- dev-deployment
+  - lint
+  - prod-deployment
+  - dev-deployment
 
 variables:
   DOCKER_HOST: tcp://docker:2376
@@ -195,6 +195,8 @@ win-dev-build:
       --collect-all pytz
       --collect-all six
 
+  # Download latest:
+  # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/dev/download?job=win-dev-build
   artifacts:
     name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
     paths:
@@ -202,8 +204,7 @@ win-dev-build:
       - .\crafty_commander.exe
     exclude:
       - app\classes\**\*
-    # Download latest:
-    # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/dev/download?job=win-dev-build
+
 
 win-prod-build:
   stage: prod-deployment
@@ -236,6 +237,8 @@ win-prod-build:
       --collect-all pytz
       --collect-all six
 
+  # Download latest:
+  # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/master/download?job=win-prod-build
   artifacts:
     name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
     paths:
@@ -243,5 +246,4 @@ win-prod-build:
       - .\crafty_commander.exe
     exclude:
       - app\classes\**\*
-    # Download latest:
-    # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/master/download?job=win-prod-build
+
