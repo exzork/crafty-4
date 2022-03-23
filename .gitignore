@@ -3,6 +3,7 @@
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+*.stats
 
 __pycache__/
 *.py[cod]
