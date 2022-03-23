@@ -181,10 +181,8 @@ class PanelHandler(BaseHandler):
         now = time.time()
         formatted_time = str(datetime.datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S'))
 
-        # pylint: disable=unused-variable
-        api_key, token_data, exec_user = self.current_user
+        api_key, _token_data, exec_user = self.current_user
         superuser = exec_user['superuser']
-        print()
         if api_key is not None:
             superuser = superuser and api_key.superuser
 
@@ -393,11 +391,6 @@ class PanelHandler(BaseHandler):
 
             valid_subpages = ['term', 'logs', 'backup', 'config', 'files', 'admin_controls', 'schedules']
 
-            if subpage not in valid_subpages:
-                logger.debug('not a valid subpage')
-                subpage = 'term'
-            logger.debug(f'Subpage: "{subpage}"')
-
             server = self.controller.get_server_obj(server_id)
             # server_data isn't needed since the server_stats also pulls server data
             page_data['server_data'] = self.controller.servers.get_server_data_by_id(server_id)
@@ -424,6 +417,26 @@ class PanelHandler(BaseHandler):
             page_data['user_permissions'] = self.controller.server_perms.get_user_id_permissions_list(exec_user["user_id"], server_id)
             page_data['server_stats']['crashed'] = self.controller.servers.is_crashed(server_id)
             page_data['server_stats']['server_type'] = self.controller.servers.get_server_type_by_id(server_id)
+            if subpage not in valid_subpages:
+                logger.debug('not a valid subpage')
+            if not subpage:
+                if page_data['permissions']['Terminal'] in page_data['user_permissions']:
+                    subpage = 'term'
+                elif page_data['permissions']['Logs'] in page_data['user_permissions']:
+                    subpage = 'logs'
+                elif page_data['permissions']['Schedule'] in page_data['user_permissions']:
+                    subpage = 'schedules'
+                elif page_data['permissions']['Backup'] in page_data['user_permissions']:
+                    subpage = 'backup'
+                elif page_data['permissions']['Files'] in page_data['user_permissions']:
+                    subpage = 'files'
+                elif page_data['permissions']['Config'] in page_data['user_permissions']:
+                    subpage = 'config'
+                elif page_data['permissions']['Players'] in page_data['user_permissions']:
+                    subpage = 'admin_controls'
+                else:
+                    self.redirect("/panel/error?error=Unauthorized access to Server")
+            logger.debug(f'Subpage: "{subpage}"')
 
             if subpage == 'term':
                 if not page_data['permissions']['Terminal'] in page_data['user_permissions']:
@@ -532,8 +545,6 @@ class PanelHandler(BaseHandler):
         elif page == 'panel_config':
             auth_servers = {}
             auth_role_servers = {}
-            users_list = []
-            role_users = {}
             roles = self.controller.roles.get_all_roles()
             user_roles = {}
             for user in self.controller.users.get_all_users():
@@ -952,8 +963,7 @@ class PanelHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, page):
-        # pylint: disable=unused-variable
-        api_key, token_data, exec_user = self.current_user
+        api_key, _token_data, exec_user = self.current_user
         superuser = exec_user['superuser']
         if api_key is not None:
             superuser = superuser and api_key.superuser
@@ -1037,7 +1047,6 @@ class PanelHandler(BaseHandler):
                 server_obj.path = server_obj.path
                 server_obj.log_path = server_obj.log_path
                 server_obj.executable = server_obj.executable
-                print(server_obj.execution_command)
                 server_obj.execution_command = server_obj.execution_command
                 server_obj.server_ip = server_obj.server_ip
                 server_obj.server_port = server_obj.server_port
@@ -1683,8 +1692,7 @@ class PanelHandler(BaseHandler):
 
     @tornado.web.authenticated
     def delete(self, page):
-        # pylint: disable=unused-variable
-        api_key, token_data, exec_user = self.current_user
+        api_key, _token_data, exec_user = self.current_user
         superuser = exec_user['superuser']
         if api_key is not None:
             superuser = superuser and api_key.superuser

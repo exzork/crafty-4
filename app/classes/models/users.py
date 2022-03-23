@@ -147,7 +147,7 @@ class helper_users:
         return user
 
     @staticmethod
-    def add_user(username: str, password: Optional[str] = None, email: Optional[str] = None, enabled: bool = True, superuser: bool = False) -> str:
+    def add_user(username: str, password: str = None, email: Optional[str] = None, enabled: bool = True, superuser: bool = False) -> str:
         if password is not None:
             pw_enc = helper.encode_pass(password)
         else:
@@ -155,6 +155,18 @@ class helper_users:
         user_id = Users.insert({
             Users.username: username.lower(),
             Users.password: pw_enc,
+            Users.email: email,
+            Users.enabled: enabled,
+            Users.superuser: superuser,
+            Users.created: helper.get_time_as_string()
+        }).execute()
+        return user_id
+
+    @staticmethod
+    def add_rawpass_user(username: str, password: str = None, email: Optional[str] = None, enabled: bool = True, superuser: bool = False) -> str:
+        user_id = Users.insert({
+            Users.username: username.lower(),
+            Users.password: password,
             Users.email: email,
             Users.enabled: enabled,
             Users.superuser: superuser,

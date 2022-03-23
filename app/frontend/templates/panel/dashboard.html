@@ -423,6 +423,7 @@
 
 </div>
 <!-- content-wrapper ends -->
+<div id="mobile"></div>
 <style>
   .popover-body {
     color: white !important;
@@ -760,6 +761,19 @@
 <script src="/static/assets/js/jquery-ui.js"></script>
 <link rel="stylesheet" href="/static/assets/css/jquery-ui.css">
 <link rel="stylesheet" href="/static/assets/css/jquery-ui.structure.css">
+<style>
+  @media only screen and (max-width: 760px) {
+    #mobile { display: none; }
+  }
+  .ui-sortable-handle {
+    cursor: default;
+    padding:2px;
+  }
+  .ui-sortable-handle:hover {
+    cursor: grab !important;
+    padding:2px;
+  }
+</style>
 <script>
 
   /* Search Bar */
@@ -775,8 +789,9 @@
 
   $(document).on("mousedown keyup click", function(event) {
     const value = $('.dataTables_filter input').val();
+    const is_mobile = $('#mobile').css('display')=='none';
 
-    if ($("table#servers_table tbody").sortable("toArray").length > 1 && value === '') {
+    if ($("table#servers_table tbody").sortable("toArray").length > 1 && value === '' && !is_mobile) {
       $("table#servers_table tbody").sortable("enable");
     } else {
       $("table#servers_table tbody").sortable("disable");
@@ -805,9 +820,10 @@ $(document).ready(function() {
   $("table#servers_table tbody")
     .sortable({
       items: '> tr',
-      cursor: "move",
+      cursor: "grabbing",
       axis: "y",
       revert: true,
+      handle:"i.fas.fa-server,a",
       forcePlaceholderSize: true,
       placeholder:'table-placeholder',
       deactivate: function(event, ui) {
@@ -831,7 +847,10 @@ $(document).ready(function() {
   });
 
   // Fixes the appearance of a scrollbar when a user tries to drag an item too low
-  $("div#servers_table_wrapper").css({ overflow: "hidden" });
+  // Disabled on mobile since sorting is disabled on mobile
+  if($('#mobile').css('display') != 'none'){
+    $("div#servers_table_wrapper").css({ overflow: "hidden" });
+  }
 });
 
 </script>
