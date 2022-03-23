@@ -297,7 +297,8 @@ class helper_users:
         else:
             user_id = user.user_id
 
-        # I just copied this code from get_user, it had those TODOs & comments made by mac - Lukas
+        # I just copied this code from get_user,
+        # it had those TODOs & comments made by mac - Lukas
 
         roles_query = (
             User_Roles.select()

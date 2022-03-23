@@ -10,7 +10,8 @@ from app.classes.shared.helpers import helper
 
 if helper.checkRoot():
     console.critical(
-        "Root detected. Root/Admin access denied. Run Crafty again with non-elevated permissions."
+        "Root detected. Root/Admin access denied. "
+        "Run Crafty again with non-elevated permissions."
     )
     time.sleep(5)
     console.critical("Crafty shutting down. Root/Admin access denied.")
@@ -103,8 +104,10 @@ if __name__ == "__main__":
     if fresh_install:
         console.debug("Fresh install detected")
         console.warning(
-            "We have detected a fresh install. Please be sure to forward Crafty's port, "
-            + f"{helper.get_setting('https_port')}, through your router/firewall if you would like to be able to access Crafty remotely."
+            f"We have detected a fresh install. Please be sure to forward "
+            f"Crafty's port, {helper.get_setting('https_port')}, "
+            f"through your router/firewall if you would like to be able "
+            f"to access Crafty remotely."
         )
         installer.default_settings()
     else:
@@ -127,10 +130,12 @@ if __name__ == "__main__":
     # start stats logging
     tasks_manager.start_stats_recording()
 
-    # once the controller is up and stats are logging, we can kick off the scheduler officially
+    # once the controller is up and stats are logging, we can kick off
+    # the scheduler officially
     tasks_manager.start_scheduler()
 
-    # refresh our cache and schedule for every 12 hoursour cache refresh for serverjars.com
+    # refresh our cache and schedule for every 12 hoursour cache refresh
+    # for serverjars.com
     tasks_manager.serverjar_cache_refresher()
 
     logger.info("Checking Internet. This may take a minute.")
@@ -138,8 +143,9 @@ if __name__ == "__main__":
 
     if not helper.check_internet():
         console.warning(
-            "We have detected the machine running Crafty has no connection to the internet. "
-            + "Client connections to the server may be limited."
+            "We have detected the machine running Crafty has no "
+            "connection to the internet. Client connections to "
+            "the server may be limited."
         )
 
     if not controller.check_system_user():

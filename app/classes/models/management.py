@@ -417,7 +417,8 @@ class helpers_management:
             self.set_backup_config(server_id=server_id, excluded_dirs=excluded_dirs)
         else:
             logger.debug(
-                f"Not adding {dir_to_add} to excluded directories - already in the excluded directory list for server ID {server_id}"
+                f"Not adding {dir_to_add} to excluded directories - "
+                f"already in the excluded directory list for server ID {server_id}"
             )
 
     def del_excluded_backup_dir(self, server_id: int, dir_to_del: str):
@@ -428,7 +429,8 @@ class helpers_management:
             self.set_backup_config(server_id=server_id, excluded_dirs=excluded_dirs)
         else:
             logger.debug(
-                f"Not removing {dir_to_del} from excluded directories - not in the excluded directory list for server ID {server_id}"
+                f"Not removing {dir_to_del} from excluded directories - "
+                f"not in the excluded directory list for server ID {server_id}"
             )
 
     @staticmethod

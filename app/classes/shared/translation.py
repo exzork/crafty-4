@@ -56,10 +56,12 @@ class Translation:
                 translated_page = data[page]
             except KeyError:
                 logger.error(
-                    f"Translation File Error: page {page} does not exist for lang {language}"
+                    f"Translation File Error: page {page} "
+                    f"does not exist for lang {language}"
                 )
                 console.error(
-                    f"Translation File Error: page {page} does not exist for lang {language}"
+                    f"Translation File Error: page {page} "
+                    f"does not exist for lang {language}"
                 )
                 return None
 
@@ -68,10 +70,12 @@ class Translation:
                 return translated_word
             except KeyError:
                 logger.error(
-                    f"Translation File Error: word {word} does not exist on page {page} for lang {language}"
+                    f"Translation File Error: word {word} does not exist on page "
+                    f"{page} for lang {language}"
                 )
                 console.error(
-                    f"Translation File Error: word {word} does not exist on page {page} for lang {language}"
+                    f"Translation File Error: word {word} does not exist on page "
+                    f"{page} for lang {language}"
                 )
                 return None
 
