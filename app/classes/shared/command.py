@@ -11,8 +11,8 @@ from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
 
-class MainPrompt(cmd.Cmd):
 
+class MainPrompt(cmd.Cmd):
     def __init__(self, tasks_manager, migration_manager):
         super().__init__()
         self.tasks_manager = tasks_manager
@@ -25,48 +25,52 @@ class MainPrompt(cmd.Cmd):
     def emptyline():
         pass
 
-    #pylint: disable=unused-argument
+    # pylint: disable=unused-argument
     def do_exit(self, line):
         self.tasks_manager._main_graceful_exit()
         self.universal_exit()
 
     def do_migrations(self, line):
-        if line == 'up':
+        if line == "up":
             self.migration_manager.up()
-        elif line == 'down':
+        elif line == "down":
             self.migration_manager.down()
-        elif line == 'done':
+        elif line == "done":
             console.info(self.migration_manager.done)
-        elif line == 'todo':
+        elif line == "todo":
             console.info(self.migration_manager.todo)
-        elif line == 'diff':
+        elif line == "diff":
             console.info(self.migration_manager.diff)
-        elif line == 'info':
-            console.info(f'Done: {self.migration_manager.done}')
-            console.info(f'FS:   {self.migration_manager.todo}')
-            console.info(f'Todo: {self.migration_manager.diff}')
-        elif line.startswith('add '):
-            migration_name = line[len('add '):]
+        elif line == "info":
+            console.info(f"Done: {self.migration_manager.done}")
+            console.info(f"FS:   {self.migration_manager.todo}")
+            console.info(f"Todo: {self.migration_manager.diff}")
+        elif line.startswith("add "):
+            migration_name = line[len("add ") :]
             self.migration_manager.create(migration_name, False)
         else:
-            console.info('Unknown migration command')
+            console.info("Unknown migration command")
 
     @staticmethod
     def do_threads(_line):
         for thread in threading.enumerate():
             if sys.version_info >= (3, 8):
-                print(f'Name: {thread.name} Identifier: {thread.ident} TID/PID: {thread.native_id}')
+                print(
+                    f"Name: {thread.name} Identifier: {thread.ident} TID/PID: {thread.native_id}"
+                )
             else:
-                print(f'Name: {thread.name} Identifier: {thread.ident}')
+                print(f"Name: {thread.name} Identifier: {thread.ident}")
 
     def do_import3(self, _line):
         import3.start_import()
 
     def universal_exit(self):
         logger.info("Stopping all server daemons / threads")
-        console.info("Stopping all server daemons / threads - This may take a few seconds")
+        console.info(
+            "Stopping all server daemons / threads - This may take a few seconds"
+        )
         websocket_helper.disconnect_all()
-        console.info('Waiting for main thread to stop')
+        console.info("Waiting for main thread to stop")
         while True:
             if self.tasks_manager.get_main_thread_run_status():
                 sys.exit(0)

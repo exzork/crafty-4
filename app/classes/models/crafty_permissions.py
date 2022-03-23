@@ -5,25 +5,32 @@ from app.classes.shared.permission_helper import permission_helper
 from app.classes.models.users import Users, ApiKeys
 
 try:
-    from peewee import SqliteDatabase, Model, ForeignKeyField, CharField, IntegerField, DoesNotExist
+    from peewee import (
+        SqliteDatabase,
+        Model,
+        ForeignKeyField,
+        CharField,
+        IntegerField,
+        DoesNotExist,
+    )
     from enum import Enum
 
 except ModuleNotFoundError as e:
     helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
-peewee_logger = logging.getLogger('peewee')
+peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
-database = SqliteDatabase(helper.db_path, pragmas = {
-    'journal_mode': 'wal',
-    'cache_size': -1024 * 10})
+database = SqliteDatabase(
+    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+)
 
 
-#************************************************************************************************
+# ************************************************************************************************
 #                                  User_Crafty Class
-#************************************************************************************************
+# ************************************************************************************************
 class User_Crafty(Model):
-    user_id = ForeignKeyField(Users, backref='users_crafty')
+    user_id = ForeignKeyField(Users, backref="users_crafty")
     permissions = CharField(default="00000000")
     limit_server_creation = IntegerField(default=-1)
     limit_user_creation = IntegerField(default=0)
@@ -33,22 +40,24 @@ class User_Crafty(Model):
     created_role = IntegerField(default=0)
 
     class Meta:
-        table_name = 'user_crafty'
+        table_name = "user_crafty"
         database = database
 
-#************************************************************************************************
+
+# ************************************************************************************************
 #                                  Crafty Permissions Class
-#************************************************************************************************
+# ************************************************************************************************
 class Enum_Permissions_Crafty(Enum):
     Server_Creation = 0
     User_Config = 1
     Roles_Config = 2
 
+
 class Permissions_Crafty:
 
-    #************************************************************************************************
+    # ************************************************************************************************
     #                                  Crafty Permissions Methods
-    #************************************************************************************************
+    # ************************************************************************************************
     @staticmethod
     def get_permissions_list():
         permissions_list = []
@@ -67,15 +76,17 @@ class Permissions_Crafty:
     @staticmethod
     def has_permission(permission_mask, permission_tested: Enum_Permissions_Crafty):
         result = False
-        if permission_mask[permission_tested.value] == '1':
+        if permission_mask[permission_tested.value] == "1":
             result = True
         return result
 
     @staticmethod
-    def set_permission(permission_mask, permission_tested: Enum_Permissions_Crafty, value):
+    def set_permission(
+        permission_mask, permission_tested: Enum_Permissions_Crafty, value
+    ):
         l = list(permission_mask)
         l[permission_tested.value] = str(value)
-        permission_mask = ''.join(l)
+        permission_mask = "".join(l)
         return permission_mask
 
     @staticmethod
@@ -84,7 +95,7 @@ class Permissions_Crafty:
 
     @staticmethod
     def get_crafty_permissions_mask(user_id):
-        permissions_mask = ''
+        permissions_mask = ""
         user_crafty = crafty_permissions.get_User_Crafty(user_id)
         permissions_mask = user_crafty.permissions
         return permissions_mask
@@ -108,49 +119,65 @@ class Permissions_Crafty:
         }
         return quantity_list
 
-    #************************************************************************************************
+    # ************************************************************************************************
     #                                   User_Crafty Methods
-    #************************************************************************************************
+    # ************************************************************************************************
     @staticmethod
     def get_User_Crafty(user_id):
         try:
-            user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+            user_crafty = (
+                User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+            )
         except DoesNotExist:
-            user_crafty = User_Crafty.insert({
-                User_Crafty.user_id: user_id,
-                User_Crafty.permissions: "000",
-                User_Crafty.limit_server_creation: 0,
-                User_Crafty.limit_user_creation: 0,
-                User_Crafty.limit_role_creation: 0,
-                User_Crafty.created_server: 0,
-                User_Crafty.created_user: 0,
-                User_Crafty.created_role: 0,
-            }).execute()
+            user_crafty = User_Crafty.insert(
+                {
+                    User_Crafty.user_id: user_id,
+                    User_Crafty.permissions: "000",
+                    User_Crafty.limit_server_creation: 0,
+                    User_Crafty.limit_user_creation: 0,
+                    User_Crafty.limit_role_creation: 0,
+                    User_Crafty.created_server: 0,
+                    User_Crafty.created_user: 0,
+                    User_Crafty.created_role: 0,
+                }
+            ).execute()
             user_crafty = crafty_permissions.get_User_Crafty(user_id)
         return user_crafty
 
     @staticmethod
     def add_user_crafty(user_id, uc_permissions):
-        user_crafty = User_Crafty.insert({User_Crafty.user_id: user_id, User_Crafty.permissions: uc_permissions}).execute()
+        user_crafty = User_Crafty.insert(
+            {User_Crafty.user_id: user_id, User_Crafty.permissions: uc_permissions}
+        ).execute()
         return user_crafty
 
     @staticmethod
-    def add_or_update_user(user_id, permissions_mask, limit_server_creation, limit_user_creation, limit_role_creation):
+    def add_or_update_user(
+        user_id,
+        permissions_mask,
+        limit_server_creation,
+        limit_user_creation,
+        limit_role_creation,
+    ):
         try:
-            user_crafty = User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+            user_crafty = (
+                User_Crafty.select().where(User_Crafty.user_id == user_id).get()
+            )
             user_crafty.permissions = permissions_mask
             user_crafty.limit_server_creation = limit_server_creation
             user_crafty.limit_user_creation = limit_user_creation
             user_crafty.limit_role_creation = limit_role_creation
             User_Crafty.save(user_crafty)
         except:
-            User_Crafty.insert({
-                User_Crafty.user_id: user_id,
-                User_Crafty.permissions: permissions_mask,
-                User_Crafty.limit_server_creation: limit_server_creation,
-                User_Crafty.limit_user_creation: limit_user_creation,
-                User_Crafty.limit_role_creation: limit_role_creation
-            }).execute()
+            User_Crafty.insert(
+                {
+                    User_Crafty.user_id: user_id,
+                    User_Crafty.permissions: permissions_mask,
+                    User_Crafty.limit_server_creation: limit_server_creation,
+                    User_Crafty.limit_user_creation: limit_user_creation,
+                    User_Crafty.limit_role_creation: limit_role_creation,
+                }
+            ).execute()
 
     @staticmethod
     def get_created_quantity_list(user_id):
@@ -173,7 +200,10 @@ class Permissions_Crafty:
         can = crafty_permissions.has_permission(user_crafty.permissions, permission)
         limit_list = crafty_permissions.get_permission_quantity_list(user_id)
         quantity_list = crafty_permissions.get_created_quantity_list(user_id)
-        return can and ((quantity_list[permission.name] < limit_list[permission.name]) or limit_list[permission.name] == -1 )
+        return can and (
+            (quantity_list[permission.name] < limit_list[permission.name])
+            or limit_list[permission.name] == -1
+        )
 
     @staticmethod
     def add_server_creation(user_id):
@@ -188,12 +218,15 @@ class Permissions_Crafty:
         if user.superuser and key.superuser:
             return crafty_permissions.get_permissions_list()
         else:
-            user_permissions_mask = crafty_permissions.get_crafty_permissions_mask(user.user_id)
+            user_permissions_mask = crafty_permissions.get_crafty_permissions_mask(
+                user.user_id
+            )
             key_permissions_mask: str = key.crafty_permissions
-            permissions_mask = permission_helper.combine_masks(user_permissions_mask, key_permissions_mask)
+            permissions_mask = permission_helper.combine_masks(
+                user_permissions_mask, key_permissions_mask
+            )
             permissions_list = crafty_permissions.get_permissions(permissions_mask)
             return permissions_list
-
 
 
 crafty_permissions = Permissions_Crafty()

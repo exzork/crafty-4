@@ -7,8 +7,11 @@ import logging.config
 import signal
 from app.classes.shared.console import console
 from app.classes.shared.helpers import helper
+
 if helper.checkRoot():
-    console.critical("Root detected. Root/Admin access denied. Run Crafty again with non-elevated permissions.")
+    console.critical(
+        "Root detected. Root/Admin access denied. Run Crafty again with non-elevated permissions."
+    )
     time.sleep(5)
     console.critical("Crafty shutting down. Root/Admin access denied.")
     sys.exit(0)
@@ -39,18 +42,14 @@ def do_intro():
 
 
 def setup_logging(debug=True):
-    logging_config_file = os.path.join(os.path.curdir,
-                                       'app',
-                                       'config',
-                                       'logging.json'
-                                       )
+    logging_config_file = os.path.join(os.path.curdir, "app", "config", "logging.json")
 
     if os.path.exists(logging_config_file):
         # open our logging config file
-        with open(logging_config_file, 'rt', encoding='utf-8') as f:
+        with open(logging_config_file, "rt", encoding="utf-8") as f:
             logging_config = json.load(f)
             if debug:
-                logging_config['loggers']['']['level'] = 'DEBUG'
+                logging_config["loggers"][""]["level"] = "DEBUG"
 
             logging.config.dictConfig(logging_config)
 
@@ -61,23 +60,23 @@ def setup_logging(debug=True):
 
 
 # Our Main Starter
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser("Crafty Controller - A Server Management System")
 
-    parser.add_argument('-i', '--ignore',
-                        action='store_true',
-                        help="Ignore session.lock files"
-                        )
+    parser.add_argument(
+        "-i", "--ignore", action="store_true", help="Ignore session.lock files"
+    )
 
-    parser.add_argument('-v', '--verbose',
-                        action='store_true',
-                        help="Sets logging level to debug."
-                        )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Sets logging level to debug."
+    )
 
-    parser.add_argument('-d', '--daemon',
-                        action='store_true',
-                        help="Runs Crafty in daemon mode (no prompt)"
-                        )
+    parser.add_argument(
+        "-d",
+        "--daemon",
+        action="store_true",
+        help="Runs Crafty in daemon mode (no prompt)",
+    )
 
     args = parser.parse_args()
 
@@ -95,17 +94,18 @@ if __name__ == '__main__':
     # our session file, helps prevent multiple controller agents on the same machine.
     helper.create_session_file(ignore=args.ignore)
 
-
     migration_manager = MigrationManager(database)
-    migration_manager.up() # Automatically runs migrations
+    migration_manager.up()  # Automatically runs migrations
 
     # do our installer stuff
     fresh_install = installer.is_fresh_install()
 
     if fresh_install:
         console.debug("Fresh install detected")
-        console.warning("We have detected a fresh install. Please be sure to forward Crafty's port, " +
-        f"{helper.get_setting('https_port')}, through your router/firewall if you would like to be able to access Crafty remotely.")
+        console.warning(
+            "We have detected a fresh install. Please be sure to forward Crafty's port, "
+            + f"{helper.get_setting('https_port')}, through your router/firewall if you would like to be able to access Crafty remotely."
+        )
         installer.default_settings()
     else:
         console.debug("Existing install detected")
@@ -116,7 +116,7 @@ if __name__ == '__main__':
     tasks_manager.start_webserver()
 
     # slowing down reporting just for a 1/2 second so messages look cleaner
-    time.sleep(.5)
+    time.sleep(0.5)
 
     # init servers
     logger.info("Initializing all servers defined")
@@ -137,8 +137,10 @@ if __name__ == '__main__':
     console.info("Checking Internet. This may take a minute.")
 
     if not helper.check_internet():
-        console.warning("We have detected the machine running Crafty has no connection to the internet. " +
-        "Client connections to the server may be limited.")
+        console.warning(
+            "We have detected the machine running Crafty has no connection to the internet. "
+            + "Client connections to the server may be limited."
+        )
 
     if not controller.check_system_user():
         controller.add_system_user()
@@ -151,9 +153,13 @@ if __name__ == '__main__':
     controller.clear_support_status()
 
     def sigterm_handler(*sig):
-        print() # for newline
-        logger.info(f"Recieved {signal.Signals(sig[0]).name} [{sig[0]}], stopping Crafty...")
-        console.info(f"Recieved {signal.Signals(sig[0]).name} [{sig[0]}], stopping Crafty...")
+        print()  # for newline
+        logger.info(
+            f"Recieved {signal.Signals(sig[0]).name} [{sig[0]}], stopping Crafty..."
+        )
+        console.info(
+            f"Recieved {signal.Signals(sig[0]).name} [{sig[0]}], stopping Crafty..."
+        )
         tasks_manager._main_graceful_exit()
         Crafty.universal_exit()
 
@@ -163,7 +169,7 @@ if __name__ == '__main__':
         try:
             Crafty.cmdloop()
         except KeyboardInterrupt:
-            print() # for newline
+            print()  # for newline
             logger.info("Recieved SIGINT, stopping Crafty...")
             console.info("Recieved SIGINT, stopping Crafty...")
             tasks_manager._main_graceful_exit()

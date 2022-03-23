@@ -4,22 +4,29 @@ import datetime
 from app.classes.shared.helpers import helper
 
 try:
-    from peewee import SqliteDatabase, Model, CharField, DoesNotExist, AutoField, DateTimeField
+    from peewee import (
+        SqliteDatabase,
+        Model,
+        CharField,
+        DoesNotExist,
+        AutoField,
+        DateTimeField,
+    )
     from playhouse.shortcuts import model_to_dict
 
 except ModuleNotFoundError as e:
     helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
-peewee_logger = logging.getLogger('peewee')
+peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
-database = SqliteDatabase(helper.db_path, pragmas = {
-    'journal_mode': 'wal',
-    'cache_size': -1024 * 10})
+database = SqliteDatabase(
+    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+)
 
-#************************************************************************************************
+# ************************************************************************************************
 #                                   Roles Class
-#************************************************************************************************
+# ************************************************************************************************
 class Roles(Model):
     role_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
@@ -30,9 +37,10 @@ class Roles(Model):
         table_name = "roles"
         database = database
 
-#************************************************************************************************
+
+# ************************************************************************************************
 #                                   Roles Helpers
-#************************************************************************************************
+# ************************************************************************************************
 class helper_roles:
     @staticmethod
     def get_all_roles():
@@ -52,10 +60,12 @@ class helper_roles:
 
     @staticmethod
     def add_role(role_name):
-        role_id = Roles.insert({
-            Roles.role_name: role_name.lower(),
-            Roles.created: helper.get_time_as_string()
-        }).execute()
+        role_id = Roles.insert(
+            {
+                Roles.role_name: role_name.lower(),
+                Roles.created: helper.get_time_as_string(),
+            }
+        ).execute()
         return role_id
 
     @staticmethod
@@ -73,5 +83,6 @@ class helper_roles:
         if not roles_helper.get_role(role_id):
             return False
         return True
+
 
 roles_helper = helper_roles()

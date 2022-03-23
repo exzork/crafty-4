@@ -18,8 +18,8 @@ try:
 except ModuleNotFoundError as err:
     helper.auto_installer_fix(err)
 
-class ServerJars:
 
+class ServerJars:
     def __init__(self):
         self.base_url = "https://serverjars.com"
 
@@ -41,8 +41,8 @@ class ServerJars:
             logger.error(f"Unable to parse serverjar.com api result due to error: {e}")
             return {}
 
-        api_result = api_data.get('status')
-        api_response = api_data.get('response', {})
+        api_result = api_data.get("status")
+        api_response = api_data.get("response", {})
 
         if api_result != "success":
             logger.error(f"Api returned a failed status: {api_result}")
@@ -55,7 +55,7 @@ class ServerJars:
         cache_file = helper.serverjar_cache
         cache = {}
         try:
-            with open(cache_file, "r", encoding='utf-8') as f:
+            with open(cache_file, "r", encoding="utf-8") as f:
                 cache = json.load(f)
 
         except Exception as e:
@@ -65,7 +65,7 @@ class ServerJars:
 
     def get_serverjar_data(self):
         data = self._read_cache()
-        return data.get('servers')
+        return data.get("servers")
 
     def get_serverjar_data_sorted(self):
         data = self.get_serverjar_data()
@@ -80,10 +80,10 @@ class ServerJars:
             try:
                 return int(x)
             except ValueError:
-                temp = x.split('-')
+                temp = x.split("-")
                 return to_int(temp[0]) + str_to_int(temp[1]) / 100000
 
-        sort_key_fn = lambda x: [to_int(y) for y in x.split('.')]
+        sort_key_fn = lambda x: [to_int(y) for y in x.split(".")]
 
         for key in data.keys():
             data[key] = sorted(data[key], key=sort_key_fn)
@@ -125,10 +125,7 @@ class ServerJars:
         if cache_old:
             logger.info("Cache file is over 1 day old, refreshing")
             now = datetime.now()
-            data = {
-                'last_refreshed': now.strftime("%m/%d/%Y, %H:%M:%S"),
-                'servers': {}
-            }
+            data = {"last_refreshed": now.strftime("%m/%d/%Y, %H:%M:%S"), "servers": {}}
 
             jar_types = self._get_server_type_list()
 
@@ -141,51 +138,51 @@ class ServerJars:
                     versions = self._get_jar_details(s)
 
                     # add these versions (a list) to the dict with a key of the server type
-                    data['servers'].update({
-                        s: versions
-                    })
+                    data["servers"].update({s: versions})
 
             # save our cache
             try:
-                with open(cache_file, "w", encoding='utf-8') as f:
+                with open(cache_file, "w", encoding="utf-8") as f:
                     f.write(json.dumps(data, indent=4))
                     logger.info("Cache file refreshed")
 
             except Exception as e:
                 logger.error(f"Unable to update serverjars.com cache file: {e}")
 
-    def _get_jar_details(self, jar_type='servers'):
-        url = f'/api/fetchAll/{jar_type}'
+    def _get_jar_details(self, jar_type="servers"):
+        url = f"/api/fetchAll/{jar_type}"
         response = self._get_api_result(url)
         temp = []
         for v in response:
-            temp.append(v.get('version'))
-        time.sleep(.5)
+            temp.append(v.get("version"))
+        time.sleep(0.5)
         return temp
 
     def _get_server_type_list(self):
-        url = '/api/fetchTypes/'
+        url = "/api/fetchTypes/"
         response = self._get_api_result(url)
         return response
 
     def download_jar(self, server, version, path, server_id):
-        update_thread = threading.Thread(target=self.a_download_jar, daemon=True, args=(server, version, path, server_id))
+        update_thread = threading.Thread(
+            target=self.a_download_jar,
+            daemon=True,
+            args=(server, version, path, server_id),
+        )
         update_thread.start()
 
     def a_download_jar(self, server, version, path, server_id):
-        #delaying download for server register to finish
+        # delaying download for server register to finish
         time.sleep(3)
         fetch_url = f"{self.base_url}/api/fetchJar/{server}/{version}"
         server_users = server_permissions.get_server_user_list(server_id)
 
-
-        #We need to make sure the server is registered before we submit a db update for it's stats.
+        # We need to make sure the server is registered before we submit a db update for it's stats.
         while True:
             try:
                 Servers_Controller.set_download(server_id)
                 for user in server_users:
-                    websocket_helper.broadcast_user(user, 'send_start_reload', {
-                    })
+                    websocket_helper.broadcast_user(user, "send_start_reload", {})
 
                 break
             except:
@@ -194,25 +191,27 @@ class ServerJars:
         # open a file stream
         with requests.get(fetch_url, timeout=2, stream=True) as r:
             try:
-                with open(path, 'wb') as output:
+                with open(path, "wb") as output:
                     shutil.copyfileobj(r.raw, output)
                     Servers_Controller.finish_download(server_id)
 
                     for user in server_users:
-                        websocket_helper.broadcast_user(user, 'notification', "Executable download finished")
+                        websocket_helper.broadcast_user(
+                            user, "notification", "Executable download finished"
+                        )
                         time.sleep(3)
-                        websocket_helper.broadcast_user(user, 'send_start_reload', {
-                        })
+                        websocket_helper.broadcast_user(user, "send_start_reload", {})
                     return True
             except Exception as e:
                 logger.error(f"Unable to save jar to {path} due to error:{e}")
                 Servers_Controller.finish_download(server_id)
                 server_users = server_permissions.get_server_user_list(server_id)
                 for user in server_users:
-                    websocket_helper.broadcast_user(user, 'notification', "Executable download finished")
+                    websocket_helper.broadcast_user(
+                        user, "notification", "Executable download finished"
+                    )
                     time.sleep(3)
-                    websocket_helper.broadcast_user(user, 'send_start_reload', {
-                    })
+                    websocket_helper.broadcast_user(user, "send_start_reload", {})
 
                 return False
 

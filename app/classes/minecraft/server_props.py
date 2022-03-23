@@ -1,30 +1,30 @@
 import pprint
 import os
 
-class ServerProps:
 
+class ServerProps:
     def __init__(self, filepath):
         self.filepath = filepath
         self.props = self._parse()
 
     def _parse(self):
         """Loads and parses the file specified in self.filepath"""
-        with open(self.filepath, encoding='utf-8') as fp:
+        with open(self.filepath, encoding="utf-8") as fp:
             line = fp.readline()
             d = {}
             if os.path.exists(".header"):
                 os.remove(".header")
             while line:
-                if '#' != line[0]:
+                if "#" != line[0]:
                     s = line
-                    s1 = s[:s.find('=')]
-                    if '\n' in s:
-                        s2 = s[s.find('=')+1:s.find('\n')]
+                    s1 = s[: s.find("=")]
+                    if "\n" in s:
+                        s2 = s[s.find("=") + 1 : s.find("\n")]
                     else:
-                        s2 = s[s.find('=')+1:]
+                        s2 = s[s.find("=") + 1 :]
                     d[s1] = s2
                 else:
-                    with open(".header", "a+", encoding='utf-8') as h:
+                    with open(".header", "a+", encoding="utf-8") as h:
                         h.write(line)
                 line = fp.readline()
         return d
@@ -47,9 +47,9 @@ class ServerProps:
 
     def save(self):
         """Writes to the new file"""
-        with open(self.filepath, "a+", encoding='utf-8') as f:
+        with open(self.filepath, "a+", encoding="utf-8") as f:
             f.truncate(0)
-            with open(".header", encoding='utf-8') as header:
+            with open(".header", encoding="utf-8") as header:
                 line = header.readline()
                 while line:
                     f.write(line)

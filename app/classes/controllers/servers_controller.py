@@ -5,17 +5,21 @@ import json
 from app.classes.controllers.roles_controller import Roles_Controller
 from app.classes.models.servers import servers_helper
 from app.classes.models.users import users_helper, ApiKeys
-from app.classes.models.server_permissions import server_permissions, Enum_Permissions_Server
+from app.classes.models.server_permissions import (
+    server_permissions,
+    Enum_Permissions_Server,
+)
 from app.classes.shared.helpers import helper
 from app.classes.shared.main_models import db_helper
 
 logger = logging.getLogger(__name__)
 
+
 class Servers_Controller:
 
-    #************************************************************************************************
+    # ************************************************************************************************
     #                                   Generic Servers Methods
-    #************************************************************************************************
+    # ************************************************************************************************
     @staticmethod
     def create_server(
         name: str,
@@ -27,7 +31,8 @@ class Servers_Controller:
         server_log_file: str,
         server_stop: str,
         server_type: str,
-        server_port=25565):
+        server_port=25565,
+    ):
         return servers_helper.create_server(
             name,
             server_uuid,
@@ -38,7 +43,8 @@ class Servers_Controller:
             server_log_file,
             server_stop,
             server_type,
-            server_port)
+            server_port,
+        )
 
     @staticmethod
     def get_server_obj(server_id):
@@ -66,8 +72,8 @@ class Servers_Controller:
         for role in roles_list:
             role_id = role.role_id
             role_data = Roles_Controller.get_role_with_servers(role_id)
-            role_data['servers'] = {server_id}
-            server_permissions.delete_roles_permissions(role_id, role_data['servers'])
+            role_data["servers"] = {server_id}
+            server_permissions.delete_roles_permissions(role_id, role_data["servers"])
         server_permissions.remove_roles_of_server(server_id)
         servers_helper.remove_server(server_id)
 
@@ -75,9 +81,9 @@ class Servers_Controller:
     def get_server_data_by_id(server_id):
         return servers_helper.get_server_data_by_id(server_id)
 
-    #************************************************************************************************
+    # ************************************************************************************************
     #                                     Servers Methods
-    #************************************************************************************************
+    # ************************************************************************************************
     @staticmethod
     def get_all_defined_servers():
         return servers_helper.get_all_defined_servers()
@@ -100,17 +106,26 @@ class Servers_Controller:
     @staticmethod
     def get_authorized_servers_stats_api_key(api_key: ApiKeys):
         server_data = []
-        authorized_servers = Servers_Controller.get_authorized_servers(api_key.user.user_id)
+        authorized_servers = Servers_Controller.get_authorized_servers(
+            api_key.user.user_id
+        )
 
         for s in authorized_servers:
-            latest = servers_helper.get_latest_server_stats(s.get('server_id'))
-            key_permissions = server_permissions.get_api_key_permissions_list(api_key, s.get('server_id'))
+            latest = servers_helper.get_latest_server_stats(s.get("server_id"))
+            key_permissions = server_permissions.get_api_key_permissions_list(
+                api_key, s.get("server_id")
+            )
             if Enum_Permissions_Server.Commands in key_permissions:
                 user_command_permission = True
             else:
                 user_command_permission = False
-            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0],
-                                "user_command_permission": user_command_permission})
+            server_data.append(
+                {
+                    "server_data": s,
+                    "stats": db_helper.return_rows(latest)[0],
+                    "user_command_permission": user_command_permission,
+                }
+            )
         return server_data
 
     @staticmethod
@@ -119,18 +134,22 @@ class Servers_Controller:
         authorized_servers = Servers_Controller.get_authorized_servers(user_id)
 
         for s in authorized_servers:
-            latest = servers_helper.get_latest_server_stats(s.get('server_id'))
+            latest = servers_helper.get_latest_server_stats(s.get("server_id"))
             # TODO
-            user_permissions = server_permissions.get_user_id_permissions_list(user_id, s.get('server_id'))
+            user_permissions = server_permissions.get_user_id_permissions_list(
+                user_id, s.get("server_id")
+            )
             if Enum_Permissions_Server.Commands in user_permissions:
                 user_command_permission = True
             else:
                 user_command_permission = False
-            server_data.append({
-                'server_data': s,
-                'stats': db_helper.return_rows(latest)[0],
-                'user_command_permission': user_command_permission
-            })
+            server_data.append(
+                {
+                    "server_data": s,
+                    "stats": db_helper.return_rows(latest)[0],
+                    "user_command_permission": user_command_permission,
+                }
+            )
 
         return server_data
 
@@ -138,9 +157,9 @@ class Servers_Controller:
     def get_server_friendly_name(server_id):
         return servers_helper.get_server_friendly_name(server_id)
 
-    #************************************************************************************************
+    # ************************************************************************************************
     #                                    Servers_Stats Methods
-    #************************************************************************************************
+    # ************************************************************************************************
     @staticmethod
     def get_server_stats_by_id(server_id):
         return servers_helper.get_server_stats_by_id(server_id)
@@ -157,7 +176,9 @@ class Servers_Controller:
     def server_id_authorized(server_id_a, user_id):
         user_roles = users_helper.user_role_query(user_id)
         for role in user_roles:
-            for server_id_b in server_permissions.get_role_servers_from_role_id(role.role_id):
+            for server_id_b in server_permissions.get_role_servers_from_role_id(
+                role.role_id
+            ):
                 if str(server_id_a) == str(server_id_b.server_id):
                     return True
         return False
@@ -197,21 +218,23 @@ class Servers_Controller:
     def get_update_status(server_id):
         return servers_helper.get_update_status(server_id)
 
-    #************************************************************************************************
+    # ************************************************************************************************
     #                                    Servers Helpers Methods
-    #************************************************************************************************
+    # ************************************************************************************************
     @staticmethod
     def get_banned_players(server_id):
         stats = servers_helper.get_server_stats_by_id(server_id)
-        server_path = stats['server_id']['path']
-        path = os.path.join(server_path, 'banned-players.json')
+        server_path = stats["server_id"]["path"]
+        path = os.path.join(server_path, "banned-players.json")
 
         try:
-            with open(helper.get_os_understandable_path(path), encoding='utf-8') as file:
+            with open(
+                helper.get_os_understandable_path(path), encoding="utf-8"
+            ) as file:
                 content = file.read()
                 file.close()
         except Exception as ex:
-            print (ex)
+            print(ex)
             return None
 
         return json.loads(content)
@@ -219,18 +242,20 @@ class Servers_Controller:
     def check_for_old_logs(self):
         servers = servers_helper.get_all_defined_servers()
         for server in servers:
-            logs_path = os.path.split(server['log_path'])[0]
-            latest_log_file = os.path.split(server['log_path'])[1]
-            logs_delete_after = int(server['logs_delete_after'])
+            logs_path = os.path.split(server["log_path"])[0]
+            latest_log_file = os.path.split(server["log_path"])[1]
+            logs_delete_after = int(server["logs_delete_after"])
             if logs_delete_after == 0:
                 continue
 
-            log_files = list(filter(
-                lambda val: val != latest_log_file,
-                os.listdir(logs_path)
-            ))
+            log_files = list(
+                filter(lambda val: val != latest_log_file, os.listdir(logs_path))
+            )
             for log_file in log_files:
                 log_file_path = os.path.join(logs_path, log_file)
-                if helper.check_file_exists(log_file_path) and \
-                        helper.is_file_older_than_x_days(log_file_path, logs_delete_after):
+                if helper.check_file_exists(
+                    log_file_path
+                ) and helper.is_file_older_than_x_days(
+                    log_file_path, logs_delete_after
+                ):
                     os.remove(log_file_path)
