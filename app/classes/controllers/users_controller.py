@@ -2,17 +2,21 @@ import logging
 from typing import Optional
 
 from app.classes.models.users import users_helper
-from app.classes.models.crafty_permissions import crafty_permissions, Enum_Permissions_Crafty
+from app.classes.models.crafty_permissions import (
+    crafty_permissions,
+    Enum_Permissions_Crafty,
+)
 from app.classes.shared.helpers import helper
 from app.classes.shared.authentication import authentication
 
 logger = logging.getLogger(__name__)
 
+
 class Users_Controller:
 
-    #************************************************************************************************
+    # **********************************************************************************
     #                                   Users Methods
-    #************************************************************************************************
+    # **********************************************************************************
     @staticmethod
     def get_all_users():
         return users_helper.get_all_users()
@@ -59,26 +63,31 @@ class Users_Controller:
             if key == "user_id":
                 continue
             elif key == "roles":
-                added_roles = user_data['roles'].difference(base_data['roles'])
-                removed_roles = base_data['roles'].difference(user_data['roles'])
+                added_roles = user_data["roles"].difference(base_data["roles"])
+                removed_roles = base_data["roles"].difference(user_data["roles"])
             elif key == "password":
-                if user_data['password'] is not None and user_data['password'] != "":
-                    up_data['password'] = helper.encode_pass(user_data['password'])
+                if user_data["password"] is not None and user_data["password"] != "":
+                    up_data["password"] = helper.encode_pass(user_data["password"])
             elif base_data[key] != user_data[key]:
                 up_data[key] = user_data[key]
-        up_data['last_update'] = helper.get_time_as_string()
-        up_data['lang'] = user_data['lang']
+        up_data["last_update"] = helper.get_time_as_string()
+        up_data["lang"] = user_data["lang"]
         logger.debug(f"user: {user_data} +role:{added_roles} -role:{removed_roles}")
         for role in added_roles:
             users_helper.get_or_create(user_id=user_id, role_id=role)
-            permissions_mask = user_crafty_data.get('permissions_mask', '000')
+            permissions_mask = user_crafty_data.get("permissions_mask", "000")
 
-            if 'server_quantity' in user_crafty_data:
-                limit_server_creation = user_crafty_data['server_quantity'][
-                    Enum_Permissions_Crafty.Server_Creation.name]
+            if "server_quantity" in user_crafty_data:
+                limit_server_creation = user_crafty_data["server_quantity"][
+                    Enum_Permissions_Crafty.Server_Creation.name
+                ]
 
-                limit_user_creation = user_crafty_data['server_quantity'][Enum_Permissions_Crafty.User_Config.name]
-                limit_role_creation = user_crafty_data['server_quantity'][Enum_Permissions_Crafty.Roles_Config.name]
+                limit_user_creation = user_crafty_data["server_quantity"][
+                    Enum_Permissions_Crafty.User_Config.name
+                ]
+                limit_role_creation = user_crafty_data["server_quantity"][
+                    Enum_Permissions_Crafty.Roles_Config.name
+                ]
             else:
                 limit_server_creation = 0
                 limit_user_creation = 0
@@ -89,19 +98,44 @@ class Users_Controller:
                 permissions_mask,
                 limit_server_creation,
                 limit_user_creation,
-                limit_role_creation)
+                limit_role_creation,
+            )
 
         users_helper.delete_user_roles(user_id, removed_roles)
 
         users_helper.update_user(user_id, up_data)
 
     @staticmethod
-    def add_user(username, password, email="default@example.com", enabled: bool = True, superuser: bool = False):
-        return users_helper.add_user(username, password=password, email=email, enabled=enabled, superuser=superuser)
+    def add_user(
+        username,
+        password,
+        email="default@example.com",
+        enabled: bool = True,
+        superuser: bool = False,
+    ):
+        return users_helper.add_user(
+            username,
+            password=password,
+            email=email,
+            enabled=enabled,
+            superuser=superuser,
+        )
 
     @staticmethod
-    def add_rawpass_user(username, password, email="default@example.com", enabled: bool = True, superuser: bool = False):
-        return users_helper.add_rawpass_user(username, password=password, email=email, enabled=enabled, superuser=superuser)
+    def add_rawpass_user(
+        username,
+        password,
+        email="default@example.com",
+        enabled: bool = True,
+        superuser: bool = False,
+    ):
+        return users_helper.add_rawpass_user(
+            username,
+            password=password,
+            email=email,
+            enabled=enabled,
+            superuser=superuser,
+        )
 
     @staticmethod
     def remove_user(user_id):
@@ -122,16 +156,16 @@ class Users_Controller:
     @staticmethod
     def get_user_id_by_api_token(token: str) -> str:
         token_data = authentication.check_no_iat(token)
-        return token_data['user_id']
+        return token_data["user_id"]
 
     @staticmethod
     def get_user_by_api_token(token: str):
         _, user = authentication.check(token)
         return user
 
-    # ************************************************************************************************
+    # **********************************************************************************
     #                                   User Roles Methods
-    # ************************************************************************************************
+    # **********************************************************************************
 
     @staticmethod
     def get_user_roles_id(user_id):
@@ -153,9 +187,9 @@ class Users_Controller:
     def user_role_query(user_id):
         return users_helper.user_role_query(user_id)
 
-    # ************************************************************************************************
+    # **********************************************************************************
     #                                   Api Keys Methods
-    # ************************************************************************************************
+    # **********************************************************************************
 
     @staticmethod
     def get_user_api_keys(user_id: str):
@@ -166,10 +200,16 @@ class Users_Controller:
         return users_helper.get_user_api_key(key_id)
 
     @staticmethod
-    def add_user_api_key(name: str, user_id: str, superuser: bool = False,
-                         server_permissions_mask: Optional[str] = None,
-                         crafty_permissions_mask: Optional[str] = None):
-        return users_helper.add_user_api_key(name, user_id, superuser, server_permissions_mask, crafty_permissions_mask)
+    def add_user_api_key(
+        name: str,
+        user_id: str,
+        superuser: bool = False,
+        server_permissions_mask: Optional[str] = None,
+        crafty_permissions_mask: Optional[str] = None,
+    ):
+        return users_helper.add_user_api_key(
+            name, user_id, superuser, server_permissions_mask, crafty_permissions_mask
+        )
 
     @staticmethod
     def delete_user_api_keys(user_id: str):

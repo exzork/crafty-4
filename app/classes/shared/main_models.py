@@ -17,24 +17,29 @@ except ModuleNotFoundError as err:
     helper.auto_installer_fix(err)
 
 logger = logging.getLogger(__name__)
-peewee_logger = logging.getLogger('peewee')
+peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
-database = SqliteDatabase(helper.db_path, pragmas = {
-    'journal_mode': 'wal',
-    'cache_size': -1024 * 10})
+database = SqliteDatabase(
+    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+)
+
 
 class db_builder:
-
     @staticmethod
     def default_settings():
         logger.info("Fresh Install Detected - Creating Default Settings")
         console.info("Fresh Install Detected - Creating Default Settings")
         default_data = helper.find_default_password()
 
-        username = default_data.get("username", 'admin')
-        password = default_data.get("password", 'crafty')
+        username = default_data.get("username", "admin")
+        password = default_data.get("password", "crafty")
 
-        users_helper.add_user(username=username, password=password, email="default@example.com", superuser=True)
+        users_helper.add_user(
+            username=username,
+            password=password,
+            email="default@example.com",
+            superuser=True,
+        )
 
     @staticmethod
     def is_fresh_install():
@@ -45,11 +50,12 @@ class db_builder:
         except:
             return True
 
+
 class db_shortcuts:
 
-    #************************************************************************************************
+    # **********************************************************************************
     #                                  Generic Databse Methods
-    #************************************************************************************************
+    # **********************************************************************************
     @staticmethod
     def return_rows(query):
         rows = []
@@ -69,8 +75,8 @@ class db_shortcuts:
         return data
 
 
-#************************************************************************************************
+# **********************************************************************************
 #                                  Static Accessors
-#************************************************************************************************
+# **********************************************************************************
 installer = db_builder()
 db_helper = db_shortcuts()

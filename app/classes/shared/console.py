@@ -12,16 +12,18 @@ except ModuleNotFoundError as ex:
     logger.critical(f"Import Error: Unable to load {ex.name} module", exc_info=True)
     print(f"Import Error: Unable to load {ex.name} module")
     from app.classes.shared.installer import installer
-    installer.do_install()
-class Console:
 
+    installer.do_install()
+
+
+class Console:
     def __init__(self):
-        if 'colorama' in sys.modules:
+        if "colorama" in sys.modules:
             init()
 
     @staticmethod
     def do_print(message, color):
-        if 'termcolor' in sys.modules or 'colorama' in sys.modules:
+        if "termcolor" in sys.modules or "colorama" in sys.modules:
             print(colored(message, color))
         else:
             print(message)

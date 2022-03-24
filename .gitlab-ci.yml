@@ -1,14 +1,57 @@
+# Crafty Controller 4.0 - Lint & Build Pipes
+# [Maintainer: Zedifus(https://gitlab.com/Zedifus)]
+###################################################
+# yamllint disable rule:line-length
+---
 stages:
-- test
-- prod-deployment
-- dev-deployment
+  - lint
+  - prod-deployment
+  - dev-deployment
 
 variables:
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: "/certs"
 
+yamllint:
+  stage: lint
+  image: registry.gitlab.com/pipeline-components/yamllint:latest
+  tags:
+    - 'docker'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+  script:
+    - yamllint .
+
+jsonlint:
+  stage: lint
+  image: registry.gitlab.com/pipeline-components/jsonlint:latest
+  tags:
+    - 'docker'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+  script:
+    - |
+      find . -not -path './.git/*' -name '*.json' -type f -print0 |
+      parallel --will-cite -k -0 -n1 jsonlint -q
+
+black:
+  stage: lint
+  image: registry.gitlab.com/pipeline-components/black:latest
+  tags:
+    - 'docker'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+  script:
+    - black --check --verbose -- .
+
 pylint:
-  stage: test
+  stage: lint
   image: python:3.7-slim
   tags:
     - 'docker'
@@ -124,81 +167,82 @@ docker-build-prod:
 win-dev-build:
   stage: dev-deployment
   tags:
-  - win64
+    - win64
   cache:
     paths:
       - .venv/
   rules:
-  - if: "$CI_COMMIT_BRANCH == 'dev'"
+    - if: "$CI_COMMIT_BRANCH == 'dev'"
   environment:
     name: development
   script:
-  - |
-    $ErrorActionPreference = "Stop"
-    py -m venv .venv
-    .venv\Scripts\activate.ps1
-    pip install pyinstaller
-    pip install -r requirements.txt
-  - pyinstaller -F main.py
-    --distpath .
-    --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
-    --name "crafty_commander"
-    --paths .venv\Lib\site-packages
-    --hidden-import cryptography
-    --hidden-import cffi
-    --hidden-import apscheduler
-    --collect-all tzlocal
-    --collect-all tzdata
-    --collect-all pytz
-    --collect-all six
+    - |
+      $ErrorActionPreference = "Stop"
+      py -m venv .venv
+      .venv\Scripts\activate.ps1
+      pip install pyinstaller
+      pip install -r requirements.txt
+    - pyinstaller -F main.py
+      --distpath .
+      --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
+      --name "crafty_commander"
+      --paths .venv\Lib\site-packages
+      --hidden-import cryptography
+      --hidden-import cffi
+      --hidden-import apscheduler
+      --collect-all tzlocal
+      --collect-all tzdata
+      --collect-all pytz
+      --collect-all six
 
+  # Download latest:
+  # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/dev/download?job=win-dev-build
   artifacts:
     name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
     paths:
-    - app\
-    - .\crafty_commander.exe
+      - app\
+      - .\crafty_commander.exe
     exclude:
-    - app\classes\**\*
-  # Download latest:
-  # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/dev/download?job=win-dev-build
+      - app\classes\**\*
+
 
 win-prod-build:
   stage: prod-deployment
   tags:
-  - win64
+    - win64
   cache:
     paths:
       - .venv/
   rules:
-  - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
   environment:
     name: production
   script:
-  - |
-    $ErrorActionPreference = "Stop"
-    py -m venv .venv
-    .venv\Scripts\activate.ps1
-    pip install pyinstaller
-    pip install -r requirements.txt
-  - pyinstaller -F main.py
-    --distpath .
-    --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
-    --name "crafty_commander"
-    --paths .venv\Lib\site-packages
-    --hidden-import cryptography
-    --hidden-import cffi
-    --hidden-import apscheduler
-    --collect-all tzlocal
-    --collect-all tzdata
-    --collect-all pytz
-    --collect-all six
+    - |
+      $ErrorActionPreference = "Stop"
+      py -m venv .venv
+      .venv\Scripts\activate.ps1
+      pip install pyinstaller
+      pip install -r requirements.txt
+    - pyinstaller -F main.py
+      --distpath .
+      --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
+      --name "crafty_commander"
+      --paths .venv\Lib\site-packages
+      --hidden-import cryptography
+      --hidden-import cffi
+      --hidden-import apscheduler
+      --collect-all tzlocal
+      --collect-all tzdata
+      --collect-all pytz
+      --collect-all six
 
+  # Download latest:
+  # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/master/download?job=win-prod-build
   artifacts:
     name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
     paths:
-    - app\
-    - .\crafty_commander.exe
+      - app\
+      - .\crafty_commander.exe
     exclude:
-    - app\classes\**\*
-  # Download latest:
-  # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/master/download?job=win-prod-build
+      - app\classes\**\*
