@@ -16,10 +16,10 @@ yamllint:
   stage: lint
   image: registry.gitlab.com/pipeline-components/yamllint:latest
   tags:
-    - 'docker'
+    - "docker"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+    - if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS"
       when: never
   script:
     - yamllint .
@@ -28,10 +28,10 @@ jsonlint:
   stage: lint
   image: registry.gitlab.com/pipeline-components/jsonlint:latest
   tags:
-    - 'docker'
+    - "docker"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+    - if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS"
       when: never
   script:
     - |
@@ -42,10 +42,10 @@ black:
   stage: lint
   image: registry.gitlab.com/pipeline-components/black:latest
   tags:
-    - 'docker'
+    - "docker"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+    - if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS"
       when: never
   script:
     - black --check --verbose -- .
@@ -54,23 +54,24 @@ pylint:
   stage: lint
   image: python:3.7-slim
   tags:
-    - 'docker'
+    - "docker"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+    - if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS"
       when: never
   before_script:
-    - mkdir -p public/badges public/lint
-    - echo undefined > public/badges/$CI_JOB_NAME.score
+    # - mkdir -p public/badges public/lint
+    # - echo undefined > public/badges/$CI_JOB_NAME.score
     - pip install pylint-gitlab
   script:
-    - pylint --exit-zero --output-format=text $(find -type f -name "*.py" ! -path "**/.venv/**" ! -path "**/app/migrations/**") | tee /tmp/pylint.txt
-    - sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' /tmp/pylint.txt > public/badges/$CI_JOB_NAME.score
+    # - pylint --exit-zero --output-format=text $(find -type f -name "*.py" ! -path "**/.venv/**" ! -path "**/app/migrations/**") | tee /tmp/pylint.txt
+    # - sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' /tmp/pylint.txt > public/badges/$CI_JOB_NAME.score
     - pylint --exit-zero --output-format=pylint_gitlab.GitlabCodeClimateReporter $(find -type f -name "*.py" ! -path "**/.venv/**" ! -path "**/app/migrations/**") > codeclimate.json
-  after_script:
-    - anybadge --overwrite --label $CI_JOB_NAME --value=$(cat public/badges/$CI_JOB_NAME.score) --file=public/badges/$CI_JOB_NAME.svg 4=red 6=orange 8=yellow 10=green
-    - |
-      echo "Your score is: $(cat public/badges/$CI_JOB_NAME.score)"
+  # after_script:
+  # - anybadge --overwrite --label $CI_JOB_NAME --value=$(cat public/badges/$CI_JOB_NAME.score) --file=public/badges/$CI_JOB_NAME.svg 4=red 6=orange 8=yellow 10=green
+  # - |
+  #   echo "Your score is: $(cat public/badges/$CI_JOB_NAME.score)"
+  # Removed lint badge generation until public release
   artifacts:
     paths:
       - public
@@ -84,7 +85,7 @@ docker-build-dev:
     - name: docker:dind
   stage: dev-deployment
   tags:
-    - 'docker_priv'
+    - "docker_priv"
   rules:
     - if: $CI_COMMIT_BRANCH == 'dev'
   environment:
@@ -127,7 +128,7 @@ docker-build-prod:
     - name: docker:dind
   stage: prod-deployment
   tags:
-    - 'docker_priv'
+    - "docker_priv"
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   environment:
@@ -204,7 +205,6 @@ win-dev-build:
       - .\crafty_commander.exe
     exclude:
       - app\classes\**\*
-
 
 win-prod-build:
   stage: prod-deployment
