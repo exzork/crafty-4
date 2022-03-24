@@ -1,3 +1,4 @@
+---
 version: '3'
 
 services:
@@ -7,11 +8,11 @@ services:
     environment:
       - TZ=Etc/UTC
     ports:
-      - "8000:8000" # HTTP
-      - "8443:8443" # HTTPS
-      - "8123:8123" # DYNMAP
-      - "19132:19132/udp" # BEDROCK
-      - "25500-25600:25500-25600" # MC SERV PORT RANGE
+      - "8000:8000"  # HTTP
+      - "8443:8443"  # HTTPS
+      - "8123:8123"  # DYNMAP
+      - "19132:19132/udp"  # BEDROCK
+      - "25500-25600:25500-25600"  # MC SERV PORT RANGE
     volumes:
       - ./backups:/commander/backups
       - ./logs:/commander/logs

@@ -4,6 +4,7 @@ import datetime
 
 def migrate(migrator, database, **kwargs):
     db = database
+
     class Users(peewee.Model):
         user_id = peewee.AutoField()
         created = peewee.DateTimeField(default=datetime.datetime.now)
@@ -32,12 +33,12 @@ def migrate(migrator, database, **kwargs):
             database = db
 
     class User_Roles(peewee.Model):
-        user_id = peewee.ForeignKeyField(Users, backref='user_role')
-        role_id = peewee.ForeignKeyField(Roles, backref='user_role')
+        user_id = peewee.ForeignKeyField(Users, backref="user_role")
+        role_id = peewee.ForeignKeyField(Roles, backref="user_role")
 
         class Meta:
-            table_name = 'user_roles'
-            primary_key = peewee.CompositeKey('user_id', 'role_id')
+            table_name = "user_roles"
+            primary_key = peewee.CompositeKey("user_id", "role_id")
             database = db
 
     class Audit_Log(peewee.Model):
@@ -45,10 +46,10 @@ def migrate(migrator, database, **kwargs):
         created = peewee.DateTimeField(default=datetime.datetime.now)
         user_name = peewee.CharField(default="")
         user_id = peewee.IntegerField(default=0, index=True)
-        source_ip = peewee.CharField(default='127.0.0.1')
+        source_ip = peewee.CharField(default="127.0.0.1")
         # When auditing global events, use server ID 0
         server_id = peewee.IntegerField(default=None, index=True)
-        log_msg = peewee.TextField(default='')
+        log_msg = peewee.TextField(default="")
 
         class Meta:
             database = db
@@ -93,27 +94,27 @@ def migrate(migrator, database, **kwargs):
             database = db
 
     class User_Servers(peewee.Model):
-        user_id = peewee.ForeignKeyField(Users, backref='user_server')
-        server_id = peewee.ForeignKeyField(Servers, backref='user_server')
+        user_id = peewee.ForeignKeyField(Users, backref="user_server")
+        server_id = peewee.ForeignKeyField(Servers, backref="user_server")
 
         class Meta:
-            table_name = 'user_servers'
-            primary_key = peewee.CompositeKey('user_id', 'server_id')
+            table_name = "user_servers"
+            primary_key = peewee.CompositeKey("user_id", "server_id")
             database = db
 
     class Role_Servers(peewee.Model):
-        role_id = peewee.ForeignKeyField(Roles, backref='role_server')
-        server_id = peewee.ForeignKeyField(Servers, backref='role_server')
+        role_id = peewee.ForeignKeyField(Roles, backref="role_server")
+        server_id = peewee.ForeignKeyField(Servers, backref="role_server")
 
         class Meta:
-            table_name = 'role_servers'
-            primary_key = peewee.CompositeKey('role_id', 'server_id')
+            table_name = "role_servers"
+            primary_key = peewee.CompositeKey("role_id", "server_id")
             database = db
 
     class Server_Stats(peewee.Model):
         stats_id = peewee.AutoField()
         created = peewee.DateTimeField(default=datetime.datetime.now)
-        server_id = peewee.ForeignKeyField(Servers, backref='server', index=True)
+        server_id = peewee.ForeignKeyField(Servers, backref="server", index=True)
         started = peewee.CharField(default="")
         running = peewee.BooleanField(default=False)
         cpu = peewee.FloatField(default=0)
@@ -137,10 +138,10 @@ def migrate(migrator, database, **kwargs):
     class Commands(peewee.Model):
         command_id = peewee.AutoField()
         created = peewee.DateTimeField(default=datetime.datetime.now)
-        server_id = peewee.ForeignKeyField(Servers, backref='server', index=True)
-        user = peewee.ForeignKeyField(Users, backref='user', index=True)
-        source_ip = peewee.CharField(default='127.0.0.1')
-        command = peewee.CharField(default='')
+        server_id = peewee.ForeignKeyField(Servers, backref="server", index=True)
+        user = peewee.ForeignKeyField(Users, backref="user", index=True)
+        source_ip = peewee.CharField(default="127.0.0.1")
+        command = peewee.CharField(default="")
         executed = peewee.BooleanField(default=False)
 
         class Meta:
@@ -161,7 +162,7 @@ def migrate(migrator, database, **kwargs):
 
     class Schedules(peewee.Model):
         schedule_id = peewee.IntegerField(unique=True, primary_key=True)
-        server_id = peewee.ForeignKeyField(Servers, backref='schedule_server')
+        server_id = peewee.ForeignKeyField(Servers, backref="schedule_server")
         enabled = peewee.BooleanField()
         action = peewee.CharField()
         interval = peewee.IntegerField()
@@ -171,17 +172,17 @@ def migrate(migrator, database, **kwargs):
         comment = peewee.CharField()
 
         class Meta:
-            table_name = 'schedules'
+            table_name = "schedules"
             database = db
 
     class Backups(peewee.Model):
         directories = peewee.CharField(null=True)
         max_backups = peewee.IntegerField()
-        server_id = peewee.ForeignKeyField(Servers, backref='backups_server')
-        schedule_id = peewee.ForeignKeyField(Schedules, backref='backups_schedule')
+        server_id = peewee.ForeignKeyField(Servers, backref="backups_server")
+        schedule_id = peewee.ForeignKeyField(Schedules, backref="backups_schedule")
 
         class Meta:
-            table_name = 'backups'
+            table_name = "backups"
             database = db
 
     migrator.create_table(Backups)
@@ -200,16 +201,18 @@ def migrate(migrator, database, **kwargs):
 
 
 def rollback(migrator, database, **kwargs):
-    migrator.drop_table('users')
-    migrator.drop_table('roles')
-    migrator.drop_table('user_roles')
-    migrator.drop_table('audit_log') # ? Not 100% sure of the table name, please specify in the schema
-    migrator.drop_table('host_stats')
-    migrator.drop_table('servers')
-    migrator.drop_table('user_servers')
-    migrator.drop_table('role_servers')
-    migrator.drop_table('server_stats')
-    migrator.drop_table('commands')
-    migrator.drop_table('webhooks')
-    migrator.drop_table('schedules')
-    migrator.drop_table('backups')
+    migrator.drop_table("users")
+    migrator.drop_table("roles")
+    migrator.drop_table("user_roles")
+    migrator.drop_table(
+        "audit_log"
+    )  # ? Not 100% sure of the table name, please specify in the schema
+    migrator.drop_table("host_stats")
+    migrator.drop_table("servers")
+    migrator.drop_table("user_servers")
+    migrator.drop_table("role_servers")
+    migrator.drop_table("server_stats")
+    migrator.drop_table("commands")
+    migrator.drop_table("webhooks")
+    migrator.drop_table("schedules")
+    migrator.drop_table("backups")

@@ -1,12 +1,15 @@
 import logging
 
-from app.classes.models.crafty_permissions import crafty_permissions, Enum_Permissions_Crafty
+from app.classes.models.crafty_permissions import (
+    crafty_permissions,
+    Enum_Permissions_Crafty,
+)
 from app.classes.models.users import ApiKeys
 
 logger = logging.getLogger(__name__)
 
-class Crafty_Perms_Controller:
 
+class Crafty_Perms_Controller:
     @staticmethod
     def list_defined_crafty_permissions():
         permissions_list = crafty_permissions.get_permissions_list()
@@ -18,24 +21,34 @@ class Crafty_Perms_Controller:
         return permissions_mask
 
     @staticmethod
-    def set_permission(permission_mask, permission_tested: Enum_Permissions_Crafty, value):
-        return crafty_permissions.set_permission(permission_mask, permission_tested, value)
+    def set_permission(
+        permission_mask, permission_tested: Enum_Permissions_Crafty, value
+    ):
+        return crafty_permissions.set_permission(
+            permission_mask, permission_tested, value
+        )
 
     @staticmethod
     def can_create_server(user_id):
-        return crafty_permissions.can_add_in_crafty(user_id, Enum_Permissions_Crafty.Server_Creation)
+        return crafty_permissions.can_add_in_crafty(
+            user_id, Enum_Permissions_Crafty.Server_Creation
+        )
 
     @staticmethod
-    def can_add_user(): # Add back argument 'user_id' when you work on this
-                        #TODO: Complete if we need a User Addition limit
-                        #return crafty_permissions.can_add_in_crafty(user_id, Enum_Permissions_Crafty.User_Config)
+    def can_add_user():  # Add back argument 'user_id' when you work on this
         return True
+        # TODO: Complete if we need a User Addition limit
+        # return crafty_permissions.can_add_in_crafty(
+        #     user_id, Enum_Permissions_Crafty.User_Config
+        # )
 
     @staticmethod
-    def can_add_role(): # Add back argument 'user_id' when you work on this
-                        #TODO: Complete if we need a Role Addition limit
-                        #return crafty_permissions.can_add_in_crafty(user_id, Enum_Permissions_Crafty.Roles_Config)
+    def can_add_role():  # Add back argument 'user_id' when you work on this
         return True
+        # TODO: Complete if we need a Role Addition limit
+        # return crafty_permissions.can_add_in_crafty(
+        #     user_id, Enum_Permissions_Crafty.Roles_Config
+        # )
 
     @staticmethod
     def list_all_crafty_permissions_quantity_limits():

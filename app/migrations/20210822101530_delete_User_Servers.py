@@ -5,24 +5,25 @@ from app.classes.models.servers import Servers
 
 
 def migrate(migrator, database, **kwargs):
-    migrator.drop_table('user_servers') # Can be model class OR table name
+    migrator.drop_table("user_servers")  # Can be model class OR table name
     """
     Write your migrations here.
     """
 
 
-
 def rollback(migrator, database, **kwargs):
-    db = database          
+    db = database
+
     class User_Servers(Model):
-        user_id = ForeignKeyField(Users, backref='user_server')
-        server_id = ForeignKeyField(Servers, backref='user_server')
+        user_id = ForeignKeyField(Users, backref="user_server")
+        server_id = ForeignKeyField(Servers, backref="user_server")
         permissions = CharField(default="00000000")
 
         class Meta:
-            table_name = 'user_servers'
-            primary_key = CompositeKey('user_id', 'server_id')
+            table_name = "user_servers"
+            primary_key = CompositeKey("user_id", "server_id")
             database = db
+
     migrator.create_table(User_Servers)
     """
     Write your rollback migrations here.

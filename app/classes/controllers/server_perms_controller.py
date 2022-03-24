@@ -1,6 +1,9 @@
 import logging
 
-from app.classes.models.server_permissions import  server_permissions, Enum_Permissions_Server
+from app.classes.models.server_permissions import (
+    server_permissions,
+    Enum_Permissions_Server,
+)
 from app.classes.models.users import users_helper, ApiKeys
 from app.classes.models.roles import roles_helper
 from app.classes.models.servers import servers_helper
@@ -8,8 +11,8 @@ from app.classes.shared.main_models import db_helper
 
 logger = logging.getLogger(__name__)
 
-class Server_Perms_Controller:
 
+class Server_Perms_Controller:
     @staticmethod
     def get_server_user_list(server_id):
         return server_permissions.get_server_user_list(server_id)
@@ -42,20 +45,28 @@ class Server_Perms_Controller:
         role_list = server_permissions.get_server_roles(old_server_id)
         for role in role_list:
             server_permissions.add_role_server(
-                new_server_id, role.role_id,
-                server_permissions.get_permissions_mask(int(role.role_id), int(old_server_id)))
-            #server_permissions.add_role_server(new_server_id, role.role_id, '00001000')
+                new_server_id,
+                role.role_id,
+                server_permissions.get_permissions_mask(
+                    int(role.role_id), int(old_server_id)
+                ),
+            )
+            # server_permissions.add_role_server(new_server_id, role.role_id,"00001000")
 
-    #************************************************************************************************
+    # **********************************************************************************
     #                                   Servers Permissions Methods
-    #************************************************************************************************
+    # **********************************************************************************
     @staticmethod
     def get_permissions_mask(role_id, server_id):
         return server_permissions.get_permissions_mask(role_id, server_id)
 
     @staticmethod
-    def set_permission(permission_mask, permission_tested: Enum_Permissions_Server, value):
-        return server_permissions.set_permission(permission_mask, permission_tested, value)
+    def set_permission(
+        permission_mask, permission_tested: Enum_Permissions_Server, value
+    ):
+        return server_permissions.set_permission(
+            permission_mask, permission_tested, value
+        )
 
     @staticmethod
     def get_role_permissions_list(role_id):
@@ -86,7 +97,9 @@ class Server_Perms_Controller:
             roles_list.append(roles_helper.get_role(u.role_id))
 
         for r in roles_list:
-            role_test = server_permissions.get_role_servers_from_role_id(r.get('role_id'))
+            role_test = server_permissions.get_role_servers_from_role_id(
+                r.get("role_id")
+            )
             for t in role_test:
                 role_server.append(t)
 
@@ -94,6 +107,8 @@ class Server_Perms_Controller:
             authorized_servers.append(servers_helper.get_server_data_by_id(s.server_id))
 
         for s in authorized_servers:
-            latest = servers_helper.get_latest_server_stats(s.get('server_id'))
-            server_data.append({'server_data': s, "stats": db_helper.return_rows(latest)[0]})
+            latest = servers_helper.get_latest_server_stats(s.get("server_id"))
+            server_data.append(
+                {"server_data": s, "stats": db_helper.return_rows(latest)[0]}
+            )
         return server_data

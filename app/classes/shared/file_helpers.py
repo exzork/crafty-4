@@ -6,12 +6,9 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 logger = logging.getLogger(__name__)
 
+
 class FileHelpers:
-    allowed_quotes = [
-        "\"",
-        "'",
-        "`"
-     ]
+    allowed_quotes = ['"', "'", "`"]
 
     def del_dirs(self, path):
         path = pathlib.Path(path)
@@ -32,7 +29,7 @@ class FileHelpers:
         path = pathlib.Path(path)
         try:
             logger.debug(f"Deleting file: {path}")
-            #Remove the file
+            # Remove the file
             os.remove(path)
             return True
         except FileNotFoundError:
@@ -59,43 +56,60 @@ class FileHelpers:
     @staticmethod
     def make_archive(path_to_destination, path_to_zip):
         # create a ZipFile object
-        path_to_destination += '.zip'
-        with ZipFile(path_to_destination, 'w') as z:
+        path_to_destination += ".zip"
+        with ZipFile(path_to_destination, "w") as z:
             for root, _dirs, files in os.walk(path_to_zip, topdown=True):
                 ziproot = path_to_zip
                 for file in files:
                     try:
                         logger.info(f"backing up: {os.path.join(root, file)}")
                         if os.name == "nt":
-                            z.write(os.path.join(root, file), os.path.join(root.replace(ziproot, ""), file))
+                            z.write(
+                                os.path.join(root, file),
+                                os.path.join(root.replace(ziproot, ""), file),
+                            )
                         else:
-                            z.write(os.path.join(root, file), os.path.join(root.replace(ziproot, "/"), file))
+                            z.write(
+                                os.path.join(root, file),
+                                os.path.join(root.replace(ziproot, "/"), file),
+                            )
 
                     except Exception as e:
-                        logger.warning(f"Error backing up: {os.path.join(root, file)}! - Error was: {e}")
-
+                        logger.warning(
+                            f"Error backing up: {os.path.join(root, file)}!"
+                            f" - Error was: {e}"
+                        )
 
         return True
 
     @staticmethod
     def make_compressed_archive(path_to_destination, path_to_zip):
         # create a ZipFile object
-        path_to_destination += '.zip'
-        with ZipFile(path_to_destination, 'w', ZIP_DEFLATED) as z:
+        path_to_destination += ".zip"
+        with ZipFile(path_to_destination, "w", ZIP_DEFLATED) as z:
             for root, _dirs, files in os.walk(path_to_zip, topdown=True):
                 ziproot = path_to_zip
                 for file in files:
                     try:
                         logger.info(f"backing up: {os.path.join(root, file)}")
                         if os.name == "nt":
-                            z.write(os.path.join(root, file), os.path.join(root.replace(ziproot, ""), file))
+                            z.write(
+                                os.path.join(root, file),
+                                os.path.join(root.replace(ziproot, ""), file),
+                            )
                         else:
-                            z.write(os.path.join(root, file), os.path.join(root.replace(ziproot, "/"), file))
+                            z.write(
+                                os.path.join(root, file),
+                                os.path.join(root.replace(ziproot, "/"), file),
+                            )
 
                     except Exception as e:
-                        logger.warning(f"Error backing up: {os.path.join(root, file)}! - Error was: {e}")
-
+                        logger.warning(
+                            f"Error backing up: {os.path.join(root, file)}!"
+                            f" - Error was: {e}"
+                        )
 
         return True
+
 
 file_helper = FileHelpers()

@@ -6,22 +6,33 @@ from app.classes.models.roles import Roles, roles_helper
 from app.classes.shared.helpers import helper
 
 try:
-    from peewee import SqliteDatabase, Model, ForeignKeyField, CharField, AutoField, DateTimeField, BooleanField, CompositeKey, DoesNotExist, JOIN
+    from peewee import (
+        SqliteDatabase,
+        Model,
+        ForeignKeyField,
+        CharField,
+        AutoField,
+        DateTimeField,
+        BooleanField,
+        CompositeKey,
+        DoesNotExist,
+        JOIN,
+    )
     from playhouse.shortcuts import model_to_dict
 
 except ModuleNotFoundError as e:
     helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
-peewee_logger = logging.getLogger('peewee')
+peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
-database = SqliteDatabase(helper.db_path, pragmas = {
-    'journal_mode': 'wal',
-    'cache_size': -1024 * 10})
+database = SqliteDatabase(
+    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+)
 
-#************************************************************************************************
+# **********************************************************************************
 #                                   Users Class
-#************************************************************************************************
+# **********************************************************************************
 class Users(Model):
     user_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
@@ -34,7 +45,7 @@ class Users(Model):
     enabled = BooleanField(default=True)
     superuser = BooleanField(default=False)
     lang = CharField(default="en_EN")
-    support_logs = CharField(default = '')
+    support_logs = CharField(default="")
     valid_tokens_from = DateTimeField(default=datetime.datetime.now)
     server_order = CharField(default="")
     preparing = BooleanField(default=False)
@@ -44,40 +55,40 @@ class Users(Model):
         database = database
 
 
-# ************************************************************************************************
+# **********************************************************************************
 #                                   API Keys Class
-# ************************************************************************************************
+# **********************************************************************************
 class ApiKeys(Model):
     token_id = AutoField()
-    name = CharField(default='', unique=True, index=True)
+    name = CharField(default="", unique=True, index=True)
     created = DateTimeField(default=datetime.datetime.now)
-    user_id = ForeignKeyField(Users, backref='api_token', index=True)
-    server_permissions = CharField(default='00000000')
-    crafty_permissions = CharField(default='000')
+    user_id = ForeignKeyField(Users, backref="api_token", index=True)
+    server_permissions = CharField(default="00000000")
+    crafty_permissions = CharField(default="000")
     superuser = BooleanField(default=False)
 
     class Meta:
-        table_name = 'api_keys'
+        table_name = "api_keys"
         database = database
 
 
-#************************************************************************************************
+# **********************************************************************************
 #                                   User Roles Class
-#************************************************************************************************
+# **********************************************************************************
 class User_Roles(Model):
-    user_id = ForeignKeyField(Users, backref='user_role')
-    role_id = ForeignKeyField(Roles, backref='user_role')
+    user_id = ForeignKeyField(Users, backref="user_role")
+    role_id = ForeignKeyField(Roles, backref="user_role")
 
     class Meta:
-        table_name = 'user_roles'
-        primary_key = CompositeKey('user_id', 'role_id')
+        table_name = "user_roles"
+        primary_key = CompositeKey("user_id", "role_id")
         database = database
 
-#************************************************************************************************
-#                                   Users Helpers
-#************************************************************************************************
-class helper_users:
 
+# **********************************************************************************
+#                                   Users Helpers
+# **********************************************************************************
+class helper_users:
     @staticmethod
     def get_by_id(user_id):
         return Users.get_by_id(user_id)
@@ -107,19 +118,19 @@ class helper_users:
     def get_user(user_id):
         if user_id == 0:
             return {
-                'user_id': 0,
-                'created': '10/24/2019, 11:34:00',
-                'last_login': '10/24/2019, 11:34:00',
-                'last_update': '10/24/2019, 11:34:00',
-                'last_ip': "127.27.23.89",
-                'username': "SYSTEM",
-                'password': None,
-                'email': "default@example.com",
-                'enabled': True,
-                'superuser': True,
-                'roles': [],
-                'servers': [],
-                'support_logs': '',
+                "user_id": 0,
+                "created": "10/24/2019, 11:34:00",
+                "last_login": "10/24/2019, 11:34:00",
+                "last_update": "10/24/2019, 11:34:00",
+                "last_ip": "127.27.23.89",
+                "username": "SYSTEM",
+                "password": None,
+                "email": "default@example.com",
+                "enabled": True,
+                "superuser": True,
+                "roles": [],
+                "servers": [],
+                "support_logs": "",
             }
         user = model_to_dict(Users.get(Users.user_id == user_id))
 
@@ -128,7 +139,7 @@ class helper_users:
             user = users_helper.add_user_roles(user)
             return user
         else:
-            #logger.debug("user: ({}) {}".format(user_id, {}))
+            # logger.debug("user: ({}) {}".format(user_id, {}))
             return {}
 
     @staticmethod
@@ -147,31 +158,47 @@ class helper_users:
         return user
 
     @staticmethod
-    def add_user(username: str, password: str = None, email: Optional[str] = None, enabled: bool = True, superuser: bool = False) -> str:
+    def add_user(
+        username: str,
+        password: str = None,
+        email: Optional[str] = None,
+        enabled: bool = True,
+        superuser: bool = False,
+    ) -> str:
         if password is not None:
             pw_enc = helper.encode_pass(password)
         else:
             pw_enc = None
-        user_id = Users.insert({
-            Users.username: username.lower(),
-            Users.password: pw_enc,
-            Users.email: email,
-            Users.enabled: enabled,
-            Users.superuser: superuser,
-            Users.created: helper.get_time_as_string()
-        }).execute()
+        user_id = Users.insert(
+            {
+                Users.username: username.lower(),
+                Users.password: pw_enc,
+                Users.email: email,
+                Users.enabled: enabled,
+                Users.superuser: superuser,
+                Users.created: helper.get_time_as_string(),
+            }
+        ).execute()
         return user_id
 
     @staticmethod
-    def add_rawpass_user(username: str, password: str = None, email: Optional[str] = None, enabled: bool = True, superuser: bool = False) -> str:
-        user_id = Users.insert({
-            Users.username: username.lower(),
-            Users.password: password,
-            Users.email: email,
-            Users.enabled: enabled,
-            Users.superuser: superuser,
-            Users.created: helper.get_time_as_string()
-        }).execute()
+    def add_rawpass_user(
+        username: str,
+        password: str = None,
+        email: Optional[str] = None,
+        enabled: bool = True,
+        superuser: bool = False,
+    ) -> str:
+        user_id = Users.insert(
+            {
+                Users.username: username.lower(),
+                Users.password: password,
+                Users.email: email,
+                Users.enabled: enabled,
+                Users.superuser: superuser,
+                Users.created: helper.get_time_as_string(),
+            }
+        ).execute()
         return user_id
 
     @staticmethod
@@ -183,7 +210,9 @@ class helper_users:
 
     @staticmethod
     def update_server_order(user_id, user_server_order):
-        Users.update(server_order = user_server_order).where(Users.user_id == user_id).execute()
+        Users.update(server_order=user_server_order).where(
+            Users.user_id == user_id
+        ).execute()
 
     @staticmethod
     def get_server_order(user_id):
@@ -208,20 +237,22 @@ class helper_users:
 
     @staticmethod
     def set_support_path(user_id, support_path):
-        Users.update(support_logs = support_path).where(Users.user_id == user_id).execute()
+        Users.update(support_logs=support_path).where(
+            Users.user_id == user_id
+        ).execute()
 
     @staticmethod
     def set_prepare(user_id):
-        Users.update(preparing = True).where(Users.user_id == user_id).execute()
+        Users.update(preparing=True).where(Users.user_id == user_id).execute()
 
     @staticmethod
     def stop_prepare(user_id):
-        Users.update(preparing = False).where(Users.user_id == user_id).execute()
+        Users.update(preparing=False).where(Users.user_id == user_id).execute()
 
     @staticmethod
     def clear_support_status():
-        #pylint: disable=singleton-comparison
-        Users.update(preparing = False).where(Users.preparing == True).execute()
+        # pylint: disable=singleton-comparison
+        Users.update(preparing=False).where(Users.preparing == True).execute()
 
     @staticmethod
     def user_id_exists(user_id):
@@ -229,9 +260,9 @@ class helper_users:
             return False
         return True
 
-#************************************************************************************************
-#                                   User_Roles Methods
-#************************************************************************************************
+    # **********************************************************************************
+    #                                   User_Roles Methods
+    # **********************************************************************************
 
     @staticmethod
     def get_or_create(user_id, role_id):
@@ -242,7 +273,7 @@ class helper_users:
         roles_list = []
         roles = User_Roles.select().where(User_Roles.user_id == user_id)
         for r in roles:
-            roles_list.append(roles_helper.get_role(r.role_id)['role_id'])
+            roles_list.append(roles_helper.get_role(r.role_id)["role_id"])
         return roles_list
 
     @staticmethod
@@ -250,37 +281,41 @@ class helper_users:
         roles_list = []
         roles = User_Roles.select().where(User_Roles.user_id == user_id)
         for r in roles:
-            roles_list.append(roles_helper.get_role(r.role_id)['role_name'])
+            roles_list.append(roles_helper.get_role(r.role_id)["role_name"])
         return roles_list
 
     @staticmethod
     def add_role_to_user(user_id, role_id):
-        User_Roles.insert({
-            User_Roles.user_id: user_id,
-            User_Roles.role_id: role_id
-        }).execute()
+        User_Roles.insert(
+            {User_Roles.user_id: user_id, User_Roles.role_id: role_id}
+        ).execute()
 
     @staticmethod
     def add_user_roles(user: Union[dict, Users]):
         if isinstance(user, dict):
-            user_id = user['user_id']
+            user_id = user["user_id"]
         else:
             user_id = user.user_id
 
-        # I just copied this code from get_user, it had those TODOs & comments made by mac - Lukas
+        # I just copied this code from get_user,
+        # it had those TODOs & comments made by mac - Lukas
 
-        roles_query = User_Roles.select().join(Roles, JOIN.INNER).where(User_Roles.user_id == user_id)
+        roles_query = (
+            User_Roles.select()
+            .join(Roles, JOIN.INNER)
+            .where(User_Roles.user_id == user_id)
+        )
         # TODO: this query needs to be narrower
         roles = set()
         for r in roles_query:
             roles.add(r.role_id.role_id)
 
         if isinstance(user, dict):
-            user['roles'] = roles
+            user["roles"] = roles
         else:
             user.roles = roles
 
-        #logger.debug("user: ({}) {}".format(user_id, user))
+        # logger.debug("user: ({}) {}".format(user_id, user))
         return user
 
     @staticmethod
@@ -293,15 +328,17 @@ class helper_users:
 
     @staticmethod
     def delete_user_roles(user_id, removed_roles):
-        User_Roles.delete().where(User_Roles.user_id == user_id).where(User_Roles.role_id.in_(removed_roles)).execute()
+        User_Roles.delete().where(User_Roles.user_id == user_id).where(
+            User_Roles.role_id.in_(removed_roles)
+        ).execute()
 
     @staticmethod
     def remove_roles_from_role_id(role_id):
         User_Roles.delete().where(User_Roles.role_id == role_id).execute()
 
-# ************************************************************************************************
-#                                   ApiKeys Methods
-# ************************************************************************************************
+    # **********************************************************************************
+    #                                   ApiKeys Methods
+    # **********************************************************************************
 
     @staticmethod
     def get_user_api_keys(user_id: str):
@@ -313,18 +350,29 @@ class helper_users:
 
     @staticmethod
     def add_user_api_key(
-         name: str,
-         user_id: str,
-         superuser: bool = False,
-         server_permissions_mask: Optional[str] = None,
-         crafty_permissions_mask: Optional[str] = None):
-        return ApiKeys.insert({
-            ApiKeys.name: name,
-            ApiKeys.user_id: user_id,
-            **({ApiKeys.server_permissions: server_permissions_mask} if server_permissions_mask is not None else {}),
-            **({ApiKeys.crafty_permissions: crafty_permissions_mask} if crafty_permissions_mask is not None else {}),
-            ApiKeys.superuser: superuser
-        }).execute()
+        name: str,
+        user_id: str,
+        superuser: bool = False,
+        server_permissions_mask: Optional[str] = None,
+        crafty_permissions_mask: Optional[str] = None,
+    ):
+        return ApiKeys.insert(
+            {
+                ApiKeys.name: name,
+                ApiKeys.user_id: user_id,
+                **(
+                    {ApiKeys.server_permissions: server_permissions_mask}
+                    if server_permissions_mask is not None
+                    else {}
+                ),
+                **(
+                    {ApiKeys.crafty_permissions: crafty_permissions_mask}
+                    if crafty_permissions_mask is not None
+                    else {}
+                ),
+                ApiKeys.superuser: superuser,
+            }
+        ).execute()
 
     @staticmethod
     def delete_user_api_keys(user_id: str):
@@ -333,7 +381,6 @@ class helper_users:
     @staticmethod
     def delete_user_api_key(key_id: str):
         ApiKeys.delete().where(ApiKeys.token_id == key_id).execute()
-
 
 
 users_helper = helper_users()
