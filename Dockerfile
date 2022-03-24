@@ -1,8 +1,23 @@
 FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND="noninteractive"
+ARG BUILD_DATE
+ARG BUILD_REF
+ARG CRAFTY_VER
 
-LABEL maintainer="Dockerfile created by Zedifus <https://gitlab.com/zedifus>"
+# Add meta labels
+LABEL \
+    maintainer="Zedifus <https://gitlab.com/zedifus>" \
+    org.opencontainers.image.created=${BUILD_DATE} \
+    org.opencontainers.image.revision=${BUILD_REF} \
+    org.opencontainers.image.version=${CRAFTY_VER} \
+    org.opencontainers.image.title="Crafty Controller" \
+    org.opencontainers.image.description="A Game Server Control Panel / Launcher" \
+    org.opencontainers.image.url="https://craftycontrol.com/" \
+    org.opencontainers.image.documentation="https://wiki.craftycontrol.com/" \
+    org.opencontainers.image.source="https://gitlab.com/crafty-controller/crafty-commander" \
+    org.opencontainers.image.vendor="Arcadia Technology, LLC." \
+    org.opencontainers.image.licenses=""
 
 # Security Patch for CVE-2021-44228
 ENV LOG4J_FORMAT_MSG_NO_LOOKUPS=true
