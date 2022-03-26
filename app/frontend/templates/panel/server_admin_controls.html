@@ -9,14 +9,14 @@
 
 <div class="content-wrapper">
 
-    <!-- Page Title Header Starts-->
+  <!-- Page Title Header Starts-->
   <div class="row page-title-header">
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
           {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{ data['server_stats']['server_id']['server_name'] }}
-            <br />
-            <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
+          <br />
+          <small>UUID: {{ data['server_stats']['server_id']['server_uuid'] }}</small>
         </h4>
       </div>
     </div>
@@ -24,71 +24,78 @@
   </div>
   <!-- Page Title Header Ends-->
 
- {% include "parts/details_stats.html %}
+  {% include "parts/details_stats.html %}
 
   <div class="row">
 
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
+          <span class="d-none d-sm-block">
             {% include "parts/server_controls_list.html %}
+          </span>
+          <span class="d-block d-sm-none">
+            {% include "parts/m_server_controls_list.html %}
+          </span>
 
-            <div class="row">
-              <div class="col-md-6 col-sm-12">
-                <style>
-                  .playerItem {
-                    background: #1c1e2f;
-                    padding: 1rem;
-                    display: flex;
-                    flex-flow: row wrap;
-                    align-items: center;
-                    justify-content: space-between;
-                    margin: 1rem 0px 1rem 0px;
-                  }
-                  .playerItem h3 {
-                    vertical-align: middle;
-                    padding: 0px;
-                    margin: 0px;
-                    margin-right: 1.5rem;
-                  }
-                  .playerItem button {
-                    vertical-align: middle;
-                    margin: 0.25rem;
-                  }
+          <div class="row">
+            <div class="col-md-6 col-sm-12">
+              <style>
+                .playerItem {
+                  background: #1c1e2f;
+                  padding: 1rem;
+                  display: flex;
+                  flex-flow: row wrap;
+                  align-items: center;
+                  justify-content: space-between;
+                  margin: 1rem 0px 1rem 0px;
+                }
 
-                  .playerUnban {
-                    margin-bottom: 1rem;
-                  }
+                .playerItem h3 {
+                  vertical-align: middle;
+                  padding: 0px;
+                  margin: 0px;
+                  margin-right: 1.5rem;
+                }
 
-                  .banned span {
-                    font-size: 1.1rem;
-                  }
-                </style>
-                <h2>{{ translate('serverPlayerManagement', 'players', data['lang']) }}:</h2>
-                <ul style="list-style: none;padding: 0px;margin: 0px; margin-bottom: 1rem;gap: 1rem;">
-                  {% for player in data['get_players']() %}
-                    <li class="playerItem">
-                      <h3>{{ player }}</h3>
-                      <div class="buttons">
-                        <button onclick="send_command_to_server('ban {{ player }}')" type="button" class="btn btn-danger">Ban</button>
-                        <button onclick="send_command_to_server('kick {{ player }}')" type="button" class="btn btn-outline-danger">Kick</button>
-                        <button onclick="send_command_to_server('op {{ player }}')" type="button" class="btn btn-warning">OP</button>
-                        <button onclick="send_command_to_server('deop {{ player }}')" type="button" class="btn btn-outline-warning">De-OP</button>
-                      </div>
-                    </li>
-                  {% end %}
-                </ul>
-              </div>
-              <div class="col-md-6 col-sm-12">
-                <h2>{{ translate('serverPlayerManagement', 'bannedPlayers', data['lang']) }}:</h2>
-                <ul id="bannedPlayers" style="list-style: none;padding: 0px;margin: 0px; margin-bottom: 1rem;gap: 1rem;">
-                  <li class="playerItem banned">
-                    <h3>{{ translate('serverPlayerManagement', 'loadingBannedPlayers', data['lang']) }}</h3>
-                  </li>
+                .playerItem button {
+                  vertical-align: middle;
+                  margin: 0.25rem;
+                }
 
-                </ul>
-              </div>
+                .playerUnban {
+                  margin-bottom: 1rem;
+                }
+
+                .banned span {
+                  font-size: 1.1rem;
+                }
+              </style>
+              <h2>{{ translate('serverPlayerManagement', 'players', data['lang']) }}:</h2>
+              <ul style="list-style: none;padding: 0px;margin: 0px; margin-bottom: 1rem;gap: 1rem;">
+                {% for player in data['get_players']() %}
+                <li class="playerItem">
+                  <h3>{{ player }}</h3>
+                  <div class="buttons">
+                    <button onclick="send_command_to_server('ban {{ player }}')" type="button" class="btn btn-danger">Ban</button>
+                    <button onclick="send_command_to_server('kick {{ player }}')" type="button" class="btn btn-outline-danger">Kick</button>
+                    <button onclick="send_command_to_server('op {{ player }}')" type="button" class="btn btn-warning">OP</button>
+                    <button onclick="send_command_to_server('deop {{ player }}')" type="button" class="btn btn-outline-warning">De-OP</button>
+                  </div>
+                </li>
+                {% end %}
+              </ul>
             </div>
+            <div class="col-md-6 col-sm-12">
+              <h2>{{ translate('serverPlayerManagement', 'bannedPlayers', data['lang']) }}:</h2>
+              <ul id="bannedPlayers" style="list-style: none;padding: 0px;margin: 0px; margin-bottom: 1rem;gap: 1rem;">
+                <li class="playerItem banned">
+                  <h3>{{ translate('serverPlayerManagement', 'loadingBannedPlayers', data['lang']) }}</h3>
+                </li>
+
+              </ul>
+            </div>
+          </div>
 
         </div>
       </div>
@@ -106,46 +113,46 @@
 <script>
 
 
-    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
-    function getCookie(name) {
-        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
-        return r ? r[1] : undefined;
-    }
+  //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+  function getCookie(name) {
+    var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+    return r ? r[1] : undefined;
+  }
 
-    function htmlDecode(input){
-      var e = document.createElement('textarea');
-      e.innerHTML = input;
-      // handle case of empty input
-      return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
-    }
+  function htmlDecode(input) {
+    var e = document.createElement('textarea');
+    e.innerHTML = input;
+    // handle case of empty input
+    return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+  }
 
-    $( document ).ready(function() {
-        console.log( "ready!" );
+  $(document).ready(function () {
+    console.log("ready!");
 
-        var bannedPlayers = `{{ data['banned_players'] }}`;
+    var bannedPlayers = `{{ data['banned_players'] }}`;
 
-        var bannedPlayersDecoded = htmlDecode(bannedPlayers);
+    var bannedPlayersDecoded = htmlDecode(bannedPlayers);
 
-        $("#bannedPlayers").html(bannedPlayersDecoded)
+    $("#bannedPlayers").html(bannedPlayersDecoded)
 
+  });
+
+  function send_command_to_server(command) {
+    console.log(command)
+    var token = getCookie("_xsrf")
+    console.log('sending command: ' + command)
+
+    $.ajax({
+      type: "POST",
+      headers: { 'X-XSRFToken': token },
+      url: '/ajax/send_command?id=1',
+      data: { command },
+      success: function (data) {
+        console.log("got response:");
+        console.log(data);
+      },
     });
-
-    function send_command_to_server (command) {
-      console.log(command)
-      var token = getCookie("_xsrf")
-      console.log('sending command: ' + command)
-
-      $.ajax({
-        type: "POST",
-        headers: {'X-XSRFToken': token},
-        url: '/ajax/send_command?id=1',
-        data: { command },
-        success: function(data){
-          console.log("got response:");
-          console.log(data);
-        },
-      });
-    }
+  }
 
 
 </script>
