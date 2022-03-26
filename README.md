@@ -1,7 +1,7 @@
 [![Crafty Logo](app/frontend/static/assets/images/logo_long.svg)](https://craftycontrol.com)
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Supported Python Versions](https://shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue)](https://gitlab.com/crafty-controller/crafty-commander)
+[![Supported Python Versions](https://shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20-blue)](https://www.python.org)
 [![Version(temp-hardcoded)](https://img.shields.io/badge/release-v4.0.0--alpha3.5-orange)](https://gitlab.com/crafty-controller/crafty-commander)
 [![Code Quality(temp-hardcoded)](https://img.shields.io/badge/code%20quality-10-brightgreen)](https://gitlab.com/crafty-controller/crafty-commander)
 [![Build Status](https://gitlab.com/crafty-controller/crafty-commander/badges/master/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-commander/-/commits/master)
