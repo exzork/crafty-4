@@ -3,7 +3,6 @@
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
-*.stats
 
 __pycache__/
 *.py[cod]
@@ -11,6 +10,7 @@ __pycache__/
 
 .env
 .venv
+default.env
 env/
 venv/
 ENV/
