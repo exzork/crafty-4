@@ -322,9 +322,12 @@ class PanelHandler(BaseHandler):
                 filetype_extension=False,
                 use_ssl=True,
             )  # + "?d=404"
-            if requests.head(url).status_code != 404:
-                profile_url = url
-            else:
+            try:
+                if requests.head(url).status_code != 404:
+                    profile_url = url
+                else:
+                    profile_url = "/static/assets/images/faces-clipart/pic-3.png"
+            except:
                 profile_url = "/static/assets/images/faces-clipart/pic-3.png"
         else:
             profile_url = "/static/assets/images/faces-clipart/pic-3.png"

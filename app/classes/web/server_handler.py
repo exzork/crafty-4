@@ -110,9 +110,12 @@ class ServerHandler(BaseHandler):
                 filetype_extension=False,
                 use_ssl=True,
             )  # + "?d=404"
-            if requests.head(url).status_code != 404:
-                profile_url = url
-            else:
+            try:
+                if requests.head(url).status_code != 404:
+                    profile_url = url
+                else:
+                    profile_url = "/static/assets/images/faces-clipart/pic-3.png"
+            except:
                 profile_url = "/static/assets/images/faces-clipart/pic-3.png"
         else:
             profile_url = "/static/assets/images/faces-clipart/pic-3.png"
@@ -131,6 +134,7 @@ class ServerHandler(BaseHandler):
                 )
                 return
 
+            page_data["online"] = helper.check_internet()
             page_data["server_types"] = server_jar_obj.get_serverjar_data()
             page_data["js_server_types"] = json.dumps(
                 server_jar_obj.get_serverjar_data()
