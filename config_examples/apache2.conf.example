@@ -1,3 +1,11 @@
+#Base config made by Justman10000
+#Adapted for WSS by Andrew McManus https://gitlab.com/amcmanu3
+#For this config you need to add the following mods
+#mod_ssl
+#mod_rewrite
+#mod_http_upgrade
+#mod_wss
+
 <VirtualHost _default_:80>
 
     ErrorLog ${APACHE_LOG_DIR}/error.log
