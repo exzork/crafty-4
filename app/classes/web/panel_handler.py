@@ -1760,6 +1760,7 @@ class PanelHandler(BaseHandler):
                 user_data = {
                     "username": username,
                     "password": password0,
+                    "email": email,
                     "lang": lang,
                 }
                 self.controller.users.update_user(user_id, user_data=user_data)
