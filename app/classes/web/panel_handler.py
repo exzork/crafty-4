@@ -1901,14 +1901,15 @@ class PanelHandler(BaseHandler):
             lang = bleach.clean(
                 self.get_argument("lang", helper.get_setting("language"))
             )
+            # We don't want a non-super user to be able to create a super user.
             if superuser:
-                superuser = bleach.clean(self.get_argument("superuser", "0"))
+                new_superuser = bleach.clean(self.get_argument("superuser", "0"))
             else:
-                superuser = "0"
+                new_superuser = "0"
             if superuser == "1":
-                superuser = True
+                new_superuser = True
             else:
-                superuser = False
+                new_superuser = False
 
             if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
                 self.redirect(
@@ -1936,7 +1937,7 @@ class PanelHandler(BaseHandler):
                 password=password0,
                 email=email,
                 enabled=enabled,
-                superuser=superuser,
+                superuser=new_superuser,
             )
             user_data = {
                 "roles": roles,
