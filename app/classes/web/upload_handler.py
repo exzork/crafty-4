@@ -8,6 +8,7 @@ from app.classes.shared.console import console
 from app.classes.shared.main_controller import Controller
 from app.classes.web.websocket_helper import websocket_helper
 from app.classes.web.base_handler import BaseHandler
+from app.classes.shared.translation import translation
 
 try:
     import tornado.web
@@ -18,9 +19,6 @@ except ModuleNotFoundError as ex:
     helper.auto_installer_fix(ex)
 
 logger = logging.getLogger(__name__)
-
-# Class & Function Defination
-MAX_STREAMED_SIZE = 1024 * 1024 * 1024
 
 
 @tornado.web.stream_request_body
@@ -35,14 +33,36 @@ class UploadHandler(BaseHandler):
         self.translator = translator
 
     def prepare(self):
-        self.do_upload = True
-        # pylint: disable=unused-variable
-        api_key, token_data, exec_user = self.current_user
+        # Class & Function Defination
+        api_key, _token_data, exec_user = self.current_user
         server_id = self.get_argument("server_id", None)
         superuser = exec_user["superuser"]
         if api_key is not None:
             superuser = superuser and api_key.superuser
         user_id = exec_user["user_id"]
+        stream_size_value = helper.get_setting("stream_size_GB")
+
+        MAX_STREAMED_SIZE = (1024 * 1024 * 1024) * stream_size_value
+
+        self.content_len = int(self.request.headers.get("Content-Length"))
+        if self.content_len > MAX_STREAMED_SIZE:
+            logger.error(
+                f"User with ID {user_id} attempted to upload a file that"
+                f" exceeded the max body size."
+            )
+            websocket_helper.broadcast_user(
+                user_id,
+                "send_start_error",
+                {
+                    "error": translation.translate(
+                        "error",
+                        "fileTooLarge",
+                        self.controller.users.get_user_lang_by_id(user_id),
+                    ),
+                },
+            )
+            return
+        self.do_upload = True
 
         if superuser:
             exec_user_server_permissions = (
