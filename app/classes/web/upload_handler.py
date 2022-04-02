@@ -113,6 +113,12 @@ class UploadHandler(BaseHandler):
             self.do_upload = False
 
         if self.do_upload:
+            self.content_len = int(self.request.headers.get("Content-Length"))
+            if self.content_len > MAX_STREAMED_SIZE:
+                logger.error(
+                    f"User with ID {user_id} attempted to upload a file that"
+                    f" exceeded the max body size."
+                )
             try:
                 self.f = open(full_path, "wb")
             except Exception as e:
