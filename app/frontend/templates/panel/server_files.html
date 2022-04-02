@@ -230,6 +230,7 @@
               <h3 id="file_warn"></h3>
               <button class="btn btn-success" onclick="save()"><i class="fas fa-save"></i> {{ translate('serverFiles',
                 'save', data['lang']) }}</button>
+              <span style="color: white;" id="save_status"></span>
             </div>
           </div>
 
@@ -361,6 +362,7 @@
   ];
 
   var filePath = '';
+  let file_loaded = false;
 
   function clickOnFile(event) {
     filePath = event.target.getAttribute('data-path');
@@ -381,6 +383,7 @@
           $('#fileError').toggle(false)   // hide
           setFileName(event.target.innerText);
           editor.session.setValue(json.content);
+          file_loaded = false;
         }
       },
     });
@@ -497,6 +500,32 @@
       timer = null;
     };
   }
+  editor.on('change', function (event) {
+    if (!event.ctrlKey && !event.shiftKey) {
+      if (file_loaded) {
+        document.getElementById('save_status').innerHTML = '';
+      } else {
+        document.getElementById('save_status').innerHTML = '<i class="fal fa-check-circle"></i>';
+      }
+    }
+  });
+  editor.on('undo', function (event) {
+    document.getElementById('save_status').innerHTML = '';
+
+  });
+  editor.on('redo', function (event) {
+    document.getElementById('save_status').innerHTML = '';
+
+  });
+
+  $('#editor').bind('keydown', function (event) {
+    file_loaded = true;
+    if (event.ctrlKey && event.key === 's') {
+      event.preventDefault();
+      save();
+    }
+    //console.log(event.keyCode);
+  });
 
 
   setFileName();
@@ -544,7 +573,7 @@
       },
       success: function (data) {
         console.log("got response:");
-        //TODO add better feedback for file saves
+        document.getElementById("save_status").innerHTML = '<i class="fal fa-check-circle"></i>';
         console.log(data);
       },
     });
