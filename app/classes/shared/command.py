@@ -21,12 +21,12 @@ class MainPrompt(cmd.Cmd):
     # overrides the default Prompt
     prompt = f"Crafty Controller v{helper.get_version_string()} > "
 
+    # see MR !233 for pylint exemptino reason
     @staticmethod
-    def emptyline():
+    def emptyline():  # pylint: disable=arguments-differ
         pass
 
-    # pylint: disable=unused-argument
-    def do_exit(self, line):
+    def do_exit(self, _line):
         self.tasks_manager._main_graceful_exit()
         self.universal_exit()
 
