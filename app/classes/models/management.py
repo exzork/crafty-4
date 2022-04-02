@@ -322,7 +322,11 @@ class helpers_management:
 
     @staticmethod
     def get_schedules_enabled():
-        return Schedules.select().where(Schedules.enabled is True).execute()
+        return (
+            Schedules.select()
+            .where(Schedules.enabled == True)  # pylint: disable=singleton-comparison
+            .execute()
+        )
 
     # **********************************************************************************
     #                                   Backups Methods
@@ -435,7 +439,7 @@ class helpers_management:
     @staticmethod
     def clear_unexecuted_commands():
         Commands.update({Commands.executed: True}).where(
-            Commands.executed is False
+            Commands.executed == False  # pylint: disable=singleton-comparison
         ).execute()
 
 

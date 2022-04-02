@@ -221,7 +221,9 @@ class helper_users:
     @staticmethod
     def get_super_user_list():
         final_users = []
-        super_users = Users.select().where(Users.superuser is True)
+        super_users = Users.select().where(
+            Users.superuser == True  # pylint: disable=singleton-comparison
+        )
         for suser in super_users:
             if suser.user_id not in final_users:
                 final_users.append(suser.user_id)
@@ -250,7 +252,9 @@ class helper_users:
 
     @staticmethod
     def clear_support_status():
-        Users.update(preparing=False).where(Users.preparing is True).execute()
+        Users.update(preparing=False).where(
+            Users.preparing == True  # pylint: disable=singleton-comparison
+        ).execute()
 
     @staticmethod
     def user_id_exists(user_id):
