@@ -682,20 +682,6 @@
     }, false);
     xmlHttpRequest.addEventListener('error', (e) => {
       console.error('Error while uploading file', file.name + '.', 'Event:', e)
-      var dialog = bootbox.dialog({
-        title: 'Error on Upload',
-        message: "Fix size exceeded the max body size. Contact your system administrator.",
-        size: 'large',
-        buttons: {
-          ok: {
-            label: "Ok",
-            className: 'btn-info',
-            callback: function () {
-              document.location.reload();
-            }
-          }
-        }
-      });
     }, false);
     xmlHttpRequest.send(file);
   }
