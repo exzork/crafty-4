@@ -41,7 +41,9 @@ class UploadHandler(BaseHandler):
             superuser = superuser and api_key.superuser
         user_id = exec_user["user_id"]
         stream_size_value = helper.get_setting("stream_size_GB")
-        MAX_STREAMED_SIZE = stream_size_value * 1073741824
+
+        MAX_STREAMED_SIZE = (1024 * 1024 * 1024) * stream_size_value
+
         self.content_len = int(self.request.headers.get("Content-Length"))
         if self.content_len > MAX_STREAMED_SIZE:
             logger.error(
