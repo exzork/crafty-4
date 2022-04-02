@@ -227,8 +227,7 @@ class Permissions_Servers:
     def get_server_user_list(server_id):
         final_users = []
         server_roles = Role_Servers.select().where(Role_Servers.server_id == server_id)
-        # pylint: disable=singleton-comparison
-        super_users = Users.select().where(Users.superuser == True)
+        super_users = Users.select().where(Users.superuser is True)
         for role in server_roles:
             users = User_Roles.select().where(User_Roles.role_id == role.role_id)
             for user in users:
