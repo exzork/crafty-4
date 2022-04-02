@@ -260,8 +260,7 @@ class helper_servers:
     @staticmethod
     def is_crashed(server_id):
         svr = Server_Stats.select().where(Server_Stats.server_id == server_id).get()
-        # pylint: disable=singleton-comparison
-        if svr.crashed == True:
+        if svr.crashed is True:
             return True
         else:
             return False
