@@ -224,6 +224,16 @@
                       {% end %}
                     </label>
 
+                    <label for="hints" class="form-check-label ml-4 mb-4">
+                      {% if data['user']['hints'] %}
+                      <input type="checkbox" class="form-check-input" id="hints" name="hints" checked=""
+                        value="1">Enable Hints?
+                      {% else %}
+                      <input type="checkbox" class="form-check-input" id="hints" name="hints" value="1"> Enable
+                      Hints?
+                      {% end %}
+                    </label>
+
                   </div>
 
                   <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{

@@ -15,8 +15,9 @@
       <div class="page-header">
         <h4 class="page-title">{{ translate('dashboard', 'dashboard', data['lang']) }}
           {% if data['server_stats']['running'] != 0 %}
-          <span id="sync" style="margin-left: 5px;"><i class="fas fa-sync fa-spin"></i></span></h4>
-          {% end %}
+          <span id="sync" style="margin-left: 5px;"><i class="fas fa-sync fa-spin"></i></span>
+        </h4>
+        {% end %}
       </div>
     </div>
 
@@ -74,7 +75,8 @@
                   <h3 class="mb-0 font-weight-semibold" id="total_players">{{ data['num_players'] }}</h3>
                 </div>
                 <div class="wrapper my-auto ml-auto ml-lg-4">
-                  <p class="mb-0 text-warning"><span id="max_players">0</span> {{ translate('dashboard', 'max', data['lang']) }}</p>
+                  <p class="mb-0 text-warning"><span id="max_players">0</span> {{ translate('dashboard', 'max',
+                    data['lang']) }}</p>
                 </div>
               </div>
             </div>
@@ -91,9 +93,11 @@
           <h4 class="card-title"><i class="fas fa-server"></i> &nbsp;{{ translate('dashboard', 'allServers',
             data['lang']) }}</h4>
           {% if len(data['servers']) > 0 %}
+          {% if data['user_data']['hints'] %}
           <span class="too_small" title="{{ translate('dashboard', 'cannotSeeOnMobile', data['lang']) }}" ,
             data-content="{{ translate('dashboard', 'cannotSeeOnMobile2', data['lang']) }}" ,
             data-placement="top"></span>
+          {% end %}
           {% end %}
           <div><a class="nav-link" href="/server/step1"><i class="fas fa-plus-circle"></i> &nbsp; {{
               translate('dashboard', 'newServer', data['lang']) }}</a></div>
@@ -136,18 +140,18 @@
                   <td draggable="false" id="controls{{server['server_data']['server_id']}}" class="actions_serverlist">
                     {% if server['user_command_permission'] %}
                     {% if server['stats']['running'] %}
-                    <a data-id="{{server['server_data']['server_id']}}" class="stop_button"
-                      data-toggle="tooltip" title="{{ translate('dashboard', 'stop' , data['lang']) }}">
+                    <a data-id="{{server['server_data']['server_id']}}" class="stop_button" data-toggle="tooltip"
+                      title="{{ translate('dashboard', 'stop' , data['lang']) }}">
                       <i class="fas fa-stop"></i>
                     </a> &nbsp;
 
-                    <a data-id="{{server['server_data']['server_id']}}" class="restart_button"
-                      data-toggle="tooltip" title="{{ translate('dashboard', 'restart' , data['lang']) }}">
+                    <a data-id="{{server['server_data']['server_id']}}" class="restart_button" data-toggle="tooltip"
+                      title="{{ translate('dashboard', 'restart' , data['lang']) }}">
                       <i class="fas fa-sync"></i>
                     </a> &nbsp;
 
-                    <a data-id="{{server['server_data']['server_id']}}" class="kill_button"
-                      data-toggle="tooltip" title="{{ translate('dashboard', 'kill' , data['lang']) }}">
+                    <a data-id="{{server['server_data']['server_id']}}" class="kill_button" data-toggle="tooltip"
+                      title="{{ translate('dashboard', 'kill' , data['lang']) }}">
                       <i class="fas fa-skull"></i>
                     </a> &nbsp;
 
@@ -160,20 +164,21 @@
                     <a data-id="{{server['server_data']['server_id']}}" class="" title="{{
                       translate('dashboard', 'delay-explained' , data['lang'])}}">{{ translate('dashboard', 'starting',
                       data['lang']) }}</i></a>
-                      {% elif server['stats']['downloading']%}
-                      <a data-id="{{server['server_data']['server_id']}}" class=""><i class="fa fa-spinner fa-spin"></i> {{ translate('serverTerm', 'downloading',
-                        data['lang']) }}</a>
+                    {% elif server['stats']['downloading']%}
+                    <a data-id="{{server['server_data']['server_id']}}" class=""><i class="fa fa-spinner fa-spin"></i>
+                      {{ translate('serverTerm', 'downloading',
+                      data['lang']) }}</a>
                     {% else %}
-                    <a data-id="{{server['server_data']['server_id']}}" class="play_button"
-                      data-toggle="tooltip" title="{{ translate('dashboard', 'start' , data['lang']) }}">
+                    <a data-id="{{server['server_data']['server_id']}}" class="play_button" data-toggle="tooltip"
+                      title="{{ translate('dashboard', 'start' , data['lang']) }}">
                       <i class="fas fa-play"></i>
                     </a> &nbsp;
-                    <a data-id="{{server['server_data']['server_id']}}" class="clone_button"
-                      data-toggle="tooltip" title="{{ translate('dashboard', 'clone' , data['lang']) }}">
+                    <a data-id="{{server['server_data']['server_id']}}" class="clone_button" data-toggle="tooltip"
+                      title="{{ translate('dashboard', 'clone' , data['lang']) }}">
                       <i class="fas fa-clone"></i>
                     </a> &nbsp;
-                    <a data-id="{{server['server_data']['server_id']}}" class="kill_button"
-                      data-toggle="tooltip" title="{{ translate('dashboard', 'kill' , data['lang']) }}">
+                    <a data-id="{{server['server_data']['server_id']}}" class="kill_button" data-toggle="tooltip"
+                      title="{{ translate('dashboard', 'kill' , data['lang']) }}">
                       <i class="fas fa-skull"></i>
                     </a> &nbsp;
                     {% end %}
@@ -228,7 +233,9 @@
                     data['lang']) }} <br />
 
                     {% if server['stats']['desc'] != 'False' %}
-                    <div id="desc_id" style="overflow-wrap: break-word !important; max-width: 85px !important; overflow: scroll;">{{ server['stats']['desc'] }}</div> <br />
+                    <div id="desc_id"
+                      style="overflow-wrap: break-word !important; max-width: 85px !important; overflow: scroll;">{{
+                      server['stats']['desc'] }}</div> <br />
                     {% end %}
 
                     {% if server['stats']['version'] != 'False' %}
@@ -239,17 +246,19 @@
                   </td>
                   <td draggable="false" id="server_running_status_{{server['server_data']['server_id']}}">
                     {% if server['stats']['running'] %}
-                    <span class="text-success"><i class="fas fa-signal"></i>  {{ translate('dashboard', 'online',
+                    <span class="text-success"><i class="fas fa-signal"></i> {{ translate('dashboard', 'online',
                       data['lang']) }}</span>
                     {% elif server['stats']['crashed'] %}
-                      <span class="text-danger"><i class="fas fa-exclamation-triangle"></i>  {{ translate('dashboard', 'crashed',
-                        data['lang']) }}</span>
+                    <span class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard',
+                      'crashed',
+                      data['lang']) }}</span>
                     {% else %}
-                     <span class="text-warning"><i class="fas fa-ban"></i> {{ translate('dashboard', 'offline',
+                    <span class="text-warning"><i class="fas fa-ban"></i> {{ translate('dashboard', 'offline',
                       data['lang']) }}</span>
                     {% end %}
                   </td>
-                  <span class="server-player-totals" id="server_players_{{server['server_data']['server_id']}}" data-players="{{ server['stats']['online']}}" data-max="{{ server['stats']['max'] }}"></span>
+                  <span class="server-player-totals" id="server_players_{{server['server_data']['server_id']}}"
+                    data-players="{{ server['stats']['online']}}" data-max="{{ server['stats']['max'] }}"></span>
                 </tr>
                 {% end %}
 
@@ -271,15 +280,19 @@
     color: white !important;
     ;
   }
-  #desc_id {
-    -ms-overflow-style: none; /* for Internet Explorer, Edge */
-    scrollbar-width: none; /* for Firefox */
-    overflow-y: scroll; 
-}
 
-#desc_id::-webkit-scrollbar {
-    display: none; /* for Chrome, Safari, and Opera */
-}
+  #desc_id {
+    -ms-overflow-style: none;
+    /* for Internet Explorer, Edge */
+    scrollbar-width: none;
+    /* for Firefox */
+    overflow-y: scroll;
+  }
+
+  #desc_id::-webkit-scrollbar {
+    display: none;
+    /* for Chrome, Safari, and Opera */
+  }
 </style>
 
 
@@ -296,20 +309,20 @@
     };
   }
 
-  $(document).ready(function() {
+  $(document).ready(function () {
     $('[data-toggle="popover"]').popover();
     if ($(window).width() < 1000) {
       $('.too_small').popover("show");
     }
   });
 
-  $(window).ready(function() {
-    $('body').click(function() {
+  $(window).ready(function () {
+    $('body').click(function () {
       $('.too_small').popover("hide");
     });
   });
 
-  $(window).resize(function() {
+  $(window).resize(function () {
     // This will execute whenever the window is resized
     if ($(window).width() < 1000) {
       $('.too_small').popover("show");
@@ -379,7 +392,7 @@
       cpu_status = "bg-warning";
     }
 
-    server_cpu.innerHTML = `<div class="progress mb-1" data-toggle="tooltip" data-placement="top" title="`+ server.cpu +`"><div class="progress-bar `+ cpu_status + `" role="progressbar" style="width: `+ server.cpu + `%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>`+ server.cpu +`%`;
+    server_cpu.innerHTML = `<div class="progress mb-1" data-toggle="tooltip" data-placement="top" title="` + server.cpu + `"><div class="progress-bar ` + cpu_status + `" role="progressbar" style="width: ` + server.cpu + `%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>` + server.cpu + `%`;
 
 
     /* Update Memory */
@@ -396,7 +409,7 @@
       total_mem = server.mem;
     }
 
-    server_mem.innerHTML = `<div class="progress mb-1" data-toggle="tooltip" data-placement="top" title="`+ server_mem +`"><div class="progress-bar `+ mem_status + `" role="progressbar" style="width: `+ server.mem_percent + `%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>`+ server.mem_percent +`% - ` + total_mem;
+    server_mem.innerHTML = `<div class="progress mb-1" data-toggle="tooltip" data-placement="top" title="` + server_mem + `"><div class="progress-bar ` + mem_status + `" role="progressbar" style="width: ` + server.mem_percent + `%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>` + server.mem_percent + `% - ` + total_mem;
 
     /* Update World Infos */
     server_world.innerHTML = server.world_size
@@ -412,7 +425,7 @@
         let servers = document.getElementsByClassName("server-player-totals");
         let all_total_players = 0;
         let all_total_max_players = 0;
-        for(let i = 0; i < servers.length; i++) {
+        for (let i = 0; i < servers.length; i++) {
           try {
             all_total_players += parseInt(servers[i].getAttribute('data-players'));
             all_total_max_players += parseInt(servers[i].getAttribute('data-max'));
@@ -459,17 +472,17 @@
 
   function update_servers_status(data) {
     try {
-    update_one_server_status(data[0]);
+      update_one_server_status(data[0]);
     } catch (e) {
-      console.log ('Failed to update server stats', e)
+      console.log('Failed to update server stats', e)
     }
     display_motd();
   }
 
-  $(document).ready(function() {
+  $(document).ready(function () {
     console.log('ready for JS!')
 
-    $(".play_button").click(function() {
+    $(".play_button").click(function () {
       server_id = $(this).attr("data-id");
       send_command(server_id, 'start_server');
       bootbox.alert({
@@ -479,7 +492,7 @@
       });
     });
 
-    $(".stop_button").click(function() {
+    $(".stop_button").click(function () {
       console.log("stopping server");
       server_id = $(this).attr("data-id");
       send_command(server_id, 'stop_server');
@@ -490,7 +503,7 @@
       });
     });
 
-    $(".restart_button").click(function() {
+    $(".restart_button").click(function () {
       server_id = $(this).attr("data-id");
       send_command(server_id, 'restart_server');
       bootbox.alert({
@@ -499,7 +512,7 @@
         message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientRestart", data["lang"]) %} </div>'
       });
     });
-    $(".kill_button").click(function() {
+    $(".kill_button").click(function () {
       server_id = $(this).attr("data-id");
       bootbox.confirm({
         message: "This will kill the server process and all it's subprocesses. Killing a process can potentially corrupt files. Only do this in extreme circumstances. Are you sure you would like to continue?",
@@ -513,7 +526,7 @@
             className: 'btn-secondary'
           }
         },
-        callback: function(result) {
+        callback: function (result) {
           if (result) {
             send_kill(server_id);
             let dialog = bootbox.dialog({
@@ -521,8 +534,8 @@
               message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>'
             });
 
-            dialog.init(function() {
-              setTimeout(function() {
+            dialog.init(function () {
+              setTimeout(function () {
                 location.reload();
               }, 15000);
             });
@@ -537,7 +550,7 @@
       mem_percent = document.getElementById('mem_percent');
 
 
-      webSocket.on('update_host_stats', function(hostStats) {
+      webSocket.on('update_host_stats', function (hostStats) {
         let cpuDataTitle = `{% raw translate('dashboard', 'cpuCores', data['lang']) %}: ${hostStats.cpu_cores} <br /> {% raw translate("dashboard", "cpuCurFreq", data['lang']) %}: ${hostStats.cpu_cur_freq} <br /> {% raw translate("dashboard", "cpuMaxFreq", data['lang']) %}: ${hostStats.cpu_max_freq}`;
         cpu_data.setAttribute('data-original-title', cpuDataTitle);
         cpu_usage.textContent = hostStats.cpu_usage;
@@ -547,13 +560,13 @@
     }
 
     if (webSocket) {
-      webSocket.on('send_start_reload', function() {
+      webSocket.on('send_start_reload', function () {
         location.reload()
       });
     }
 
     if (webSocket) {
-      webSocket.on('update_button_status', function(updateButton) {
+      webSocket.on('update_button_status', function (updateButton) {
         let serverId = updateButton.server_id;
         let message = updateButton.string;
         let updating = updateButton.isUpdating;
@@ -572,7 +585,7 @@
       webSocket.on('update_server_status', update_servers_status);
     }
 
-    $(".clone_button").click(function() {
+    $(".clone_button").click(function () {
       server_id = $(this).attr("data-id");
       send_command(server_id, 'clone_server');
       bootbox.alert({
@@ -589,21 +602,25 @@
 <link rel="stylesheet" href="/static/assets/css/jquery-ui.structure.css">
 <style>
   @media only screen and (max-width: 760px) {
-    #mobile { display: none; }
+    #mobile {
+      display: none;
+    }
   }
+
   .ui-sortable-handle {
     cursor: default;
-    padding:2px;
+    padding: 2px;
   }
+
   .ui-sortable-handle:hover {
     cursor: grab !important;
-    padding:2px;
+    padding: 2px;
   }
 </style>
 <script>
 
   /* Search Bar */
-  $(document).ready(function() {
+  $(document).ready(function () {
     let servers_table = $('#servers_table').DataTable({
       "ordering": false, // false to disable sorting (or any other option)
       "paging": false
@@ -613,9 +630,9 @@
   });
   /* Search Bar End */
 
-  $(document).on("mousedown keyup click", function(event) {
+  $(document).on("mousedown keyup click", function (event) {
     const value = $('.dataTables_filter input').val();
-    const is_mobile = $('#mobile').css('display')=='none';
+    const is_mobile = $('#mobile').css('display') == 'none';
 
     if ($("table#servers_table tbody").sortable("toArray").length > 1 && value === '' && !is_mobile) {
       $("table#servers_table tbody").sortable("enable");
@@ -624,60 +641,60 @@
     }
   });
 
-$(document).ready(function() {
-  function sendOrder(id_string) {
-    const token = getCookie("_xsrf")
+  $(document).ready(function () {
+    function sendOrder(id_string) {
+      const token = getCookie("_xsrf")
 
-    $.ajax({
-      type: "POST",
-      headers: {'X-XSRFToken': token},
-      url: '/ajax/send_order?order='+id_string,
-      data: {
-        order: id_string,
-      },
-      success: function(data) {
-        console.log("got response:");
-        console.log(data);
-      },
-    });
-  }
+      $.ajax({
+        type: "POST",
+        headers: { 'X-XSRFToken': token },
+        url: '/ajax/send_order?order=' + id_string,
+        data: {
+          order: id_string,
+        },
+        success: function (data) {
+          console.log("got response:");
+          console.log(data);
+        },
+      });
+    }
 
-  // Inits the sortable
-  $("table#servers_table tbody")
-    .sortable({
-      items: '> tr',
-      cursor: "grabbing",
-      axis: "y",
-      revert: true,
-      handle:"i.fas.fa-server,a",
-      forcePlaceholderSize: true,
-      placeholder:'table-placeholder',
-      deactivate: function(event, ui) {
-        // Gets the list of ids in the server list as an array,
-        // and joins the elements with an [,] and sends to the server.
-        const ids = $("table#servers_table tbody").sortable("toArray").join();
-        try {
-          sendOrder(ids);
-        } catch {
-          console.log("Search is actively supressing order change")
-        }
-      },
-  });
+    // Inits the sortable
+    $("table#servers_table tbody")
+      .sortable({
+        items: '> tr',
+        cursor: "grabbing",
+        axis: "y",
+        revert: true,
+        handle: "i.fas.fa-server,a",
+        forcePlaceholderSize: true,
+        placeholder: 'table-placeholder',
+        deactivate: function (event, ui) {
+          // Gets the list of ids in the server list as an array,
+          // and joins the elements with an [,] and sends to the server.
+          const ids = $("table#servers_table tbody").sortable("toArray").join();
+          try {
+            sendOrder(ids);
+          } catch {
+            console.log("Search is actively supressing order change")
+          }
+        },
+      });
 
-  // Give the table an actual width so the draggable does't collapse when dragged
-  $("table#servers_table")
+    // Give the table an actual width so the draggable does't collapse when dragged
+    $("table#servers_table")
       .children()
       .find("td")
       .each(function () {
         $(this).css("width", "").css("width", $(this).outerWidth());
-  });
+      });
 
-  // Fixes the appearance of a scrollbar when a user tries to drag an item too low
-  // Disabled on mobile since sorting is disabled on mobile
-  if($('#mobile').css('display') != 'none'){
-    $("div#servers_table_wrapper").css({ overflow: "hidden" });
-  }
-});
+    // Fixes the appearance of a scrollbar when a user tries to drag an item too low
+    // Disabled on mobile since sorting is disabled on mobile
+    if ($('#mobile').css('display') != 'none') {
+      $("div#servers_table_wrapper").css({ overflow: "hidden" });
+    }
+  });
 
 </script>
 

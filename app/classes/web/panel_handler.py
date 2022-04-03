@@ -769,6 +769,7 @@ class PanelHandler(BaseHandler):
             page_data["user"]["last_ip"] = "N/A"
             page_data["user"]["last_update"] = "N/A"
             page_data["user"]["roles"] = set()
+            page_data["user"]["hints"] = True
 
             if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
                 self.redirect(
@@ -1734,6 +1735,11 @@ class PanelHandler(BaseHandler):
             password1 = bleach.clean(self.get_argument("password1", None))
             email = bleach.clean(self.get_argument("email", "default@example.com"))
             enabled = int(float(self.get_argument("enabled", "0")))
+            try:
+                hints = int(bleach.clean(self.get_argument("hints")))
+                hints = True
+            except:
+                hints = False
             lang = bleach.clean(
                 self.get_argument("language"), helper.get_setting("language")
             )
@@ -1765,6 +1771,7 @@ class PanelHandler(BaseHandler):
                     "password": password0,
                     "email": email,
                     "lang": lang,
+                    "hints": hints,
                 }
                 self.controller.users.update_user(user_id, user_data=user_data)
 
@@ -1806,6 +1813,7 @@ class PanelHandler(BaseHandler):
                 "roles": roles,
                 "lang": lang,
                 "superuser": superuser,
+                "hints": hints,
             }
             user_crafty_data = {
                 "permissions_mask": permissions_mask,
@@ -1901,6 +1909,7 @@ class PanelHandler(BaseHandler):
             password1 = bleach.clean(self.get_argument("password1", None))
             email = bleach.clean(self.get_argument("email", "default@example.com"))
             enabled = int(float(self.get_argument("enabled", "0")))
+            hints = True
             lang = bleach.clean(
                 self.get_argument("lang", helper.get_setting("language"))
             )
@@ -1942,10 +1951,7 @@ class PanelHandler(BaseHandler):
                 enabled=enabled,
                 superuser=new_superuser,
             )
-            user_data = {
-                "roles": roles,
-                "lang": lang,
-            }
+            user_data = {"roles": roles, "lang": lang, "hints": True}
             user_crafty_data = {
                 "permissions_mask": permissions_mask,
                 "server_quantity": server_quantity,
