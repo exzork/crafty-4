@@ -230,7 +230,7 @@
               <h3 id="file_warn"></h3>
               <button class="btn btn-success" onclick="save()"><i class="fas fa-save"></i> {{ translate('serverFiles',
                 'save', data['lang']) }}</button>
-              <span style="color: white;" id="save_status"></span>
+              <span style="color: #2fb689; margin-left: 10px;" id="save_status"></span>
             </div>
           </div>
 
@@ -503,18 +503,22 @@
   editor.on('change', function (event) {
     if (!event.ctrlKey && !event.shiftKey) {
       if (file_loaded) {
-        document.getElementById('save_status').innerHTML = '';
+        document.getElementById('save_status').innerHTML = '<i class="fal fa-file"></i>';
+        document.getElementById('save_status').style.color = 'gray';
       } else {
-        document.getElementById('save_status').innerHTML = '<i class="fal fa-check-circle"></i>';
+        document.getElementById('save_status').innerHTML = '<i class="fal fa-file-check"></i>';
+        document.getElementById('save_status').style.color = '#2fb689';
       }
     }
   });
   editor.on('undo', function (event) {
-    document.getElementById('save_status').innerHTML = '';
+    document.getElementById('save_status').innerHTML = '<i class="fal fa-file-xmark"></i>';
+    document.getElementById('save_status').style.color = 'gray';
 
   });
   editor.on('redo', function (event) {
-    document.getElementById('save_status').innerHTML = '';
+    document.getElementById('save_status').innerHTML = '<i class="fal fa-file-xmark"></i>';
+    document.getElementById('save_status').style.color = 'gray';
 
   });
 
@@ -573,7 +577,8 @@
       },
       success: function (data) {
         console.log("got response:");
-        document.getElementById("save_status").innerHTML = '<i class="fal fa-check-circle"></i>';
+        document.getElementById("save_status").innerHTML = '<i class="fal fa-file-check"></i>';
+        document.getElementById('save_status').style.color = '#2fb689';
         console.log(data);
       },
     });
