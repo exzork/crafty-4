@@ -49,6 +49,7 @@ class Users(Model):
     valid_tokens_from = DateTimeField(default=datetime.datetime.now)
     server_order = CharField(default="")
     preparing = BooleanField(default=False)
+    hints = BooleanField(default=True)
 
     class Meta:
         table_name = "users"

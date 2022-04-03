@@ -72,6 +72,7 @@ class Users_Controller:
                 up_data[key] = user_data[key]
         up_data["last_update"] = helper.get_time_as_string()
         up_data["lang"] = user_data["lang"]
+        up_data["hints"] = user_data["hints"]
         logger.debug(f"user: {user_data} +role:{added_roles} -role:{removed_roles}")
         for role in added_roles:
             users_helper.get_or_create(user_id=user_id, role_id=role)

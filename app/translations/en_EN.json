@@ -517,7 +517,7 @@
         "notExist": "You cannot delete something that doesn't exist!",
         "pageTitle": "Edit User",
         "pageTitleNew": "Create User",
-        "password": "Password",
+        "password": "New Password",
         "permName": "Permission Name",
         "repeat": "Repeat Password",
         "roleName": "Role Name",
