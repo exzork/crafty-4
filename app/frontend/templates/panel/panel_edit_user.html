@@ -316,7 +316,7 @@
       },
       callback: function (result) {
         console.log(result);
-        if (result == true) {
+        if (result === true) {
           location.href = "/panel/remove_user?id=" + userId;
         }
       }
@@ -338,7 +338,7 @@
           }
         },
         callback: function (result) {
-          if (result == true) {
+          if (result === true) {
             return;
           } else {
             document.getElementById('superuser').checked = false;
