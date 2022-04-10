@@ -2,7 +2,7 @@ import logging
 
 from app.classes.shared.helpers import helper
 from app.classes.shared.permission_helper import permission_helper
-from app.classes.models.users import Users, ApiKeys
+from app.classes.models.users import Users, ApiKeys, users_helper
 
 try:
     from peewee import (
@@ -213,13 +213,16 @@ class Permissions_Crafty:
 
     @staticmethod
     def get_api_key_permissions_list(key: ApiKeys):
-        user = key.user
-        if user.superuser and key.superuser:
+        user = users_helper.get_user(key.user_id)
+        if user["superuser"] and key.superuser:
             return crafty_permissions.get_permissions_list()
         else:
-            user_permissions_mask = crafty_permissions.get_crafty_permissions_mask(
-                user.user_id
-            )
+            if user["superuser"]:
+                user_permissions_mask = "111"
+            else:
+                user_permissions_mask = crafty_permissions.get_crafty_permissions_mask(
+                    user["user_id"]
+                )
             key_permissions_mask: str = key.crafty_permissions
             permissions_mask = permission_helper.combine_masks(
                 user_permissions_mask, key_permissions_mask

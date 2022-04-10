@@ -1856,8 +1856,8 @@ class PanelHandler(BaseHandler):
                 name,
                 user_id,
                 superuser,
-                crafty_permissions_mask,
                 server_permissions_mask,
+                crafty_permissions_mask,
             )
 
             self.controller.management.add_to_audit_log(
@@ -1886,13 +1886,13 @@ class PanelHandler(BaseHandler):
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
                 f"Generated a new API token for the key {key.name} "
-                f"from user with UID: {key.user.user_id}",
+                f"from user with UID: {key.user_id}",
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )
 
             self.write(
-                authentication.generate(key.user.user_id, {"token_id": key.token_id})
+                authentication.generate(key.user_id.user_id, {"token_id": key.token_id})
             )
             self.finish()
 

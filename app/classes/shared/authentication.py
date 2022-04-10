@@ -22,16 +22,18 @@ class Authentication:
 
         if self.secret is None or self.secret == "random":
             self.secret = helper.random_string_generator(64)
+            helper.set_setting("apikey_secret", self.secret)
 
     @staticmethod
     def generate(user_id, extra=None):
         if extra is None:
             extra = {}
-        return jwt.encode(
+        jwt_encoded = jwt.encode(
             {"user_id": user_id, "iat": int(time.time()), **extra},
             authentication.secret,
             algorithm="HS256",
         )
+        return jwt_encoded
 
     @staticmethod
     def read(token):
