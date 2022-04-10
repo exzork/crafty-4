@@ -10,8 +10,7 @@ Users = Users
 
 try:
     # pylint: disable=unused-import
-    from peewee import fn
-    from playhouse.sqliteq import SqliteQueueDatabase
+    from peewee import SqliteDatabase, fn
     from playhouse.shortcuts import model_to_dict
 
 except ModuleNotFoundError as err:
@@ -20,7 +19,7 @@ except ModuleNotFoundError as err:
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
-database = SqliteQueueDatabase(
+database = SqliteDatabase(
     helper.db_path
     # This is commented out after presenting issues when
     # moving from SQLiteDatabase to SqliteQueueDatabase

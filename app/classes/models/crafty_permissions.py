@@ -6,6 +6,7 @@ from app.classes.models.users import Users, ApiKeys, users_helper
 
 try:
     from peewee import (
+        SqliteDatabase,
         Model,
         ForeignKeyField,
         CharField,
@@ -13,7 +14,6 @@ try:
         DoesNotExist,
     )
     from enum import Enum
-    from playhouse.sqliteq import SqliteQueueDatabase
 
 except ModuleNotFoundError as e:
     helper.auto_installer_fix(e)
@@ -21,9 +21,8 @@ except ModuleNotFoundError as e:
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
-database = SqliteQueueDatabase(
-    helper.db_path
-    # pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+database = SqliteDatabase(
+    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
 )
 
 

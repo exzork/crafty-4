@@ -7,6 +7,7 @@ from app.classes.shared.helpers import helper
 
 try:
     from peewee import (
+        SqliteDatabase,
         Model,
         ForeignKeyField,
         CharField,
@@ -18,7 +19,6 @@ try:
         JOIN,
     )
     from playhouse.shortcuts import model_to_dict
-    from playhouse.sqliteq import SqliteQueueDatabase
 
 except ModuleNotFoundError as e:
     helper.auto_installer_fix(e)
@@ -26,9 +26,8 @@ except ModuleNotFoundError as e:
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
-database = SqliteQueueDatabase(
-    helper.db_path
-    # pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+database = SqliteDatabase(
+    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
 )
 
 # **********************************************************************************
@@ -233,9 +232,10 @@ class helper_users:
 
     @staticmethod
     def remove_user(user_id):
-        User_Roles.delete().where(User_Roles.user_id == user_id).execute()
-        user = Users.get(Users.user_id == user_id)
-        return user.delete_instance()
+        with database.atomic():
+            User_Roles.delete().where(User_Roles.user_id == user_id).execute()
+            user = Users.get(Users.user_id == user_id)
+            return user.delete_instance()
 
     @staticmethod
     def set_support_path(user_id, support_path):
