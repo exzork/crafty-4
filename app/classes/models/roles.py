@@ -5,7 +5,6 @@ from app.classes.shared.helpers import helper
 
 try:
     from peewee import (
-        SqliteDatabase,
         Model,
         CharField,
         DoesNotExist,
@@ -13,6 +12,7 @@ try:
         DateTimeField,
     )
     from playhouse.shortcuts import model_to_dict
+    from playhouse.sqliteq import SqliteQueueDatabase
 
 except ModuleNotFoundError as e:
     helper.auto_installer_fix(e)
@@ -20,8 +20,9 @@ except ModuleNotFoundError as e:
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
-database = SqliteDatabase(
-    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+database = SqliteQueueDatabase(
+    helper.db_path
+    # pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
 )
 
 # **********************************************************************************
@@ -74,9 +75,8 @@ class helper_roles:
 
     @staticmethod
     def remove_role(role_id):
-        with database.atomic():
-            role = Roles.get(Roles.role_id == role_id)
-            return role.delete_instance()
+        role = Roles.get(Roles.role_id == role_id)
+        return role.delete_instance()
 
     @staticmethod
     def role_id_exists(role_id):
