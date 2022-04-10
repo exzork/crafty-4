@@ -10,7 +10,7 @@ Users = Users
 
 try:
     # pylint: disable=unused-import
-    from peewee import SqliteDatabase, fn
+    from peewee import SqliteDatabase
     from playhouse.shortcuts import model_to_dict
 
 except ModuleNotFoundError as err:
@@ -20,11 +20,8 @@ logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
 database = SqliteDatabase(
-    helper.db_path
-    # This is commented out after presenting issues when
-    # moving from SQLiteDatabase to SqliteQueueDatabase
-    # //TODO Enable tuning
-    # pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+    helper.db_path,
+    pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
 )
 
 

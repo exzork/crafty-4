@@ -1,9 +1,8 @@
 import logging
 
-from app.classes.models.users import Users
+from app.classes.models.users import helper_users
 from app.classes.shared.authentication import authentication
 from app.classes.shared.helpers import helper
-from app.classes.shared.main_models import fn
 from app.classes.web.base_handler import BaseHandler
 
 try:
@@ -107,9 +106,8 @@ class PublicHandler(BaseHandler):
             entered_password = bleach.clean(self.get_argument("password"))
 
             # pylint: disable=no-member
-            user_data = Users.get_or_none(
-                fn.Lower(Users.username) == entered_username.lower()
-            )
+            user_id = helper_users.get_user_id_by_name(entered_username.lower())
+            user_data = helper_users.get_user_model(user_id)
 
             # if we don't have a user
             if not user_data:
@@ -152,14 +150,9 @@ class PublicHandler(BaseHandler):
                 )
 
                 # record this login
-                q = (
-                    Users.select()
-                    .where(Users.username == entered_username.lower())
-                    .get()
-                )
-                q.last_ip = self.get_remote_ip()
-                q.last_login = helper.get_time_as_string()
-                q.save()
+                user_data.last_ip = self.get_remote_ip()
+                user_data.last_login = helper.get_time_as_string()
+                user_data.save()
 
                 # log this login
                 self.controller.management.add_to_audit_log(
