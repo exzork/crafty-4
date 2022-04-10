@@ -23,7 +23,7 @@ peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
 database = SqliteQueueDatabase(
     helper.db_path
-    #pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+    # pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
 )
 
 

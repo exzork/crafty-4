@@ -195,9 +195,7 @@ class Permissions_Servers:
     @staticmethod
     def remove_roles_of_server(server_id):
         return (
-            Role_Servers.delete()
-            .where(Role_Servers.server_id == server_id)
-            .execute()
+            Role_Servers.delete().where(Role_Servers.server_id == server_id).execute()
         )
 
     @staticmethod
