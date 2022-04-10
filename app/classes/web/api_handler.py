@@ -95,9 +95,15 @@ class ServersStats(ApiHandler):
     def get(self):
         """Get details about all servers"""
         authenticated = self.authenticate_user()
+        user_obj = self.controller.users.get_user_by_api_token(self.api_token)
         if not authenticated:
             return
-        raw_stats = self.controller.servers.get_all_servers_stats()
+        if user_obj["superuser"]:
+            raw_stats = self.controller.servers.get_all_servers_stats()
+        else:
+            raw_stats = self.controller.servers.get_authorized_servers_stats(
+                user_obj["user_id"]
+            )
         stats = []
         for rs in raw_stats:
             s = {}
