@@ -8,6 +8,7 @@ from app.classes.shared.permission_helper import permission_helper
 
 try:
     from peewee import (
+        SqliteDatabase,
         Model,
         ForeignKeyField,
         CharField,
@@ -15,7 +16,6 @@ try:
         JOIN,
     )
     from enum import Enum
-    from playhouse.sqliteq import SqliteQueueDatabase
 
 except ModuleNotFoundError as e:
     helper.auto_installer_fix(e)
@@ -23,9 +23,8 @@ except ModuleNotFoundError as e:
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
-database = SqliteQueueDatabase(
-    helper.db_path
-    # pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+database = SqliteDatabase(
+    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
 )
 
 # **********************************************************************************
@@ -194,9 +193,12 @@ class Permissions_Servers:
 
     @staticmethod
     def remove_roles_of_server(server_id):
-        return (
-            Role_Servers.delete().where(Role_Servers.server_id == server_id).execute()
-        )
+        with database.atomic():
+            return (
+                Role_Servers.delete()
+                .where(Role_Servers.server_id == server_id)
+                .execute()
+            )
 
     @staticmethod
     def get_user_id_permissions_mask(user_id, server_id: str):

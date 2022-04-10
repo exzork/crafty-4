@@ -10,6 +10,7 @@ from app.classes.web.websocket_helper import websocket_helper
 
 try:
     from peewee import (
+        SqliteDatabase,
         Model,
         ForeignKeyField,
         CharField,
@@ -21,7 +22,6 @@ try:
         BooleanField,
     )
     from playhouse.shortcuts import model_to_dict
-    from playhouse.sqliteq import SqliteQueueDatabase
 
 except ModuleNotFoundError as e:
     helper.auto_installer_fix(e)
@@ -29,9 +29,8 @@ except ModuleNotFoundError as e:
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
-database = SqliteQueueDatabase(
-    helper.db_path
-    # pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+database = SqliteDatabase(
+    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
 )
 
 # **********************************************************************************
@@ -382,24 +381,28 @@ class helpers_management:
             conf["excluded_dirs"] = dirs_to_exclude
         conf["compress"] = compress
         if not new_row:
-            if backup_path is not None:
-                u1 = (
-                    Servers.update(backup_path=backup_path)
-                    .where(Servers.server_id == server_id)
-                    .execute()
+            with database.atomic():
+                if backup_path is not None:
+                    u1 = (
+                        Servers.update(backup_path=backup_path)
+                        .where(Servers.server_id == server_id)
+                        .execute()
+                    )
+                else:
+                    u1 = 0
+                u2 = (
+                    Backups.update(conf).where(Backups.server_id == server_id).execute()
                 )
-            else:
-                u1 = 0
-            u2 = Backups.update(conf).where(Backups.server_id == server_id).execute()
             logger.debug(f"Updating existing backup record.  {u1}+{u2} rows affected")
         else:
-            conf["server_id"] = server_id
-            if backup_path is not None:
-                Servers.update(backup_path=backup_path).where(
-                    Servers.server_id == server_id
-                )
-            Backups.create(**conf)
-        logger.debug("Creating new backup record.")
+            with database.atomic():
+                conf["server_id"] = server_id
+                if backup_path is not None:
+                    Servers.update(backup_path=backup_path).where(
+                        Servers.server_id == server_id
+                    )
+                Backups.create(**conf)
+            logger.debug("Creating new backup record.")
 
     def get_excluded_backup_dirs(self, server_id: int):
         excluded_dirs = self.get_backup_config(server_id)["excluded_dirs"]
