@@ -1758,70 +1758,73 @@ class PanelHandler(BaseHandler):
                 superuser = True
             else:
                 superuser = False
+            if not exec_user["superuser"]:
+                if (
+                    Enum_Permissions_Crafty.User_Config
+                    not in exec_user_crafty_permissions
+                ):
+                    if str(user_id) != str(exec_user["user_id"]):
+                        self.redirect(
+                            "/panel/error?error=Unauthorized access: not a user editor"
+                        )
+                        return
 
-            if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
-                if str(user_id) != str(exec_user["user_id"]):
-                    self.redirect(
-                        "/panel/error?error=Unauthorized access: not a user editor"
+                    user_data = {
+                        "username": username,
+                        "password": password0,
+                        "email": email,
+                        "lang": lang,
+                        "hints": hints,
+                    }
+                    self.controller.users.update_user(user_id, user_data=user_data)
+
+                    self.controller.management.add_to_audit_log(
+                        exec_user["user_id"],
+                        f"Edited user {username} (UID:{user_id}) password",
+                        server_id=0,
+                        source_ip=self.get_remote_ip(),
                     )
+                    self.redirect("/panel/panel_config")
                     return
+                elif username is None or username == "":
+                    self.redirect("/panel/error?error=Invalid username")
+                    return
+                elif user_id is None:
+                    self.redirect("/panel/error?error=Invalid User ID")
+                    return
+                else:
+                    # does this user id exist?
+                    if not self.controller.users.user_id_exists(user_id):
+                        self.redirect("/panel/error?error=Invalid User ID")
+                        return
+            else:
+                if password0 != password1:
+                    self.redirect("/panel/error?error=Passwords must match")
+                    return
+
+                roles = self.get_user_role_memberships()
+                permissions_mask, server_quantity = self.get_perms_quantity()
+
+                # if email is None or "":
+                #     email = "default@example.com"
 
                 user_data = {
                     "username": username,
                     "password": password0,
                     "email": email,
+                    "enabled": enabled,
+                    "roles": roles,
                     "lang": lang,
+                    "superuser": superuser,
                     "hints": hints,
                 }
-                self.controller.users.update_user(user_id, user_data=user_data)
-
-                self.controller.management.add_to_audit_log(
-                    exec_user["user_id"],
-                    f"Edited user {username} (UID:{user_id}) password",
-                    server_id=0,
-                    source_ip=self.get_remote_ip(),
+                user_crafty_data = {
+                    "permissions_mask": permissions_mask,
+                    "server_quantity": server_quantity,
+                }
+                self.controller.users.update_user(
+                    user_id, user_data=user_data, user_crafty_data=user_crafty_data
                 )
-                self.redirect("/panel/panel_config")
-                return
-            elif username is None or username == "":
-                self.redirect("/panel/error?error=Invalid username")
-                return
-            elif user_id is None:
-                self.redirect("/panel/error?error=Invalid User ID")
-                return
-            else:
-                # does this user id exist?
-                if not self.controller.users.user_id_exists(user_id):
-                    self.redirect("/panel/error?error=Invalid User ID")
-                    return
-
-            if password0 != password1:
-                self.redirect("/panel/error?error=Passwords must match")
-                return
-
-            roles = self.get_user_role_memberships()
-            permissions_mask, server_quantity = self.get_perms_quantity()
-
-            # if email is None or "":
-            #     email = "default@example.com"
-
-            user_data = {
-                "username": username,
-                "password": password0,
-                "email": email,
-                "enabled": enabled,
-                "roles": roles,
-                "lang": lang,
-                "superuser": superuser,
-                "hints": hints,
-            }
-            user_crafty_data = {
-                "permissions_mask": permissions_mask,
-                "server_quantity": server_quantity,
-            }
-            self.controller.users.update_user(
-                user_id, user_data=user_data, user_crafty_data=user_crafty_data
-            )
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],

@@ -76,31 +76,31 @@ class Users_Controller:
         logger.debug(f"user: {user_data} +role:{added_roles} -role:{removed_roles}")
         for role in added_roles:
             users_helper.get_or_create(user_id=user_id, role_id=role)
-            permissions_mask = user_crafty_data.get("permissions_mask", "000")
+        permissions_mask = user_crafty_data.get("permissions_mask", "000")
 
-            if "server_quantity" in user_crafty_data:
-                limit_server_creation = user_crafty_data["server_quantity"][
-                    Enum_Permissions_Crafty.Server_Creation.name
-                ]
+        if "server_quantity" in user_crafty_data:
+            limit_server_creation = user_crafty_data["server_quantity"][
+                Enum_Permissions_Crafty.Server_Creation.name
+            ]
 
-                limit_user_creation = user_crafty_data["server_quantity"][
-                    Enum_Permissions_Crafty.User_Config.name
-                ]
-                limit_role_creation = user_crafty_data["server_quantity"][
-                    Enum_Permissions_Crafty.Roles_Config.name
-                ]
-            else:
-                limit_server_creation = 0
-                limit_user_creation = 0
-                limit_role_creation = 0
+            limit_user_creation = user_crafty_data["server_quantity"][
+                Enum_Permissions_Crafty.User_Config.name
+            ]
+            limit_role_creation = user_crafty_data["server_quantity"][
+                Enum_Permissions_Crafty.Roles_Config.name
+            ]
+        else:
+            limit_server_creation = 0
+            limit_user_creation = 0
+            limit_role_creation = 0
 
-            crafty_permissions.add_or_update_user(
-                user_id,
-                permissions_mask,
-                limit_server_creation,
-                limit_user_creation,
-                limit_role_creation,
-            )
+        crafty_permissions.add_or_update_user(
+            user_id,
+            permissions_mask,
+            limit_server_creation,
+            limit_user_creation,
+            limit_role_creation,
+        )
 
         users_helper.delete_user_roles(user_id, removed_roles)
 
