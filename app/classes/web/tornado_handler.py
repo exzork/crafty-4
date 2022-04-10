@@ -13,7 +13,18 @@ from app.classes.web.panel_handler import PanelHandler
 from app.classes.web.default_handler import DefaultHandler
 from app.classes.web.server_handler import ServerHandler
 from app.classes.web.ajax_handler import AjaxHandler
-from app.classes.web.api_handler import ServersStats, NodeStats
+from app.classes.web.api_handler import (
+    ServersStats,
+    NodeStats,
+    ServerBackup,
+    StartServer,
+    StopServer,
+    RestartServer,
+    CreateUser,
+    DeleteUser,
+    ListServers,
+    SendCommand,
+)
 from app.classes.web.websocket_handler import SocketHandler
 from app.classes.web.static_handler import CustomStaticHandler
 from app.classes.web.upload_handler import UploadHandler
@@ -139,11 +150,20 @@ class Webserver:
             (r"/server/(.*)", ServerHandler, handler_args),
             (r"/ajax/(.*)", AjaxHandler, handler_args),
             (r"/files/(.*)", FileHandler, handler_args),
-            (r"/api/stats/servers", ServersStats, handler_args),
-            (r"/api/stats/node", NodeStats, handler_args),
             (r"/ws", SocketHandler, handler_args),
             (r"/upload", UploadHandler, handler_args),
             (r"/status", StatusHandler, handler_args),
+            # API Routes
+            (r"/api/v1/stats/servers", ServersStats, handler_args),
+            (r"/api/v1/stats/node", NodeStats, handler_args),
+            (r"/api/v1/server/send_command", SendCommand, handler_args),
+            (r"/api/v1/server/backup", ServerBackup, handler_args),
+            (r"/api/v1/server/start", StartServer, handler_args),
+            (r"/api/v1/server/stop", StopServer, handler_args),
+            (r"/api/v1/server/restart", RestartServer, handler_args),
+            (r"/api/v1/list_servers", ListServers, handler_args),
+            (r"/api/v1/users/create_user", CreateUser, handler_args),
+            (r"/api/v1/users/delete_user", DeleteUser, handler_args),
         ]
 
         app = tornado.web.Application(

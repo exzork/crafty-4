@@ -206,6 +206,31 @@ class Helpers:
 
         return default_return
 
+    def set_setting(self, key, new_value, default_return=False):
+
+        try:
+            with open(self.settings_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            if key in data.keys():
+                data[key] = new_value
+
+            else:
+                logger.error(f"Config File Error: setting {key} does not exist")
+                console.error(f"Config File Error: setting {key} does not exist")
+                return default_return
+
+            with open(self.settings_file, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=1)
+
+        except Exception as e:
+            logger.critical(
+                f"Config File Error: Unable to read {self.settings_file} due to {e}"
+            )
+            console.critical(
+                f"Config File Error: Unable to read {self.settings_file} due to {e}"
+            )
+
     def get_local_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:

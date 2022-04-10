@@ -161,8 +161,13 @@ class Users_Controller:
 
     @staticmethod
     def get_user_by_api_token(token: str):
-        _, user = authentication.check(token)
+        _, _, user = authentication.check(token)
         return user
+
+    @staticmethod
+    def get_api_key_by_token(token: str):
+        key, _, _ = authentication.check(token)
+        return key
 
     # **********************************************************************************
     #                                   User Roles Methods
