@@ -6,7 +6,6 @@ from app.classes.shared.main_models import db_helper
 
 try:
     from peewee import (
-        SqliteDatabase,
         Model,
         ForeignKeyField,
         CharField,
@@ -16,6 +15,7 @@ try:
         IntegerField,
         FloatField,
     )
+    from playhouse.sqliteq import SqliteQueueDatabase
 
 except ModuleNotFoundError as e:
     helper.auto_installer_fix(e)
@@ -23,8 +23,9 @@ except ModuleNotFoundError as e:
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
-database = SqliteDatabase(
-    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+database = SqliteQueueDatabase(
+    helper.db_path
+    # pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
 )
 
 # **********************************************************************************
@@ -141,8 +142,7 @@ class helper_servers:
 
     @staticmethod
     def remove_server(server_id):
-        with database.atomic():
-            Servers.delete().where(Servers.server_id == server_id).execute()
+        Servers.delete().where(Servers.server_id == server_id).execute()
 
     @staticmethod
     def get_server_data_by_id(server_id):
@@ -224,24 +224,21 @@ class helper_servers:
 
     @staticmethod
     def sever_crashed(server_id):
-        with database.atomic():
-            Server_Stats.update(crashed=True).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(crashed=True).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def set_download(server_id):
-        with database.atomic():
-            Server_Stats.update(downloading=True).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(downloading=True).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def finish_download(server_id):
-        with database.atomic():
-            Server_Stats.update(downloading=False).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(downloading=False).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def get_download_status(server_id):
@@ -252,10 +249,9 @@ class helper_servers:
 
     @staticmethod
     def server_crash_reset(server_id):
-        with database.atomic():
-            Server_Stats.update(crashed=False).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(crashed=False).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def is_crashed(server_id):
@@ -272,10 +268,9 @@ class helper_servers:
             Server_Stats.select().where(Server_Stats.server_id == server_id)
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
-        with database.atomic():
-            Server_Stats.update(updating=value).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(updating=value).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def get_update_status(server_id):
@@ -293,10 +288,9 @@ class helper_servers:
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
             return
-        with database.atomic():
-            Server_Stats.update(first_run=False).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(first_run=False).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def get_first_run(server_id):
@@ -337,10 +331,9 @@ class helper_servers:
             Server_Stats.select().where(Server_Stats.server_id == server_id)
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
-        with database.atomic():
-            Server_Stats.update(waiting_start=value).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(waiting_start=value).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def get_waiting_start(server_id):
