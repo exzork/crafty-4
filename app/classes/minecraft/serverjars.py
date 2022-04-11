@@ -3,8 +3,8 @@ import threading
 import time
 import shutil
 import logging
-import requests
 from datetime import datetime
+import requests
 
 from app.classes.controllers.servers_controller import Servers_Controller
 from app.classes.models.server_permissions import Permissions_Servers
