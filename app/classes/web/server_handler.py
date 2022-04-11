@@ -1,22 +1,16 @@
 import json
 import logging
 import os
+import tornado.web
+import tornado.escape
+import bleach
+import libgravatar
+import requests
 
-from app.classes.minecraft.serverjars import server_jar_obj
 from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
-from app.classes.shared.helpers import helper
-from app.classes.shared.file_helpers import file_helper
+from app.classes.shared.helpers import Helpers
+from app.classes.shared.file_helpers import FileHelpers
 from app.classes.web.base_handler import BaseHandler
-
-try:
-    import tornado.web
-    import tornado.escape
-    import bleach
-    import libgravatar
-    import requests
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +52,7 @@ class ServerHandler(BaseHandler):
         template = "public/404.html"
 
         page_data = {
-            "version_data": helper.get_version_string(),
+            "version_data": self.helper.get_version_string(),
             "user_data": exec_user,
             "user_role": exec_user_role,
             "roles": list_roles,
@@ -78,9 +72,9 @@ class ServerHandler(BaseHandler):
             },
             "hosts_data": self.controller.management.get_latest_hosts_stats(),
             "menu_servers": defined_servers,
-            "show_contribute": helper.get_setting("show_contribute_link", True),
+            "show_contribute": self.helper.get_setting("show_contribute_link", True),
             "lang": self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
-            "lang_page": helper.getLangPage(
+            "lang_page": Helpers.getLangPage(
                 self.controller.users.get_user_lang_by_id(exec_user["user_id"])
             ),
             "api_key": {
@@ -95,7 +89,7 @@ class ServerHandler(BaseHandler):
             "superuser": superuser,
         }
 
-        if helper.get_setting("allow_nsfw_profile_pictures"):
+        if self.helper.get_setting("allow_nsfw_profile_pictures"):
             rating = "x"
         else:
             rating = "g"
@@ -134,10 +128,10 @@ class ServerHandler(BaseHandler):
                 )
                 return
 
-            page_data["online"] = helper.check_internet()
-            page_data["server_types"] = server_jar_obj.get_serverjar_data()
+            page_data["online"] = Helpers.check_internet()
+            page_data["server_types"] = self.controller.server_jars.get_serverjar_data()
             page_data["js_server_types"] = json.dumps(
-                server_jar_obj.get_serverjar_data()
+                self.controller.server_jars.get_serverjar_data()
             )
             template = "server/wizard.html"
 
@@ -171,9 +165,9 @@ class ServerHandler(BaseHandler):
         page_data = {
             "version_data": "version_data_here",  # TODO
             "user_data": exec_user,
-            "show_contribute": helper.get_setting("show_contribute_link", True),
+            "show_contribute": self.helper.get_setting("show_contribute_link", True),
             "lang": self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
-            "lang_page": helper.getLangPage(
+            "lang_page": Helpers.getLangPage(
                 self.controller.users.get_user_lang_by_id(exec_user["user_id"])
             ),
         }
@@ -204,15 +198,15 @@ class ServerHandler(BaseHandler):
                             server_data.get("server_name") + f" (Copy {name_counter})"
                         )
 
-                    new_server_uuid = helper.create_uuid()
+                    new_server_uuid = Helpers.create_uuid()
                     while os.path.exists(
-                        os.path.join(helper.servers_dir, new_server_uuid)
+                        os.path.join(self.helper.servers_dir, new_server_uuid)
                     ):
-                        new_server_uuid = helper.create_uuid()
-                    new_server_path = os.path.join(helper.servers_dir, new_server_uuid)
+                        new_server_uuid = Helpers.create_uuid()
+                    new_server_path = os.path.join(self.helper.servers_dir, new_server_uuid)
 
                     # copy the old server
-                    file_helper.copy_dir(server_data.get("path"), new_server_path)
+                    FileHelpers.copy_dir(server_data.get("path"), new_server_path)
 
                     # TODO get old server DB data to individual variables
                     stop_command = server_data.get("stop_command")
@@ -221,7 +215,7 @@ class ServerHandler(BaseHandler):
                     ).replace(server_uuid, new_server_uuid)
                     new_executable = server_data.get("executable")
                     new_server_log_file = str(
-                        helper.get_os_understandable_path(server_data.get("log_path"))
+                        Helpers.get_os_understandable_path(server_data.get("log_path"))
                     ).replace(server_uuid, new_server_uuid)
                     server_port = server_data.get("server_port")
                     server_type = server_data.get("type")
@@ -299,7 +293,7 @@ class ServerHandler(BaseHandler):
             elif import_type == "import_zip":
                 # here import_server_path means the zip path
                 zip_path = bleach.clean(self.get_argument("root_path"))
-                good_path = helper.check_path_exists(zip_path)
+                good_path = Helpers.check_path_exists(zip_path)
                 if not good_path:
                     self.redirect("/panel/error?error=Temp path not found!")
                     return
@@ -322,7 +316,7 @@ class ServerHandler(BaseHandler):
                     self.get_remote_ip(),
                 )
                 # deletes temp dir
-                file_helper.del_dirs(zip_path)
+                FileHelpers.del_dirs(zip_path)
             else:
                 if len(server_parts) != 2:
                     self.redirect("/panel/error?error=Invalid server data")
@@ -417,7 +411,7 @@ class ServerHandler(BaseHandler):
             elif import_type == "import_zip":
                 # here import_server_path means the zip path
                 zip_path = bleach.clean(self.get_argument("root_path"))
-                good_path = helper.check_path_exists(zip_path)
+                good_path = Helpers.check_path_exists(zip_path)
                 if not good_path:
                     self.redirect("/panel/error?error=Temp path not found!")
                     return
@@ -440,7 +434,7 @@ class ServerHandler(BaseHandler):
                     self.get_remote_ip(),
                 )
                 # deletes temp dir
-                file_helper.del_dirs(zip_path)
+                FileHelpers.del_dirs(zip_path)
             else:
                 if len(server_parts) != 2:
                     self.redirect("/panel/error?error=Invalid server data")

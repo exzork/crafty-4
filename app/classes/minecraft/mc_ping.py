@@ -9,13 +9,13 @@ import uuid
 import random
 
 from app.classes.minecraft.bedrock_ping import BedrockPing
-from app.classes.shared.console import console
 
 logger = logging.getLogger(__name__)
 
 
 class Server:
-    def __init__(self, data):
+    def __init__(self, console, data):
+        self.console = console
         self.description = data.get("description")
         # print(self.description)
         if isinstance(self.description, dict):
@@ -32,19 +32,19 @@ class Server:
                 if "extra" in description.keys():
                     for e in description["extra"]:
                         # Conversion format code needed only for Java Version
-                        lines.append(get_code_format("reset"))
+                        lines.append(get_code_format(self.console, "reset"))
                         if "bold" in e.keys():
-                            lines.append(get_code_format("bold"))
+                            lines.append(get_code_format(self.console, "bold"))
                         if "italic" in e.keys():
-                            lines.append(get_code_format("italic"))
+                            lines.append(get_code_format(self.console, "italic"))
                         if "underlined" in e.keys():
-                            lines.append(get_code_format("underlined"))
+                            lines.append(get_code_format(self.console, "underlined"))
                         if "strikethrough" in e.keys():
-                            lines.append(get_code_format("strikethrough"))
+                            lines.append(get_code_format(self.console, "strikethrough"))
                         if "obfuscated" in e.keys():
-                            lines.append(get_code_format("obfuscated"))
+                            lines.append(get_code_format(self.console, "obfuscated"))
                         if "color" in e.keys():
-                            lines.append(get_code_format(e["color"]))
+                            lines.append(get_code_format(self.console, e["color"]))
                         # Then append the text
                         if "text" in e.keys():
                             if e["text"] == "\n":
@@ -95,7 +95,7 @@ class Player:
         return self.name
 
 
-def get_code_format(format_name):
+def get_code_format(console, format_name):
     root_dir = os.path.abspath(os.path.curdir)
     format_file = os.path.join(root_dir, "app", "config", "motd_format.json")
     try:

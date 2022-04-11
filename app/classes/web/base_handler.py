@@ -1,20 +1,11 @@
 import logging
 from typing import Union, List, Optional, Tuple, Dict, Any
+import bleach
+import tornado.web
 
 from app.classes.models.users import ApiKeys
-from app.classes.shared.authentication import authentication
-from app.classes.shared.main_controller import Controller
-from app.classes.shared.helpers import helper
-
-try:
-    import tornado.web
-    import bleach
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
-
 
 class BaseHandler(tornado.web.RequestHandler):
 
@@ -23,8 +14,9 @@ class BaseHandler(tornado.web.RequestHandler):
 
     # noinspection PyAttributeOutsideInit
     def initialize(
-        self, controller: Controller = None, tasks_manager=None, translator=None
+        self, helper=None, controller=None, tasks_manager=None, translator=None
     ):
+        self.helper = helper
         self.controller = controller
         self.tasks_manager = tasks_manager
         self.translator = translator
@@ -42,7 +34,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(
         self,
     ) -> Optional[Tuple[Optional[ApiKeys], Dict[str, Any], Dict[str, Any]]]:
-        return authentication.check(self.get_cookie("token"))
+        return self.controller.authentication.check(self.get_cookie("token"))
 
     def autobleach(self, name, text):
         for r in self.redactables:

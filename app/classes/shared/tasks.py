@@ -4,24 +4,14 @@ import logging
 import threading
 import asyncio
 import datetime
+from tzlocal import get_localzone
+from apscheduler.events import EVENT_JOB_EXECUTED
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 
-from app.classes.controllers.users_controller import Users_Controller
-from app.classes.minecraft.serverjars import server_jar_obj
-from app.classes.models.management import management_helper
-from app.classes.models.users import users_helper
-from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
+from app.classes.models.management import helpers_management
+from app.classes.models.users import helper_users
 from app.classes.web.tornado_handler import Webserver
-from app.classes.web.websocket_helper import websocket_helper
-
-try:
-    from tzlocal import get_localzone
-    from apscheduler.events import EVENT_JOB_EXECUTED
-    from apscheduler.schedulers.background import BackgroundScheduler
-    from apscheduler.triggers.cron import CronTrigger
-
-except ModuleNotFoundError as err:
-    helper.auto_installer_fix(err)
 
 logger = logging.getLogger("apscheduler")
 scheduler_intervals = {
@@ -41,14 +31,15 @@ scheduler_intervals = {
 
 
 class TasksManager:
-    def __init__(self, controller):
+    def __init__(self, helper, controller):
+        self.helper = helper
         self.controller = controller
-        self.tornado = Webserver(controller, self)
+        self.tornado = Webserver(helper, controller, self)
 
         self.tz = get_localzone()
         self.scheduler = BackgroundScheduler(timezone=str(self.tz))
 
-        self.users_controller = Users_Controller()
+        self.users_controller = self.controller.users
 
         self.webserver_thread = threading.Thread(
             target=self.tornado.run_tornado, daemon=True, name="tornado_thread"
@@ -78,7 +69,7 @@ class TasksManager:
         return self.main_thread_exiting
 
     def reload_schedule_from_db(self):
-        jobs = management_helper.get_schedules_enabled()
+        jobs = helpers_management.get_schedules_enabled()
         logger.info("Reload from DB called. Current enabled schedules: ")
         for item in jobs:
             logger.info(f"JOB: {item}")
@@ -86,7 +77,7 @@ class TasksManager:
     def command_watcher(self):
         while True:
             # select any commands waiting to be processed
-            commands = management_helper.get_unactioned_commands()
+            commands = helpers_management.get_unactioned_commands()
             for c in commands:
                 try:
                     svr = self.controller.get_server_obj(c.server_id)
@@ -95,7 +86,7 @@ class TasksManager:
                         "Server value requested does note exist! "
                         "Purging item from waiting commands."
                     )
-                    management_helper.mark_command_complete(c.command_id)
+                    helpers_management.mark_command_complete(c.command_id)
 
                 user_id = c.user_id
                 command = c.command
@@ -116,19 +107,19 @@ class TasksManager:
                     svr.jar_update()
                 else:
                     svr.send_command(command)
-                management_helper.mark_command_complete(c.command_id)
+                helpers_management.mark_command_complete(c.command_id)
 
             time.sleep(1)
 
     def _main_graceful_exit(self):
         try:
-            os.remove(helper.session_file)
+            os.remove(self.helper.session_file)
             self.controller.stop_all_servers()
         except:
             logger.info("Caught error during shutdown", exc_info=True)
 
         logger.info("***** Crafty Shutting Down *****\n\n")
-        console.info("***** Crafty Shutting Down *****\n\n")
+        self.helper.console.info("***** Crafty Shutting Down *****\n\n")
         self.main_thread_exiting = True
 
     def start_webserver(self):
@@ -136,7 +127,7 @@ class TasksManager:
 
     def reload_webserver(self):
         self.tornado.stop_web_server()
-        console.info("Waiting 3 seconds")
+        self.helper.console.info("Waiting 3 seconds")
         time.sleep(3)
         self.webserver_thread = threading.Thread(
             target=self.tornado.run_tornado, daemon=True, name="tornado_thread"
@@ -148,20 +139,20 @@ class TasksManager:
 
     def start_scheduler(self):
         logger.info("Launching Scheduler Thread...")
-        console.info("Launching Scheduler Thread...")
+        self.helper.console.info("Launching Scheduler Thread...")
         self.schedule_thread.start()
         logger.info("Launching command thread...")
-        console.info("Launching command thread...")
+        self.helper.console.info("Launching command thread...")
         self.command_thread.start()
         logger.info("Launching log watcher...")
-        console.info("Launching log watcher...")
+        self.helper.console.info("Launching log watcher...")
         self.log_watcher_thread.start()
         logger.info("Launching realtime thread...")
-        console.info("Launching realtime thread...")
+        self.helper.console.info("Launching realtime thread...")
         self.realtime_thread.start()
 
     def scheduler_thread(self):
-        schedules = management_helper.get_schedules_enabled()
+        schedules = helpers_management.get_schedules_enabled()
         self.scheduler.add_listener(self.schedule_watcher, mask=EVENT_JOB_EXECUTED)
         # self.scheduler.add_job(
         #    self.scheduler.print_jobs, "interval", seconds=10, id="-1"
@@ -173,7 +164,7 @@ class TasksManager:
                 if schedule.cron_string != "":
                     try:
                         self.scheduler.add_job(
-                            management_helper.add_command,
+                            helpers_management.add_command,
                             CronTrigger.from_crontab(
                                 schedule.cron_string, timezone=str(self.tz)
                             ),
@@ -186,16 +177,16 @@ class TasksManager:
                             ],
                         )
                     except Exception as e:
-                        console.error(f"Failed to schedule task with error: {e}.")
-                        console.warning("Removing failed task from DB.")
+                        self.helper.console.error(f"Failed to schedule task with error: {e}.")
+                        self.helper.console.warning("Removing failed task from DB.")
                         logger.error(f"Failed to schedule task with error: {e}.")
                         logger.warning("Removing failed task from DB.")
                         # remove items from DB if task fails to add to apscheduler
-                        management_helper.delete_scheduled_task(schedule.schedule_id)
+                        self.controller.management_helper.delete_scheduled_task(schedule.schedule_id)
                 else:
                     if schedule.interval_type == "hours":
                         self.scheduler.add_job(
-                            management_helper.add_command,
+                            helpers_management.add_command,
                             "cron",
                             minute=0,
                             hour="*/" + str(schedule.interval),
@@ -209,7 +200,7 @@ class TasksManager:
                         )
                     elif schedule.interval_type == "minutes":
                         self.scheduler.add_job(
-                            management_helper.add_command,
+                            helpers_management.add_command,
                             "cron",
                             minute="*/" + str(schedule.interval),
                             id=str(schedule.schedule_id),
@@ -223,7 +214,7 @@ class TasksManager:
                     elif schedule.interval_type == "days":
                         curr_time = schedule.start_time.split(":")
                         self.scheduler.add_job(
-                            management_helper.add_command,
+                            helpers_management.add_command,
                             "cron",
                             day="*/" + str(schedule.interval),
                             hour=curr_time[0],
@@ -243,7 +234,7 @@ class TasksManager:
             logger.info(f"JOB: {item}")
 
     def schedule_job(self, job_data):
-        sch_id = management_helper.create_scheduled_task(
+        sch_id = helpers_management.create_scheduled_task(
             job_data["server_id"],
             job_data["action"],
             job_data["interval"],
@@ -260,13 +251,13 @@ class TasksManager:
         # Checks to make sure some doofus didn't actually make the newly
         # created task a child of itself.
         if str(job_data["parent"]) == str(sch_id):
-            management_helper.update_scheduled_task(sch_id, {"parent": None})
+            helpers_management.update_scheduled_task(sch_id, {"parent": None})
             # Check to see if it's enabled and is not a chain reaction.
         if job_data["enabled"] and job_data["interval_type"] != "reaction":
             if job_data["cron_string"] != "":
                 try:
                     self.scheduler.add_job(
-                        management_helper.add_command,
+                        helpers_management.add_command,
                         CronTrigger.from_crontab(
                             job_data["cron_string"], timezone=str(self.tz)
                         ),
@@ -279,16 +270,16 @@ class TasksManager:
                         ],
                     )
                 except Exception as e:
-                    console.error(f"Failed to schedule task with error: {e}.")
-                    console.warning("Removing failed task from DB.")
+                    self.helper.console.error(f"Failed to schedule task with error: {e}.")
+                    self.helper.console.warning("Removing failed task from DB.")
                     logger.error(f"Failed to schedule task with error: {e}.")
                     logger.warning("Removing failed task from DB.")
                     # remove items from DB if task fails to add to apscheduler
-                    management_helper.delete_scheduled_task(sch_id)
+                    self.controller.management_helper.delete_scheduled_task(sch_id)
             else:
                 if job_data["interval_type"] == "hours":
                     self.scheduler.add_job(
-                        management_helper.add_command,
+                        helpers_management.add_command,
                         "cron",
                         minute=0,
                         hour="*/" + str(job_data["interval"]),
@@ -302,7 +293,7 @@ class TasksManager:
                     )
                 elif job_data["interval_type"] == "minutes":
                     self.scheduler.add_job(
-                        management_helper.add_command,
+                        helpers_management.add_command,
                         "cron",
                         minute="*/" + str(job_data["interval"]),
                         id=str(sch_id),
@@ -316,7 +307,7 @@ class TasksManager:
                 elif job_data["interval_type"] == "days":
                     curr_time = job_data["start_time"].split(":")
                     self.scheduler.add_job(
-                        management_helper.add_command,
+                        helpers_management.add_command,
                         "cron",
                         day="*/" + str(job_data["interval"]),
                         hour=curr_time[0],
@@ -335,18 +326,18 @@ class TasksManager:
                 logger.info(f"JOB: {item}")
 
     def remove_all_server_tasks(self, server_id):
-        schedules = management_helper.get_schedules_by_server(server_id)
+        schedules = helpers_management.get_schedules_by_server(server_id)
         for schedule in schedules:
             if schedule.interval != "reaction":
                 self.remove_job(schedule.schedule_id)
 
     def remove_job(self, sch_id):
-        job = management_helper.get_scheduled_task_model(sch_id)
-        for schedule in management_helper.get_child_schedules(sch_id):
-            management_helper.update_scheduled_task(
+        job = helpers_management.get_scheduled_task_model(sch_id)
+        for schedule in helpers_management.get_child_schedules(sch_id):
+            self.controller.management_helper.update_scheduled_task(
                 schedule.schedule_id, {"parent": None}
             )
-        management_helper.delete_scheduled_task(sch_id)
+        self.controller.management_helper.delete_scheduled_task(sch_id)
         if job.enabled and job.interval_type != "reaction":
             self.scheduler.remove_job(str(sch_id))
             logger.info(f"Job with ID {sch_id} was deleted.")
@@ -358,11 +349,11 @@ class TasksManager:
             )
 
     def update_job(self, sch_id, job_data):
-        management_helper.update_scheduled_task(sch_id, job_data)
+        helpers_management.update_scheduled_task(sch_id, job_data)
         # Checks to make sure some doofus didn't actually make the newly
         # created task a child of itself.
         if str(job_data["parent"]) == str(sch_id):
-            management_helper.update_scheduled_task(sch_id, {"parent": None})
+            helpers_management.update_scheduled_task(sch_id, {"parent": None})
         try:
             if job_data["interval"] != "reaction":
                 self.scheduler.remove_job(str(sch_id))
@@ -377,7 +368,7 @@ class TasksManager:
                 if job_data["cron_string"] != "":
                     try:
                         self.scheduler.add_job(
-                            management_helper.add_command,
+                            helpers_management.add_command,
                             CronTrigger.from_crontab(
                                 job_data["cron_string"], timezone=str(self.tz)
                             ),
@@ -390,13 +381,13 @@ class TasksManager:
                             ],
                         )
                     except Exception as e:
-                        console.error(f"Failed to schedule task with error: {e}.")
-                        console.info("Removing failed task from DB.")
-                        management_helper.delete_scheduled_task(sch_id)
+                        self.helper.console.error(f"Failed to schedule task with error: {e}.")
+                        self.helper.console.info("Removing failed task from DB.")
+                        self.controller.management_helper.delete_scheduled_task(sch_id)
                 else:
                     if job_data["interval_type"] == "hours":
                         self.scheduler.add_job(
-                            management_helper.add_command,
+                            helpers_management.add_command,
                             "cron",
                             minute=0,
                             hour="*/" + str(job_data["interval"]),
@@ -410,7 +401,7 @@ class TasksManager:
                         )
                     elif job_data["interval_type"] == "minutes":
                         self.scheduler.add_job(
-                            management_helper.add_command,
+                            helpers_management.add_command,
                             "cron",
                             minute="*/" + str(job_data["interval"]),
                             id=str(sch_id),
@@ -424,7 +415,7 @@ class TasksManager:
                     elif job_data["interval_type"] == "days":
                         curr_time = job_data["start_time"].split(":")
                         self.scheduler.add_job(
-                            management_helper.add_command,
+                            helpers_management.add_command,
                             "cron",
                             day="*/" + str(job_data["interval"]),
                             hour=curr_time[0],
@@ -450,10 +441,10 @@ class TasksManager:
     def schedule_watcher(self, event):
         if not event.exception:
             if str(event.job_id).isnumeric():
-                task = management_helper.get_scheduled_task_model(int(event.job_id))
-                management_helper.add_to_audit_log_raw(
+                task = helpers_management.get_scheduled_task_model(int(event.job_id))
+                helpers_management.add_to_audit_log_raw(
                     "system",
-                    users_helper.get_user_id_by_name("system"),
+                    helper_users.get_user_id_by_name("system"),
                     task.server_id,
                     f"Task with id {task.schedule_id} completed successfully",
                     "127.0.0.1",
@@ -465,7 +456,7 @@ class TasksManager:
                 # check for any child tasks for this. It's kind of backward,
                 # but this makes DB management a lot easier. One to one
                 # instead of one to many.
-                for schedule in management_helper.get_child_schedules_by_server(
+                for schedule in helpers_management.get_child_schedules_by_server(
                     task.schedule_id, task.server_id
                 ):
                     # event job ID's are strings so we need to look at
@@ -476,7 +467,7 @@ class TasksManager:
                                 seconds=schedule.delay
                             )
                             self.scheduler.add_job(
-                                management_helper.add_command,
+                                helpers_management.add_command,
                                 "date",
                                 run_date=delaytime,
                                 id=str(schedule.schedule_id),
@@ -496,11 +487,11 @@ class TasksManager:
             logger.error(f"Task failed with error: {event.exception}")
 
     def start_stats_recording(self):
-        stats_update_frequency = helper.get_setting("stats_update_frequency")
+        stats_update_frequency = self.helper.get_setting("stats_update_frequency")
         logger.info(
             f"Stats collection frequency set to {stats_update_frequency} seconds"
         )
-        console.info(
+        self.helper.console.info(
             f"Stats collection frequency set to {stats_update_frequency} seconds"
         )
 
@@ -516,36 +507,36 @@ class TasksManager:
 
     def serverjar_cache_refresher(self):
         logger.info("Refreshing serverjars.com cache on start")
-        server_jar_obj.refresh_cache()
+        self.controller.server_jars.refresh_cache()
 
         logger.info("Scheduling Serverjars.com cache refresh service every 12 hours")
         self.scheduler.add_job(
-            server_jar_obj.refresh_cache, "interval", hours=12, id="serverjars"
+            self.controller.server_jars.refresh_cache, "interval", hours=12, id="serverjars"
         )
 
     def realtime(self):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
-        host_stats = management_helper.get_latest_hosts_stats()
+        host_stats = helpers_management.get_latest_hosts_stats()
 
         while True:
 
             if host_stats.get(
                 "cpu_usage"
-            ) != management_helper.get_latest_hosts_stats().get(
+            ) != helpers_management.get_latest_hosts_stats().get(
                 "cpu_usage"
             ) or host_stats.get(
                 "mem_percent"
-            ) != management_helper.get_latest_hosts_stats().get(
+            ) != helpers_management.get_latest_hosts_stats().get(
                 "mem_percent"
             ):
                 # Stats are different
 
-                host_stats = management_helper.get_latest_hosts_stats()
-                if len(websocket_helper.clients) > 0:
+                host_stats = helpers_management.get_latest_hosts_stats()
+                if len(self.helper.websocket_helper.clients) > 0:
                     # There are clients
-                    websocket_helper.broadcast_page(
+                    self.helper.websocket_helper.broadcast_page(
                         "/panel/dashboard",
                         "update_host_stats",
                         {

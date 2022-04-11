@@ -69,6 +69,3 @@ class Console:
     def help(self, message):
         dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
         self.green(f"[+] Crafty: {dt} - HELP:\t{message}")
-
-
-console = Console()

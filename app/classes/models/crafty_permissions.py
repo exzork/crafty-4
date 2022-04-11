@@ -1,35 +1,21 @@
 import logging
-
-from app.classes.shared.helpers import helper
-from app.classes.shared.permission_helper import permission_helper
-from app.classes.models.users import Users, ApiKeys, users_helper
-
-try:
-    from peewee import (
-        SqliteDatabase,
-        Model,
-        ForeignKeyField,
-        CharField,
-        IntegerField,
-        DoesNotExist,
-    )
-    from enum import Enum
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
-
-logger = logging.getLogger(__name__)
-peewee_logger = logging.getLogger("peewee")
-peewee_logger.setLevel(logging.INFO)
-database = SqliteDatabase(
-    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+from enum import Enum
+from peewee import (
+    ForeignKeyField,
+    CharField,
+    IntegerField,
+    DoesNotExist,
 )
 
+from app.classes.models.base_model import BaseModel
+from app.classes.models.users import Users, ApiKeys, helper_users
+
+logger = logging.getLogger(__name__)
 
 # **********************************************************************************
 #                                  User_Crafty Class
 # **********************************************************************************
-class User_Crafty(Model):
+class User_Crafty(BaseModel):
     user_id = ForeignKeyField(Users, backref="users_crafty")
     permissions = CharField(default="00000000")
     limit_server_creation = IntegerField(default=-1)
@@ -41,7 +27,6 @@ class User_Crafty(Model):
 
     class Meta:
         table_name = "user_crafty"
-        database = database
 
 
 # **********************************************************************************
@@ -68,7 +53,7 @@ class Permissions_Crafty:
     def get_permissions(permissions_mask):
         permissions_list = []
         for member in Enum_Permissions_Crafty.__members__.items():
-            if crafty_permissions.has_permission(permissions_mask, member[1]):
+            if Permissions_Crafty.has_permission(permissions_mask, member[1]):
                 permissions_list.append(member[1])
         return permissions_list
 
@@ -95,7 +80,7 @@ class Permissions_Crafty:
     @staticmethod
     def get_crafty_permissions_mask(user_id):
         permissions_mask = ""
-        user_crafty = crafty_permissions.get_User_Crafty(user_id)
+        user_crafty = Permissions_Crafty.get_User_Crafty(user_id)
         permissions_mask = user_crafty.permissions
         return permissions_mask
 
@@ -110,7 +95,7 @@ class Permissions_Crafty:
 
     @staticmethod
     def get_permission_quantity_list(user_id):
-        user_crafty = crafty_permissions.get_User_Crafty(user_id)
+        user_crafty = Permissions_Crafty.get_User_Crafty(user_id)
         quantity_list = {
             Enum_Permissions_Crafty.Server_Creation.name: user_crafty.limit_server_creation,  # pylint: disable=line-too-long
             Enum_Permissions_Crafty.User_Config.name: user_crafty.limit_user_creation,
@@ -140,7 +125,7 @@ class Permissions_Crafty:
                     User_Crafty.created_role: 0,
                 }
             ).execute()
-            user_crafty = crafty_permissions.get_User_Crafty(user_id)
+            user_crafty = Permissions_Crafty.get_User_Crafty(user_id)
         return user_crafty
 
     @staticmethod
@@ -180,7 +165,7 @@ class Permissions_Crafty:
 
     @staticmethod
     def get_created_quantity_list(user_id):
-        user_crafty = crafty_permissions.get_User_Crafty(user_id)
+        user_crafty = Permissions_Crafty.get_User_Crafty(user_id)
         quantity_list = {
             Enum_Permissions_Crafty.Server_Creation.name: user_crafty.created_server,
             Enum_Permissions_Crafty.User_Config.name: user_crafty.created_user,
@@ -190,15 +175,15 @@ class Permissions_Crafty:
 
     @staticmethod
     def get_crafty_limit_value(user_id, permission):
-        quantity_list = crafty_permissions.get_permission_quantity_list(user_id)
+        quantity_list = Permissions_Crafty.get_permission_quantity_list(user_id)
         return quantity_list[permission]
 
     @staticmethod
     def can_add_in_crafty(user_id, permission):
-        user_crafty = crafty_permissions.get_User_Crafty(user_id)
-        can = crafty_permissions.has_permission(user_crafty.permissions, permission)
-        limit_list = crafty_permissions.get_permission_quantity_list(user_id)
-        quantity_list = crafty_permissions.get_created_quantity_list(user_id)
+        user_crafty = Permissions_Crafty.get_User_Crafty(user_id)
+        can = Permissions_Crafty.has_permission(user_crafty.permissions, permission)
+        limit_list = Permissions_Crafty.get_permission_quantity_list(user_id)
+        quantity_list = Permissions_Crafty.get_created_quantity_list(user_id)
         return can and (
             (quantity_list[permission.name] < limit_list[permission.name])
             or limit_list[permission.name] == -1
@@ -206,29 +191,26 @@ class Permissions_Crafty:
 
     @staticmethod
     def add_server_creation(user_id):
-        user_crafty = crafty_permissions.get_User_Crafty(user_id)
+        user_crafty = Permissions_Crafty.get_User_Crafty(user_id)
         user_crafty.created_server += 1
         User_Crafty.save(user_crafty)
         return user_crafty.created_server
 
     @staticmethod
     def get_api_key_permissions_list(key: ApiKeys):
-        user = users_helper.get_user(key.user_id)
+        user = helper_users.get_user(key.user_id)
         if user["superuser"] and key.superuser:
-            return crafty_permissions.get_permissions_list()
+            return Permissions_Crafty.get_permissions_list()
         else:
             if user["superuser"]:
                 user_permissions_mask = "111"
             else:
-                user_permissions_mask = crafty_permissions.get_crafty_permissions_mask(
+                user_permissions_mask = Permissions_Crafty.get_crafty_permissions_mask(
                     user["user_id"]
                 )
             key_permissions_mask: str = key.crafty_permissions
-            permissions_mask = permission_helper.combine_masks(
+            permissions_mask = helper_users.combine_masks(
                 user_permissions_mask, key_permissions_mask
             )
-            permissions_list = crafty_permissions.get_permissions(permissions_mask)
+            permissions_list = Permissions_Crafty.get_permissions(permissions_mask)
             return permissions_list
-
-
-crafty_permissions = Permissions_Crafty()

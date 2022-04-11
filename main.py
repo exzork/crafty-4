@@ -5,9 +5,13 @@ import time
 import argparse
 import logging.config
 import signal
-from app.classes.shared.console import console
-from app.classes.shared.helpers import helper
+import peewee
+from app.classes.models.users import helper_users
+from app.classes.shared.console import Console
+from app.classes.shared.helpers import Helpers
 
+console = Console()
+helper = Helpers(console)
 if helper.checkRoot():
     console.critical(
         "Root detected. Root/Admin access denied. "
@@ -17,12 +21,15 @@ if helper.checkRoot():
     console.critical("Crafty shutting down. Root/Admin access denied.")
     sys.exit(0)
 # pylint: disable=wrong-import-position
-from app.classes.shared.main_models import installer, database
-from app.classes.shared.tasks import TasksManager
-from app.classes.shared.main_controller import Controller
-from app.classes.shared.migration import MigrationManager
-
-from app.classes.shared.command import MainPrompt
+try:
+    from app.classes.models.base_model import database_proxy
+    from app.classes.shared.main_models import db_builder
+    from app.classes.shared.tasks import TasksManager
+    from app.classes.shared.main_controller import Controller
+    from app.classes.shared.migration import MigrationManager
+    from app.classes.shared.command import MainPrompt
+except ModuleNotFoundError as err:
+    helper.auto_installer_fix(err)
 
 
 def do_intro():
@@ -88,6 +95,8 @@ if __name__ == "__main__":
     # setting up the logger object
     logger = logging.getLogger(__name__)
     console.cyan(f"Logging set to: {logger.level}")
+    peewee_logger = logging.getLogger("peewee")
+    peewee_logger.setLevel(logging.INFO)
 
     # print our pretty start message
     do_intro()
@@ -95,10 +104,19 @@ if __name__ == "__main__":
     # our session file, helps prevent multiple controller agents on the same machine.
     helper.create_session_file(ignore=args.ignore)
 
-    migration_manager = MigrationManager(database)
+    # start the database
+    database = peewee.SqliteDatabase(
+        helper.db_path,
+        pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+    )
+    database_proxy.initialize(database)
+
+    migration_manager = MigrationManager(database, helper)
     migration_manager.up()  # Automatically runs migrations
 
     # do our installer stuff
+    user_helper = helper_users(database, helper)
+    installer = db_builder(database, helper, user_helper)
     fresh_install = installer.is_fresh_install()
 
     if fresh_install:
@@ -114,8 +132,8 @@ if __name__ == "__main__":
         console.debug("Existing install detected")
 
     # now the tables are created, we can load the tasks_manger and server controller
-    controller = Controller()
-    tasks_manager = TasksManager(controller)
+    controller = Controller(database, helper)
+    tasks_manager = TasksManager(helper, controller)
     tasks_manager.start_webserver()
 
     # slowing down reporting just for a 1/2 second so messages look cleaner
@@ -151,7 +169,7 @@ if __name__ == "__main__":
     if not controller.check_system_user():
         controller.add_system_user()
 
-    Crafty = MainPrompt(tasks_manager, migration_manager)
+    Crafty = MainPrompt(helper, tasks_manager, migration_manager)
 
     project_root = os.path.dirname(__file__)
     controller.set_project_root(project_root)

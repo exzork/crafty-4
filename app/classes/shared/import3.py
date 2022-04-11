@@ -2,16 +2,17 @@ import json
 import os
 import logging
 
-from app.classes.controllers.users_controller import users_helper
-from app.classes.shared.main_controller import Controller
-from app.classes.shared.console import console
+from app.classes.controllers.users_controller import helper_users
 
 logger = logging.getLogger(__name__)
 
 
 class import3:
-    def __init__(self):
-        self.controller = Controller()
+    def __init__(self, helper, controller):
+        self.helper = helper
+        self.console = self.helper.console
+        self.controller = controller
+
 
     def start_import(self):
         folder = os.path.normpath(
@@ -21,11 +22,11 @@ class import3:
             )
         )
         if not os.path.exists(folder):
-            console.info(
+            self.console.info(
                 "Crafty cannot find the path you entered. "
                 "Does Crafty's user have permission to access it?"
             )
-            console.info("Please run the import3 command again and enter a valid path.")
+            self.console.info("Please run the import3 command again and enter a valid path.")
         else:
             with open(os.path.join(folder, "users.json"), encoding="utf-8") as f:
                 user_json = json.loads(f.read())
@@ -34,16 +35,15 @@ class import3:
             self.import_users(user_json)
             self.import_servers(servers_json, self.controller)
 
-    @staticmethod
-    def import_users(json_data):
+    def import_users(self, json_data):
         # If there is only one user to import json needs to call the data differently
         if isinstance(json_data, list):
             for user in json_data:
-                users_helper.add_rawpass_user(user["username"], user["password"])
-                console.info(f"Imported user {user['username']} from Crafty 3")
+                helper_users.add_rawpass_user(user["username"], user["password"])
+                self.console.info(f"Imported user {user['username']} from Crafty 3")
                 logger.info(f"Imported user {user['username']} from Crafty 3")
         else:
-            console.info(
+            self.console.info(
                 "There is only one user detected. "
                 "Cannot create duplicate Admin account."
             )
@@ -52,8 +52,7 @@ class import3:
                 "Cannot create duplicate Admin account."
             )
 
-    @staticmethod
-    def import_servers(json_data, controller):
+    def import_servers(self, json_data, controller):
         # If there is only one server to import json needs to call the data differently
         if isinstance(json_data, list):
             for server in json_data:
@@ -65,7 +64,7 @@ class import3:
                     max_mem=(int(server["memory_max"]) / 1000),
                     port=server["server_port"],
                 )
-                console.info(
+                self.console.info(
                     f"Imported server {server['server_name']}[{server['id']}] "
                     f"from Crafty 3 to new server id {new_server_id}"
                 )
@@ -82,7 +81,7 @@ class import3:
                 max_mem=(int(json_data["memory_max"]) / 1000),
                 port=json_data["server_port"],
             )
-            console.info(
+            self.console.info(
                 f"Imported server {json_data['server_name']}[{json_data['id']}] "
                 f"from Crafty 3 to new server id {new_server_id}"
             )
@@ -90,6 +89,3 @@ class import3:
                 f"Imported server {json_data['server_name']}[{json_data['id']}] "
                 f"from Crafty 3 to new server id {new_server_id}"
             )
-
-
-import3 = import3()

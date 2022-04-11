@@ -1,22 +1,14 @@
 import logging
 import os
 import time
+import tornado.web
+import tornado.options
+import tornado.httpserver
 
 from app.classes.models.server_permissions import Enum_Permissions_Server
-from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
+from app.classes.shared.helpers import Helpers
 from app.classes.shared.main_controller import Controller
-from app.classes.web.websocket_helper import websocket_helper
 from app.classes.web.base_handler import BaseHandler
-from app.classes.shared.translation import translation
-
-try:
-    import tornado.web
-    import tornado.options
-    import tornado.httpserver
-
-except ModuleNotFoundError as ex:
-    helper.auto_installer_fix(ex)
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +18,9 @@ class UploadHandler(BaseHandler):
 
     # noinspection PyAttributeOutsideInit
     def initialize(
-        self, controller: Controller = None, tasks_manager=None, translator=None
+        self, helper: Helpers = None, controller: Controller = None, tasks_manager=None, translator=None
     ):
+        self.helper = helper
         self.controller = controller
         self.tasks_manager = tasks_manager
         self.translator = translator
@@ -40,7 +33,7 @@ class UploadHandler(BaseHandler):
         if api_key is not None:
             superuser = superuser and api_key.superuser
         user_id = exec_user["user_id"]
-        stream_size_value = helper.get_setting("stream_size_GB")
+        stream_size_value = self.helper.get_setting("stream_size_GB")
 
         MAX_STREAMED_SIZE = (1024 * 1024 * 1024) * stream_size_value
 
@@ -50,11 +43,11 @@ class UploadHandler(BaseHandler):
                 f"User with ID {user_id} attempted to upload a file that"
                 f" exceeded the max body size."
             )
-            websocket_helper.broadcast_user(
+            self.helper.websocket_helper.broadcast_user(
                 user_id,
                 "send_start_error",
                 {
-                    "error": translation.translate(
+                    "error": self.helper.translation.translate(
                         "error",
                         "fileTooLarge",
                         self.controller.users.get_user_lang_by_id(user_id),
@@ -85,12 +78,12 @@ class UploadHandler(BaseHandler):
 
         if user_id is None:
             logger.warning("User ID not found in upload handler call")
-            console.warning("User ID not found in upload handler call")
+            self.helper.console.warning("User ID not found in upload handler call")
             self.do_upload = False
 
         if server_id is None:
             logger.warning("Server ID not found in upload handler call")
-            console.warning("Server ID not found in upload handler call")
+            self.helper.console.warning("Server ID not found in upload handler call")
             self.do_upload = False
 
         if Enum_Permissions_Server.Files not in exec_user_server_permissions:
@@ -98,7 +91,7 @@ class UploadHandler(BaseHandler):
                 f"User {user_id} tried to upload a file to "
                 f"{server_id} without permissions!"
             )
-            console.warning(
+            self.helper.console.warning(
                 f"User {user_id} tried to upload a file to "
                 f"{server_id} without permissions!"
             )
@@ -108,8 +101,8 @@ class UploadHandler(BaseHandler):
         filename = self.request.headers.get("X-FileName", None)
         full_path = os.path.join(path, filename)
 
-        if not helper.in_path(
-            helper.get_os_understandable_path(
+        if not Helpers.in_path(
+            Helpers.get_os_understandable_path(
                 self.controller.servers.get_server_data_by_id(server_id)["path"]
             ),
             full_path,
@@ -117,7 +110,7 @@ class UploadHandler(BaseHandler):
             print(
                 user_id,
                 server_id,
-                helper.get_os_understandable_path(
+                Helpers.get_os_understandable_path(
                     self.controller.servers.get_server_data_by_id(server_id)["path"]
                 ),
                 full_path,
@@ -126,7 +119,7 @@ class UploadHandler(BaseHandler):
                 f"User {user_id} tried to upload a file to {server_id} "
                 f"but the path is not inside of the server!"
             )
-            console.warning(
+            self.helper.console.warning(
                 f"User {user_id} tried to upload a file to {server_id} "
                 f"but the path is not inside of the server!"
             )
@@ -148,13 +141,13 @@ class UploadHandler(BaseHandler):
         if self.do_upload:
             time.sleep(5)
             if files_left == 0:
-                websocket_helper.broadcast("close_upload_box", "success")
+                self.helper.websocket_helper.broadcast("close_upload_box", "success")
             self.finish("success")  # Nope, I'm sending "success"
             self.f.close()
         else:
             time.sleep(5)
             if files_left == 0:
-                websocket_helper.broadcast("close_upload_box", "error")
+                self.helper.websocket_helper.broadcast("close_upload_box", "error")
             self.finish("error")
 
     def data_received(self, chunk):

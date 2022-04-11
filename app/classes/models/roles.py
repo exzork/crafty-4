@@ -1,33 +1,22 @@
 import logging
 import datetime
+from peewee import (
+    CharField,
+    DoesNotExist,
+    AutoField,
+    DateTimeField,
+)
+from playhouse.shortcuts import model_to_dict
 
-from app.classes.shared.helpers import helper
-
-try:
-    from peewee import (
-        SqliteDatabase,
-        Model,
-        CharField,
-        DoesNotExist,
-        AutoField,
-        DateTimeField,
-    )
-    from playhouse.shortcuts import model_to_dict
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
+from app.classes.models.base_model import BaseModel
+from app.classes.shared.helpers import Helpers
 
 logger = logging.getLogger(__name__)
-peewee_logger = logging.getLogger("peewee")
-peewee_logger.setLevel(logging.INFO)
-database = SqliteDatabase(
-    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
-)
 
 # **********************************************************************************
 #                                   Roles Class
 # **********************************************************************************
-class Roles(Model):
+class Roles(BaseModel):
     role_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     last_update = DateTimeField(default=datetime.datetime.now)
@@ -35,13 +24,15 @@ class Roles(Model):
 
     class Meta:
         table_name = "roles"
-        database = database
 
 
 # **********************************************************************************
 #                                   Roles Helpers
 # **********************************************************************************
 class helper_roles:
+    def __init__(self, database):
+        self.database = database
+
     @staticmethod
     def get_all_roles():
         query = Roles.select()
@@ -63,7 +54,7 @@ class helper_roles:
         role_id = Roles.insert(
             {
                 Roles.role_name: role_name.lower(),
-                Roles.created: helper.get_time_as_string(),
+                Roles.created: Helpers.get_time_as_string(),
             }
         ).execute()
         return role_id
@@ -72,17 +63,13 @@ class helper_roles:
     def update_role(role_id, up_data):
         return Roles.update(up_data).where(Roles.role_id == role_id).execute()
 
-    @staticmethod
-    def remove_role(role_id):
-        with database.atomic():
+    def remove_role(self, role_id):
+        with self.database.atomic():
             role = Roles.get(Roles.role_id == role_id)
             return role.delete_instance()
 
     @staticmethod
     def role_id_exists(role_id):
-        if not roles_helper.get_role(role_id):
+        if not helper_roles.get_role(role_id):
             return False
         return True
-
-
-roles_helper = helper_roles()

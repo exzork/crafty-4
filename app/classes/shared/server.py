@@ -8,28 +8,19 @@ import logging.config
 import subprocess
 import html
 import tempfile
+import psutil
+# TZLocal is set as a hidden import on win pipeline
+from tzlocal import get_localzone
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.classes.minecraft.stats import Stats
 from app.classes.minecraft.mc_ping import ping, ping_bedrock
-from app.classes.models.servers import Server_Stats, servers_helper
-from app.classes.models.management import management_helper
-from app.classes.models.users import users_helper
-from app.classes.models.server_permissions import server_permissions
-from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
-from app.classes.shared.translation import translation
-from app.classes.shared.file_helpers import file_helper
-from app.classes.web.websocket_helper import websocket_helper
-
-try:
-    import psutil
-
-    # TZLocal is set as a hidden import on win pipeline
-    from tzlocal import get_localzone
-    from apscheduler.schedulers.background import BackgroundScheduler
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
+from app.classes.models.servers import Server_Stats, helper_servers
+from app.classes.models.management import helpers_management
+from app.classes.models.users import helper_users
+from app.classes.models.server_permissions import Permissions_Servers
+from app.classes.shared.helpers import Helpers
+from app.classes.shared.file_helpers import FileHelpers
 
 logger = logging.getLogger(__name__)
 
@@ -37,11 +28,12 @@ logger = logging.getLogger(__name__)
 class ServerOutBuf:
     lines = {}
 
-    def __init__(self, proc, server_id):
+    def __init__(self, helper, proc, server_id):
+        self.helper = helper
         self.proc = proc
         self.server_id = str(server_id)
         # Buffers text for virtual_terminal_lines config number of lines
-        self.max_lines = helper.get_setting("virtual_terminal_lines")
+        self.max_lines = self.helper.get_setting("virtual_terminal_lines")
         self.line_buffer = ""
         ServerOutBuf.lines[self.server_id] = []
         self.lsi = 0
@@ -79,13 +71,13 @@ class ServerOutBuf:
     def new_line_handler(self, new_line):
         new_line = re.sub("(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)", " ", new_line)
         new_line = re.sub("[A-z]{2}\b\b", "", new_line)
-        highlighted = helper.log_colors(html.escape(new_line))
+        highlighted = self.helper.log_colors(html.escape(new_line))
 
         logger.debug("Broadcasting new virtual terminal line")
 
         # TODO: Do not send data to clients who do not have permission to view
         # this server's console
-        websocket_helper.broadcast_page_params(
+        self.helper.websocket_helper.broadcast_page_params(
             "/panel/server_detail",
             {"id": self.server_id},
             "vterm_new_line",
@@ -97,7 +89,10 @@ class ServerOutBuf:
 #                               Minecraft Server Class
 # **********************************************************************************
 class Server:
-    def __init__(self, stats):
+    def __init__(self, helper, management_helper, stats):
+        self.helper = helper
+        self.management_helper = management_helper
+        self.console = self.helper.console
         # holders for our process
         self.process = None
         self.line = False
@@ -121,14 +116,14 @@ class Server:
         )
         self.is_backingup = False
         # Reset crash and update at initialization
-        servers_helper.server_crash_reset(self.server_id)
-        servers_helper.set_update(self.server_id, False)
+        helper_servers.server_crash_reset(self.server_id)
+        helper_servers.set_update(self.server_id, False)
 
     # **********************************************************************************
     #                               Minecraft Server Management
     # **********************************************************************************
     def reload_server_settings(self):
-        server_data = servers_helper.get_server_data_by_id(self.server_id)
+        server_data = helper_servers.get_server_data_by_id(self.server_id)
         self.settings = server_data
 
     def do_server_setup(self, server_data_obj):
@@ -153,7 +148,7 @@ class Server:
             delay = int(self.settings["auto_start_delay"])
 
             logger.info(f"Scheduling server {self.name} to start in {delay} seconds")
-            console.info(f"Scheduling server {self.name} to start in {delay} seconds")
+            self.console.info(f"Scheduling server {self.name} to start in {delay} seconds")
 
             self.server_scheduler.add_job(
                 self.run_scheduled_server,
@@ -163,10 +158,10 @@ class Server:
             )
 
     def run_scheduled_server(self):
-        console.info(f"Starting server ID: {self.server_id} - {self.name}")
+        self.console.info(f"Starting server ID: {self.server_id} - {self.name}")
         logger.info(f"Starting server ID: {self.server_id} - {self.name}")
         # Sets waiting start to false since we're attempting to start the server.
-        servers_helper.set_waiting_start(self.server_id, False)
+        helper_servers.set_waiting_start(self.server_id, False)
         self.run_threaded_server(None)
 
         # remove the scheduled job since it's ran
@@ -184,7 +179,7 @@ class Server:
 
         # Register an shedule for polling server stats when running
         logger.info(f"Polling server statistics {self.name} every {5} seconds")
-        console.info(f"Polling server statistics {self.name} every {5} seconds")
+        self.console.info(f"Polling server statistics {self.name} every {5} seconds")
         try:
             self.server_scheduler.add_job(
                 self.realtime_stats,
@@ -203,43 +198,43 @@ class Server:
 
     def setup_server_run_command(self):
         # configure the server
-        server_exec_path = helper.get_os_understandable_path(
+        server_exec_path = Helpers.get_os_understandable_path(
             self.settings["executable"]
         )
-        self.server_command = helper.cmdparse(self.settings["execution_command"])
-        self.server_path = helper.get_os_understandable_path(self.settings["path"])
+        self.server_command = Helpers.cmdparse(self.settings["execution_command"])
+        self.server_path = Helpers.get_os_understandable_path(self.settings["path"])
 
         # let's do some quick checking to make sure things actually exists
         full_path = os.path.join(self.server_path, server_exec_path)
-        if not helper.check_file_exists(full_path):
+        if not Helpers.check_file_exists(full_path):
             logger.critical(
                 f"Server executable path: {full_path} does not seem to exist"
             )
-            console.critical(
+            self.console.critical(
                 f"Server executable path: {full_path} does not seem to exist"
             )
 
-        if not helper.check_path_exists(self.server_path):
+        if not Helpers.check_path_exists(self.server_path):
             logger.critical(f"Server path: {self.server_path} does not seem to exits")
-            console.critical(f"Server path: {self.server_path} does not seem to exits")
+            self.console.critical(f"Server path: {self.server_path} does not seem to exits")
 
-        if not helper.check_writeable(self.server_path):
+        if not Helpers.check_writeable(self.server_path):
             logger.critical(f"Unable to write/access {self.server_path}")
-            console.warning(f"Unable to write/access {self.server_path}")
+            self.console.critical(f"Unable to write/access {self.server_path}")
 
     def start_server(self, user_id):
         if not user_id:
-            user_lang = helper.get_setting("language")
+            user_lang = self.helper.get_setting("language")
         else:
-            user_lang = users_helper.get_user_lang_by_id(user_id)
+            user_lang = helper_users.get_user_lang_by_id(user_id)
 
-        if servers_helper.get_download_status(self.server_id):
+        if helper_servers.get_download_status(self.server_id):
             if user_id:
-                websocket_helper.broadcast_user(
+                self.helper.websocket_helper.broadcast_user(
                     user_id,
                     "send_start_error",
                     {
-                        "error": translation.translate(
+                        "error": self.helper.translation.translate(
                             "error", "not-downloaded", user_lang
                         )
                     },
@@ -253,18 +248,18 @@ class Server:
         # fail safe in case we try to start something already running
         if self.check_running():
             logger.error("Server is already running - Cancelling Startup")
-            console.error("Server is already running - Cancelling Startup")
+            self.console.error("Server is already running - Cancelling Startup")
             return False
         if self.check_update():
             logger.error("Server is updating. Terminating startup.")
             return False
 
         logger.info(f"Launching Server {self.name} with command {self.server_command}")
-        console.info(f"Launching Server {self.name} with command {self.server_command}")
+        self.console.info(f"Launching Server {self.name} with command {self.server_command}")
 
         # Checks for eula. Creates one if none detected.
         # If EULA is detected and not set to true we offer to set it true.
-        if helper.check_file_exists(os.path.join(self.settings["path"], "eula.txt")):
+        if Helpers.check_file_exists(os.path.join(self.settings["path"], "eula.txt")):
             f = open(
                 os.path.join(self.settings["path"], "eula.txt"), "r", encoding="utf-8"
             )
@@ -288,7 +283,7 @@ class Server:
 
         if not e_flag:
             if user_id:
-                websocket_helper.broadcast_user(
+                self.helper.websocket_helper.broadcast_user(
                     user_id, "send_eula_bootbox", {"id": self.server_id}
                 )
             else:
@@ -299,7 +294,7 @@ class Server:
                 return False
             return False
         f.close()
-        if helper.is_os_windows():
+        if Helpers.is_os_windows():
             logger.info("Windows Detected")
         else:
             logger.info("Unix Detected")
@@ -313,7 +308,7 @@ class Server:
             f = open(
                 os.path.join(
                     self.server_path,
-                    servers_helper.get_server_data_by_id(self.server_id)["executable"],
+                    helper_servers.get_server_data_by_id(self.server_id)["executable"],
                 ),
                 "r",
                 encoding="utf-8",
@@ -322,11 +317,11 @@ class Server:
 
         except:
             if user_id:
-                websocket_helper.broadcast_user(
+                self.helper.websocket_helper.broadcast_user(
                     user_id,
                     "send_start_error",
                     {
-                        "error": translation.translate(
+                        "error": self.helper.translation.translate(
                             "error", "not-downloaded", user_lang
                         )
                     },
@@ -334,8 +329,8 @@ class Server:
             return
 
         if (
-            not helper.is_os_windows()
-            and servers_helper.get_server_type_by_id(self.server_id)
+            not Helpers.is_os_windows()
+            and helper_servers.get_server_type_by_id(self.server_id)
             == "minecraft-bedrock"
         ):
             logger.info(
@@ -358,11 +353,11 @@ class Server:
                     f"Server {self.name} failed to start with error code: {ex}"
                 )
                 if user_id:
-                    websocket_helper.broadcast_user(
+                    self.helper.websocket_helper.broadcast_user(
                         user_id,
                         "send_start_error",
                         {
-                            "error": translation.translate(
+                            "error": self.helper.translation.translate(
                                 "error", "start-error", user_lang
                             ).format(self.name, ex)
                         },
@@ -382,11 +377,11 @@ class Server:
                 # Checks for java on initial fail
                 if os.system("java -version") == 32512:
                     if user_id:
-                        websocket_helper.broadcast_user(
+                        self.helper.websocket_helper.broadcast_user(
                             user_id,
                             "send_start_error",
                             {
-                                "error": translation.translate(
+                                "error": self.helper.translation.translate(
                                     "error", "noJava", user_lang
                                 ).format(self.name)
                             },
@@ -397,18 +392,18 @@ class Server:
                         f"Server {self.name} failed to start with error code: {ex}"
                     )
                 if user_id:
-                    websocket_helper.broadcast_user(
+                    self.helper.websocket_helper.broadcast_user(
                         user_id,
                         "send_start_error",
                         {
-                            "error": translation.translate(
+                            "error": self.helper.translation.translate(
                                 "error", "start-error", user_lang
                             ).format(self.name, ex)
                         },
                     )
                 return False
 
-        out_buf = ServerOutBuf(self.process, self.server_id)
+        out_buf = ServerOutBuf(self.helper, self.process, self.server_id)
 
         logger.debug(f"Starting virtual terminal listener for server {self.name}")
         threading.Thread(
@@ -416,15 +411,15 @@ class Server:
         ).start()
 
         self.is_crashed = False
-        servers_helper.server_crash_reset(self.server_id)
+        helper_servers.server_crash_reset(self.server_id)
 
         self.start_time = str(datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
 
         if self.process.poll() is None:
             logger.info(f"Server {self.name} running with PID {self.process.pid}")
-            console.info(f"Server {self.name} running with PID {self.process.pid}")
+            self.console.info(f"Server {self.name} running with PID {self.process.pid}")
             self.is_crashed = False
-            servers_helper.server_crash_reset(self.server_id)
+            helper_servers.server_crash_reset(self.server_id)
             self.record_server_stats()
             check_internet_thread = threading.Thread(
                 target=self.check_internet_thread,
@@ -437,35 +432,35 @@ class Server:
             )
             check_internet_thread.start()
             # Checks if this is the servers first run.
-            if servers_helper.get_first_run(self.server_id):
-                servers_helper.set_first_run(self.server_id)
-                loc_server_port = servers_helper.get_server_stats_by_id(self.server_id)[
+            if helper_servers.get_first_run(self.server_id):
+                helper_servers.set_first_run(self.server_id)
+                loc_server_port = helper_servers.get_server_stats_by_id(self.server_id)[
                     "server_port"
                 ]
                 # Sends port reminder message.
-                websocket_helper.broadcast_user(
+                self.helper.websocket_helper.broadcast_user(
                     user_id,
                     "send_start_error",
                     {
-                        "error": translation.translate(
+                        "error": self.helper.translation.translate(
                             "error", "portReminder", user_lang
                         ).format(self.name, loc_server_port)
                     },
                 )
-                server_users = server_permissions.get_server_user_list(self.server_id)
+                server_users = Permissions_Servers.get_server_user_list(self.server_id)
                 for user in server_users:
                     if user != user_id:
-                        websocket_helper.broadcast_user(user, "send_start_reload", {})
+                        self.helper.websocket_helper.broadcast_user(user, "send_start_reload", {})
             else:
-                server_users = server_permissions.get_server_user_list(self.server_id)
+                server_users = Permissions_Servers.get_server_user_list(self.server_id)
                 for user in server_users:
-                    websocket_helper.broadcast_user(user, "send_start_reload", {})
+                    self.helper.websocket_helper.broadcast_user(user, "send_start_reload", {})
         else:
             logger.warning(
                 f"Server PID {self.process.pid} died right after starting "
                 f"- is this a server config issue?"
             )
-            console.warning(
+            self.console.critical(
                 f"Server PID {self.process.pid} died right after starting "
                 f"- is this a server config issue?"
             )
@@ -475,7 +470,7 @@ class Server:
                 f"Server {self.name} has crash detection enabled "
                 f"- starting watcher task"
             )
-            console.info(
+            self.console.info(
                 f"Server {self.name} has crash detection enabled "
                 f"- starting watcher task"
             )
@@ -486,11 +481,11 @@ class Server:
 
     def check_internet_thread(self, user_id, user_lang):
         if user_id:
-            if not helper.check_internet():
-                websocket_helper.broadcast_user(
+            if not Helpers.check_internet():
+                self.helper.websocket_helper.broadcast_user(
                     user_id,
                     "send_start_error",
-                    {"error": translation.translate("error", "internet", user_lang)},
+                    {"error": self.helper.translation.translate("error", "internet", user_lang)},
                 )
 
     def stop_crash_detection(self):
@@ -514,7 +509,7 @@ class Server:
                 f"Server {self.name} has crash detection enabled "
                 f"- starting watcher task"
             )
-            console.info(
+            self.console.info(
                 f"Server {self.name} has crash detection enabled "
                 "- starting watcher task"
             )
@@ -547,7 +542,7 @@ class Server:
         running = self.check_running()
         if not running:
             logger.info(f"Can't stop server {self.name} if it's not running")
-            console.info(f"Can't stop server {self.name} if it's not running")
+            self.console.info(f"Can't stop server {self.name} if it's not running")
             return
         x = 0
 
@@ -563,7 +558,7 @@ class Server:
                 f"seconds until force close)"
             )
             logger.info(logstr)
-            console.info(logstr)
+            self.console.info(logstr)
             running = self.check_running()
             time.sleep(2)
 
@@ -572,17 +567,17 @@ class Server:
                 logger.info(
                     f"Server {server_name} is still running - Forcing the process down"
                 )
-                console.info(
+                self.console.info(
                     f"Server {server_name} is still running - Forcing the process down"
                 )
                 self.kill()
 
         logger.info(f"Stopped Server {server_name} with PID {server_pid}")
-        console.info(f"Stopped Server {server_name} with PID {server_pid}")
+        self.console.info(f"Stopped Server {server_name} with PID {server_pid}")
 
         # massive resetting of variables
         self.cleanup_server_object()
-        server_users = server_permissions.get_server_user_list(self.server_id)
+        server_users = Permissions_Servers.get_server_user_list(self.server_id)
 
         # remove the stats polling job since server is stopped
         self.server_scheduler.remove_job("stats_" + str(self.server_id))
@@ -590,7 +585,7 @@ class Server:
         self.record_server_stats()
 
         for user in server_users:
-            websocket_helper.broadcast_user(user, "send_start_reload", {})
+            self.helper.websocket_helper.broadcast_user(user, "send_start_reload", {})
 
     def restart_threaded_server(self, user_id):
         # if not already running, let's just start
@@ -623,7 +618,7 @@ class Server:
         if not self.check_running() and command.lower() != "start":
             logger.warning(f'Server not running, unable to send command "{command}"')
             return False
-        console.info(f"COMMAND TIME: {command}")
+        self.console.info(f"COMMAND TIME: {command}")
         logger.debug(f"Sending command {command} to server")
 
         # send it
@@ -647,7 +642,7 @@ class Server:
                 f"The server {name} has crashed and will be restarted. "
                 f"Restarting server"
             )
-            console.warning(
+            self.console.critical(
                 f"The server {name} has crashed and will be restarted. "
                 f"Restarting server"
             )
@@ -658,7 +653,7 @@ class Server:
                 f"The server {name} has crashed, "
                 f"crash detection is disabled and it will not be restarted"
             )
-            console.critical(
+            self.console.critical(
                 f"The server {name} has crashed, "
                 f"crash detection is disabled and it will not be restarted"
             )
@@ -710,7 +705,7 @@ class Server:
             self.server_scheduler.remove_job("c_" + str(self.server_id))
             return
 
-        servers_helper.sever_crashed(self.server_id)
+        helper_servers.sever_crashed(self.server_id)
         # if we haven't tried to restart more 3 or more times
         if self.restart_count <= 3:
 
@@ -727,21 +722,21 @@ class Server:
                 f"Server {self.name} has been restarted {self.restart_count}"
                 f" times. It has crashed, not restarting."
             )
-            console.critical(
+            self.console.critical(
                 f"Server {self.name} has been restarted {self.restart_count}"
                 f" times. It has crashed, not restarting."
             )
 
             self.restart_count = 0
             self.is_crashed = True
-            servers_helper.sever_crashed(self.server_id)
+            helper_servers.sever_crashed(self.server_id)
 
             # cancel the watcher task
             self.server_scheduler.remove_job("c_" + str(self.server_id))
 
     def remove_watcher_thread(self):
         logger.info("Removing old crash detection watcher thread")
-        console.info("Removing old crash detection watcher thread")
+        self.console.info("Removing old crash detection watcher thread")
         self.server_scheduler.remove_job("c_" + str(self.server_id))
 
     def agree_eula(self, user_id):
@@ -765,7 +760,7 @@ class Server:
             f"Starting Backup Thread for server {self.settings['server_name']}."
         )
         if self.server_path is None:
-            self.server_path = helper.get_os_understandable_path(self.settings["path"])
+            self.server_path = Helpers.get_os_understandable_path(self.settings["path"])
             logger.info(
                 "Backup Thread - Local server path not defined. "
                 "Setting local server path variable."
@@ -787,26 +782,26 @@ class Server:
         logger.info(f"Backup Thread started for server {self.settings['server_name']}.")
 
     def a_backup_server(self):
-        if len(websocket_helper.clients) > 0:
-            websocket_helper.broadcast_page_params(
+        if len(self.helper.websocket_helper.clients) > 0:
+            self.helper.websocket_helper.broadcast_page_params(
                 "/panel/server_detail",
                 {"id": str(self.server_id)},
                 "backup_reload",
                 {"percent": 0, "total_files": 0},
             )
         logger.info(f"Starting server {self.name} (ID {self.server_id}) backup")
-        server_users = server_permissions.get_server_user_list(self.server_id)
+        server_users = Permissions_Servers.get_server_user_list(self.server_id)
         for user in server_users:
-            websocket_helper.broadcast_user(
+            self.helper.websocket_helper.broadcast_user(
                 user,
                 "notification",
-                translation.translate(
-                    "notify", "backupStarted", users_helper.get_user_lang_by_id(user)
+                self.helper.translation.translate(
+                    "notify", "backupStarted", helper_users.get_user_lang_by_id(user)
                 ).format(self.name),
             )
         time.sleep(3)
-        conf = management_helper.get_backup_config(self.server_id)
-        helper.ensure_dir_exists(self.settings["backup_path"])
+        conf = helpers_management.get_backup_config(self.server_id)
+        self.helper.ensure_dir_exists(self.settings["backup_path"])
         try:
             backup_filename = (
                 f"{self.settings['backup_path']}/"
@@ -827,23 +822,23 @@ class Server:
                 args=[tempDir + "/", backup_filename + ".zip"],
             )
             # pylint: disable=unexpected-keyword-arg
-            file_helper.copy_dir(self.server_path, tempDir, dirs_exist_ok=True)
-            excluded_dirs = management_helper.get_excluded_backup_dirs(self.server_id)
-            server_dir = helper.get_os_understandable_path(self.settings["path"])
+            FileHelpers.copy_dir(self.server_path, tempDir, dirs_exist_ok=True)
+            excluded_dirs = helpers_management.get_excluded_backup_dirs(self.server_id)
+            server_dir = Helpers.get_os_understandable_path(self.settings["path"])
 
             for my_dir in excluded_dirs:
                 # Take the full path of the excluded dir and replace the
                 # server path with the temp path, this is so that we're
                 # only deleting excluded dirs from the temp path
                 # and not the server path
-                excluded_dir = helper.get_os_understandable_path(my_dir).replace(
-                    server_dir, helper.get_os_understandable_path(tempDir)
+                excluded_dir = Helpers.get_os_understandable_path(my_dir).replace(
+                    server_dir, Helpers.get_os_understandable_path(tempDir)
                 )
                 # Next, check to see if it is a directory
                 if os.path.isdir(excluded_dir):
                     # If it is a directory,
                     # recursively delete the entire directory from the backup
-                    file_helper.del_dirs(excluded_dir)
+                    FileHelpers.del_dirs(excluded_dir)
                 else:
                     # If not, just remove the file
                     os.remove(excluded_dir)
@@ -851,15 +846,15 @@ class Server:
                 logger.debug(
                     "Found compress backup to be true. Calling compressed archive"
                 )
-                file_helper.make_compressed_archive(
-                    helper.get_os_understandable_path(backup_filename), tempDir
+                FileHelpers.make_compressed_archive(
+                    Helpers.get_os_understandable_path(backup_filename), tempDir
                 )
             else:
                 logger.debug(
                     "Found compress backup to be false. Calling NON-compressed archive"
                 )
-                file_helper.make_archive(
-                    helper.get_os_understandable_path(backup_filename), tempDir
+                FileHelpers.make_archive(
+                    Helpers.get_os_understandable_path(backup_filename), tempDir
                 )
 
             while (
@@ -870,29 +865,29 @@ class Server:
                 oldfile = backup_list[0]
                 oldfile_path = f"{conf['backup_path']}/{oldfile['path']}"
                 logger.info(f"Removing old backup '{oldfile['path']}'")
-                os.remove(helper.get_os_understandable_path(oldfile_path))
+                os.remove(Helpers.get_os_understandable_path(oldfile_path))
 
             self.is_backingup = False
-            file_helper.del_dirs(tempDir)
+            FileHelpers.del_dirs(tempDir)
             logger.info(f"Backup of server: {self.name} completed")
             self.server_scheduler.remove_job("backup_" + str(self.server_id))
             results = {"percent": 100, "total_files": 0, "current_file": 0}
-            if len(websocket_helper.clients) > 0:
-                websocket_helper.broadcast_page_params(
+            if len(self.helper.websocket_helper.clients) > 0:
+                self.helper.websocket_helper.broadcast_page_params(
                     "/panel/server_detail",
                     {"id": str(self.server_id)},
                     "backup_status",
                     results,
                 )
-            server_users = server_permissions.get_server_user_list(self.server_id)
+            server_users = Permissions_Servers.get_server_user_list(self.server_id)
             for user in server_users:
-                websocket_helper.broadcast_user(
+                self.helper.websocket_helper.broadcast_user(
                     user,
                     "notification",
-                    translation.translate(
+                    self.helper.translation.translate(
                         "notify",
                         "backupComplete",
-                        users_helper.get_user_lang_by_id(user),
+                        helper_users.get_user_lang_by_id(user),
                     ).format(self.name),
                 )
             time.sleep(3)
@@ -903,8 +898,8 @@ class Server:
             )
             self.server_scheduler.remove_job("backup_" + str(self.server_id))
             results = {"percent": 100, "total_files": 0, "current_file": 0}
-            if len(websocket_helper.clients) > 0:
-                websocket_helper.broadcast_page_params(
+            if len(self.helper.websocket_helper.clients) > 0:
+                self.helper.websocket_helper.broadcast_page_params(
                     "/panel/server_detail",
                     {"id": str(self.server_id)},
                     "backup_status",
@@ -914,10 +909,10 @@ class Server:
             return
 
     def backup_status(self, source_path, dest_path):
-        results = helper.calc_percent(source_path, dest_path)
+        results = Helpers.calc_percent(source_path, dest_path)
         self.backup_stats = results
-        if len(websocket_helper.clients) > 0:
-            websocket_helper.broadcast_page_params(
+        if len(self.helper.websocket_helper.clients) > 0:
+            self.helper.websocket_helper.broadcast_page_params(
                 "/panel/server_detail",
                 {"id": str(self.server_id)},
                 "backup_status",
@@ -932,19 +927,19 @@ class Server:
 
     def list_backups(self):
         if self.settings["backup_path"]:
-            if helper.check_path_exists(
-                helper.get_os_understandable_path(self.settings["backup_path"])
+            if Helpers.check_path_exists(
+                Helpers.get_os_understandable_path(self.settings["backup_path"])
             ):
-                files = helper.get_human_readable_files_sizes(
-                    helper.list_dir_by_date(
-                        helper.get_os_understandable_path(self.settings["backup_path"])
+                files = Helpers.get_human_readable_files_sizes(
+                    Helpers.list_dir_by_date(
+                        Helpers.get_os_understandable_path(self.settings["backup_path"])
                     )
                 )
                 return [
                     {
                         "path": os.path.relpath(
                             f["path"],
-                            start=helper.get_os_understandable_path(
+                            start=Helpers.get_os_understandable_path(
                                 self.settings["backup_path"]
                             ),
                         ),
@@ -961,7 +956,7 @@ class Server:
             return []
 
     def jar_update(self):
-        servers_helper.set_update(self.server_id, True)
+        helper_servers.set_update(self.server_id, True)
         update_thread = threading.Thread(
             target=self.a_jar_update, daemon=True, name=f"exe_update_{self.name}"
         )
@@ -969,7 +964,7 @@ class Server:
 
     def check_update(self):
 
-        if servers_helper.get_server_stats_by_id(self.server_id)["updating"]:
+        if helper_servers.get_server_stats_by_id(self.server_id)["updating"]:
             return True
         else:
             return False
@@ -987,13 +982,13 @@ class Server:
             self.stop_threaded_server()
         else:
             wasStarted = False
-        if len(websocket_helper.clients) > 0:
+        if len(self.helper.websocket_helper.clients) > 0:
             # There are clients
             self.check_update()
             message = (
                 '<a data-id="' + str(self.server_id) + '" class=""> UPDATING...</i></a>'
             )
-            websocket_helper.broadcast_page(
+            self.helper.websocket_helper.broadcast_page(
                 "/panel/server_detail",
                 "update_button_status",
                 {
@@ -1003,9 +998,9 @@ class Server:
                     "string": message,
                 },
             )
-            websocket_helper.broadcast_page("/panel/dashboard", "send_start_reload", {})
+            self.helper.websocket_helper.broadcast_page("/panel/dashboard", "send_start_reload", {})
         backup_dir = os.path.join(
-            helper.get_os_understandable_path(self.settings["path"]),
+            Helpers.get_os_understandable_path(self.settings["path"]),
             "crafty_executable_backups",
         )
         # checks if backup directory already exists
@@ -1028,37 +1023,37 @@ class Server:
                 logger.info(f"No old backups found for server: {self.name}")
 
         current_executable = os.path.join(
-            helper.get_os_understandable_path(self.settings["path"]),
+            Helpers.get_os_understandable_path(self.settings["path"]),
             self.settings["executable"],
         )
 
         # copies to backup dir
-        helper.copy_files(current_executable, backup_executable)
+        Helpers.copy_files(current_executable, backup_executable)
 
         # boolean returns true for false for success
-        downloaded = helper.download_file(
+        downloaded = Helpers.download_file(
             self.settings["executable_update_url"], current_executable
         )
 
-        while servers_helper.get_server_stats_by_id(self.server_id)["updating"]:
+        while helper_servers.get_server_stats_by_id(self.server_id)["updating"]:
             if downloaded and not self.is_backingup:
                 logger.info("Executable updated successfully. Starting Server")
 
-                servers_helper.set_update(self.server_id, False)
-                if len(websocket_helper.clients) > 0:
+                helper_servers.set_update(self.server_id, False)
+                if len(self.helper.websocket_helper.clients) > 0:
                     # There are clients
                     self.check_update()
-                    server_users = server_permissions.get_server_user_list(
+                    server_users = Permissions_Servers.get_server_user_list(
                         self.server_id
                     )
                     for user in server_users:
-                        websocket_helper.broadcast_user(
+                        self.helper.websocket_helper.broadcast_user(
                             user,
                             "notification",
                             "Executable update finished for " + self.name,
                         )
                     time.sleep(3)
-                    websocket_helper.broadcast_page(
+                    self.helper.websocket_helper.broadcast_page(
                         "/panel/server_detail",
                         "update_button_status",
                         {
@@ -1067,18 +1062,18 @@ class Server:
                             "wasRunning": wasStarted,
                         },
                     )
-                    websocket_helper.broadcast_page(
+                    self.helper.websocket_helper.broadcast_page(
                         "/panel/dashboard", "send_start_reload", {}
                     )
-                server_users = server_permissions.get_server_user_list(self.server_id)
+                server_users = Permissions_Servers.get_server_user_list(self.server_id)
                 for user in server_users:
-                    websocket_helper.broadcast_user(
+                    self.helper.websocket_helper.broadcast_user(
                         user,
                         "notification",
                         "Executable update finished for " + self.name,
                     )
 
-                management_helper.add_to_audit_log_raw(
+                self.management_helper.add_to_audit_log_raw(
                     "Alert",
                     "-1",
                     self.server_id,
@@ -1089,9 +1084,9 @@ class Server:
                     self.start_server()
             elif not downloaded and not self.is_backingup:
                 time.sleep(5)
-                server_users = server_permissions.get_server_user_list(self.server_id)
+                server_users = Permissions_Servers.get_server_user_list(self.server_id)
                 for user in server_users:
-                    websocket_helper.broadcast_user(
+                    self.helper.websocket_helper.broadcast_user(
                         user,
                         "notification",
                         "Executable update failed for "
@@ -1134,8 +1129,8 @@ class Server:
                 "icon": raw_ping_result.get("icon"),
             }
         )
-        if len(websocket_helper.clients) > 0:
-            websocket_helper.broadcast_page_params(
+        if len(self.helper.websocket_helper.clients) > 0:
+            self.helper.websocket_helper.broadcast_page_params(
                 "/panel/server_detail",
                 {"id": str(self.server_id)},
                 "update_server_details",
@@ -1163,16 +1158,16 @@ class Server:
 
         self.record_server_stats()
 
-        if (len(servers_ping) > 0) & (len(websocket_helper.clients) > 0):
+        if (len(servers_ping) > 0) & (len(self.helper.websocket_helper.clients) > 0):
             try:
-                websocket_helper.broadcast_page(
+                self.helper.websocket_helper.broadcast_page(
                     "/panel/dashboard", "update_server_status", servers_ping
                 )
-                websocket_helper.broadcast_page(
+                self.helper.websocket_helper.broadcast_page(
                     "/status", "update_server_status", servers_ping
                 )
             except:
-                console.warning("Can't broadcast server status to websocket")
+                self.console.critical("Can't broadcast server status to websocket")
 
     def get_servers_stats(self):
 
@@ -1181,7 +1176,7 @@ class Server:
         logger.info("Getting Stats for Server " + self.name + " ...")
 
         server_id = self.server_id
-        server = servers_helper.get_server_data_by_id(server_id)
+        server = helper_servers.get_server_data_by_id(server_id)
 
         logger.debug(f"Getting stats for server: {server_id}")
 
@@ -1200,7 +1195,7 @@ class Server:
         server_name = server.get("server_name", f"ID#{server_id}")
 
         logger.debug("Pinging server '{server}' on {internal_ip}:{server_port}")
-        if servers_helper.get_server_type_by_id(server_id) == "minecraft-bedrock":
+        if helper_servers.get_server_type_by_id(server_id) == "minecraft-bedrock":
             int_mc_ping = ping_bedrock(internal_ip, int(server_port))
         else:
             int_mc_ping = ping(internal_ip, int(server_port))
@@ -1212,7 +1207,7 @@ class Server:
         if int_mc_ping:
             int_data = True
             if (
-                servers_helper.get_server_type_by_id(server["server_id"])
+                helper_servers.get_server_type_by_id(server["server_id"])
                 == "minecraft-bedrock"
             ):
                 ping_data = Stats.parse_server_RakNet_ping(int_mc_ping)
@@ -1261,7 +1256,7 @@ class Server:
 
     def get_server_players(self):
 
-        server = servers_helper.get_server_data_by_id(self.server_id)
+        server = helper_servers.get_server_data_by_id(self.server_id)
 
         logger.info(f"Getting players for server {server}")
 
@@ -1274,7 +1269,7 @@ class Server:
         server_port = server["server_port"]
 
         logger.debug("Pinging {internal_ip} on port {server_port}")
-        if servers_helper.get_server_type_by_id(self.server_id) != "minecraft-bedrock":
+        if helper_servers.get_server_type_by_id(self.server_id) != "minecraft-bedrock":
             int_mc_ping = ping(internal_ip, int(server_port))
 
             ping_data = {}
@@ -1288,7 +1283,7 @@ class Server:
     def get_raw_server_stats(self, server_id):
 
         try:
-            server = servers_helper.get_server_obj(server_id)
+            server = helper_servers.get_server_obj(server_id)
         except:
             return {
                 "id": server_id,
@@ -1310,10 +1305,10 @@ class Server:
             }
 
         server_stats = {}
-        server = servers_helper.get_server_obj(server_id)
+        server = helper_servers.get_server_obj(server_id)
         if not server:
             return {}
-        server_dt = servers_helper.get_server_data_by_id(server_id)
+        server_dt = helper_servers.get_server_data_by_id(server_id)
 
         logger.debug(f"Getting stats for server: {server_id}")
 
@@ -1334,7 +1329,7 @@ class Server:
         server_port = server_dt["server_port"]
 
         logger.debug(f"Pinging server '{self.name}' on {internal_ip}:{server_port}")
-        if servers_helper.get_server_type_by_id(server_id) == "minecraft-bedrock":
+        if helper_servers.get_server_type_by_id(server_id) == "minecraft-bedrock":
             int_mc_ping = ping_bedrock(internal_ip, int(server_port))
         else:
             int_mc_ping = ping(internal_ip, int(server_port))
@@ -1345,7 +1340,7 @@ class Server:
         # otherwise people have gotten confused.
         if self.check_running():
             # if we got a good ping return, let's parse it
-            if servers_helper.get_server_type_by_id(server_id) != "minecraft-bedrock":
+            if helper_servers.get_server_type_by_id(server_id) != "minecraft-bedrock":
                 if int_mc_ping:
                     int_data = True
                     ping_data = Stats.parse_server_ping(int_mc_ping)
@@ -1461,7 +1456,7 @@ class Server:
         ).execute()
 
         # delete old data
-        max_age = helper.get_setting("history_max_age")
+        max_age = self.helper.get_setting("history_max_age")
         now = datetime.datetime.now()
         last_week = now.day - max_age
 

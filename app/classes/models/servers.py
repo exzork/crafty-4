@@ -1,36 +1,24 @@
 import logging
 import datetime
+from peewee import (
+    ForeignKeyField,
+    CharField,
+    AutoField,
+    DateTimeField,
+    BooleanField,
+    IntegerField,
+    FloatField,
+)
 
-from app.classes.shared.helpers import helper
-from app.classes.shared.main_models import db_helper
-
-try:
-    from peewee import (
-        SqliteDatabase,
-        Model,
-        ForeignKeyField,
-        CharField,
-        AutoField,
-        DateTimeField,
-        BooleanField,
-        IntegerField,
-        FloatField,
-    )
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
+from app.classes.shared.main_models import db_shortcuts
+from app.classes.models.base_model import BaseModel
 
 logger = logging.getLogger(__name__)
-peewee_logger = logging.getLogger("peewee")
-peewee_logger.setLevel(logging.INFO)
-database = SqliteDatabase(
-    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
-)
 
 # **********************************************************************************
 #                                   Servers Class
 # **********************************************************************************
-class Servers(Model):
+class Servers(BaseModel):
     server_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     server_uuid = CharField(default="", index=True)
@@ -52,13 +40,12 @@ class Servers(Model):
 
     class Meta:
         table_name = "servers"
-        database = database
 
 
 # **********************************************************************************
 #                                   Servers Stats Class
 # **********************************************************************************
-class Server_Stats(Model):
+class Server_Stats(BaseModel):
     stats_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     server_id = ForeignKeyField(Servers, backref="server", index=True)
@@ -84,13 +71,14 @@ class Server_Stats(Model):
 
     class Meta:
         table_name = "server_stats"
-        database = database
 
 
 # **********************************************************************************
 #                                   Servers Class
 # **********************************************************************************
 class helper_servers:
+    def __init__(self, database):
+        self.database = database
 
     # **********************************************************************************
     #                                   Generic Servers Methods
@@ -139,16 +127,15 @@ class helper_servers:
     def update_server(server_obj):
         return server_obj.save()
 
-    @staticmethod
-    def remove_server(server_id):
-        with database.atomic():
+    def remove_server(self, server_id):
+        with self.database.atomic():
             Servers.delete().where(Servers.server_id == server_id).execute()
 
     @staticmethod
     def get_server_data_by_id(server_id):
         query = Servers.select().where(Servers.server_id == server_id).limit(1)
         try:
-            return db_helper.return_rows(query)[0]
+            return db_shortcuts.return_rows(query)[0]
         except IndexError:
             return {}
 
@@ -158,11 +145,11 @@ class helper_servers:
     @staticmethod
     def get_all_defined_servers():
         query = Servers.select()
-        return db_helper.return_rows(query)
+        return db_shortcuts.return_rows(query)
 
     @staticmethod
     def get_all_servers_stats():
-        servers = servers_helper.get_all_defined_servers()
+        servers = helper_servers.get_all_defined_servers()
         server_data = []
         try:
             for s in servers:
@@ -175,7 +162,7 @@ class helper_servers:
                 server_data.append(
                     {
                         "server_data": s,
-                        "stats": db_helper.return_rows(latest)[0],
+                        "stats": db_shortcuts.return_rows(latest)[0],
                         "user_command_permission": True,
                     }
                 )
@@ -187,7 +174,7 @@ class helper_servers:
 
     @staticmethod
     def get_server_friendly_name(server_id):
-        server_data = servers_helper.get_server_data_by_id(server_id)
+        server_data = helper_servers.get_server_data_by_id(server_id)
         friendly_name = (
             f"{server_data.get('server_name', None)} "
             f"with ID: {server_data.get('server_id', 0)}"
@@ -214,34 +201,31 @@ class helper_servers:
             .order_by(Server_Stats.created.desc())
             .limit(1)
         )
-        return db_helper.return_rows(stats)[0]
+        return db_shortcuts.return_rows(stats)[0]
 
     @staticmethod
     def server_id_exists(server_id):
-        if not servers_helper.get_server_data_by_id(server_id):
+        if not helper_servers.get_server_data_by_id(server_id):
             return False
         return True
 
     @staticmethod
     def sever_crashed(server_id):
-        with database.atomic():
-            Server_Stats.update(crashed=True).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(crashed=True).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def set_download(server_id):
-        with database.atomic():
-            Server_Stats.update(downloading=True).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(downloading=True).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def finish_download(server_id):
-        with database.atomic():
-            Server_Stats.update(downloading=False).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(downloading=False).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def get_download_status(server_id):
@@ -252,10 +236,9 @@ class helper_servers:
 
     @staticmethod
     def server_crash_reset(server_id):
-        with database.atomic():
-            Server_Stats.update(crashed=False).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(crashed=False).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def is_crashed(server_id):
@@ -272,10 +255,9 @@ class helper_servers:
             Server_Stats.select().where(Server_Stats.server_id == server_id)
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
-        with database.atomic():
-            Server_Stats.update(updating=value).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(updating=value).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def get_update_status(server_id):
@@ -293,10 +275,9 @@ class helper_servers:
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
             return
-        with database.atomic():
-            Server_Stats.update(first_run=False).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(first_run=False).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def get_first_run(server_id):
@@ -325,7 +306,7 @@ class helper_servers:
     @staticmethod
     def can_stop_no_players(server_id, time_limit):
         can = False
-        ttl_no_players = servers_helper.get_TTL_without_player(server_id)
+        ttl_no_players = helper_servers.get_TTL_without_player(server_id)
         if (time_limit == -1) or (ttl_no_players > time_limit):
             can = True
         return can
@@ -337,10 +318,9 @@ class helper_servers:
             Server_Stats.select().where(Server_Stats.server_id == server_id)
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
-        with database.atomic():
-            Server_Stats.update(waiting_start=value).where(
-                Server_Stats.server_id == server_id
-            ).execute()
+        Server_Stats.update(waiting_start=value).where(
+            Server_Stats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def get_waiting_start(server_id):
@@ -348,6 +328,3 @@ class helper_servers:
             Server_Stats.select().where(Server_Stats.server_id == server_id).get()
         )
         return waiting_start.waiting_start
-
-
-servers_helper = helper_servers()

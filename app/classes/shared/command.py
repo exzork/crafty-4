@@ -4,22 +4,20 @@ import time
 import threading
 import logging
 
-from app.classes.shared.console import console
-from app.classes.shared.helpers import helper
 from app.classes.shared.import3 import import3
-from app.classes.web.websocket_helper import websocket_helper
 
 logger = logging.getLogger(__name__)
 
 
 class MainPrompt(cmd.Cmd):
-    def __init__(self, tasks_manager, migration_manager):
+    def __init__(self, helper, tasks_manager, migration_manager):
         super().__init__()
+        self.helper = helper
+        self.console = self.helper.console
         self.tasks_manager = tasks_manager
         self.migration_manager = migration_manager
-
-    # overrides the default Prompt
-    prompt = f"Crafty Controller v{helper.get_version_string()} > "
+        # overrides the default Prompt
+        self.prompt = f"Crafty Controller v{self.helper.get_version_string()} > "
 
     # see MR !233 for pylint exemptino reason
     @staticmethod
@@ -36,20 +34,20 @@ class MainPrompt(cmd.Cmd):
         elif line == "down":
             self.migration_manager.down()
         elif line == "done":
-            console.info(self.migration_manager.done)
+            self.console.info(self.migration_manager.done)
         elif line == "todo":
-            console.info(self.migration_manager.todo)
+            self.console.info(self.migration_manager.todo)
         elif line == "diff":
-            console.info(self.migration_manager.diff)
+            self.console.info(self.migration_manager.diff)
         elif line == "info":
-            console.info(f"Done: {self.migration_manager.done}")
-            console.info(f"FS:   {self.migration_manager.todo}")
-            console.info(f"Todo: {self.migration_manager.diff}")
+            self.console.info(f"Done: {self.migration_manager.done}")
+            self.console.info(f"FS:   {self.migration_manager.todo}")
+            self.console.info(f"Todo: {self.migration_manager.diff}")
         elif line.startswith("add "):
             migration_name = line[len("add ") :]
             self.migration_manager.create(migration_name, False)
         else:
-            console.info("Unknown migration command")
+            self.console.info("Unknown migration command")
 
     @staticmethod
     def do_threads(_line):
@@ -67,24 +65,21 @@ class MainPrompt(cmd.Cmd):
 
     def universal_exit(self):
         logger.info("Stopping all server daemons / threads")
-        console.info(
+        self.console.info(
             "Stopping all server daemons / threads - This may take a few seconds"
         )
-        websocket_helper.disconnect_all()
-        console.info("Waiting for main thread to stop")
+        self.helper.websocket_helper.disconnect_all()
+        self.console.info("Waiting for main thread to stop")
         while True:
             if self.tasks_manager.get_main_thread_run_status():
                 sys.exit(0)
             time.sleep(1)
 
-    @staticmethod
-    def help_exit():
-        console.help("Stops the server if running, Exits the program")
+    def help_exit(self):
+        self.console.help("Stops the server if running, Exits the program")
 
-    @staticmethod
-    def help_migrations():
-        console.help("Only for advanced users. Use with caution")
+    def help_migrations(self):
+        self.console.help("Only for advanced users. Use with caution")
 
-    @staticmethod
-    def help_import3():
-        console.help("Import users and servers from Crafty 3")
+    def help_import3(self):
+        self.console.help("Import users and servers from Crafty 3")

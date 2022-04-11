@@ -2,38 +2,28 @@ import logging
 import datetime
 from typing import Optional, Union
 
-from app.classes.models.roles import Roles, roles_helper
-from app.classes.shared.helpers import helper
+from peewee import (
+    ForeignKeyField,
+    CharField,
+    AutoField,
+    DateTimeField,
+    BooleanField,
+    CompositeKey,
+    DoesNotExist,
+    JOIN,
+)
+from playhouse.shortcuts import model_to_dict
 
-try:
-    from peewee import (
-        SqliteDatabase,
-        Model,
-        ForeignKeyField,
-        CharField,
-        AutoField,
-        DateTimeField,
-        BooleanField,
-        CompositeKey,
-        DoesNotExist,
-        JOIN,
-    )
-    from playhouse.shortcuts import model_to_dict
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
+from app.classes.shared.helpers import Helpers
+from app.classes.models.base_model import BaseModel
+from app.classes.models.roles import Roles, helper_roles
 
 logger = logging.getLogger(__name__)
-peewee_logger = logging.getLogger("peewee")
-peewee_logger.setLevel(logging.INFO)
-database = SqliteDatabase(
-    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
-)
 
 # **********************************************************************************
 #                                   Users Class
 # **********************************************************************************
-class Users(Model):
+class Users(BaseModel):
     user_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     last_login = DateTimeField(default=datetime.datetime.now)
@@ -53,13 +43,12 @@ class Users(Model):
 
     class Meta:
         table_name = "users"
-        database = database
 
 
 # **********************************************************************************
 #                                   API Keys Class
 # **********************************************************************************
-class ApiKeys(Model):
+class ApiKeys(BaseModel):
     token_id = AutoField()
     name = CharField(default="", unique=True, index=True)
     created = DateTimeField(default=datetime.datetime.now)
@@ -70,26 +59,28 @@ class ApiKeys(Model):
 
     class Meta:
         table_name = "api_keys"
-        database = database
 
 
 # **********************************************************************************
 #                                   User Roles Class
 # **********************************************************************************
-class User_Roles(Model):
+class User_Roles(BaseModel):
     user_id = ForeignKeyField(Users, backref="user_role")
     role_id = ForeignKeyField(Roles, backref="user_role")
 
     class Meta:
         table_name = "user_roles"
         primary_key = CompositeKey("user_id", "role_id")
-        database = database
 
 
 # **********************************************************************************
 #                                   Users Helpers
 # **********************************************************************************
 class helper_users:
+    def __init__(self, database, helper):
+        self.database = database
+        self.helper = helper
+
     @staticmethod
     def get_by_id(user_id):
         return Users.get_by_id(user_id)
@@ -137,7 +128,7 @@ class helper_users:
 
         if user:
             # I know it should apply it without setting it but I'm just making sure
-            user = users_helper.add_user_roles(user)
+            user = helper_users.add_user_roles(user)
             return user
         else:
             # logger.debug("user: ({}) {}".format(user_id, {}))
@@ -155,11 +146,11 @@ class helper_users:
     @staticmethod
     def get_user_model(user_id: str) -> Users:
         user = Users.get(Users.user_id == user_id)
-        user = users_helper.add_user_roles(user)
+        user = helper_users.add_user_roles(user)
         return user
 
-    @staticmethod
     def add_user(
+        self,
         username: str,
         password: str = None,
         email: Optional[str] = None,
@@ -167,7 +158,7 @@ class helper_users:
         superuser: bool = False,
     ) -> str:
         if password is not None:
-            pw_enc = helper.encode_pass(password)
+            pw_enc = self.helper.encode_pass(password)
         else:
             pw_enc = None
         user_id = Users.insert(
@@ -177,7 +168,7 @@ class helper_users:
                 Users.email: email,
                 Users.enabled: enabled,
                 Users.superuser: superuser,
-                Users.created: helper.get_time_as_string(),
+                Users.created: Helpers.get_time_as_string(),
             }
         ).execute()
         return user_id
@@ -197,7 +188,7 @@ class helper_users:
                 Users.email: email,
                 Users.enabled: enabled,
                 Users.superuser: superuser,
-                Users.created: helper.get_time_as_string(),
+                Users.created: Helpers.get_time_as_string(),
             }
         ).execute()
         return user_id
@@ -230,9 +221,8 @@ class helper_users:
                 final_users.append(suser.user_id)
         return final_users
 
-    @staticmethod
-    def remove_user(user_id):
-        with database.atomic():
+    def remove_user(self, user_id):
+        with self.database.atomic():
             User_Roles.delete().where(User_Roles.user_id == user_id).execute()
             user = Users.get(Users.user_id == user_id)
             return user.delete_instance()
@@ -259,7 +249,7 @@ class helper_users:
 
     @staticmethod
     def user_id_exists(user_id):
-        if not users_helper.get_user(user_id):
+        if not helper_users.get_user(user_id):
             return False
         return True
 
@@ -276,7 +266,7 @@ class helper_users:
         roles_list = []
         roles = User_Roles.select().where(User_Roles.user_id == user_id)
         for r in roles:
-            roles_list.append(roles_helper.get_role(r.role_id)["role_id"])
+            roles_list.append(helper_roles.get_role(r.role_id)["role_id"])
         return roles_list
 
     @staticmethod
@@ -284,7 +274,7 @@ class helper_users:
         roles_list = []
         roles = User_Roles.select().where(User_Roles.user_id == user_id)
         for r in roles:
-            roles_list.append(roles_helper.get_role(r.role_id)["role_name"])
+            roles_list.append(helper_roles.get_role(r.role_id)["role_name"])
         return roles_list
 
     @staticmethod
@@ -384,6 +374,3 @@ class helper_users:
     @staticmethod
     def delete_user_api_key(key_id: str):
         ApiKeys.delete().where(ApiKeys.token_id == key_id).execute()
-
-
-users_helper = helper_users()
