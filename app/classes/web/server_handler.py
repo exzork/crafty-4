@@ -203,7 +203,9 @@ class ServerHandler(BaseHandler):
                         os.path.join(self.helper.servers_dir, new_server_uuid)
                     ):
                         new_server_uuid = Helpers.create_uuid()
-                    new_server_path = os.path.join(self.helper.servers_dir, new_server_uuid)
+                    new_server_path = os.path.join(
+                        self.helper.servers_dir, new_server_uuid
+                    )
 
                     # copy the old server
                     FileHelpers.copy_dir(server_data.get("path"), new_server_path)

@@ -9,6 +9,7 @@ import subprocess
 import html
 import tempfile
 import psutil
+
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -148,7 +149,9 @@ class Server:
             delay = int(self.settings["auto_start_delay"])
 
             logger.info(f"Scheduling server {self.name} to start in {delay} seconds")
-            self.console.info(f"Scheduling server {self.name} to start in {delay} seconds")
+            self.console.info(
+                f"Scheduling server {self.name} to start in {delay} seconds"
+            )
 
             self.server_scheduler.add_job(
                 self.run_scheduled_server,
@@ -216,7 +219,9 @@ class Server:
 
         if not Helpers.check_path_exists(self.server_path):
             logger.critical(f"Server path: {self.server_path} does not seem to exits")
-            self.console.critical(f"Server path: {self.server_path} does not seem to exits")
+            self.console.critical(
+                f"Server path: {self.server_path} does not seem to exits"
+            )
 
         if not Helpers.check_writeable(self.server_path):
             logger.critical(f"Unable to write/access {self.server_path}")
@@ -255,7 +260,9 @@ class Server:
             return False
 
         logger.info(f"Launching Server {self.name} with command {self.server_command}")
-        self.console.info(f"Launching Server {self.name} with command {self.server_command}")
+        self.console.info(
+            f"Launching Server {self.name} with command {self.server_command}"
+        )
 
         # Checks for eula. Creates one if none detected.
         # If EULA is detected and not set to true we offer to set it true.
@@ -450,11 +457,15 @@ class Server:
                 server_users = Permissions_Servers.get_server_user_list(self.server_id)
                 for user in server_users:
                     if user != user_id:
-                        self.helper.websocket_helper.broadcast_user(user, "send_start_reload", {})
+                        self.helper.websocket_helper.broadcast_user(
+                            user, "send_start_reload", {}
+                        )
             else:
                 server_users = Permissions_Servers.get_server_user_list(self.server_id)
                 for user in server_users:
-                    self.helper.websocket_helper.broadcast_user(user, "send_start_reload", {})
+                    self.helper.websocket_helper.broadcast_user(
+                        user, "send_start_reload", {}
+                    )
         else:
             logger.warning(
                 f"Server PID {self.process.pid} died right after starting "
@@ -485,7 +496,11 @@ class Server:
                 self.helper.websocket_helper.broadcast_user(
                     user_id,
                     "send_start_error",
-                    {"error": self.helper.translation.translate("error", "internet", user_lang)},
+                    {
+                        "error": self.helper.translation.translate(
+                            "error", "internet", user_lang
+                        )
+                    },
                 )
 
     def stop_crash_detection(self):
@@ -998,7 +1013,9 @@ class Server:
                     "string": message,
                 },
             )
-            self.helper.websocket_helper.broadcast_page("/panel/dashboard", "send_start_reload", {})
+            self.helper.websocket_helper.broadcast_page(
+                "/panel/dashboard", "send_start_reload", {}
+            )
         backup_dir = os.path.join(
             Helpers.get_os_understandable_path(self.settings["path"]),
             "crafty_executable_backups",

@@ -331,11 +331,15 @@ class MigrationManager(object):
         """
         if not os.path.exists(self.helper.migration_dir):
             logger.warning(
-                "Migration directory: {} does not exist.".format(self.helper.migration_dir)
+                "Migration directory: {} does not exist.".format(
+                    self.helper.migration_dir
+                )
             )
             os.makedirs(self.helper.migration_dir)
         return sorted(
-            f[:-3] for f in os.listdir(self.helper.migration_dir) if self.filemask.match(f)
+            f[:-3]
+            for f in os.listdir(self.helper.migration_dir)
+            if self.filemask.match(f)
         )
 
     @property
@@ -419,7 +423,9 @@ class MigrationManager(object):
         if Helpers.is_os_windows() and sys.version_info >= (3, 0):
             # if system is windows - force utf-8 encoding
             call_params["encoding"] = "utf-8"
-        with open(os.path.join(self.helper.migration_dir, name + ".py"), **call_params) as f:
+        with open(
+            os.path.join(self.helper.migration_dir, name + ".py"), **call_params
+        ) as f:
             code = f.read()
             scope = {}
             code = compile(code, "<string>", "exec", dont_inherit=True)

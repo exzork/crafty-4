@@ -11,6 +11,7 @@ from app.classes.models.server_permissions import Permissions_Servers
 
 logger = logging.getLogger(__name__)
 
+
 class ServerJars:
     def __init__(self, helper):
         self.helper = helper
@@ -177,7 +178,9 @@ class ServerJars:
             try:
                 Servers_Controller.set_download(server_id)
                 for user in server_users:
-                    self.helper.websocket_helper.broadcast_user(user, "send_start_reload", {})
+                    self.helper.websocket_helper.broadcast_user(
+                        user, "send_start_reload", {}
+                    )
 
                 break
             except Exception as ex:
@@ -195,7 +198,9 @@ class ServerJars:
                             user, "notification", "Executable download finished"
                         )
                         time.sleep(3)
-                        self.helper.websocket_helper.broadcast_user(user, "send_start_reload", {})
+                        self.helper.websocket_helper.broadcast_user(
+                            user, "send_start_reload", {}
+                        )
                     return True
             except Exception as e:
                 logger.error(f"Unable to save jar to {path} due to error:{e}")
@@ -206,6 +211,8 @@ class ServerJars:
                         user, "notification", "Executable download finished"
                     )
                     time.sleep(3)
-                    self.helper.websocket_helper.broadcast_user(user, "send_start_reload", {})
+                    self.helper.websocket_helper.broadcast_user(
+                        user, "send_start_reload", {}
+                    )
 
                 return False

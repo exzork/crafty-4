@@ -8,8 +8,9 @@ from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.file_helpers import FileHelpers
 from app.classes.web.base_handler import BaseHandler
-    
+
 logger = logging.getLogger(__name__)
+
 
 class FileHandler(BaseHandler):
     def render_page(self, template, page_data):
@@ -256,7 +257,9 @@ class FileHandler(BaseHandler):
                 self.get_body_argument("file_path", default=None, strip=True)
             )
 
-            self.helper.self.helper.console.warning(f"Delete {file_path} for server {server_id}")
+            self.helper.self.helper.console.warning(
+                f"Delete {file_path} for server {server_id}"
+            )
 
             if not self.check_server_id(server_id, "del_file"):
                 return
@@ -303,7 +306,9 @@ class FileHandler(BaseHandler):
                 Helpers.get_os_understandable_path(server_info["path"]), dir_path
             ) or not Helpers.check_path_exists(os.path.abspath(dir_path)):
                 logger.warning(f"Invalid path in del_file file ajax call ({dir_path})")
-                self.helper.console.warning(f"Invalid path in del_file file ajax call ({dir_path})")
+                self.helper.console.warning(
+                    f"Invalid path in del_file file ajax call ({dir_path})"
+                )
                 return
 
             # Delete the directory
@@ -389,7 +394,9 @@ class FileHandler(BaseHandler):
 
             if item_path is None or new_item_name is None:
                 logger.warning("Invalid path(s) in rename_file file ajax call")
-                self.helper.console.warning("Invalid path(s) in rename_file file ajax call")
+                self.helper.console.warning(
+                    "Invalid path(s) in rename_file file ajax call"
+                )
                 return
 
             if not Helpers.in_path(
@@ -465,7 +472,9 @@ class FileHandler(BaseHandler):
 
             if item_path is None or new_item_name is None:
                 logger.warning("Invalid path(s) in rename_file file ajax call")
-                self.helper.console.warning("Invalid path(s) in rename_file file ajax call")
+                self.helper.console.warning(
+                    "Invalid path(s) in rename_file file ajax call"
+                )
                 return
 
             if not Helpers.in_path(

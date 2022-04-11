@@ -335,7 +335,9 @@ class PanelHandler(BaseHandler):
             template = "public/error.html"
 
         elif page == "credits":
-            with open(self.helper.credits_cache, encoding="utf-8") as credits_default_local:
+            with open(
+                self.helper.credits_cache, encoding="utf-8"
+            ) as credits_default_local:
                 try:
                     remote = requests.get(
                         "https://craftycontrol.com/credits", allow_redirects=True
@@ -1311,7 +1313,9 @@ class PanelHandler(BaseHandler):
                 ):
                     server_obj.path = server_path
                     server_obj.log_path = log_path
-                if Helpers.validate_traversal(self.helper.get_servers_root_dir(), executable):
+                if Helpers.validate_traversal(
+                    self.helper.get_servers_root_dir(), executable
+                ):
                     server_obj.executable = executable
                 server_obj.execution_command = execution_command
                 server_obj.server_ip = server_ip
@@ -1889,7 +1893,9 @@ class PanelHandler(BaseHandler):
             )
 
             self.write(
-                self.controller.authentication.generate(key.user_id.user_id, {"token_id": key.token_id})
+                self.controller.authentication.generate(
+                    key.user_id.user_id, {"token_id": key.token_id}
+                )
             )
             self.finish()
 

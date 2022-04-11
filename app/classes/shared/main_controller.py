@@ -7,6 +7,7 @@ import logging
 import tempfile
 from typing import Union
 from peewee import DoesNotExist
+
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -31,6 +32,7 @@ from app.classes.minecraft.stats import Stats
 
 logger = logging.getLogger(__name__)
 
+
 class Controller:
     def __init__(self, database, helper):
         self.helper = helper
@@ -47,7 +49,9 @@ class Controller:
         self.roles = Roles_Controller(self.users_helper)
         self.server_perms = Server_Perms_Controller()
         self.servers = Servers_Controller(self.servers_helper)
-        self.users = Users_Controller(self.helper, self.users_helper, self.authentication)
+        self.users = Users_Controller(
+            self.helper, self.users_helper, self.authentication
+        )
         tz = get_localzone()
         self.support_scheduler = BackgroundScheduler(timezone=str(tz))
         self.support_scheduler.start()
@@ -103,7 +107,9 @@ class Controller:
             # if the properties file isn't there, let's warn
             if not Helpers.check_file_exists(settings_file):
                 logger.error(f"Unable to find {settings_file}. Skipping this server.")
-                self.console.error(f"Unable to find {settings_file}. Skipping this server.")
+                self.console.error(
+                    f"Unable to find {settings_file}. Skipping this server."
+                )
                 continue
 
             settings = ServerProps(settings_file)
@@ -217,7 +223,9 @@ class Controller:
             )
 
         tempZipStorage += ".zip"
-        self.helper.websocket_helper.broadcast_user(exec_user["user_id"], "send_logs_bootbox", {})
+        self.helper.websocket_helper.broadcast_user(
+            exec_user["user_id"], "send_logs_bootbox", {}
+        )
 
         self.users.set_support_path(exec_user["user_id"], tempZipStorage)
 
@@ -717,10 +725,13 @@ class Controller:
         old_bu_path = server_data["backup_path"]
         Server_Perms_Controller.backup_role_swap(old_server_id, new_server_id)
         if not Helpers.is_os_windows():
-            backup_path = Helpers.validate_traversal(self.helper.backup_path, old_bu_path)
+            backup_path = Helpers.validate_traversal(
+                self.helper.backup_path, old_bu_path
+            )
         if Helpers.is_os_windows():
             backup_path = Helpers.validate_traversal(
-                Helpers.wtol_path(self.helper.backup_path), Helpers.wtol_path(old_bu_path)
+                Helpers.wtol_path(self.helper.backup_path),
+                Helpers.wtol_path(old_bu_path),
             )
             backup_path = Helpers.wtol_path(str(backup_path))
             backup_path.replace(" ", "^ ")
@@ -761,7 +772,9 @@ class Controller:
             server_port,
         )
 
-        if not Helpers.check_file_exists(os.path.join(server_dir, "crafty_managed.txt")):
+        if not Helpers.check_file_exists(
+            os.path.join(server_dir, "crafty_managed.txt")
+        ):
             try:
                 # place a file in the dir saying it's owned by crafty
                 with open(
@@ -794,7 +807,9 @@ class Controller:
                 server_name = server_data["server_name"]
 
                 logger.info(f"Deleting Server: ID {server_id} | Name: {server_name} ")
-                self.console.info(f"Deleting Server: ID {server_id} | Name: {server_name} ")
+                self.console.info(
+                    f"Deleting Server: ID {server_id} | Name: {server_name} "
+                )
 
                 srv_obj = s["server_obj"]
                 running = srv_obj.check_running()

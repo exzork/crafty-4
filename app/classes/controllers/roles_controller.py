@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 class Roles_Controller:
     def __init__(self, users_helper):
         self.users_helper = users_helper
+
     @staticmethod
     def get_all_roles():
         return helper_roles.get_all_roles()
@@ -45,7 +46,9 @@ class Roles_Controller:
         for server in added_servers:
             Permissions_Servers.get_or_create(role_id, server, permissions_mask)
         for server in base_data["servers"]:
-            Permissions_Servers.update_role_permission(role_id, server, permissions_mask)
+            Permissions_Servers.update_role_permission(
+                role_id, server, permissions_mask
+            )
             # TODO: This is horribly inefficient and we should be using bulk queries
             # but im going for functionality at this point
         Permissions_Servers.delete_roles_permissions(role_id, removed_servers)

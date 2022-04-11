@@ -177,12 +177,16 @@ class TasksManager:
                             ],
                         )
                     except Exception as e:
-                        self.helper.console.error(f"Failed to schedule task with error: {e}.")
+                        self.helper.console.error(
+                            f"Failed to schedule task with error: {e}."
+                        )
                         self.helper.console.warning("Removing failed task from DB.")
                         logger.error(f"Failed to schedule task with error: {e}.")
                         logger.warning("Removing failed task from DB.")
                         # remove items from DB if task fails to add to apscheduler
-                        self.controller.management_helper.delete_scheduled_task(schedule.schedule_id)
+                        self.controller.management_helper.delete_scheduled_task(
+                            schedule.schedule_id
+                        )
                 else:
                     if schedule.interval_type == "hours":
                         self.scheduler.add_job(
@@ -270,7 +274,9 @@ class TasksManager:
                         ],
                     )
                 except Exception as e:
-                    self.helper.console.error(f"Failed to schedule task with error: {e}.")
+                    self.helper.console.error(
+                        f"Failed to schedule task with error: {e}."
+                    )
                     self.helper.console.warning("Removing failed task from DB.")
                     logger.error(f"Failed to schedule task with error: {e}.")
                     logger.warning("Removing failed task from DB.")
@@ -381,7 +387,9 @@ class TasksManager:
                             ],
                         )
                     except Exception as e:
-                        self.helper.console.error(f"Failed to schedule task with error: {e}.")
+                        self.helper.console.error(
+                            f"Failed to schedule task with error: {e}."
+                        )
                         self.helper.console.info("Removing failed task from DB.")
                         self.controller.management_helper.delete_scheduled_task(sch_id)
                 else:
@@ -511,7 +519,10 @@ class TasksManager:
 
         logger.info("Scheduling Serverjars.com cache refresh service every 12 hours")
         self.scheduler.add_job(
-            self.controller.server_jars.refresh_cache, "interval", hours=12, id="serverjars"
+            self.controller.server_jars.refresh_cache,
+            "interval",
+            hours=12,
+            id="serverjars",
         )
 
     def realtime(self):

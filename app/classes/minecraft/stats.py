@@ -61,7 +61,9 @@ class Stats:
             with p.oneshot():
                 process_stats = {
                     "cpu_usage": real_cpu,
-                    "memory_usage": Helpers.human_readable_file_size(p.memory_info()[0]),
+                    "memory_usage": Helpers.human_readable_file_size(
+                        p.memory_info()[0]
+                    ),
                     "mem_percentage": round(p.memory_percent(), 0),
                 }
             return process_stats

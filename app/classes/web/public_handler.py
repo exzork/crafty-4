@@ -19,7 +19,9 @@ class PublicHandler(BaseHandler):
 
         if user_id is not None:
             self.set_cookie(
-                "token", self.controller.authentication.generate(user_id), expires_days=int(expire_days)
+                "token",
+                self.controller.authentication.generate(user_id),
+                expires_days=int(expire_days),
             )
         else:
             self.clear_cookie("token")

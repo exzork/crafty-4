@@ -13,7 +13,6 @@ class import3:
         self.console = self.helper.console
         self.controller = controller
 
-
     def start_import(self):
         folder = os.path.normpath(
             input(
@@ -26,7 +25,9 @@ class import3:
                 "Crafty cannot find the path you entered. "
                 "Does Crafty's user have permission to access it?"
             )
-            self.console.info("Please run the import3 command again and enter a valid path.")
+            self.console.info(
+                "Please run the import3 command again and enter a valid path."
+            )
         else:
             with open(os.path.join(folder, "users.json"), encoding="utf-8") as f:
                 user_json = json.loads(f.read())

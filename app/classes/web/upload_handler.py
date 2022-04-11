@@ -18,7 +18,11 @@ class UploadHandler(BaseHandler):
 
     # noinspection PyAttributeOutsideInit
     def initialize(
-        self, helper: Helpers = None, controller: Controller = None, tasks_manager=None, translator=None
+        self,
+        helper: Helpers = None,
+        controller: Controller = None,
+        tasks_manager=None,
+        translator=None,
     ):
         self.helper = helper
         self.controller = controller

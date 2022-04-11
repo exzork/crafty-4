@@ -9,7 +9,9 @@ logger = logging.getLogger(__name__)
 class Translation:
     def __init__(self, helper):
         self.helper = helper
-        self.translations_path = os.path.join(self.helper.root_dir, "app", "translations")
+        self.translations_path = os.path.join(
+            self.helper.root_dir, "app", "translations"
+        )
         self.cached_translation = None
         self.cached_translation_lang = None
 

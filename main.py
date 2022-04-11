@@ -106,8 +106,7 @@ if __name__ == "__main__":
 
     # start the database
     database = peewee.SqliteDatabase(
-        helper.db_path,
-        pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
+        helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
     )
     database_proxy.initialize(database)
 

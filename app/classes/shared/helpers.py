@@ -630,7 +630,10 @@ class Helpers:
         sizes = []
         for p in paths:
             sizes.append(
-                {"path": p, "size": Helpers.human_readable_file_size(os.stat(p).st_size)}
+                {
+                    "path": p,
+                    "size": Helpers.human_readable_file_size(os.stat(p).st_size),
+                }
             )
         return sizes
 
@@ -913,7 +916,9 @@ class Helpers:
 
     def backup_select(self, path, user_id):
         if user_id:
-            self.websocket_helper.broadcast_user(user_id, "send_temp_path", {"path": path})
+            self.websocket_helper.broadcast_user(
+                user_id, "send_temp_path", {"path": path}
+            )
 
     @staticmethod
     def unzip_backup_archive(backup_path, zip_name):

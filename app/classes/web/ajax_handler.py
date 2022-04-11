@@ -283,7 +283,9 @@ class AjaxHandler(BaseHandler):
 
             if server_id is None:
                 logger.warning("Server ID not found in send_command ajax call")
-                self.helper.console.warning("Server ID not found in send_command ajax call")
+                self.helper.console.warning(
+                    "Server ID not found in send_command ajax call"
+                )
 
             srv_obj = self.controller.get_server_obj(server_id)
 
@@ -430,7 +432,11 @@ class AjaxHandler(BaseHandler):
                     self.helper.websocket_helper.broadcast_user(
                         user_id,
                         "send_start_error",
-                        {"error": self.helper.translation.translate("error", "no-file", user_lang)},
+                        {
+                            "error": self.helper.translation.translate(
+                                "error", "no-file", user_lang
+                            )
+                        },
                     )
             return
 
@@ -496,12 +502,15 @@ class AjaxHandler(BaseHandler):
                 )
             ) or not Helpers.check_file_exists(os.path.abspath(file_path)):
                 logger.warning(f"Invalid path in del_backup ajax call ({file_path})")
-                self.helper.console.warning(f"Invalid path in del_backup ajax call ({file_path})")
+                self.helper.console.warning(
+                    f"Invalid path in del_backup ajax call ({file_path})"
+                )
                 return
 
             # Delete the file
             if Helpers.validate_traversal(
-                Helpers.get_os_understandable_path(server_info["backup_path"]), file_path
+                Helpers.get_os_understandable_path(server_info["backup_path"]),
+                file_path,
             ):
                 os.remove(file_path)
 

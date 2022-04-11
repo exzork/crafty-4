@@ -6,6 +6,7 @@ from app.classes.shared.helpers import Helpers
 
 logger = logging.getLogger(__name__)
 
+
 class db_builder:
     def __init__(self, database, helper, users_helper):
         self.database = database

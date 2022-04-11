@@ -17,7 +17,9 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
     translator = None
     io_loop = None
 
-    def initialize(self, helper=None, controller=None, tasks_manager=None, translator=None):
+    def initialize(
+        self, helper=None, controller=None, tasks_manager=None, translator=None
+    ):
         self.helper = helper
         self.controller = controller
         self.tasks_manager = tasks_manager
