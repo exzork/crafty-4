@@ -102,8 +102,21 @@ class PublicHandler(BaseHandler):
             entered_password = bleach.clean(self.get_argument("password"))
 
             # pylint: disable=no-member
-            user_id = helper_users.get_user_id_by_name(entered_username.lower())
-            user_data = helper_users.get_user_model(user_id)
+            try:
+                user_id = helper_users.get_user_id_by_name(entered_username.lower())
+                user_data = helper_users.get_user_model(user_id)
+            except:
+                error_msg = "Incorrect username or password. Please try again."
+                # self.clear_cookie("user")
+                # self.clear_cookie("user_data")
+                self.clear_cookie("token")
+                if self.request.query:
+                    self.redirect(
+                        f"/public/login?error_msg={error_msg}&{self.request.query}"
+                    )
+                else:
+                    self.redirect(f"/public/login?error_msg={error_msg}")
+                return
 
             # if we don't have a user
             if not user_data:
