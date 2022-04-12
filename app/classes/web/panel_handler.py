@@ -1475,7 +1475,7 @@ class PanelHandler(BaseHandler):
                 one_time = False
 
             if not superuser and not permissions[
-                "Backup"
+                "Schedule"
             ] in self.controller.server_perms.get_user_id_permissions_list(
                 exec_user["user_id"], server_id
             ):
@@ -1633,7 +1633,7 @@ class PanelHandler(BaseHandler):
                 one_time = False
 
             if not superuser and not permissions[
-                "Backup"
+                "Schedule"
             ] in self.controller.server_perms.get_user_id_permissions_list(
                 exec_user["user_id"], server_id
             ):
