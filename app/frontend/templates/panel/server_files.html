@@ -728,11 +728,11 @@
     console.log("PATH: " + path);
     $(function () {
       var uploadHtml = "<div>" +
-        '<form id="upload_file" enctype="multipart/form-data">' + "<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
-        "<input id='files' name='files' type='file' style='display:none;' multiple='true'>" +
+        '<form id="upload_file"  enctype="multipart/form-data">' + "<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
         "<i class='fa fa-cloud-upload fa-3x'></i>" +
         "<br />" +
         "{{translate('serverFiles', 'clickUpload', data['lang'])}}" +
+        "<input style='margin-left: 21%;' id='files' name='files' type='file' multiple='true'>" +
         "</label></form>" +
         "<br />" +
         "<ul style='margin-left:5px !important;' id='fileList'></ul>" +
