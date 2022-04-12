@@ -763,6 +763,7 @@ class Server:
 
     def backup_server(self):
         if self.settings["backup_path"] == "":
+            logger.critical("Backup path is None. Canceling Backup!")
             return
         backup_thread = threading.Thread(
             target=self.a_backup_server, daemon=True, name=f"backup_{self.name}"
