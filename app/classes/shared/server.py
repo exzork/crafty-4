@@ -762,7 +762,7 @@ class Server:
             return False
 
     def backup_server(self):
-        if self.settings["backup_path"] is "":
+        if self.settings["backup_path"] == "":
             return
         backup_thread = threading.Thread(
             target=self.a_backup_server, daemon=True, name=f"backup_{self.name}"

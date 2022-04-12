@@ -9,6 +9,7 @@ from peewee import (
 
 from app.classes.models.base_model import BaseModel
 from app.classes.models.users import Users, ApiKeys, helper_users
+from app.classes.shared.permission_helper import PermissionHelper
 
 logger = logging.getLogger(__name__)
 
@@ -209,7 +210,7 @@ class Permissions_Crafty:
                     user["user_id"]
                 )
             key_permissions_mask: str = key.crafty_permissions
-            permissions_mask = helper_users.combine_masks(
+            permissions_mask = PermissionHelper.combine_masks(
                 user_permissions_mask, key_permissions_mask
             )
             permissions_list = Permissions_Crafty.get_permissions(permissions_mask)
