@@ -8,8 +8,9 @@ logger = logging.getLogger(__name__)
 
 
 class Roles_Controller:
-    def __init__(self, users_helper):
+    def __init__(self, users_helper, roles_helper):
         self.users_helper = users_helper
+        self.roles_helper = roles_helper
 
     @staticmethod
     def get_all_roles():
@@ -63,7 +64,7 @@ class Roles_Controller:
         role_data = Roles_Controller.get_role_with_servers(role_id)
         Permissions_Servers.delete_roles_permissions(role_id, role_data["servers"])
         self.users_helper.remove_roles_from_role_id(role_id)
-        return helper_roles.remove_role(role_id)
+        return self.roles_helper.remove_role(role_id)
 
     @staticmethod
     def role_id_exists(role_id):

@@ -20,6 +20,7 @@ from app.classes.controllers.server_perms_controller import Server_Perms_Control
 from app.classes.controllers.servers_controller import Servers_Controller
 from app.classes.models.server_permissions import Enum_Permissions_Server
 from app.classes.models.users import helper_users
+from app.classes.models.roles import helper_roles
 from app.classes.models.management import helpers_management
 from app.classes.models.servers import helper_servers
 from app.classes.shared.authentication import Authentication
@@ -39,6 +40,7 @@ class Controller:
         self.helper = helper
         self.server_jars = ServerJars(helper)
         self.users_helper = helper_users(database, self.helper)
+        self.roles_helper = helper_roles(database)
         self.servers_helper = helper_servers(database)
         self.management_helper = helpers_management(database, self.helper)
         self.authentication = Authentication(self.helper)
@@ -46,7 +48,7 @@ class Controller:
         self.stats = Stats(self.helper, self)
         self.crafty_perms = Crafty_Perms_Controller()
         self.management = Management_Controller(self.management_helper)
-        self.roles = Roles_Controller(self.users_helper)
+        self.roles = Roles_Controller(self.users_helper, self.roles_helper)
         self.server_perms = Server_Perms_Controller()
         self.servers = Servers_Controller(self.servers_helper)
         self.users = Users_Controller(
