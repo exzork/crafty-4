@@ -588,11 +588,15 @@
     $(".clone_button").click(function () {
       server_id = $(this).attr("data-id");
       send_command(server_id, 'clone_server');
-      bootbox.alert({
+      bootbox.dialog({
         backdrop: true,
         title: '{% raw translate("dashboard", "sendingCommand", data["lang"]) %}',
-        message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientClone", data["lang"]) %} </div>'
+        message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientClone", data["lang"]) %} </div>',
+        closeButton: false,
       });
+      setTimeout(function () {
+        location.reload();
+      }, 5000)
     });
 
   });

@@ -219,6 +219,7 @@ class ServerHandler(BaseHandler):
                     new_server_log_file = str(
                         Helpers.get_os_understandable_path(server_data.get("log_path"))
                     ).replace(server_uuid, new_server_uuid)
+                    backup_path = os.path.join(self.helper.backup_path, new_server_uuid)
                     server_port = server_data.get("server_port")
                     server_type = server_data.get("type")
 
@@ -226,7 +227,7 @@ class ServerHandler(BaseHandler):
                         new_server_name,
                         new_server_uuid,
                         new_server_path,
-                        "",
+                        backup_path,
                         new_server_command,
                         new_executable,
                         new_server_log_file,
