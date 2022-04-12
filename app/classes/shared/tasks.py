@@ -444,8 +444,10 @@ class TasksManager:
     def schedule_watcher(self, event):
         if not event.exception:
             if str(event.job_id).isnumeric():
-                task = helpers_management.get_scheduled_task_model(int(event.job_id))
-                helpers_management.add_to_audit_log_raw(
+                task = self.controller.management.get_scheduled_task_model(
+                    int(event.job_id)
+                )
+                self.controller.management.add_to_audit_log_raw(
                     "system",
                     helper_users.get_user_id_by_name("system"),
                     task.server_id,
