@@ -438,8 +438,8 @@ class Controller:
         port: int,
     ):
         server_id = Helpers.create_uuid()
-        new_server_dir = os.path.join(Helpers.servers_dir, server_id)
-        backup_path = os.path.join(Helpers.backup_path, server_id)
+        new_server_dir = os.path.join(self.helper.servers_dir, server_id)
+        backup_path = os.path.join(self.helper.backup_path, server_id)
         if Helpers.is_os_windows():
             new_server_dir = Helpers.wtol_path(new_server_dir)
             backup_path = Helpers.wtol_path(backup_path)
