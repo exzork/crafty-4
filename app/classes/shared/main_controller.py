@@ -23,6 +23,7 @@ from app.classes.models.users import helper_users
 from app.classes.models.management import helpers_management
 from app.classes.models.servers import helper_servers
 from app.classes.shared.authentication import Authentication
+from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.server import Server
 from app.classes.shared.file_helpers import FileHelpers
@@ -36,7 +37,6 @@ logger = logging.getLogger(__name__)
 class Controller:
     def __init__(self, database, helper):
         self.helper = helper
-        self.console = self.helper.console
         self.server_jars = ServerJars(helper)
         self.users_helper = helper_users(database, self.helper)
         self.servers_helper = helper_servers(database)
@@ -94,7 +94,7 @@ class Controller:
                     f"Skipping this server"
                 )
 
-                self.console.warning(
+                Console.warning(
                     f"Unable to find server {s['server_name']} at path {s['path']}. "
                     f"Skipping this server"
                 )
@@ -107,9 +107,7 @@ class Controller:
             # if the properties file isn't there, let's warn
             if not Helpers.check_file_exists(settings_file):
                 logger.error(f"Unable to find {settings_file}. Skipping this server.")
-                self.console.error(
-                    f"Unable to find {settings_file}. Skipping this server."
-                )
+                Console.error(f"Unable to find {settings_file}. Skipping this server.")
                 continue
 
             settings = ServerProps(settings_file)
@@ -132,7 +130,7 @@ class Controller:
 
             self.refresh_server_settings(s["server_id"])
 
-            self.console.info(
+            Console.info(
                 f"Loaded Server: ID {s['server_id']}"
                 + f" | Name: {s['server_name']}"
                 + f" | Autostart: {s['auto_start']}"
@@ -314,14 +312,14 @@ class Controller:
     def stop_all_servers(self):
         servers = self.list_running_servers()
         logger.info(f"Found {len(servers)} running server(s)")
-        self.console.info(f"Found {len(servers)} running server(s)")
+        Console.info(f"Found {len(servers)} running server(s)")
 
         logger.info("Stopping All Servers")
-        self.console.info("Stopping All Servers")
+        Console.info("Stopping All Servers")
 
         for s in servers:
             logger.info(f"Stopping Server ID {s['id']} - {s['name']}")
-            self.console.info(f"Stopping Server ID {s['id']} - {s['name']}")
+            Console.info(f"Stopping Server ID {s['id']} - {s['name']}")
 
             self.stop_server(s["id"])
 
@@ -329,7 +327,7 @@ class Controller:
             time.sleep(2)
 
         logger.info("All Servers Stopped")
-        self.console.info("All Servers Stopped")
+        Console.info("All Servers Stopped")
 
     def stop_server(self, server_id):
         # issue the stop command
@@ -807,9 +805,7 @@ class Controller:
                 server_name = server_data["server_name"]
 
                 logger.info(f"Deleting Server: ID {server_id} | Name: {server_name} ")
-                self.console.info(
-                    f"Deleting Server: ID {server_id} | Name: {server_name} "
-                )
+                Console.info(f"Deleting Server: ID {server_id} | Name: {server_name} ")
 
                 srv_obj = s["server_obj"]
                 running = srv_obj.check_running()

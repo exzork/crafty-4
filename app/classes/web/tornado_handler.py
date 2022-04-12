@@ -11,6 +11,7 @@ import tornado.escape
 import tornado.locale
 import tornado.httpserver
 
+from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.web.file_handler import FileHandler
 from app.classes.web.public_handler import PublicHandler
@@ -211,21 +212,21 @@ class Webserver:
             f"https://{Helpers.get_local_ip()}:{https_port} "
             f"is up and ready for connections."
         )
-        self.helper.console.info(
+        Console.info(
             f"https://{Helpers.get_local_ip()}:{https_port} "
             f"is up and ready for connections."
         )
 
-        self.helper.console.info("Server Init Complete: Listening For Connections:")
+        Console.info("Server Init Complete: Listening For Connections:")
 
         self.ioloop = tornado.ioloop.IOLoop.current()
         self.ioloop.start()
 
     def stop_web_server(self):
         logger.info("Shutting Down Web Server")
-        self.helper.console.info("Shutting Down Web Server")
+        Console.info("Shutting Down Web Server")
         self.ioloop.stop()
         self.HTTP_Server.stop()
         self.HTTPS_Server.stop()
         logger.info("Web Server Stopped")
-        self.helper.console.info("Web Server Stopped")
+        Console.info("Web Server Stopped")

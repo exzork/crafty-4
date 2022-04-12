@@ -6,6 +6,7 @@ import tornado.options
 import tornado.httpserver
 
 from app.classes.models.server_permissions import Enum_Permissions_Server
+from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.main_controller import Controller
 from app.classes.web.base_handler import BaseHandler
@@ -82,12 +83,12 @@ class UploadHandler(BaseHandler):
 
         if user_id is None:
             logger.warning("User ID not found in upload handler call")
-            self.helper.console.warning("User ID not found in upload handler call")
+            Console.warning("User ID not found in upload handler call")
             self.do_upload = False
 
         if server_id is None:
             logger.warning("Server ID not found in upload handler call")
-            self.helper.console.warning("Server ID not found in upload handler call")
+            Console.warning("Server ID not found in upload handler call")
             self.do_upload = False
 
         if Enum_Permissions_Server.Files not in exec_user_server_permissions:
@@ -95,7 +96,7 @@ class UploadHandler(BaseHandler):
                 f"User {user_id} tried to upload a file to "
                 f"{server_id} without permissions!"
             )
-            self.helper.console.warning(
+            Console.warning(
                 f"User {user_id} tried to upload a file to "
                 f"{server_id} without permissions!"
             )
@@ -123,7 +124,7 @@ class UploadHandler(BaseHandler):
                 f"User {user_id} tried to upload a file to {server_id} "
                 f"but the path is not inside of the server!"
             )
-            self.helper.console.warning(
+            Console.warning(
                 f"User {user_id} tried to upload a file to {server_id} "
                 f"but the path is not inside of the server!"
             )

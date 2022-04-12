@@ -11,6 +11,7 @@ from apscheduler.triggers.cron import CronTrigger
 
 from app.classes.models.management import helpers_management
 from app.classes.models.users import helper_users
+from app.classes.shared.console import Console
 from app.classes.web.tornado_handler import Webserver
 
 logger = logging.getLogger("apscheduler")
@@ -119,7 +120,7 @@ class TasksManager:
             logger.info("Caught error during shutdown", exc_info=True)
 
         logger.info("***** Crafty Shutting Down *****\n\n")
-        self.helper.console.info("***** Crafty Shutting Down *****\n\n")
+        Console.info("***** Crafty Shutting Down *****\n\n")
         self.main_thread_exiting = True
 
     def start_webserver(self):
@@ -127,7 +128,7 @@ class TasksManager:
 
     def reload_webserver(self):
         self.tornado.stop_web_server()
-        self.helper.console.info("Waiting 3 seconds")
+        Console.info("Waiting 3 seconds")
         time.sleep(3)
         self.webserver_thread = threading.Thread(
             target=self.tornado.run_tornado, daemon=True, name="tornado_thread"
@@ -139,16 +140,16 @@ class TasksManager:
 
     def start_scheduler(self):
         logger.info("Launching Scheduler Thread...")
-        self.helper.console.info("Launching Scheduler Thread...")
+        Console.info("Launching Scheduler Thread...")
         self.schedule_thread.start()
         logger.info("Launching command thread...")
-        self.helper.console.info("Launching command thread...")
+        Console.info("Launching command thread...")
         self.command_thread.start()
         logger.info("Launching log watcher...")
-        self.helper.console.info("Launching log watcher...")
+        Console.info("Launching log watcher...")
         self.log_watcher_thread.start()
         logger.info("Launching realtime thread...")
-        self.helper.console.info("Launching realtime thread...")
+        Console.info("Launching realtime thread...")
         self.realtime_thread.start()
 
     def scheduler_thread(self):
@@ -177,10 +178,8 @@ class TasksManager:
                             ],
                         )
                     except Exception as e:
-                        self.helper.console.error(
-                            f"Failed to schedule task with error: {e}."
-                        )
-                        self.helper.console.warning("Removing failed task from DB.")
+                        Console.error(f"Failed to schedule task with error: {e}.")
+                        Console.warning("Removing failed task from DB.")
                         logger.error(f"Failed to schedule task with error: {e}.")
                         logger.warning("Removing failed task from DB.")
                         # remove items from DB if task fails to add to apscheduler
@@ -274,10 +273,8 @@ class TasksManager:
                         ],
                     )
                 except Exception as e:
-                    self.helper.console.error(
-                        f"Failed to schedule task with error: {e}."
-                    )
-                    self.helper.console.warning("Removing failed task from DB.")
+                    Console.error(f"Failed to schedule task with error: {e}.")
+                    Console.warning("Removing failed task from DB.")
                     logger.error(f"Failed to schedule task with error: {e}.")
                     logger.warning("Removing failed task from DB.")
                     # remove items from DB if task fails to add to apscheduler
@@ -387,10 +384,8 @@ class TasksManager:
                             ],
                         )
                     except Exception as e:
-                        self.helper.console.error(
-                            f"Failed to schedule task with error: {e}."
-                        )
-                        self.helper.console.info("Removing failed task from DB.")
+                        Console.error(f"Failed to schedule task with error: {e}.")
+                        Console.info("Removing failed task from DB.")
                         self.controller.management_helper.delete_scheduled_task(sch_id)
                 else:
                     if job_data["interval_type"] == "hours":
@@ -499,7 +494,7 @@ class TasksManager:
         logger.info(
             f"Stats collection frequency set to {stats_update_frequency} seconds"
         )
-        self.helper.console.info(
+        Console.info(
             f"Stats collection frequency set to {stats_update_frequency} seconds"
         )
 

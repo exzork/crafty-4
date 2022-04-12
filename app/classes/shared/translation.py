@@ -3,6 +3,8 @@ import logging
 import os
 import typing as t
 
+from app.classes.shared.console import Console
+
 logger = logging.getLogger(__name__)
 
 
@@ -59,7 +61,7 @@ class Translation:
                     f"Translation File Error: page {page} "
                     f"does not exist for lang {language}"
                 )
-                self.helper.console.error(
+                Console.error(
                     f"Translation File Error: page {page} "
                     f"does not exist for lang {language}"
                 )
@@ -73,7 +75,7 @@ class Translation:
                     f"Translation File Error: word {word} does not exist on page "
                     f"{page} for lang {language}"
                 )
-                self.helper.console.error(
+                Console.error(
                     f"Translation File Error: word {word} does not exist on page "
                     f"{page} for lang {language}"
                 )
@@ -83,7 +85,7 @@ class Translation:
             logger.critical(
                 f"Translation File Error: Unable to read {language_file} due to {e}"
             )
-            self.helper.console.critical(
+            Console.critical(
                 f"Translation File Error: Unable to read {language_file} due to {e}"
             )
             return None

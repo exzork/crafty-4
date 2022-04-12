@@ -20,6 +20,7 @@ from app.classes.models.servers import Server_Stats, helper_servers
 from app.classes.models.management import helpers_management
 from app.classes.models.users import helper_users
 from app.classes.models.server_permissions import Permissions_Servers
+from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.file_helpers import FileHelpers
 
@@ -93,7 +94,6 @@ class Server:
     def __init__(self, helper, management_helper, stats):
         self.helper = helper
         self.management_helper = management_helper
-        self.console = self.helper.console
         # holders for our process
         self.process = None
         self.line = False
@@ -149,9 +149,7 @@ class Server:
             delay = int(self.settings["auto_start_delay"])
 
             logger.info(f"Scheduling server {self.name} to start in {delay} seconds")
-            self.console.info(
-                f"Scheduling server {self.name} to start in {delay} seconds"
-            )
+            Console.info(f"Scheduling server {self.name} to start in {delay} seconds")
 
             self.server_scheduler.add_job(
                 self.run_scheduled_server,
@@ -161,7 +159,7 @@ class Server:
             )
 
     def run_scheduled_server(self):
-        self.console.info(f"Starting server ID: {self.server_id} - {self.name}")
+        Console.info(f"Starting server ID: {self.server_id} - {self.name}")
         logger.info(f"Starting server ID: {self.server_id} - {self.name}")
         # Sets waiting start to false since we're attempting to start the server.
         helper_servers.set_waiting_start(self.server_id, False)
@@ -182,7 +180,7 @@ class Server:
 
         # Register an shedule for polling server stats when running
         logger.info(f"Polling server statistics {self.name} every {5} seconds")
-        self.console.info(f"Polling server statistics {self.name} every {5} seconds")
+        Console.info(f"Polling server statistics {self.name} every {5} seconds")
         try:
             self.server_scheduler.add_job(
                 self.realtime_stats,
@@ -213,19 +211,17 @@ class Server:
             logger.critical(
                 f"Server executable path: {full_path} does not seem to exist"
             )
-            self.console.critical(
+            Console.critical(
                 f"Server executable path: {full_path} does not seem to exist"
             )
 
         if not Helpers.check_path_exists(self.server_path):
             logger.critical(f"Server path: {self.server_path} does not seem to exits")
-            self.console.critical(
-                f"Server path: {self.server_path} does not seem to exits"
-            )
+            Console.critical(f"Server path: {self.server_path} does not seem to exits")
 
         if not Helpers.check_writeable(self.server_path):
             logger.critical(f"Unable to write/access {self.server_path}")
-            self.console.critical(f"Unable to write/access {self.server_path}")
+            Console.critical(f"Unable to write/access {self.server_path}")
 
     def start_server(self, user_id):
         if not user_id:
@@ -253,16 +249,14 @@ class Server:
         # fail safe in case we try to start something already running
         if self.check_running():
             logger.error("Server is already running - Cancelling Startup")
-            self.console.error("Server is already running - Cancelling Startup")
+            Console.error("Server is already running - Cancelling Startup")
             return False
         if self.check_update():
             logger.error("Server is updating. Terminating startup.")
             return False
 
         logger.info(f"Launching Server {self.name} with command {self.server_command}")
-        self.console.info(
-            f"Launching Server {self.name} with command {self.server_command}"
-        )
+        Console.info(f"Launching Server {self.name} with command {self.server_command}")
 
         # Checks for eula. Creates one if none detected.
         # If EULA is detected and not set to true we offer to set it true.
@@ -424,7 +418,7 @@ class Server:
 
         if self.process.poll() is None:
             logger.info(f"Server {self.name} running with PID {self.process.pid}")
-            self.console.info(f"Server {self.name} running with PID {self.process.pid}")
+            Console.info(f"Server {self.name} running with PID {self.process.pid}")
             self.is_crashed = False
             helper_servers.server_crash_reset(self.server_id)
             self.record_server_stats()
@@ -471,7 +465,7 @@ class Server:
                 f"Server PID {self.process.pid} died right after starting "
                 f"- is this a server config issue?"
             )
-            self.console.critical(
+            Console.critical(
                 f"Server PID {self.process.pid} died right after starting "
                 f"- is this a server config issue?"
             )
@@ -481,7 +475,7 @@ class Server:
                 f"Server {self.name} has crash detection enabled "
                 f"- starting watcher task"
             )
-            self.console.info(
+            Console.info(
                 f"Server {self.name} has crash detection enabled "
                 f"- starting watcher task"
             )
@@ -524,7 +518,7 @@ class Server:
                 f"Server {self.name} has crash detection enabled "
                 f"- starting watcher task"
             )
-            self.console.info(
+            Console.info(
                 f"Server {self.name} has crash detection enabled "
                 "- starting watcher task"
             )
@@ -557,7 +551,7 @@ class Server:
         running = self.check_running()
         if not running:
             logger.info(f"Can't stop server {self.name} if it's not running")
-            self.console.info(f"Can't stop server {self.name} if it's not running")
+            Console.info(f"Can't stop server {self.name} if it's not running")
             return
         x = 0
 
@@ -573,7 +567,7 @@ class Server:
                 f"seconds until force close)"
             )
             logger.info(logstr)
-            self.console.info(logstr)
+            Console.info(logstr)
             running = self.check_running()
             time.sleep(2)
 
@@ -582,13 +576,13 @@ class Server:
                 logger.info(
                     f"Server {server_name} is still running - Forcing the process down"
                 )
-                self.console.info(
+                Console.info(
                     f"Server {server_name} is still running - Forcing the process down"
                 )
                 self.kill()
 
         logger.info(f"Stopped Server {server_name} with PID {server_pid}")
-        self.console.info(f"Stopped Server {server_name} with PID {server_pid}")
+        Console.info(f"Stopped Server {server_name} with PID {server_pid}")
 
         # massive resetting of variables
         self.cleanup_server_object()
@@ -633,7 +627,7 @@ class Server:
         if not self.check_running() and command.lower() != "start":
             logger.warning(f'Server not running, unable to send command "{command}"')
             return False
-        self.console.info(f"COMMAND TIME: {command}")
+        Console.info(f"COMMAND TIME: {command}")
         logger.debug(f"Sending command {command} to server")
 
         # send it
@@ -657,7 +651,7 @@ class Server:
                 f"The server {name} has crashed and will be restarted. "
                 f"Restarting server"
             )
-            self.console.critical(
+            Console.critical(
                 f"The server {name} has crashed and will be restarted. "
                 f"Restarting server"
             )
@@ -668,7 +662,7 @@ class Server:
                 f"The server {name} has crashed, "
                 f"crash detection is disabled and it will not be restarted"
             )
-            self.console.critical(
+            Console.critical(
                 f"The server {name} has crashed, "
                 f"crash detection is disabled and it will not be restarted"
             )
@@ -737,7 +731,7 @@ class Server:
                 f"Server {self.name} has been restarted {self.restart_count}"
                 f" times. It has crashed, not restarting."
             )
-            self.console.critical(
+            Console.critical(
                 f"Server {self.name} has been restarted {self.restart_count}"
                 f" times. It has crashed, not restarting."
             )
@@ -751,7 +745,7 @@ class Server:
 
     def remove_watcher_thread(self):
         logger.info("Removing old crash detection watcher thread")
-        self.console.info("Removing old crash detection watcher thread")
+        Console.info("Removing old crash detection watcher thread")
         self.server_scheduler.remove_job("c_" + str(self.server_id))
 
     def agree_eula(self, user_id):
@@ -1184,7 +1178,7 @@ class Server:
                     "/status", "update_server_status", servers_ping
                 )
             except:
-                self.console.critical("Can't broadcast server status to websocket")
+                Console.critical("Can't broadcast server status to websocket")
 
     def get_servers_stats(self):
 
@@ -1211,7 +1205,7 @@ class Server:
         server_port = server["server_port"]
         server_name = server.get("server_name", f"ID#{server_id}")
 
-        logger.debug("Pinging server '{server}' on {internal_ip}:{server_port}")
+        logger.debug(f"Pinging server '{server}' on {internal_ip}:{server_port}")
         if helper_servers.get_server_type_by_id(server_id) == "minecraft-bedrock":
             int_mc_ping = ping_bedrock(internal_ip, int(server_port))
         else:
@@ -1285,7 +1279,7 @@ class Server:
         internal_ip = server["server_ip"]
         server_port = server["server_port"]
 
-        logger.debug("Pinging {internal_ip} on port {server_port}")
+        logger.debug(f"Pinging {internal_ip} on port {server_port}")
         if helper_servers.get_server_type_by_id(self.server_id) != "minecraft-bedrock":
             int_mc_ping = ping(internal_ip, int(server_port))
 

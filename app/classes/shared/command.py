@@ -3,6 +3,7 @@ import cmd
 import time
 import threading
 import logging
+from app.classes.shared.console import Console
 
 from app.classes.shared.import3 import import3
 
@@ -13,7 +14,6 @@ class MainPrompt(cmd.Cmd):
     def __init__(self, helper, tasks_manager, migration_manager):
         super().__init__()
         self.helper = helper
-        self.console = self.helper.console
         self.tasks_manager = tasks_manager
         self.migration_manager = migration_manager
         # overrides the default Prompt
@@ -34,20 +34,20 @@ class MainPrompt(cmd.Cmd):
         elif line == "down":
             self.migration_manager.down()
         elif line == "done":
-            self.console.info(self.migration_manager.done)
+            Console.info(self.migration_manager.done)
         elif line == "todo":
-            self.console.info(self.migration_manager.todo)
+            Console.info(self.migration_manager.todo)
         elif line == "diff":
-            self.console.info(self.migration_manager.diff)
+            Console.info(self.migration_manager.diff)
         elif line == "info":
-            self.console.info(f"Done: {self.migration_manager.done}")
-            self.console.info(f"FS:   {self.migration_manager.todo}")
-            self.console.info(f"Todo: {self.migration_manager.diff}")
+            Console.info(f"Done: {self.migration_manager.done}")
+            Console.info(f"FS:   {self.migration_manager.todo}")
+            Console.info(f"Todo: {self.migration_manager.diff}")
         elif line.startswith("add "):
             migration_name = line[len("add ") :]
             self.migration_manager.create(migration_name, False)
         else:
-            self.console.info("Unknown migration command")
+            Console.info("Unknown migration command")
 
     @staticmethod
     def do_threads(_line):
@@ -65,21 +65,21 @@ class MainPrompt(cmd.Cmd):
 
     def universal_exit(self):
         logger.info("Stopping all server daemons / threads")
-        self.console.info(
+        Console.info(
             "Stopping all server daemons / threads - This may take a few seconds"
         )
         self.helper.websocket_helper.disconnect_all()
-        self.console.info("Waiting for main thread to stop")
+        Console.info("Waiting for main thread to stop")
         while True:
             if self.tasks_manager.get_main_thread_run_status():
                 sys.exit(0)
             time.sleep(1)
 
     def help_exit(self):
-        self.console.help("Stops the server if running, Exits the program")
+        Console.help("Stops the server if running, Exits the program")
 
     def help_migrations(self):
-        self.console.help("Only for advanced users. Use with caution")
+        Console.help("Only for advanced users. Use with caution")
 
     def help_import3(self):
-        self.console.help("Import users and servers from Crafty 3")
+        Console.help("Import users and servers from Crafty 3")

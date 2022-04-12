@@ -5,6 +5,7 @@ import tornado.web
 import tornado.escape
 
 from app.classes.models.server_permissions import Enum_Permissions_Server
+from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.file_helpers import FileHelpers
 from app.classes.web.base_handler import BaseHandler
@@ -66,7 +67,7 @@ class FileHandler(BaseHandler):
                 logger.warning(
                     f"Invalid path in get_file file file ajax call ({file_path})"
                 )
-                self.helper.self.helper.console.warning(
+                Console.warning(
                     f"Invalid path in get_file file file ajax call ({file_path})"
                 )
                 return
@@ -175,7 +176,7 @@ class FileHandler(BaseHandler):
                 logger.warning(
                     f"Invalid path in create_file file ajax call ({file_path})"
                 )
-                self.helper.self.helper.console.warning(
+                Console.warning(
                     f"Invalid path in create_file file ajax call ({file_path})"
                 )
                 return
@@ -209,7 +210,7 @@ class FileHandler(BaseHandler):
                 logger.warning(
                     f"Invalid path in create_dir file ajax call ({dir_path})"
                 )
-                self.helper.self.helper.console.warning(
+                Console.warning(
                     f"Invalid path in create_dir file ajax call ({dir_path})"
                 )
                 return
@@ -257,9 +258,7 @@ class FileHandler(BaseHandler):
                 self.get_body_argument("file_path", default=None, strip=True)
             )
 
-            self.helper.self.helper.console.warning(
-                f"Delete {file_path} for server {server_id}"
-            )
+            Console.warning(f"Delete {file_path} for server {server_id}")
 
             if not self.check_server_id(server_id, "del_file"):
                 return
@@ -277,7 +276,7 @@ class FileHandler(BaseHandler):
                 )
             ) or not Helpers.check_file_exists(os.path.abspath(file_path)):
                 logger.warning(f"Invalid path in del_file file ajax call ({file_path})")
-                self.helper.console.warning(
+                Console.warning(
                     f"Invalid path in del_file file ajax call ({file_path})"
                 )
                 return
@@ -294,7 +293,7 @@ class FileHandler(BaseHandler):
                 self.get_body_argument("dir_path", default=None, strip=True)
             )
 
-            self.helper.console.warning(f"Delete {dir_path} for server {server_id}")
+            Console.warning(f"Delete {dir_path} for server {server_id}")
 
             if not self.check_server_id(server_id, "del_dir"):
                 return
@@ -306,9 +305,7 @@ class FileHandler(BaseHandler):
                 Helpers.get_os_understandable_path(server_info["path"]), dir_path
             ) or not Helpers.check_path_exists(os.path.abspath(dir_path)):
                 logger.warning(f"Invalid path in del_file file ajax call ({dir_path})")
-                self.helper.console.warning(
-                    f"Invalid path in del_file file ajax call ({dir_path})"
-                )
+                Console.warning(f"Invalid path in del_file file ajax call ({dir_path})")
                 return
 
             # Delete the directory
@@ -366,7 +363,7 @@ class FileHandler(BaseHandler):
                 logger.warning(
                     f"Invalid path in save_file file ajax call ({file_path})"
                 )
-                self.helper.console.warning(
+                Console.warning(
                     f"Invalid path in save_file file ajax call ({file_path})"
                 )
                 return
@@ -394,9 +391,7 @@ class FileHandler(BaseHandler):
 
             if item_path is None or new_item_name is None:
                 logger.warning("Invalid path(s) in rename_file file ajax call")
-                self.helper.console.warning(
-                    "Invalid path(s) in rename_file file ajax call"
-                )
+                Console.warning("Invalid path(s) in rename_file file ajax call")
                 return
 
             if not Helpers.in_path(
@@ -408,7 +403,7 @@ class FileHandler(BaseHandler):
                 logger.warning(
                     f"Invalid old name path in rename_file file ajax call ({server_id})"
                 )
-                self.helper.console.warning(
+                Console.warning(
                     f"Invalid old name path in rename_file file ajax call ({server_id})"
                 )
                 return
@@ -424,7 +419,7 @@ class FileHandler(BaseHandler):
                 logger.warning(
                     f"Invalid new name path in rename_file file ajax call ({server_id})"
                 )
-                self.helper.console.warning(
+                Console.warning(
                     f"Invalid new name path in rename_file file ajax call ({server_id})"
                 )
                 return
@@ -472,9 +467,7 @@ class FileHandler(BaseHandler):
 
             if item_path is None or new_item_name is None:
                 logger.warning("Invalid path(s) in rename_file file ajax call")
-                self.helper.console.warning(
-                    "Invalid path(s) in rename_file file ajax call"
-                )
+                Console.warning("Invalid path(s) in rename_file file ajax call")
                 return
 
             if not Helpers.in_path(
@@ -486,7 +479,7 @@ class FileHandler(BaseHandler):
                 logger.warning(
                     f"Invalid old name path in rename_file file ajax call ({server_id})"
                 )
-                self.helper.console.warning(
+                Console.warning(
                     f"Invalid old name path in rename_file file ajax call ({server_id})"
                 )
                 return
@@ -502,7 +495,7 @@ class FileHandler(BaseHandler):
                 logger.warning(
                     f"Invalid new name path in rename_file file ajax call ({server_id})"
                 )
-                self.helper.console.warning(
+                Console.warning(
                     f"Invalid new name path in rename_file file ajax call ({server_id})"
                 )
                 return
@@ -515,7 +508,7 @@ class FileHandler(BaseHandler):
             logger.warning(
                 f"Server ID not defined in {page_name} file ajax call ({server_id})"
             )
-            self.helper.console.warning(
+            Console.warning(
                 f"Server ID not defined in {page_name} file ajax call ({server_id})"
             )
             return
@@ -527,7 +520,7 @@ class FileHandler(BaseHandler):
                 logger.warning(
                     f"Server ID not found in {page_name} file ajax call ({server_id})"
                 )
-                self.helper.console.warning(
+                Console.warning(
                     f"Server ID not found in {page_name} file ajax call ({server_id})"
                 )
                 return

@@ -19,6 +19,7 @@ from socket import gethostname
 from contextlib import suppress
 import psutil
 
+from app.classes.shared.console import Console
 from app.classes.shared.installer import installer
 from app.classes.shared.file_helpers import FileHelpers
 from app.classes.shared.translation import Translation
@@ -41,8 +42,7 @@ except ModuleNotFoundError as err:
 class Helpers:
     allowed_quotes = ['"', "'", "`"]
 
-    def __init__(self, console):
-        self.console = console
+    def __init__(self):
         self.root_dir = os.path.abspath(os.path.curdir)
         self.config_dir = os.path.join(self.root_dir, "app", "config")
         self.webroot = os.path.join(self.root_dir, "app", "frontend")
@@ -200,14 +200,14 @@ class Helpers:
 
             else:
                 logger.error(f"Config File Error: setting {key} does not exist")
-                self.console.error(f"Config File Error: setting {key} does not exist")
+                Console.error(f"Config File Error: setting {key} does not exist")
                 return default_return
 
         except Exception as e:
             logger.critical(
                 f"Config File Error: Unable to read {self.settings_file} due to {e}"
             )
-            self.console.critical(
+            Console.critical(
                 f"Config File Error: Unable to read {self.settings_file} due to {e}"
             )
 
@@ -224,7 +224,7 @@ class Helpers:
 
             else:
                 logger.error(f"Config File Error: setting {key} does not exist")
-                self.console.error(f"Config File Error: setting {key} does not exist")
+                Console.error(f"Config File Error: setting {key} does not exist")
                 return default_return
 
             with open(self.settings_file, "w", encoding="utf-8") as f:
@@ -234,7 +234,7 @@ class Helpers:
             logger.critical(
                 f"Config File Error: Unable to read {self.settings_file} due to {e}"
             )
-            self.console.critical(
+            Console.critical(
                 f"Config File Error: Unable to read {self.settings_file} due to {e}"
             )
 
@@ -260,7 +260,7 @@ class Helpers:
                 version_data = json.load(f)
 
         except Exception as e:
-            self.console.critical(f"Unable to get version data! \n{e}")
+            Console.critical(f"Unable to get version data! \n{e}")
 
         return version_data
 
@@ -470,13 +470,13 @@ class Helpers:
             with suppress(FileExistsError):
                 os.makedirs(os.path.join(self.root_dir, "logs"))
         except Exception as e:
-            self.console.error(f"Failed to make logs directory with error: {e} ")
+            Console.error(f"Failed to make logs directory with error: {e} ")
 
         # ensure the log file is there
         try:
             open(log_file, "a", encoding="utf-8").close()
         except Exception as e:
-            self.console.critical(f"Unable to open log file! {e}")
+            Console.critical(f"Unable to open log file! {e}")
             sys.exit(1)
 
         # del any old session.lock file as this is a new session
@@ -576,7 +576,7 @@ class Helpers:
                 pid = data.get("pid")
                 started = data.get("started")
                 if psutil.pid_exists(pid):
-                    self.console.critical(
+                    Console.critical(
                         f"Another Crafty Controller agent seems to be running..."
                         f"\npid: {pid} \nstarted on: {started}"
                     )
@@ -591,7 +591,7 @@ class Helpers:
 
             except Exception as e:
                 logger.error(f"Failed to locate existing session.lock with error: {e} ")
-                self.console.error(
+                Console.error(
                     f"Failed to locate existing session.lock with error: {e} "
                 )
 
@@ -693,12 +693,12 @@ class Helpers:
             logger.info("Cert and Key files already exists, not creating them.")
             return True
 
-        self.console.info("Generating a self signed SSL")
+        Console.info("Generating a self signed SSL")
         logger.info("Generating a self signed SSL")
 
         # create a key pair
         logger.info("Generating a key pair. This might take a moment.")
-        self.console.info("Generating a key pair. This might take a moment.")
+        Console.info("Generating a key pair. This might take a moment.")
         k = crypto.PKey()
         k.generate_key(crypto.TYPE_RSA, 4096)
 

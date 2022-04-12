@@ -3,6 +3,7 @@ import os
 import logging
 
 from app.classes.controllers.users_controller import helper_users
+from app.classes.shared.console import Console
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +11,6 @@ logger = logging.getLogger(__name__)
 class import3:
     def __init__(self, helper, controller):
         self.helper = helper
-        self.console = self.helper.console
         self.controller = controller
 
     def start_import(self):
@@ -21,13 +21,11 @@ class import3:
             )
         )
         if not os.path.exists(folder):
-            self.console.info(
+            Console.info(
                 "Crafty cannot find the path you entered. "
                 "Does Crafty's user have permission to access it?"
             )
-            self.console.info(
-                "Please run the import3 command again and enter a valid path."
-            )
+            Console.info("Please run the import3 command again and enter a valid path.")
         else:
             with open(os.path.join(folder, "users.json"), encoding="utf-8") as f:
                 user_json = json.loads(f.read())
@@ -41,10 +39,10 @@ class import3:
         if isinstance(json_data, list):
             for user in json_data:
                 helper_users.add_rawpass_user(user["username"], user["password"])
-                self.console.info(f"Imported user {user['username']} from Crafty 3")
+                Console.info(f"Imported user {user['username']} from Crafty 3")
                 logger.info(f"Imported user {user['username']} from Crafty 3")
         else:
-            self.console.info(
+            Console.info(
                 "There is only one user detected. "
                 "Cannot create duplicate Admin account."
             )
@@ -65,7 +63,7 @@ class import3:
                     max_mem=(int(server["memory_max"]) / 1000),
                     port=server["server_port"],
                 )
-                self.console.info(
+                Console.info(
                     f"Imported server {server['server_name']}[{server['id']}] "
                     f"from Crafty 3 to new server id {new_server_id}"
                 )
@@ -82,7 +80,7 @@ class import3:
                 max_mem=(int(json_data["memory_max"]) / 1000),
                 port=json_data["server_port"],
             )
-            self.console.info(
+            Console.info(
                 f"Imported server {json_data['server_name']}[{json_data['id']}] "
                 f"from Crafty 3 to new server id {new_server_id}"
             )

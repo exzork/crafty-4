@@ -133,7 +133,7 @@ class Stats:
         internal_ip = server["server_ip"]
         server_port = server["server_port"]
 
-        logger.debug("Pinging {internal_ip} on port {server_port}")
+        logger.debug(f"Pinging {internal_ip} on port {server_port}")
         if helper_servers.get_server_type_by_id(server_id) != "minecraft-bedrock":
             int_mc_ping = ping(internal_ip, int(server_port))
 

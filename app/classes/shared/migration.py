@@ -16,6 +16,7 @@ from playhouse.migrate import (
     make_index_name,
 )
 
+from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 
 logger = logging.getLogger(__name__)
@@ -398,13 +399,13 @@ class MigrationManager(object):
         Runs all unapplied migrations.
         """
         logger.info("Starting migrations")
-        self.helper.console.info("Starting migrations")
+        Console.info("Starting migrations")
 
         done = []
         diff = self.diff
         if not diff:
             logger.info("There is nothing to migrate")
-            self.helper.console.info("There is nothing to migrate")
+            Console.info("There is nothing to migrate")
             return done
 
         migrator = self.migrator

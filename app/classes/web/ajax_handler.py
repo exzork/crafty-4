@@ -8,6 +8,7 @@ import tornado.web
 import tornado.escape
 
 from app.classes.models.server_permissions import Enum_Permissions_Server
+from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.server import ServerOutBuf
 from app.classes.web.base_handler import BaseHandler
@@ -283,9 +284,7 @@ class AjaxHandler(BaseHandler):
 
             if server_id is None:
                 logger.warning("Server ID not found in send_command ajax call")
-                self.helper.console.warning(
-                    "Server ID not found in send_command ajax call"
-                )
+                Console.warning("Server ID not found in send_command ajax call")
 
             srv_obj = self.controller.get_server_obj(server_id)
 
@@ -484,7 +483,7 @@ class AjaxHandler(BaseHandler):
             )
             server_id = self.get_argument("id", None)
 
-            self.helper.console.warning(f"Delete {file_path} for server {server_id}")
+            Console.warning(f"Delete {file_path} for server {server_id}")
 
             if not self.check_server_id(server_id, "del_backup"):
                 return
@@ -502,9 +501,7 @@ class AjaxHandler(BaseHandler):
                 )
             ) or not Helpers.check_file_exists(os.path.abspath(file_path)):
                 logger.warning(f"Invalid path in del_backup ajax call ({file_path})")
-                self.helper.console.warning(
-                    f"Invalid path in del_backup ajax call ({file_path})"
-                )
+                Console.warning(f"Invalid path in del_backup ajax call ({file_path})")
                 return
 
             # Delete the file
@@ -567,7 +564,7 @@ class AjaxHandler(BaseHandler):
             logger.warning(
                 f"Server ID not defined in {page_name} ajax call ({server_id})"
             )
-            self.helper.console.warning(
+            Console.warning(
                 f"Server ID not defined in {page_name} ajax call ({server_id})"
             )
             return
@@ -579,7 +576,7 @@ class AjaxHandler(BaseHandler):
                 logger.warning(
                     f"Server ID not found in {page_name} ajax call ({server_id})"
                 )
-                self.helper.console.warning(
+                Console.warning(
                     f"Server ID not found in {page_name} ajax call ({server_id})"
                 )
                 return

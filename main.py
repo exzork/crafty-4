@@ -11,14 +11,14 @@ from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 
 console = Console()
-helper = Helpers(console)
+helper = Helpers()
 if helper.checkRoot():
-    console.critical(
+    Console.critical(
         "Root detected. Root/Admin access denied. "
         "Run Crafty again with non-elevated permissions."
     )
     time.sleep(5)
-    console.critical("Crafty shutting down. Root/Admin access denied.")
+    Console.critical("Crafty shutting down. Root/Admin access denied.")
     sys.exit(0)
 # pylint: disable=wrong-import-position
 try:
@@ -46,7 +46,7 @@ def do_intro():
     {'/' * 75}
     """
 
-    console.magenta(intro)
+    Console.magenta(intro)
 
 
 def setup_logging(debug=True):
@@ -64,7 +64,7 @@ def setup_logging(debug=True):
     else:
         logging.basicConfig(level=logging.DEBUG)
         logging.warning(f"Unable to read logging config from {logging_config_file}")
-        console.critical(f"Unable to read logging config from {logging_config_file}")
+        Console.critical(f"Unable to read logging config from {logging_config_file}")
 
 
 # Our Main Starter
@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
     # setting up the logger object
     logger = logging.getLogger(__name__)
-    console.cyan(f"Logging set to: {logger.level}")
+    Console.cyan(f"Logging set to: {logger.level}")
     peewee_logger = logging.getLogger("peewee")
     peewee_logger.setLevel(logging.INFO)
 
@@ -119,8 +119,8 @@ if __name__ == "__main__":
     fresh_install = installer.is_fresh_install()
 
     if fresh_install:
-        console.debug("Fresh install detected")
-        console.warning(
+        Console.debug("Fresh install detected")
+        Console.warning(
             f"We have detected a fresh install. Please be sure to forward "
             f"Crafty's port, {helper.get_setting('https_port')}, "
             f"through your router/firewall if you would like to be able "
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         )
         installer.default_settings()
     else:
-        console.debug("Existing install detected")
+        Console.debug("Existing install detected")
 
     # now the tables are created, we can load the tasks_manger and server controller
     controller = Controller(database, helper)
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     # init servers
     logger.info("Initializing all servers defined")
-    console.info("Initializing all servers defined")
+    Console.info("Initializing all servers defined")
     controller.init_all_servers()
     servers = controller.list_defined_servers()
 
@@ -156,10 +156,10 @@ if __name__ == "__main__":
     tasks_manager.serverjar_cache_refresher()
 
     logger.info("Checking Internet. This may take a minute.")
-    console.info("Checking Internet. This may take a minute.")
+    Console.info("Checking Internet. This may take a minute.")
 
     if not helper.check_internet():
-        console.warning(
+        Console.warning(
             "We have detected the machine running Crafty has no "
             "connection to the internet. Client connections to "
             "the server may be limited."
@@ -180,7 +180,7 @@ if __name__ == "__main__":
         logger.info(
             f"Recieved {signal.Signals(sig[0]).name} [{sig[0]}], stopping Crafty..."
         )
-        console.info(
+        Console.info(
             f"Recieved {signal.Signals(sig[0]).name} [{sig[0]}], stopping Crafty..."
         )
         tasks_manager._main_graceful_exit()
@@ -194,7 +194,7 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print()  # for newline
             logger.info("Recieved SIGINT, stopping Crafty...")
-            console.info("Recieved SIGINT, stopping Crafty...")
+            Console.info("Recieved SIGINT, stopping Crafty...")
             tasks_manager._main_graceful_exit()
             Crafty.universal_exit()
     else:
@@ -206,7 +206,7 @@ if __name__ == "__main__":
                 time.sleep(1)
             except KeyboardInterrupt:
                 logger.info("Recieved SIGINT, stopping Crafty...")
-                console.info("Recieved SIGINT, stopping Crafty...")
+                Console.info("Recieved SIGINT, stopping Crafty...")
                 break
         tasks_manager._main_graceful_exit()
         Crafty.universal_exit()
