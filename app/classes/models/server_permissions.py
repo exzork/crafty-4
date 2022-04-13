@@ -258,8 +258,14 @@ class Permissions_Servers:
                 .where(Role_Servers.server_id == server_id)
                 .execute()
             )
-            user_permissions_mask = role_server[0].permissions
-            key_permissions_mask = key.Permissions_Servers
+            try:
+                user_permissions_mask = role_server[0].permissions
+            except:
+                if user["superuser"]:
+                    user_permissions_mask = "11111111"
+                else:
+                    user_permissions_mask = "00000000"
+            key_permissions_mask = key.server_permissions
             permissions_mask = PermissionHelper.combine_masks(
                 user_permissions_mask, key_permissions_mask
             )
