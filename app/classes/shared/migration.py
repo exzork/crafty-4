@@ -7,22 +7,17 @@ import os
 import re
 from functools import wraps
 from functools import cached_property
+import peewee
+from playhouse.migrate import (
+    SqliteMigrator,
+    Operation,
+    SQL,
+    SqliteDatabase,
+    make_index_name,
+)
 
-from app.classes.shared.helpers import helper
-from app.classes.shared.console import console
-
-try:
-    import peewee
-    from playhouse.migrate import (
-        SqliteMigrator,
-        Operation,
-        SQL,
-        SqliteDatabase,
-        make_index_name,
-    )
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
+from app.classes.shared.console import Console
+from app.classes.shared.helpers import Helpers
 
 logger = logging.getLogger(__name__)
 
@@ -303,13 +298,14 @@ class Migrator(object):
 class MigrationManager(object):
     filemask = re.compile(r"[\d]+_[^\.]+\.py$")
 
-    def __init__(self, database: t.Union[peewee.Database, peewee.Proxy]):
+    def __init__(self, database: t.Union[peewee.Database, peewee.Proxy], helper):
         """
         Initializes the migration manager.
         """
         if not isinstance(database, (peewee.Database, peewee.Proxy)):
             raise RuntimeError("Invalid database: {}".format(database))
         self.database = database
+        self.helper = helper
 
     @cached_property
     def model(self) -> t.Type[MigrateHistory]:
@@ -334,13 +330,17 @@ class MigrationManager(object):
         """
         Scans migrations in the file system.
         """
-        if not os.path.exists(helper.migration_dir):
+        if not os.path.exists(self.helper.migration_dir):
             logger.warning(
-                "Migration directory: {} does not exist.".format(helper.migration_dir)
+                "Migration directory: {} does not exist.".format(
+                    self.helper.migration_dir
+                )
             )
-            os.makedirs(helper.migration_dir)
+            os.makedirs(self.helper.migration_dir)
         return sorted(
-            f[:-3] for f in os.listdir(helper.migration_dir) if self.filemask.match(f)
+            f[:-3]
+            for f in os.listdir(self.helper.migration_dir)
+            if self.filemask.match(f)
         )
 
     @property
@@ -367,7 +367,7 @@ class MigrationManager(object):
         """
         name = datetime.utcnow().strftime("%Y%m%d%H%M%S") + "_" + name
         filename = name + ".py"
-        path = os.path.join(helper.migration_dir, filename)
+        path = os.path.join(self.helper.migration_dir, filename)
         with open(path, "w") as f:
             f.write(
                 MIGRATE_TEMPLATE.format(
@@ -399,13 +399,13 @@ class MigrationManager(object):
         Runs all unapplied migrations.
         """
         logger.info("Starting migrations")
-        console.info("Starting migrations")
+        Console.info("Starting migrations")
 
         done = []
         diff = self.diff
         if not diff:
             logger.info("There is nothing to migrate")
-            console.info("There is nothing to migrate")
+            Console.info("There is nothing to migrate")
             return done
 
         migrator = self.migrator
@@ -421,10 +421,12 @@ class MigrationManager(object):
         Reads a migration from a file.
         """
         call_params = dict()
-        if helper.is_os_windows() and sys.version_info >= (3, 0):
+        if Helpers.is_os_windows() and sys.version_info >= (3, 0):
             # if system is windows - force utf-8 encoding
             call_params["encoding"] = "utf-8"
-        with open(os.path.join(helper.migration_dir, name + ".py"), **call_params) as f:
+        with open(
+            os.path.join(self.helper.migration_dir, name + ".py"), **call_params
+        ) as f:
             code = f.read()
             scope = {}
             code = compile(code, "<string>", "exec", dont_inherit=True)

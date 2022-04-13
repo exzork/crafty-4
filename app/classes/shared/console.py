@@ -28,47 +28,56 @@ class Console:
         else:
             print(message)
 
-    def magenta(self, message):
-        self.do_print(message, "magenta")
+    @staticmethod
+    def magenta(message):
+        Console.do_print(message, "magenta")
 
-    def cyan(self, message):
-        self.do_print(message, "cyan")
+    @staticmethod
+    def cyan(message):
+        Console.do_print(message, "cyan")
 
-    def yellow(self, message):
-        self.do_print(message, "yellow")
+    @staticmethod
+    def yellow(message):
+        Console.do_print(message, "yellow")
 
-    def red(self, message):
-        self.do_print(message, "red")
+    @staticmethod
+    def red(message):
+        Console.do_print(message, "red")
 
-    def green(self, message):
-        self.do_print(message, "green")
+    @staticmethod
+    def green(message):
+        Console.do_print(message, "green")
 
-    def white(self, message):
-        self.do_print(message, "white")
+    @staticmethod
+    def white(message):
+        Console.do_print(message, "white")
 
-    def debug(self, message):
+    @staticmethod
+    def debug(message):
         dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        self.magenta(f"[+] Crafty: {dt} - DEBUG:\t{message}")
+        Console.magenta(f"[+] Crafty: {dt} - DEBUG:\t{message}")
 
-    def info(self, message):
+    @staticmethod
+    def info(message):
         dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        self.white(f"[+] Crafty: {dt} - INFO:\t{message}")
+        Console.white(f"[+] Crafty: {dt} - INFO:\t{message}")
 
-    def warning(self, message):
+    @staticmethod
+    def warning(message):
         dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        self.cyan(f"[+] Crafty: {dt} - WARNING:\t{message}")
+        Console.cyan(f"[+] Crafty: {dt} - WARNING:\t{message}")
 
-    def error(self, message):
+    @staticmethod
+    def error(message):
         dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        self.yellow(f"[+] Crafty: {dt} - ERROR:\t{message}")
+        Console.yellow(f"[+] Crafty: {dt} - ERROR:\t{message}")
 
-    def critical(self, message):
+    @staticmethod
+    def critical(message):
         dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        self.red(f"[+] Crafty: {dt} - CRITICAL:\t{message}")
+        Console.red(f"[+] Crafty: {dt} - CRITICAL:\t{message}")
 
-    def help(self, message):
+    @staticmethod
+    def help(message):
         dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        self.green(f"[+] Crafty: {dt} - HELP:\t{message}")
-
-
-console = Console()
+        Console.green(f"[+] Crafty: {dt} - HELP:\t{message}")

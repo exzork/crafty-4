@@ -1,13 +1,14 @@
 import json
 import logging
 
-from app.classes.shared.console import console
+from app.classes.shared.console import Console
 
 logger = logging.getLogger(__name__)
 
 
 class WebSocketHelper:
-    def __init__(self):
+    def __init__(self, helper):
+        self.helper = helper
         self.clients = set()
 
     def add_client(self, client):
@@ -101,10 +102,7 @@ class WebSocketHelper:
                 )
 
     def disconnect_all(self):
-        console.info("Disconnecting WebSocket clients")
+        Console.info("Disconnecting WebSocket clients")
         for client in self.clients:
             client.close()
-        console.info("Disconnected WebSocket clients")
-
-
-websocket_helper = WebSocketHelper()
+        Console.info("Disconnected WebSocket clients")

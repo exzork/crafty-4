@@ -135,9 +135,20 @@ class SendCommand(ApiHandler):
     def post(self):
         user = self.authenticate_user()
 
+        user_obj = self.controller.users.get_user_by_api_token(self.api_token)
+
         if user is None:
             self.access_denied("unknown")
+            return
         server_id = self.get_argument("id")
+
+        if (
+            not user_obj["user_id"]
+            in self.controller.server_perms.get_server_user_list(server_id)
+            and not user_obj["superuser"]
+        ):
+            self.access_denied("unknown")
+            return
 
         if not self.permissions[
             "Commands"
@@ -145,6 +156,7 @@ class SendCommand(ApiHandler):
             self.controller.users.get_api_key_by_token(self.api_token), server_id
         ):
             self.access_denied(user)
+            return
 
         command = self.get_argument("command", default=None, strip=True)
         server_id = self.get_argument("id")
@@ -163,9 +175,20 @@ class ServerBackup(ApiHandler):
     def post(self):
         user = self.authenticate_user()
 
+        user_obj = self.controller.users.get_user_by_api_token(self.api_token)
+
         if user is None:
             self.access_denied("unknown")
+            return
         server_id = self.get_argument("id")
+
+        if (
+            not user_obj["user_id"]
+            in self.controller.server_perms.get_server_user_list(server_id)
+            and not user_obj["superuser"]
+        ):
+            self.access_denied("unknown")
+            return
 
         if not self.permissions[
             "Backup"
@@ -173,6 +196,7 @@ class ServerBackup(ApiHandler):
             self.controller.users.get_api_key_by_token(self.api_token), server_id
         ):
             self.access_denied(user)
+            return
 
         server = self.controller.get_server_obj(server_id)
 
@@ -190,15 +214,23 @@ class StartServer(ApiHandler):
 
         if user is None:
             self.access_denied("unknown")
-
+            return
         server_id = self.get_argument("id")
 
-        if not self.permissions[
+        if (
+            not user_obj["user_id"]
+            in self.controller.server_perms.get_server_user_list(server_id)
+            and not user_obj["superuser"]
+        ):
+            self.access_denied("unknown")
+            return
+        elif not self.permissions[
             "Commands"
         ] in self.controller.server_perms.get_api_key_permissions_list(
             self.controller.users.get_api_key_by_token(self.api_token), server_id
         ):
-            self.access_denied(user)
+            self.access_denied("unknown")
+            return
 
         server = self.controller.get_server_obj(server_id)
 
@@ -216,9 +248,19 @@ class StopServer(ApiHandler):
         user = self.authenticate_user()
         remote_ip = self.get_remote_ip()
 
+        user_obj = self.controller.users.get_user_by_api_token(self.api_token)
+
         if user is None:
             self.access_denied("unknown")
+            return
         server_id = self.get_argument("id")
+
+        if (
+            not user_obj["user_id"]
+            in self.controller.server_perms.get_server_user_list(server_id)
+            and not user_obj["superuser"]
+        ):
+            self.access_denied("unknown")
 
         if not self.permissions[
             "Commands"
@@ -226,6 +268,7 @@ class StopServer(ApiHandler):
             self.controller.users.get_api_key_by_token(self.api_token), server_id
         ):
             self.access_denied(user)
+            return
 
         server = self.controller.get_server_obj(server_id)
 
@@ -243,9 +286,16 @@ class RestartServer(ApiHandler):
     def post(self):
         user = self.authenticate_user()
         remote_ip = self.get_remote_ip()
-        server_id = self.get_argument("id")
+        user_obj = self.controller.users.get_user_by_api_token(self.api_token)
 
         if user is None:
+            self.access_denied("unknown")
+            return
+        server_id = self.get_argument("id")
+
+        if not user_obj["user_id"] in self.controller.server_perms.get_server_user_list(
+            server_id
+        ):
             self.access_denied("unknown")
 
         if not self.permissions[
@@ -264,9 +314,21 @@ class RestartServer(ApiHandler):
 class CreateUser(ApiHandler):
     def post(self):
         user = self.authenticate_user()
+        user_obj = self.controller.users.get_user_by_api_token(self.api_token)
+
+        user_perms = self.controller.crafty_perms.get_crafty_permissions_list(
+            user_obj["user_id"]
+        )
+        if (
+            not self.permissions["User_Config"] in user_perms
+            and not user_obj["superuser"]
+        ):
+            self.access_denied("unknown")
+            return
 
         if user is None:
             self.access_denied("unknown")
+            return
 
         if not self.permissions[
             "User_Config"
@@ -274,6 +336,7 @@ class CreateUser(ApiHandler):
             self.controller.users.get_api_key_by_token(self.api_token)
         ):
             self.access_denied(user)
+            return
 
         new_username = self.get_argument("username")
         new_pass = self.get_argument("password")
@@ -305,8 +368,22 @@ class DeleteUser(ApiHandler):
     def post(self):
         user = self.authenticate_user()
 
+        user_obj = self.controller.users.get_user_by_api_token(self.api_token)
+
+        user_perms = self.controller.crafty_perms.get_crafty_permissions_list(
+            user_obj["user_id"]
+        )
+
+        if (
+            not self.permissions["User_Config"] in user_perms
+            and not user_obj["superuser"]
+        ):
+            self.access_denied("unknown")
+            return
+
         if user is None:
             self.access_denied("unknown")
+            return
 
         if not self.permissions[
             "User_Config"
@@ -314,6 +391,7 @@ class DeleteUser(ApiHandler):
             self.controller.users.get_api_key_by_token(self.api_token)
         ):
             self.access_denied(user)
+            return
 
         user_id = self.get_argument("user_id", None, True)
         user_to_del = self.controller.users.get_user_by_id(user_id)
@@ -336,15 +414,19 @@ class ListServers(ApiHandler):
 
         if user is None:
             self.access_denied("unknown")
+            return
 
         if self.api_token is None:
             self.access_denied("unknown")
+            return
 
         if user_obj["superuser"]:
             servers = self.controller.servers.get_all_defined_servers()
             servers = [str(i) for i in servers]
         else:
-            servers = self.controller.servers.get_all_defined_servers()
+            servers = self.controller.servers.get_authorized_servers(
+                user_obj["user_id"]
+            )
             servers = [str(i) for i in servers]
 
         self.return_response(

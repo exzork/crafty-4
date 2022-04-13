@@ -1,16 +1,9 @@
 import logging
+import bleach
 
-from app.classes.models.users import Users
-from app.classes.shared.authentication import authentication
-from app.classes.shared.helpers import helper
-from app.classes.shared.main_models import fn
+from app.classes.shared.helpers import Helpers
+from app.classes.models.users import helper_users
 from app.classes.web.base_handler import BaseHandler
-
-try:
-    import bleach
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +11,7 @@ logger = logging.getLogger(__name__)
 class PublicHandler(BaseHandler):
     def set_current_user(self, user_id: str = None):
 
-        expire_days = helper.get_setting("cookie_expire")
+        expire_days = self.helper.get_setting("cookie_expire")
 
         # if helper comes back with false
         if not expire_days:
@@ -26,7 +19,9 @@ class PublicHandler(BaseHandler):
 
         if user_id is not None:
             self.set_cookie(
-                "token", authentication.generate(user_id), expires_days=int(expire_days)
+                "token",
+                self.controller.authentication.generate(user_id),
+                expires_days=int(expire_days),
             )
         else:
             self.clear_cookie("token")
@@ -39,10 +34,10 @@ class PublicHandler(BaseHandler):
         error_msg = bleach.clean(self.get_argument("error_msg", ""))
 
         page_data = {
-            "version": helper.get_version_string(),
+            "version": self.helper.get_version_string(),
             "error": error,
-            "lang": helper.get_setting("language"),
-            "lang_page": helper.getLangPage(helper.get_setting("language")),
+            "lang": self.helper.get_setting("language"),
+            "lang_page": self.helper.getLangPage(self.helper.get_setting("language")),
             "query": "",
         }
         if self.request.query:
@@ -88,10 +83,10 @@ class PublicHandler(BaseHandler):
         error_msg = bleach.clean(self.get_argument("error_msg", ""))
 
         page_data = {
-            "version": helper.get_version_string(),
+            "version": self.helper.get_version_string(),
             "error": error,
-            "lang": helper.get_setting("language"),
-            "lang_page": helper.getLangPage(helper.get_setting("language")),
+            "lang": self.helper.get_setting("language"),
+            "lang_page": self.helper.getLangPage(self.helper.get_setting("language")),
             "query": "",
         }
         if self.request.query:
@@ -107,9 +102,21 @@ class PublicHandler(BaseHandler):
             entered_password = bleach.clean(self.get_argument("password"))
 
             # pylint: disable=no-member
-            user_data = Users.get_or_none(
-                fn.Lower(Users.username) == entered_username.lower()
-            )
+            try:
+                user_id = helper_users.get_user_id_by_name(entered_username.lower())
+                user_data = helper_users.get_user_model(user_id)
+            except:
+                error_msg = "Incorrect username or password. Please try again."
+                # self.clear_cookie("user")
+                # self.clear_cookie("user_data")
+                self.clear_cookie("token")
+                if self.request.query:
+                    self.redirect(
+                        f"/public/login?error_msg={error_msg}&{self.request.query}"
+                    )
+                else:
+                    self.redirect(f"/public/login?error_msg={error_msg}")
+                return
 
             # if we don't have a user
             if not user_data:
@@ -142,7 +149,7 @@ class PublicHandler(BaseHandler):
                     self.redirect(f"/public/login?error_msg={error_msg}")
                 return
 
-            login_result = helper.verify_pass(entered_password, user_data.password)
+            login_result = self.helper.verify_pass(entered_password, user_data.password)
 
             # Valid Login
             if login_result:
@@ -152,14 +159,9 @@ class PublicHandler(BaseHandler):
                 )
 
                 # record this login
-                q = (
-                    Users.select()
-                    .where(Users.username == entered_username.lower())
-                    .get()
-                )
-                q.last_ip = self.get_remote_ip()
-                q.last_login = helper.get_time_as_string()
-                q.save()
+                user_data.last_ip = self.get_remote_ip()
+                user_data.last_login = Helpers.get_time_as_string()
+                user_data.save()
 
                 # log this login
                 self.controller.management.add_to_audit_log(

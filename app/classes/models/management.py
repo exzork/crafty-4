@@ -1,42 +1,29 @@
 import logging
 import datetime
+from peewee import (
+    ForeignKeyField,
+    CharField,
+    IntegerField,
+    DateTimeField,
+    FloatField,
+    TextField,
+    AutoField,
+    BooleanField,
+)
+from playhouse.shortcuts import model_to_dict
 
-from app.classes.models.users import Users, users_helper
+from app.classes.models.base_model import BaseModel
+from app.classes.models.users import Users, helper_users
 from app.classes.models.servers import Servers
-from app.classes.models.server_permissions import server_permissions
-from app.classes.shared.helpers import helper
-from app.classes.shared.main_models import db_helper
-from app.classes.web.websocket_helper import websocket_helper
-
-try:
-    from peewee import (
-        SqliteDatabase,
-        Model,
-        ForeignKeyField,
-        CharField,
-        IntegerField,
-        DateTimeField,
-        FloatField,
-        TextField,
-        AutoField,
-        BooleanField,
-    )
-    from playhouse.shortcuts import model_to_dict
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
+from app.classes.models.server_permissions import Permissions_Servers
+from app.classes.shared.main_models import db_shortcuts
 
 logger = logging.getLogger(__name__)
-peewee_logger = logging.getLogger("peewee")
-peewee_logger.setLevel(logging.INFO)
-database = SqliteDatabase(
-    helper.db_path, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
-)
 
 # **********************************************************************************
 #                                   Audit_Log Class
 # **********************************************************************************
-class Audit_Log(Model):
+class Audit_Log(BaseModel):
     audit_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     user_name = CharField(default="")
@@ -47,14 +34,11 @@ class Audit_Log(Model):
     )  # When auditing global events, use server ID 0
     log_msg = TextField(default="")
 
-    class Meta:
-        database = database
-
 
 # **********************************************************************************
 #                                   Host_Stats Class
 # **********************************************************************************
-class Host_Stats(Model):
+class Host_Stats(BaseModel):
     time = DateTimeField(default=datetime.datetime.now, index=True)
     boot_time = CharField(default="")
     cpu_usage = FloatField(default=0)
@@ -68,13 +52,12 @@ class Host_Stats(Model):
 
     class Meta:
         table_name = "host_stats"
-        database = database
 
 
 # **********************************************************************************
 #                                   Commands Class
 # **********************************************************************************
-class Commands(Model):
+class Commands(BaseModel):
     command_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     server_id = ForeignKeyField(Servers, backref="server", index=True)
@@ -85,13 +68,12 @@ class Commands(Model):
 
     class Meta:
         table_name = "commands"
-        database = database
 
 
 # **********************************************************************************
 #                                   Webhooks Class
 # **********************************************************************************
-class Webhooks(Model):
+class Webhooks(BaseModel):
     id = AutoField()
     name = CharField(max_length=64, unique=True, index=True)
     method = CharField(default="POST")
@@ -101,13 +83,12 @@ class Webhooks(Model):
 
     class Meta:
         table_name = "webhooks"
-        database = database
 
 
 # **********************************************************************************
 #                                   Schedules Class
 # **********************************************************************************
-class Schedules(Model):
+class Schedules(BaseModel):
     schedule_id = IntegerField(unique=True, primary_key=True)
     server_id = ForeignKeyField(Servers, backref="schedule_server")
     enabled = BooleanField()
@@ -124,13 +105,12 @@ class Schedules(Model):
 
     class Meta:
         table_name = "schedules"
-        database = database
 
 
 # **********************************************************************************
 #                                   Backups Class
 # **********************************************************************************
-class Backups(Model):
+class Backups(BaseModel):
     excluded_dirs = CharField(null=True)
     max_backups = IntegerField()
     server_id = ForeignKeyField(Servers, backref="backups_server")
@@ -138,10 +118,12 @@ class Backups(Model):
 
     class Meta:
         table_name = "backups"
-        database = database
 
 
 class helpers_management:
+    def __init__(self, database, helper):
+        self.database = database
+        self.helper = helper
 
     # **********************************************************************************
     #                                   Host_Stats Methods
@@ -185,18 +167,17 @@ class helpers_management:
     @staticmethod
     def get_actity_log():
         q = Audit_Log.select()
-        return db_helper.return_db_rows(q)
+        return db_shortcuts.return_db_rows(q)
 
-    @staticmethod
-    def add_to_audit_log(user_id, log_msg, server_id=None, source_ip=None):
+    def add_to_audit_log(self, user_id, log_msg, server_id=None, source_ip=None):
         logger.debug(f"Adding to audit log User:{user_id} - Message: {log_msg} ")
-        user_data = users_helper.get_user(user_id)
+        user_data = helper_users.get_user(user_id)
 
         audit_msg = f"{str(user_data['username']).capitalize()} {log_msg}"
 
-        server_users = server_permissions.get_server_user_list(server_id)
+        server_users = Permissions_Servers.get_server_user_list(server_id)
         for user in server_users:
-            websocket_helper.broadcast_user(user, "notification", audit_msg)
+            self.helper.websocket_helper.broadcast_user(user, "notification", audit_msg)
 
         Audit_Log.insert(
             {
@@ -210,17 +191,16 @@ class helpers_management:
         # deletes records when they're more than 100
         ordered = Audit_Log.select().order_by(+Audit_Log.created)
         for item in ordered:
-            if not helper.get_setting("max_audit_entries"):
+            if not self.helper.get_setting("max_audit_entries"):
                 max_entries = 300
             else:
-                max_entries = helper.get_setting("max_audit_entries")
+                max_entries = self.helper.get_setting("max_audit_entries")
             if Audit_Log.select().count() > max_entries:
                 Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
             else:
                 return
 
-    @staticmethod
-    def add_to_audit_log_raw(user_name, user_id, server_id, log_msg, source_ip):
+    def add_to_audit_log_raw(self, user_name, user_id, server_id, log_msg, source_ip):
         Audit_Log.insert(
             {
                 Audit_Log.user_name: user_name,
@@ -234,10 +214,10 @@ class helpers_management:
         ordered = Audit_Log.select().order_by(+Audit_Log.created)
         for item in ordered:
             # configurable through app/config/config.json
-            if not helper.get_setting("max_audit_entries"):
+            if not self.helper.get_setting("max_audit_entries"):
                 max_entries = 300
             else:
-                max_entries = helper.get_setting("max_audit_entries")
+                max_entries = self.helper.get_setting("max_audit_entries")
             if Audit_Log.select().count() > max_entries:
                 Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
             else:
@@ -354,8 +334,8 @@ class helpers_management:
             }
         return conf
 
-    @staticmethod
     def set_backup_config(
+        self,
         server_id: int,
         backup_path: str = None,
         max_backups: int = None,
@@ -381,7 +361,7 @@ class helpers_management:
             conf["excluded_dirs"] = dirs_to_exclude
         conf["compress"] = compress
         if not new_row:
-            with database.atomic():
+            with self.database.atomic():
                 if backup_path is not None:
                     u1 = (
                         Servers.update(backup_path=backup_path)
@@ -395,7 +375,7 @@ class helpers_management:
                 )
             logger.debug(f"Updating existing backup record.  {u1}+{u2} rows affected")
         else:
-            with database.atomic():
+            with self.database.atomic():
                 conf["server_id"] = server_id
                 if backup_path is not None:
                     Servers.update(backup_path=backup_path).where(
@@ -404,8 +384,9 @@ class helpers_management:
                 Backups.create(**conf)
             logger.debug("Creating new backup record.")
 
-    def get_excluded_backup_dirs(self, server_id: int):
-        excluded_dirs = self.get_backup_config(server_id)["excluded_dirs"]
+    @staticmethod
+    def get_excluded_backup_dirs(server_id: int):
+        excluded_dirs = helpers_management.get_backup_config(server_id)["excluded_dirs"]
         if excluded_dirs is not None and excluded_dirs != "":
             dir_list = excluded_dirs.split(",")
         else:
@@ -441,6 +422,3 @@ class helpers_management:
         Commands.update({Commands.executed: True}).where(
             Commands.executed == False  # pylint: disable=singleton-comparison
         ).execute()
-
-
-management_helper = helpers_management()

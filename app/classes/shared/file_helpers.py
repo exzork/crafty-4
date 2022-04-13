@@ -10,12 +10,13 @@ logger = logging.getLogger(__name__)
 class FileHelpers:
     allowed_quotes = ['"', "'", "`"]
 
-    def del_dirs(self, path):
+    @staticmethod
+    def del_dirs(path):
         path = pathlib.Path(path)
         for sub in path.iterdir():
             if sub.is_dir():
                 # Delete folder if it is a folder
-                self.del_dirs(sub)
+                FileHelpers.del_dirs(sub)
             else:
                 # Delete file if it is a file:
                 sub.unlink()
@@ -45,13 +46,15 @@ class FileHelpers:
     def copy_file(src_path, dest_path):
         shutil.copy(src_path, dest_path)
 
-    def move_dir(self, src_path, dest_path):
-        self.copy_dir(src_path, dest_path)
-        self.del_dirs(src_path)
+    @staticmethod
+    def move_dir(src_path, dest_path):
+        FileHelpers.copy_dir(src_path, dest_path)
+        FileHelpers.del_dirs(src_path)
 
-    def move_file(self, src_path, dest_path):
-        self.copy_file(src_path, dest_path)
-        self.del_file(src_path)
+    @staticmethod
+    def move_file(src_path, dest_path):
+        FileHelpers.copy_file(src_path, dest_path)
+        FileHelpers.del_file(src_path)
 
     @staticmethod
     def make_archive(path_to_destination, path_to_zip):
@@ -110,6 +113,3 @@ class FileHelpers:
                         )
 
         return True
-
-
-file_helper = FileHelpers()

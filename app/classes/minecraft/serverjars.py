@@ -4,23 +4,17 @@ import time
 import shutil
 import logging
 from datetime import datetime
+import requests
 
 from app.classes.controllers.servers_controller import Servers_Controller
-from app.classes.models.server_permissions import server_permissions
-from app.classes.shared.helpers import helper
-from app.classes.web.websocket_helper import websocket_helper
+from app.classes.models.server_permissions import Permissions_Servers
 
 logger = logging.getLogger(__name__)
 
-try:
-    import requests
-
-except ModuleNotFoundError as err:
-    helper.auto_installer_fix(err)
-
 
 class ServerJars:
-    def __init__(self):
+    def __init__(self, helper):
+        self.helper = helper
         self.base_url = "https://serverjars.com"
 
     def _get_api_result(self, call_url: str):
@@ -50,9 +44,8 @@ class ServerJars:
 
         return api_response
 
-    @staticmethod
-    def _read_cache():
-        cache_file = helper.serverjar_cache
+    def _read_cache(self):
+        cache_file = self.helper.serverjar_cache
         cache = {}
         try:
             with open(cache_file, "r", encoding="utf-8") as f:
@@ -109,8 +102,8 @@ class ServerJars:
 
     def refresh_cache(self):
 
-        cache_file = helper.serverjar_cache
-        cache_old = helper.is_file_older_than_x_days(cache_file)
+        cache_file = self.helper.serverjar_cache
+        cache_old = self.helper.is_file_older_than_x_days(cache_file)
 
         # debug override
         # cache_old = True
@@ -166,6 +159,7 @@ class ServerJars:
 
     def download_jar(self, server, version, path, server_id):
         update_thread = threading.Thread(
+            name=f"server_download-{server_id}-{server}-{version}",
             target=self.a_download_jar,
             daemon=True,
             args=(server, version, path, server_id),
@@ -176,7 +170,7 @@ class ServerJars:
         # delaying download for server register to finish
         time.sleep(3)
         fetch_url = f"{self.base_url}/api/fetchJar/{server}/{version}"
-        server_users = server_permissions.get_server_user_list(server_id)
+        server_users = Permissions_Servers.get_server_user_list(server_id)
 
         # We need to make sure the server is registered before
         # we submit a db update for it's stats.
@@ -184,11 +178,13 @@ class ServerJars:
             try:
                 Servers_Controller.set_download(server_id)
                 for user in server_users:
-                    websocket_helper.broadcast_user(user, "send_start_reload", {})
+                    self.helper.websocket_helper.broadcast_user(
+                        user, "send_start_reload", {}
+                    )
 
                 break
-            except:
-                logger.debug("server not registered yet. Delaying download.")
+            except Exception as ex:
+                logger.debug(f"server not registered yet. Delaying download - {ex}")
 
         # open a file stream
         with requests.get(fetch_url, timeout=2, stream=True) as r:
@@ -198,24 +194,25 @@ class ServerJars:
                     Servers_Controller.finish_download(server_id)
 
                     for user in server_users:
-                        websocket_helper.broadcast_user(
+                        self.helper.websocket_helper.broadcast_user(
                             user, "notification", "Executable download finished"
                         )
                         time.sleep(3)
-                        websocket_helper.broadcast_user(user, "send_start_reload", {})
+                        self.helper.websocket_helper.broadcast_user(
+                            user, "send_start_reload", {}
+                        )
                     return True
             except Exception as e:
                 logger.error(f"Unable to save jar to {path} due to error:{e}")
                 Servers_Controller.finish_download(server_id)
-                server_users = server_permissions.get_server_user_list(server_id)
+                server_users = Permissions_Servers.get_server_user_list(server_id)
                 for user in server_users:
-                    websocket_helper.broadcast_user(
+                    self.helper.websocket_helper.broadcast_user(
                         user, "notification", "Executable download finished"
                     )
                     time.sleep(3)
-                    websocket_helper.broadcast_user(user, "send_start_reload", {})
+                    self.helper.websocket_helper.broadcast_user(
+                        user, "send_start_reload", {}
+                    )
 
                 return False
-
-
-server_jar_obj = ServerJars()

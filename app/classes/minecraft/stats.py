@@ -6,14 +6,15 @@ import psutil
 
 from app.classes.minecraft.mc_ping import ping
 from app.classes.models.management import Host_Stats
-from app.classes.models.servers import servers_helper
-from app.classes.shared.helpers import helper
+from app.classes.models.servers import helper_servers
+from app.classes.shared.helpers import Helpers
 
 logger = logging.getLogger(__name__)
 
 
 class Stats:
-    def __init__(self, controller):
+    def __init__(self, helper, controller):
+        self.helper = helper
         self.controller = controller
 
     def get_node_stats(self):
@@ -30,8 +31,8 @@ class Stats:
             "cpu_cur_freq": round(cpu_freq[0], 2),
             "cpu_max_freq": cpu_freq[2],
             "mem_percent": psutil.virtual_memory()[2],
-            "mem_usage": helper.human_readable_file_size(psutil.virtual_memory()[3]),
-            "mem_total": helper.human_readable_file_size(psutil.virtual_memory()[0]),
+            "mem_usage": Helpers.human_readable_file_size(psutil.virtual_memory()[3]),
+            "mem_total": Helpers.human_readable_file_size(psutil.virtual_memory()[0]),
             "disk_data": self._all_disk_usage(),
         }
         # server_stats = self.get_servers_stats()
@@ -60,7 +61,9 @@ class Stats:
             with p.oneshot():
                 process_stats = {
                     "cpu_usage": real_cpu,
-                    "memory_usage": helper.human_readable_file_size(p.memory_info()[0]),
+                    "memory_usage": Helpers.human_readable_file_size(
+                        p.memory_info()[0]
+                    ),
                     "mem_percentage": round(p.memory_percent(), 0),
                 }
             return process_stats
@@ -84,7 +87,7 @@ class Stats:
         # print(templ % ("Device", "Total", "Used", "Free", "Use ", "Type","Mount"))
 
         for part in psutil.disk_partitions(all=False):
-            if helper.is_os_windows():
+            if Helpers.is_os_windows():
                 if "cdrom" in part.opts or part.fstype == "":
                     # skip cd-rom drives with no disk in it; they may raise
                     # ENOENT, pop-up a Windows GUI error for a non-ready
@@ -94,9 +97,9 @@ class Stats:
             disk_data.append(
                 {
                     "device": part.device,
-                    "total": helper.human_readable_file_size(usage.total),
-                    "used": helper.human_readable_file_size(usage.used),
-                    "free": helper.human_readable_file_size(usage.free),
+                    "total": Helpers.human_readable_file_size(usage.total),
+                    "used": Helpers.human_readable_file_size(usage.used),
+                    "free": Helpers.human_readable_file_size(usage.free),
                     "percent_used": int(usage.percent),
                     "fs": part.fstype,
                     "mount": part.mountpoint,
@@ -110,15 +113,15 @@ class Stats:
 
         total_size = 0
 
-        total_size = helper.get_dir_size(server_path)
+        total_size = Helpers.get_dir_size(server_path)
 
-        level_total_size = helper.human_readable_file_size(total_size)
+        level_total_size = Helpers.human_readable_file_size(total_size)
 
         return level_total_size
 
     def get_server_players(self, server_id):
 
-        server = servers_helper.get_server_data_by_id(server_id)
+        server = helper_servers.get_server_data_by_id(server_id)
 
         logger.info(f"Getting players for server {server}")
 
@@ -130,8 +133,8 @@ class Stats:
         internal_ip = server["server_ip"]
         server_port = server["server_port"]
 
-        logger.debug("Pinging {internal_ip} on port {server_port}")
-        if servers_helper.get_server_type_by_id(server_id) != "minecraft-bedrock":
+        logger.debug(f"Pinging {internal_ip} on port {server_port}")
+        if helper_servers.get_server_type_by_id(server_id) != "minecraft-bedrock":
             int_mc_ping = ping(internal_ip, int(server_port))
 
             ping_data = {}
@@ -232,7 +235,7 @@ class Stats:
         #     ).execute()
 
         # delete old data
-        max_age = helper.get_setting("history_max_age")
+        max_age = self.helper.get_setting("history_max_age")
         now = datetime.datetime.now()
         last_week = now.day - max_age
 

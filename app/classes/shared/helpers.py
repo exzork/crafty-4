@@ -19,10 +19,11 @@ from socket import gethostname
 from contextlib import suppress
 import psutil
 
-from app.classes.shared.console import console
+from app.classes.shared.console import Console
 from app.classes.shared.installer import installer
-from app.classes.shared.file_helpers import file_helper
-from app.classes.web.websocket_helper import websocket_helper
+from app.classes.shared.file_helpers import FileHelpers
+from app.classes.shared.translation import Translation
+from app.classes.web.websocket_helper import WebSocketHelper
 
 logger = logging.getLogger(__name__)
 
@@ -61,17 +62,22 @@ class Helpers:
         self.passhasher = PasswordHasher()
         self.exiting = False
 
+        self.websocket_helper = WebSocketHelper(self)
+        self.translation = Translation(self)
+
     @staticmethod
     def auto_installer_fix(ex):
         logger.critical(f"Import Error: Unable to load {ex.name} module", exc_info=True)
         print(f"Import Error: Unable to load {ex.name} module")
         installer.do_install()
 
-    def float_to_string(self, gbs: int):
+    @staticmethod
+    def float_to_string(gbs: int):
         s = str(float(gbs) * 1000).rstrip("0").rstrip(".")
         return s
 
-    def check_file_perms(self, path):
+    @staticmethod
+    def check_file_perms(path):
         try:
             open(path, "r", encoding="utf-8").close()
             logger.info(f"{path} is readable")
@@ -79,8 +85,9 @@ class Helpers:
         except PermissionError:
             return False
 
-    def is_file_older_than_x_days(self, file, days=1):
-        if self.check_file_exists(file):
+    @staticmethod
+    def is_file_older_than_x_days(file, days=1):
+        if Helpers.check_file_exists(file):
             file_time = os.path.getmtime(file)
             # Check against 24 hours
             if (time.time() - file_time) / 3600 > 24 * days:
@@ -193,14 +200,14 @@ class Helpers:
 
             else:
                 logger.error(f"Config File Error: setting {key} does not exist")
-                console.error(f"Config File Error: setting {key} does not exist")
+                Console.error(f"Config File Error: setting {key} does not exist")
                 return default_return
 
         except Exception as e:
             logger.critical(
                 f"Config File Error: Unable to read {self.settings_file} due to {e}"
             )
-            console.critical(
+            Console.critical(
                 f"Config File Error: Unable to read {self.settings_file} due to {e}"
             )
 
@@ -217,7 +224,7 @@ class Helpers:
 
             else:
                 logger.error(f"Config File Error: setting {key} does not exist")
-                console.error(f"Config File Error: setting {key} does not exist")
+                Console.error(f"Config File Error: setting {key} does not exist")
                 return default_return
 
             with open(self.settings_file, "w", encoding="utf-8") as f:
@@ -227,11 +234,12 @@ class Helpers:
             logger.critical(
                 f"Config File Error: Unable to read {self.settings_file} due to {e}"
             )
-            console.critical(
+            Console.critical(
                 f"Config File Error: Unable to read {self.settings_file} due to {e}"
             )
 
-    def get_local_ip(self):
+    @staticmethod
+    def get_local_ip():
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             # doesn't even have to be reachable
@@ -252,7 +260,7 @@ class Helpers:
                 version_data = json.load(f)
 
         except Exception as e:
-            console.critical(f"Unable to get version data! \n{e}")
+            Console.critical(f"Unable to get version data! \n{e}")
 
         return version_data
 
@@ -274,7 +282,6 @@ class Helpers:
         return data
 
     def get_version_string(self):
-
         version_data = self.get_version()
         major = version_data.get("major", "?")
         minor = version_data.get("minor", "?")
@@ -331,7 +338,8 @@ class Helpers:
 
         return line
 
-    def validate_traversal(self, base_path, filename):
+    @staticmethod
+    def validate_traversal(base_path, filename):
         logger.debug(f'Validating traversal ("{base_path}", "{filename}")')
         base = pathlib.Path(base_path).resolve()
         file = pathlib.Path(filename)
@@ -342,8 +350,9 @@ class Helpers:
         else:
             raise ValueError("Path traversal detected")
 
-    def tail_file(self, file_name, number_lines=20):
-        if not self.check_file_exists(file_name):
+    @staticmethod
+    def tail_file(file_name, number_lines=20):
+        if not Helpers.check_file_exists(file_name):
             logger.warning(f"Unable to find file to tail: {file_name}")
             return [f"Unable to find file to tail: {file_name}"]
 
@@ -392,8 +401,9 @@ class Helpers:
             logger.critical(f"Unable to write to {path} - Error: {e}")
             return False
 
-    def checkRoot(self):
-        if self.is_os_windows():
+    @staticmethod
+    def checkRoot():
+        if Helpers.is_os_windows():
             if ctypes.windll.shell32.IsUserAnAdmin() == 1:
                 return True
             else:
@@ -404,7 +414,8 @@ class Helpers:
             else:
                 return False
 
-    def unzipFile(self, zip_path):
+    @staticmethod
+    def unzipFile(zip_path):
         new_dir_list = zip_path.split("/")
         new_dir = ""
         for i in range(len(new_dir_list) - 1):
@@ -413,8 +424,8 @@ class Helpers:
             else:
                 new_dir += "/" + new_dir_list[i]
 
-        if helper.check_file_perms(zip_path) and os.path.isfile(zip_path):
-            helper.ensure_dir_exists(new_dir)
+        if Helpers.check_file_perms(zip_path) and os.path.isfile(zip_path):
+            Helpers.ensure_dir_exists(new_dir)
             tempDir = tempfile.mkdtemp()
             try:
                 with zipfile.ZipFile(zip_path, "r") as zip_ref:
@@ -429,7 +440,7 @@ class Helpers:
 
                 for item in os.listdir(full_root_path):
                     try:
-                        file_helper.move_dir(
+                        FileHelpers.move_dir(
                             os.path.join(full_root_path, item),
                             os.path.join(new_dir, item),
                         )
@@ -447,7 +458,7 @@ class Helpers:
 
         logger.info("Checking app directory writable")
 
-        writeable = self.check_writeable(self.root_dir)
+        writeable = Helpers.check_writeable(self.root_dir)
 
         # if not writeable, let's bomb out
         if not writeable:
@@ -459,13 +470,13 @@ class Helpers:
             with suppress(FileExistsError):
                 os.makedirs(os.path.join(self.root_dir, "logs"))
         except Exception as e:
-            console.error(f"Failed to make logs directory with error: {e} ")
+            Console.error(f"Failed to make logs directory with error: {e} ")
 
         # ensure the log file is there
         try:
             open(log_file, "a", encoding="utf-8").close()
         except Exception as e:
-            console.critical(f"Unable to open log file! {e}")
+            Console.critical(f"Unable to open log file! {e}")
             sys.exit(1)
 
         # del any old session.lock file as this is a new session
@@ -565,7 +576,7 @@ class Helpers:
                 pid = data.get("pid")
                 started = data.get("started")
                 if psutil.pid_exists(pid):
-                    console.critical(
+                    Console.critical(
                         f"Another Crafty Controller agent seems to be running..."
                         f"\npid: {pid} \nstarted on: {started}"
                     )
@@ -580,7 +591,7 @@ class Helpers:
 
             except Exception as e:
                 logger.error(f"Failed to locate existing session.lock with error: {e} ")
-                console.error(
+                Console.error(
                     f"Failed to locate existing session.lock with error: {e} "
                 )
 
@@ -595,11 +606,12 @@ class Helpers:
 
     # because this is a recursive function, we will return bytes,
     # and set human readable later
-    def get_dir_size(self, path: str):
+    @staticmethod
+    def get_dir_size(path: str):
         total = 0
         for entry in os.scandir(path):
             if entry.is_dir(follow_symlinks=False):
-                total += self.get_dir_size(entry.path)
+                total += Helpers.get_dir_size(entry.path)
             else:
                 total += entry.stat(follow_symlinks=False).st_size
         return total
@@ -613,11 +625,15 @@ class Helpers:
             )
         ]
 
-    def get_human_readable_files_sizes(self, paths: list):
+    @staticmethod
+    def get_human_readable_files_sizes(paths: list):
         sizes = []
         for p in paths:
             sizes.append(
-                {"path": p, "size": self.human_readable_file_size(os.stat(p).st_size)}
+                {
+                    "path": p,
+                    "size": Helpers.human_readable_file_size(os.stat(p).st_size),
+                }
             )
         return sizes
 
@@ -633,10 +649,12 @@ class Helpers:
         b64_bytes = base64.decodebytes(s_bytes)
         return b64_bytes.decode("utf-8")
 
-    def create_uuid(self):
+    @staticmethod
+    def create_uuid():
         return str(uuid.uuid4())
 
-    def ensure_dir_exists(self, path):
+    @staticmethod
+    def ensure_dir_exists(path):
         """
         ensures a directory exists
 
@@ -662,7 +680,7 @@ class Helpers:
             cert_dir = os.path.join(self.config_dir, "web", "certs")
 
         # create a directory if needed
-        self.ensure_dir_exists(cert_dir)
+        Helpers.ensure_dir_exists(cert_dir)
 
         cert_file = os.path.join(cert_dir, "commander.cert.pem")
         key_file = os.path.join(cert_dir, "commander.key.pem")
@@ -671,16 +689,16 @@ class Helpers:
         logger.info(f"SSL Key File is set to: {key_file}")
 
         # don't create new files if we already have them.
-        if self.check_file_exists(cert_file) and self.check_file_exists(key_file):
+        if Helpers.check_file_exists(cert_file) and Helpers.check_file_exists(key_file):
             logger.info("Cert and Key files already exists, not creating them.")
             return True
 
-        console.info("Generating a self signed SSL")
+        Console.info("Generating a self signed SSL")
         logger.info("Generating a self signed SSL")
 
         # create a key pair
         logger.info("Generating a key pair. This might take a moment.")
-        console.info("Generating a key pair. This might take a moment.")
+        Console.info("Generating a key pair. This might take a moment.")
         k = crypto.PKey()
         k.generate_key(crypto.TYPE_RSA, 4096)
 
@@ -756,11 +774,11 @@ class Helpers:
         default_file = os.path.join(self.root_dir, "default.json")
         data = {}
 
-        if self.check_file_exists(default_file):
+        if Helpers.check_file_exists(default_file):
             with open(default_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
-            del_json = helper.get_setting("delete_default_json")
+            del_json = self.get_setting("delete_default_json")
 
             if del_json:
                 os.remove(default_file)
@@ -885,27 +903,27 @@ class Helpers:
                     </input></div><li>"""
         return output
 
-    @staticmethod
-    def unzipServer(zip_path, user_id):
-        if helper.check_file_perms(zip_path):
+    def unzipServer(self, zip_path, user_id):
+        if Helpers.check_file_perms(zip_path):
             tempDir = tempfile.mkdtemp()
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 # extracts archive to temp directory
                 zip_ref.extractall(tempDir)
             if user_id:
-                websocket_helper.broadcast_user(
+                self.websocket_helper.broadcast_user(
                     user_id, "send_temp_path", {"path": tempDir}
                 )
 
-    @staticmethod
-    def backup_select(path, user_id):
+    def backup_select(self, path, user_id):
         if user_id:
-            websocket_helper.broadcast_user(user_id, "send_temp_path", {"path": path})
+            self.websocket_helper.broadcast_user(
+                user_id, "send_temp_path", {"path": path}
+            )
 
     @staticmethod
     def unzip_backup_archive(backup_path, zip_name):
         zip_path = os.path.join(backup_path, zip_name)
-        if helper.check_file_perms(zip_path):
+        if Helpers.check_file_perms(zip_path):
             tempDir = tempfile.mkdtemp()
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 # extracts archive to temp directory
@@ -937,7 +955,7 @@ class Helpers:
     @staticmethod
     def copy_files(source, dest):
         if os.path.isfile(source):
-            file_helper.copy_file(source, dest)
+            FileHelpers.copy_file(source, dest)
             logger.info("Copying jar %s to %s", source, dest)
         else:
             logger.info("Source jar does not exist.")
@@ -974,6 +992,3 @@ class Helpers:
             return "en"
         else:
             return lang + "-" + region
-
-
-helper = Helpers()

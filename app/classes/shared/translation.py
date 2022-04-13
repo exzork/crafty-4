@@ -3,15 +3,17 @@ import logging
 import os
 import typing as t
 
-from app.classes.shared.console import console
-from app.classes.shared.helpers import helper
+from app.classes.shared.console import Console
 
 logger = logging.getLogger(__name__)
 
 
 class Translation:
-    def __init__(self):
-        self.translations_path = os.path.join(helper.root_dir, "app", "translations")
+    def __init__(self, helper):
+        self.helper = helper
+        self.translations_path = os.path.join(
+            self.helper.root_dir, "app", "translations"
+        )
         self.cached_translation = None
         self.cached_translation_lang = None
 
@@ -59,7 +61,7 @@ class Translation:
                     f"Translation File Error: page {page} "
                     f"does not exist for lang {language}"
                 )
-                console.error(
+                Console.error(
                     f"Translation File Error: page {page} "
                     f"does not exist for lang {language}"
                 )
@@ -73,7 +75,7 @@ class Translation:
                     f"Translation File Error: word {word} does not exist on page "
                     f"{page} for lang {language}"
                 )
-                console.error(
+                Console.error(
                     f"Translation File Error: word {word} does not exist on page "
                     f"{page} for lang {language}"
                 )
@@ -83,10 +85,7 @@ class Translation:
             logger.critical(
                 f"Translation File Error: Unable to read {language_file} due to {e}"
             )
-            console.critical(
+            Console.critical(
                 f"Translation File Error: Unable to read {language_file} due to {e}"
             )
             return None
-
-
-translation = Translation()

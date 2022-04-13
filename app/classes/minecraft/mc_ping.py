@@ -9,7 +9,7 @@ import uuid
 import random
 
 from app.classes.minecraft.bedrock_ping import BedrockPing
-from app.classes.shared.console import console
+from app.classes.shared.console import Console
 
 logger = logging.getLogger(__name__)
 
@@ -106,14 +106,14 @@ def get_code_format(format_name):
             return data.get(format_name)
         else:
             logger.error(f"Format MOTD Error: format name {format_name} does not exist")
-            console.error(
+            Console.error(
                 f"Format MOTD Error: format name {format_name} does not exist"
             )
             return ""
 
     except Exception as e:
         logger.critical(f"Config File Error: Unable to read {format_file} due to {e}")
-        console.critical(f"Config File Error: Unable to read {format_file} due to {e}")
+        Console.critical(f"Config File Error: Unable to read {format_file} due to {e}")
 
     return ""
 
