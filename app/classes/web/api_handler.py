@@ -2,8 +2,6 @@ from datetime import datetime
 import logging
 import re
 
-from platformdirs import user_cache_path
-
 from app.classes.controllers.crafty_perms_controller import Enum_Permissions_Crafty
 from app.classes.controllers.server_perms_controller import Enum_Permissions_Server
 from app.classes.web.base_handler import BaseHandler
