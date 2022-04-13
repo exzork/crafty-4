@@ -9,6 +9,7 @@ import subprocess
 import html
 import tempfile
 import psutil
+from psutil import NoSuchProcess
 
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
@@ -670,8 +671,11 @@ class Server:
 
     def kill(self):
         logger.info(f"Terminating server {self.server_id} and all child processes")
-        process = psutil.Process(self.process.pid)
-
+        try:
+            process = psutil.Process(self.process.pid)
+        except NoSuchProcess:
+            logger.info(f"Cannot kill {self.process.pid} as we cannot find that pid.")
+            return
         # for every sub process...
         for proc in process.children(recursive=True):
             # kill all the child processes
