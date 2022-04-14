@@ -34,6 +34,9 @@ class AuditLog(BaseModel):
     )  # When auditing global events, use server ID 0
     log_msg = TextField(default="")
 
+    class Meta:
+        table_name = "audit_log"
+
 
 # **********************************************************************************
 #                                   Host_Stats Class
