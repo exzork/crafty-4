@@ -37,7 +37,7 @@ class PublicHandler(BaseHandler):
             "version": self.helper.get_version_string(),
             "error": error,
             "lang": self.helper.get_setting("language"),
-            "lang_page": self.helper.getLangPage(self.helper.get_setting("language")),
+            "lang_page": self.helper.get_lang_page(self.helper.get_setting("language")),
             "query": "",
         }
         if self.request.query:
@@ -86,7 +86,7 @@ class PublicHandler(BaseHandler):
             "version": self.helper.get_version_string(),
             "error": error,
             "lang": self.helper.get_setting("language"),
-            "lang_page": self.helper.getLangPage(self.helper.get_setting("language")),
+            "lang_page": self.helper.get_lang_page(self.helper.get_setting("language")),
             "query": "",
         }
         if self.request.query:
