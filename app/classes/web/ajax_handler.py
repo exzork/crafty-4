@@ -583,6 +583,3 @@ class AjaxHandler(BaseHandler):
                 )
                 return
         return True
-
-
-0
