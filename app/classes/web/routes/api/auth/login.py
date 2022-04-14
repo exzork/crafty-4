@@ -3,7 +3,6 @@ import json
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from app.classes.models.users import Users
-from app.classes.shared.authentication import Authentication
 from app.classes.shared.helpers import Helpers
 from app.classes.web.base_api_handler import BaseApiHandler
 
@@ -51,7 +50,7 @@ class ApiAuthLoginHandler(BaseApiHandler):
         password = data["password"]
 
         # pylint: disable=no-member
-        user_data = self.controller.users.get_or_none(Users.username == username)
+        user_data = Users.get_or_none(Users.username == username)
 
         if user_data is None:
             return self.finish_json(
@@ -79,14 +78,14 @@ class ApiAuthLoginHandler(BaseApiHandler):
 
             # log this login
             self.controller.management.add_to_audit_log(
-                user_data.user_id, "Logged in", 0, self.get_remote_ip()
+                user_data.user_id, "Logged in via the API", 0, self.get_remote_ip()
             )
 
             self.finish_json(
                 200,
                 {
                     "status": "ok",
-                    "token": Authentication.generate(user_data.user_id),
+                    "token": self.controller.authentication.generate(user_data.user_id),
                     "user_id": user_data.user_id,
                 },
             )

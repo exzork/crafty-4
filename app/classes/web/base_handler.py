@@ -56,11 +56,25 @@ class BaseHandler(tornado.web.RequestHandler):
         return remote_ip
 
     current_user: t.Tuple[t.Optional[ApiKeys], t.Dict[str, t.Any], t.Dict[str, t.Any]]
+    """
+    A variable that contains the current user's data. Please see
+    Please only use this with routes using the `@tornado.web.authenticated` decorator.
+    """
 
     def get_current_user(
         self,
-    ) -> t.Tuple[t.Optional[ApiKeys], t.Dict[str, t.Any], t.Dict[str, t.Any]]:
-        return self.controller.authentication.check_err(self.get_cookie("token"))
+    ) -> t.Optional[
+        t.Tuple[t.Optional[ApiKeys], t.Dict[str, t.Any], t.Dict[str, t.Any]]
+    ]:
+        """
+        Get the token's API key, the token's payload and user data.
+
+        Returns:
+            t.Optional[ApiKeys]: The API key of the token.
+            t.Dict[str, t.Any]: The token's payload.
+            t.Dict[str, t.Any]: The user's data from the database.
+        """
+        return self.controller.authentication.check(self.get_cookie("token"))
 
     def autobleach(self, name, text):
         for r in self.redactables:
@@ -117,8 +131,18 @@ class BaseHandler(tornado.web.RequestHandler):
         )
 
     def _auth_get_api_token(self) -> t.Optional[str]:
+        """Get an API token from the request
+
+        The API token is searched in the following order:
+            1. The `token` query parameter
+            2. The `Authorization` header
+            3. The `token` cookie
+
+        Returns:
+            t.Optional[str]: The API token or None if no token was found.
+        """
         logger.debug("Searching for specified token")
-        api_token = self.get_argument("token", None)
+        api_token = self.get_query_argument("token", None)
         if api_token is None and self.request.headers.get("Authorization"):
             api_token = bearer_pattern.sub(
                 "", self.request.headers.get("Authorization")
