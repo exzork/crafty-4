@@ -1,13 +1,12 @@
 import logging
 from playhouse.shortcuts import model_to_dict
 
-# pylint: disable=unused-import
-from app.classes.shared.helpers import Helpers
+from app.classes.shared.helpers import Helpers  # pylint: disable=unused-import
 
 logger = logging.getLogger(__name__)
 
 
-class db_builder:
+class DatabaseBuilder:
     def __init__(self, database, helper, users_helper):
         self.database = database
         self.helper = helper
@@ -37,7 +36,7 @@ class db_builder:
             return True
 
 
-class db_shortcuts:
+class DatabaseShortcuts:
     # **********************************************************************************
     #                                  Generic Databse Methods
     # **********************************************************************************

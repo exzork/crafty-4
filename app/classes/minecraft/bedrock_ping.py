@@ -37,34 +37,45 @@ class BedrockPing:
     @staticmethod
     def __slice(in_bytes, pattern):
         ret = []
-        bi = 0  # bytes index
-        pi = 0  # pattern index
-        while bi < len(in_bytes):
+        bytes_index = 0
+        pattern_index = 0
+        while bytes_index < len(in_bytes):
             try:
-                f = BedrockPing.fields[pattern[pi]]
+                field = BedrockPing.fields[pattern[pattern_index]]
             except IndexError as index_error:
                 raise IndexError(
                     "Ran out of pattern with additional bytes remaining"
                 ) from index_error
-            if pattern[pi] == "string":
-                shl = f[0]  # string header length
-                sl = int.from_bytes(
-                    in_bytes[bi : bi + shl], BedrockPing.byte_order, signed=f[1]
-                )  # string length
-                l = shl + sl
-                ret.append(in_bytes[bi + shl : bi + shl + sl].decode("ascii"))
-            elif pattern[pi] == "magic":
-                l = f[0]  # length of field
-                ret.append(in_bytes[bi : bi + l])
+            if pattern[pattern_index] == "string":
+                string_header_length = field[0]
+                string_length = int.from_bytes(
+                    in_bytes[bytes_index : bytes_index + string_header_length],
+                    BedrockPing.byte_order,
+                    signed=field[1],
+                )
+                length = string_header_length + string_length
+                ret.append(
+                    in_bytes[
+                        bytes_index
+                        + string_header_length : bytes_index
+                        + string_header_length
+                        + string_length
+                    ].decode("ascii")
+                )
+            elif pattern[pattern_index] == "magic":
+                length = field[0]
+                ret.append(in_bytes[bytes_index : bytes_index + length])
             else:
-                l = f[0]  # length of field
+                length = field[0]
                 ret.append(
                     int.from_bytes(
-                        in_bytes[bi : bi + l], BedrockPing.byte_order, signed=f[1]
+                        in_bytes[bytes_index : bytes_index + length],
+                        BedrockPing.byte_order,
+                        signed=field[1],
                     )
                 )
-            bi += l
-            pi += 1
+            bytes_index += length
+            pattern_index += 1
         return ret
 
     @staticmethod
@@ -115,6 +126,6 @@ class BedrockPing:
                 return self.__recvpong()
             except ValueError as e:
                 print(
-                    f"E: {e}, checking next packet.  Retries remaining: {rtr}/{retries}"
+                    f"E: {e}, checking next packet. Retries remaining: {rtr}/{retries}"
                 )
             rtr -= 1

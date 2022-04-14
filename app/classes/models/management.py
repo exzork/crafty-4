@@ -13,17 +13,17 @@ from peewee import (
 from playhouse.shortcuts import model_to_dict
 
 from app.classes.models.base_model import BaseModel
-from app.classes.models.users import Users, helper_users
+from app.classes.models.users import Users, HelperUsers
 from app.classes.models.servers import Servers
-from app.classes.models.server_permissions import Permissions_Servers
-from app.classes.shared.main_models import db_shortcuts
+from app.classes.models.server_permissions import PermissionsServers
+from app.classes.shared.main_models import DatabaseShortcuts
 
 logger = logging.getLogger(__name__)
 
 # **********************************************************************************
 #                                   Audit_Log Class
 # **********************************************************************************
-class Audit_Log(BaseModel):
+class AuditLog(BaseModel):
     audit_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     user_name = CharField(default="")
@@ -38,7 +38,7 @@ class Audit_Log(BaseModel):
 # **********************************************************************************
 #                                   Host_Stats Class
 # **********************************************************************************
-class Host_Stats(BaseModel):
+class HostStats(BaseModel):
     time = DateTimeField(default=datetime.datetime.now, index=True)
     boot_time = CharField(default="")
     cpu_usage = FloatField(default=0)
@@ -120,7 +120,7 @@ class Backups(BaseModel):
         table_name = "backups"
 
 
-class helpers_management:
+class HelpersManagement:
     def __init__(self, database, helper):
         self.database = database
         self.helper = helper
@@ -131,7 +131,7 @@ class helpers_management:
     @staticmethod
     def get_latest_hosts_stats():
         # pylint: disable=no-member
-        query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()
+        query = HostStats.select().order_by(HostStats.id.desc()).get()
         return model_to_dict(query)
 
     # **********************************************************************************
@@ -166,60 +166,60 @@ class helpers_management:
     # **********************************************************************************
     @staticmethod
     def get_actity_log():
-        q = Audit_Log.select()
-        return db_shortcuts.return_db_rows(q)
+        query = AuditLog.select()
+        return DatabaseShortcuts.return_db_rows(query)
 
     def add_to_audit_log(self, user_id, log_msg, server_id=None, source_ip=None):
         logger.debug(f"Adding to audit log User:{user_id} - Message: {log_msg} ")
-        user_data = helper_users.get_user(user_id)
+        user_data = HelperUsers.get_user(user_id)
 
         audit_msg = f"{str(user_data['username']).capitalize()} {log_msg}"
 
-        server_users = Permissions_Servers.get_server_user_list(server_id)
+        server_users = PermissionsServers.get_server_user_list(server_id)
         for user in server_users:
             self.helper.websocket_helper.broadcast_user(user, "notification", audit_msg)
 
-        Audit_Log.insert(
+        AuditLog.insert(
             {
-                Audit_Log.user_name: user_data["username"],
-                Audit_Log.user_id: user_id,
-                Audit_Log.server_id: server_id,
-                Audit_Log.log_msg: audit_msg,
-                Audit_Log.source_ip: source_ip,
+                AuditLog.user_name: user_data["username"],
+                AuditLog.user_id: user_id,
+                AuditLog.server_id: server_id,
+                AuditLog.log_msg: audit_msg,
+                AuditLog.source_ip: source_ip,
             }
         ).execute()
         # deletes records when they're more than 100
-        ordered = Audit_Log.select().order_by(+Audit_Log.created)
+        ordered = AuditLog.select().order_by(+AuditLog.created)
         for item in ordered:
             if not self.helper.get_setting("max_audit_entries"):
                 max_entries = 300
             else:
                 max_entries = self.helper.get_setting("max_audit_entries")
-            if Audit_Log.select().count() > max_entries:
-                Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
+            if AuditLog.select().count() > max_entries:
+                AuditLog.delete().where(AuditLog.audit_id == item.audit_id).execute()
             else:
                 return
 
     def add_to_audit_log_raw(self, user_name, user_id, server_id, log_msg, source_ip):
-        Audit_Log.insert(
+        AuditLog.insert(
             {
-                Audit_Log.user_name: user_name,
-                Audit_Log.user_id: user_id,
-                Audit_Log.server_id: server_id,
-                Audit_Log.log_msg: log_msg,
-                Audit_Log.source_ip: source_ip,
+                AuditLog.user_name: user_name,
+                AuditLog.user_id: user_id,
+                AuditLog.server_id: server_id,
+                AuditLog.log_msg: log_msg,
+                AuditLog.source_ip: source_ip,
             }
         ).execute()
         # deletes records when they're more than 100
-        ordered = Audit_Log.select().order_by(+Audit_Log.created)
+        ordered = AuditLog.select().order_by(+AuditLog.created)
         for item in ordered:
             # configurable through app/config/config.json
             if not self.helper.get_setting("max_audit_entries"):
                 max_entries = 300
             else:
                 max_entries = self.helper.get_setting("max_audit_entries")
-            if Audit_Log.select().count() > max_entries:
-                Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
+            if AuditLog.select().count() > max_entries:
+                AuditLog.delete().where(AuditLog.audit_id == item.audit_id).execute()
             else:
                 return
 
@@ -363,17 +363,20 @@ class helpers_management:
         if not new_row:
             with self.database.atomic():
                 if backup_path is not None:
-                    u1 = (
+                    server_rows = (
                         Servers.update(backup_path=backup_path)
                         .where(Servers.server_id == server_id)
                         .execute()
                     )
                 else:
-                    u1 = 0
-                u2 = (
+                    server_rows = 0
+                backup_rows = (
                     Backups.update(conf).where(Backups.server_id == server_id).execute()
                 )
-            logger.debug(f"Updating existing backup record.  {u1}+{u2} rows affected")
+            logger.debug(
+                f"Updating existing backup record. "
+                f"{server_rows}+{backup_rows} rows affected"
+            )
         else:
             with self.database.atomic():
                 conf["server_id"] = server_id
@@ -386,7 +389,7 @@ class helpers_management:
 
     @staticmethod
     def get_excluded_backup_dirs(server_id: int):
-        excluded_dirs = helpers_management.get_backup_config(server_id)["excluded_dirs"]
+        excluded_dirs = HelpersManagement.get_backup_config(server_id)["excluded_dirs"]
         if excluded_dirs is not None and excluded_dirs != "":
             dir_list = excluded_dirs.split(",")
         else:

@@ -1,16 +1,16 @@
 import logging
 from typing import Optional
 
-from app.classes.models.users import helper_users
+from app.classes.models.users import HelperUsers
 from app.classes.models.crafty_permissions import (
-    Permissions_Crafty,
-    Enum_Permissions_Crafty,
+    PermissionsCrafty,
+    EnumPermissionsCrafty,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class Users_Controller:
+class UsersController:
     def __init__(self, helper, users_helper, authentication):
         self.helper = helper
         self.users_helper = users_helper
@@ -21,42 +21,42 @@ class Users_Controller:
     # **********************************************************************************
     @staticmethod
     def get_all_users():
-        return helper_users.get_all_users()
+        return HelperUsers.get_all_users()
 
     @staticmethod
     def get_id_by_name(username):
-        return helper_users.get_user_id_by_name(username)
+        return HelperUsers.get_user_id_by_name(username)
 
     @staticmethod
     def get_user_lang_by_id(user_id):
-        return helper_users.get_user_lang_by_id(user_id)
+        return HelperUsers.get_user_lang_by_id(user_id)
 
     @staticmethod
     def get_user_by_id(user_id):
-        return helper_users.get_user(user_id)
+        return HelperUsers.get_user(user_id)
 
     @staticmethod
     def update_server_order(user_id, user_server_order):
-        helper_users.update_server_order(user_id, user_server_order)
+        HelperUsers.update_server_order(user_id, user_server_order)
 
     @staticmethod
     def get_server_order(user_id):
-        return helper_users.get_server_order(user_id)
+        return HelperUsers.get_server_order(user_id)
 
     @staticmethod
     def user_query(user_id):
-        return helper_users.user_query(user_id)
+        return HelperUsers.user_query(user_id)
 
     @staticmethod
     def set_support_path(user_id, support_path):
-        helper_users.set_support_path(user_id, support_path)
+        HelperUsers.set_support_path(user_id, support_path)
 
     def update_user(self, user_id: str, user_data=None, user_crafty_data=None):
         if user_crafty_data is None:
             user_crafty_data = {}
         if user_data is None:
             user_data = {}
-        base_data = helper_users.get_user(user_id)
+        base_data = HelperUsers.get_user(user_id)
         up_data = {}
         added_roles = set()
         removed_roles = set()
@@ -76,26 +76,26 @@ class Users_Controller:
         up_data["hints"] = user_data["hints"]
         logger.debug(f"user: {user_data} +role:{added_roles} -role:{removed_roles}")
         for role in added_roles:
-            helper_users.get_or_create(user_id=user_id, role_id=role)
+            HelperUsers.get_or_create(user_id=user_id, role_id=role)
         permissions_mask = user_crafty_data.get("permissions_mask", "000")
 
         if "server_quantity" in user_crafty_data:
             limit_server_creation = user_crafty_data["server_quantity"][
-                Enum_Permissions_Crafty.Server_Creation.name
+                EnumPermissionsCrafty.SERVER_CREATION.name
             ]
 
             limit_user_creation = user_crafty_data["server_quantity"][
-                Enum_Permissions_Crafty.User_Config.name
+                EnumPermissionsCrafty.USER_CONFIG.name
             ]
             limit_role_creation = user_crafty_data["server_quantity"][
-                Enum_Permissions_Crafty.Roles_Config.name
+                EnumPermissionsCrafty.ROLES_CONFIG.name
             ]
         else:
             limit_server_creation = 0
             limit_user_creation = 0
             limit_role_creation = 0
 
-        Permissions_Crafty.add_or_update_user(
+        PermissionsCrafty.add_or_update_user(
             user_id,
             permissions_mask,
             limit_server_creation,
@@ -131,7 +131,7 @@ class Users_Controller:
         enabled: bool = True,
         superuser: bool = False,
     ):
-        return helper_users.add_rawpass_user(
+        return HelperUsers.add_rawpass_user(
             username,
             password=password,
             email=email,
@@ -144,15 +144,15 @@ class Users_Controller:
 
     @staticmethod
     def user_id_exists(user_id):
-        return helper_users.user_id_exists(user_id)
+        return HelperUsers.user_id_exists(user_id)
 
     @staticmethod
     def set_prepare(user_id):
-        return helper_users.set_prepare(user_id)
+        return HelperUsers.set_prepare(user_id)
 
     @staticmethod
     def stop_prepare(user_id):
-        return helper_users.stop_prepare(user_id)
+        return HelperUsers.stop_prepare(user_id)
 
     def get_user_id_by_api_token(self, token: str) -> str:
         token_data = self.authentication.check_no_iat(token)
@@ -172,11 +172,11 @@ class Users_Controller:
 
     @staticmethod
     def get_user_roles_id(user_id):
-        return helper_users.get_user_roles_id(user_id)
+        return HelperUsers.get_user_roles_id(user_id)
 
     @staticmethod
     def get_user_roles_names(user_id):
-        return helper_users.get_user_roles_names(user_id)
+        return HelperUsers.get_user_roles_names(user_id)
 
     def add_role_to_user(self, user_id, role_id):
         return self.users_helper.add_role_to_user(user_id, role_id)
@@ -186,7 +186,7 @@ class Users_Controller:
 
     @staticmethod
     def user_role_query(user_id):
-        return helper_users.user_role_query(user_id)
+        return HelperUsers.user_role_query(user_id)
 
     # **********************************************************************************
     #                                   Api Keys Methods
@@ -194,11 +194,11 @@ class Users_Controller:
 
     @staticmethod
     def get_user_api_keys(user_id: str):
-        return helper_users.get_user_api_keys(user_id)
+        return HelperUsers.get_user_api_keys(user_id)
 
     @staticmethod
     def get_user_api_key(key_id: str):
-        return helper_users.get_user_api_key(key_id)
+        return HelperUsers.get_user_api_key(key_id)
 
     def add_user_api_key(
         self,

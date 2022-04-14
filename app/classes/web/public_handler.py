@@ -2,7 +2,7 @@ import logging
 import bleach
 
 from app.classes.shared.helpers import Helpers
-from app.classes.models.users import helper_users
+from app.classes.models.users import HelperUsers
 from app.classes.web.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
@@ -103,8 +103,8 @@ class PublicHandler(BaseHandler):
 
             # pylint: disable=no-member
             try:
-                user_id = helper_users.get_user_id_by_name(entered_username.lower())
-                user_data = helper_users.get_user_model(user_id)
+                user_id = HelperUsers.get_user_id_by_name(entered_username.lower())
+                user_data = HelperUsers.get_user_model(user_id)
             except:
                 error_msg = "Incorrect username or password. Please try again."
                 # self.clear_cookie("user")

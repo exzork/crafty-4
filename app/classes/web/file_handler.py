@@ -4,7 +4,7 @@ import bleach
 import tornado.web
 import tornado.escape
 
-from app.classes.models.server_permissions import Enum_Permissions_Server
+from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.file_helpers import FileHelpers
@@ -31,14 +31,14 @@ class FileHandler(BaseHandler):
         server_id = self.get_argument("id", None)
 
         permissions = {
-            "Commands": Enum_Permissions_Server.Commands,
-            "Terminal": Enum_Permissions_Server.Terminal,
-            "Logs": Enum_Permissions_Server.Logs,
-            "Schedule": Enum_Permissions_Server.Schedule,
-            "Backup": Enum_Permissions_Server.Backup,
-            "Files": Enum_Permissions_Server.Files,
-            "Config": Enum_Permissions_Server.Config,
-            "Players": Enum_Permissions_Server.Players,
+            "Commands": EnumPermissionsServer.COMMANDS,
+            "Terminal": EnumPermissionsServer.TERMINAL,
+            "Logs": EnumPermissionsServer.LOGS,
+            "Schedule": EnumPermissionsServer.SCHEDULE,
+            "Backup": EnumPermissionsServer.BACKUP,
+            "Files": EnumPermissionsServer.FILES,
+            "Config": EnumPermissionsServer.CONFIG,
+            "Players": EnumPermissionsServer.PLAYERS,
         }
         user_perms = self.controller.server_perms.get_user_id_permissions_list(
             exec_user["user_id"], server_id
@@ -138,14 +138,14 @@ class FileHandler(BaseHandler):
         server_id = self.get_argument("id", None)
 
         permissions = {
-            "Commands": Enum_Permissions_Server.Commands,
-            "Terminal": Enum_Permissions_Server.Terminal,
-            "Logs": Enum_Permissions_Server.Logs,
-            "Schedule": Enum_Permissions_Server.Schedule,
-            "Backup": Enum_Permissions_Server.Backup,
-            "Files": Enum_Permissions_Server.Files,
-            "Config": Enum_Permissions_Server.Config,
-            "Players": Enum_Permissions_Server.Players,
+            "Commands": EnumPermissionsServer.COMMANDS,
+            "Terminal": EnumPermissionsServer.TERMINAL,
+            "Logs": EnumPermissionsServer.LOGS,
+            "Schedule": EnumPermissionsServer.SCHEDULE,
+            "Backup": EnumPermissionsServer.BACKUP,
+            "Files": EnumPermissionsServer.FILES,
+            "Config": EnumPermissionsServer.CONFIG,
+            "Players": EnumPermissionsServer.PLAYERS,
         }
         user_perms = self.controller.server_perms.get_user_id_permissions_list(
             exec_user["user_id"], server_id
@@ -223,7 +223,7 @@ class FileHandler(BaseHandler):
                     self.redirect("/panel/error?error=Unauthorized access to Files")
                     return
             path = Helpers.get_os_understandable_path(self.get_argument("path", None))
-            Helpers.unzipFile(path)
+            Helpers.unzip_file(path)
             self.redirect(f"/panel/server_detail?id={server_id}&subpage=files")
             return
 
@@ -237,14 +237,14 @@ class FileHandler(BaseHandler):
         server_id = self.get_argument("id", None)
 
         permissions = {
-            "Commands": Enum_Permissions_Server.Commands,
-            "Terminal": Enum_Permissions_Server.Terminal,
-            "Logs": Enum_Permissions_Server.Logs,
-            "Schedule": Enum_Permissions_Server.Schedule,
-            "Backup": Enum_Permissions_Server.Backup,
-            "Files": Enum_Permissions_Server.Files,
-            "Config": Enum_Permissions_Server.Config,
-            "Players": Enum_Permissions_Server.Players,
+            "Commands": EnumPermissionsServer.COMMANDS,
+            "Terminal": EnumPermissionsServer.TERMINAL,
+            "Logs": EnumPermissionsServer.LOGS,
+            "Schedule": EnumPermissionsServer.SCHEDULE,
+            "Backup": EnumPermissionsServer.BACKUP,
+            "Files": EnumPermissionsServer.FILES,
+            "Config": EnumPermissionsServer.CONFIG,
+            "Players": EnumPermissionsServer.PLAYERS,
         }
         user_perms = self.controller.server_perms.get_user_id_permissions_list(
             exec_user["user_id"], server_id
@@ -325,14 +325,14 @@ class FileHandler(BaseHandler):
 
         server_id = self.get_argument("id", None)
         permissions = {
-            "Commands": Enum_Permissions_Server.Commands,
-            "Terminal": Enum_Permissions_Server.Terminal,
-            "Logs": Enum_Permissions_Server.Logs,
-            "Schedule": Enum_Permissions_Server.Schedule,
-            "Backup": Enum_Permissions_Server.Backup,
-            "Files": Enum_Permissions_Server.Files,
-            "Config": Enum_Permissions_Server.Config,
-            "Players": Enum_Permissions_Server.Players,
+            "Commands": EnumPermissionsServer.COMMANDS,
+            "Terminal": EnumPermissionsServer.TERMINAL,
+            "Logs": EnumPermissionsServer.LOGS,
+            "Schedule": EnumPermissionsServer.SCHEDULE,
+            "Backup": EnumPermissionsServer.BACKUP,
+            "Files": EnumPermissionsServer.FILES,
+            "Config": EnumPermissionsServer.CONFIG,
+            "Players": EnumPermissionsServer.PLAYERS,
         }
         user_perms = self.controller.server_perms.get_user_id_permissions_list(
             exec_user["user_id"], server_id
@@ -436,14 +436,14 @@ class FileHandler(BaseHandler):
 
         server_id = self.get_argument("id", None)
         permissions = {
-            "Commands": Enum_Permissions_Server.Commands,
-            "Terminal": Enum_Permissions_Server.Terminal,
-            "Logs": Enum_Permissions_Server.Logs,
-            "Schedule": Enum_Permissions_Server.Schedule,
-            "Backup": Enum_Permissions_Server.Backup,
-            "Files": Enum_Permissions_Server.Files,
-            "Config": Enum_Permissions_Server.Config,
-            "Players": Enum_Permissions_Server.Players,
+            "Commands": EnumPermissionsServer.COMMANDS,
+            "Terminal": EnumPermissionsServer.TERMINAL,
+            "Logs": EnumPermissionsServer.LOGS,
+            "Schedule": EnumPermissionsServer.SCHEDULE,
+            "Backup": EnumPermissionsServer.BACKUP,
+            "Files": EnumPermissionsServer.FILES,
+            "Config": EnumPermissionsServer.CONFIG,
+            "Players": EnumPermissionsServer.PLAYERS,
         }
         user_perms = self.controller.server_perms.get_user_id_permissions_list(
             exec_user["user_id"], server_id

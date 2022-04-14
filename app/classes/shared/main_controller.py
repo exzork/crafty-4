@@ -12,17 +12,17 @@ from peewee import DoesNotExist
 from tzlocal import get_localzone
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from app.classes.controllers.crafty_perms_controller import Crafty_Perms_Controller
-from app.classes.controllers.management_controller import Management_Controller
-from app.classes.controllers.users_controller import Users_Controller
-from app.classes.controllers.roles_controller import Roles_Controller
-from app.classes.controllers.server_perms_controller import Server_Perms_Controller
-from app.classes.controllers.servers_controller import Servers_Controller
-from app.classes.models.server_permissions import Enum_Permissions_Server
-from app.classes.models.users import helper_users
-from app.classes.models.roles import helper_roles
-from app.classes.models.management import helpers_management
-from app.classes.models.servers import helper_servers
+from app.classes.controllers.crafty_perms_controller import CraftyPermsController
+from app.classes.controllers.management_controller import ManagementController
+from app.classes.controllers.users_controller import UsersController
+from app.classes.controllers.roles_controller import RolesController
+from app.classes.controllers.server_perms_controller import ServerPermsController
+from app.classes.controllers.servers_controller import ServersController
+from app.classes.models.server_permissions import EnumPermissionsServer
+from app.classes.models.users import HelperUsers
+from app.classes.models.roles import HelperRoles
+from app.classes.models.management import HelpersManagement
+from app.classes.models.servers import HelperServers
 from app.classes.shared.authentication import Authentication
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
@@ -39,19 +39,19 @@ class Controller:
     def __init__(self, database, helper):
         self.helper = helper
         self.server_jars = ServerJars(helper)
-        self.users_helper = helper_users(database, self.helper)
-        self.roles_helper = helper_roles(database)
-        self.servers_helper = helper_servers(database)
-        self.management_helper = helpers_management(database, self.helper)
+        self.users_helper = HelperUsers(database, self.helper)
+        self.roles_helper = HelperRoles(database)
+        self.servers_helper = HelperServers(database)
+        self.management_helper = HelpersManagement(database, self.helper)
         self.authentication = Authentication(self.helper)
         self.servers_list = []
         self.stats = Stats(self.helper, self)
-        self.crafty_perms = Crafty_Perms_Controller()
-        self.management = Management_Controller(self.management_helper)
-        self.roles = Roles_Controller(self.users_helper, self.roles_helper)
-        self.server_perms = Server_Perms_Controller()
-        self.servers = Servers_Controller(self.servers_helper)
-        self.users = Users_Controller(
+        self.crafty_perms = CraftyPermsController()
+        self.management = ManagementController(self.management_helper)
+        self.roles = RolesController(self.users_helper, self.roles_helper)
+        self.server_perms = ServerPermsController()
+        self.servers = ServersController(self.servers_helper)
+        self.users = UsersController(
             self.helper, self.users_helper, self.authentication
         )
         tz = get_localzone()
@@ -62,8 +62,8 @@ class Controller:
 
         logger.info(f"Checking to see if we already registered {server_id_to_check}")
 
-        for s in self.servers_list:
-            known_server = s.get("server_id")
+        for server in self.servers_list:
+            known_server = server.get("server_id")
             if known_server is None:
                 return False
 
@@ -80,8 +80,8 @@ class Controller:
 
         servers = self.servers.get_all_defined_servers()
 
-        for s in servers:
-            server_id = s.get("server_id")
+        for server in servers:
+            server_id = server.get("server_id")
 
             # if we have already initialized this server, let's skip it.
             if self.check_server_loaded(server_id):
@@ -89,21 +89,23 @@ class Controller:
 
             # if this server path no longer exists - let's warn and bomb out
             if not Helpers.check_path_exists(
-                Helpers.get_os_understandable_path(s["path"])
+                Helpers.get_os_understandable_path(server["path"])
             ):
                 logger.warning(
-                    f"Unable to find server {s['server_name']} at path {s['path']}. "
+                    f"Unable to find server "
+                    f"{server['server_name']} at path {server['path']}. "
                     f"Skipping this server"
                 )
 
                 Console.warning(
-                    f"Unable to find server {s['server_name']} at path {s['path']}. "
+                    f"Unable to find server "
+                    f"{server['server_name']} at path {server['path']}. "
                     f"Skipping this server"
                 )
                 continue
 
             settings_file = os.path.join(
-                Helpers.get_os_understandable_path(s["path"]), "server.properties"
+                Helpers.get_os_understandable_path(server["path"]), "server.properties"
             )
 
             # if the properties file isn't there, let's warn
@@ -115,28 +117,28 @@ class Controller:
             settings = ServerProps(settings_file)
 
             temp_server_dict = {
-                "server_id": s.get("server_id"),
-                "server_data_obj": s,
+                "server_id": server.get("server_id"),
+                "server_data_obj": server,
                 "server_obj": Server(self.helper, self.management_helper, self.stats),
                 "server_settings": settings.props,
             }
 
             # setup the server, do the auto start and all that jazz
-            temp_server_dict["server_obj"].do_server_setup(s)
+            temp_server_dict["server_obj"].do_server_setup(server)
 
             # add this temp object to the list of init servers
             self.servers_list.append(temp_server_dict)
 
-            if s["auto_start"]:
-                self.servers.set_waiting_start(s["server_id"], True)
+            if server["auto_start"]:
+                self.servers.set_waiting_start(server["server_id"], True)
 
-            self.refresh_server_settings(s["server_id"])
+            self.refresh_server_settings(server["server_id"])
 
             Console.info(
-                f"Loaded Server: ID {s['server_id']}"
-                + f" | Name: {s['server_name']}"
-                + f" | Autostart: {s['auto_start']}"
-                + f" | Delay: {s['auto_start_delay']} "
+                f"Loaded Server: ID {server['server_id']}"
+                f" | Name: {server['server_name']}"
+                f" | Autostart: {server['auto_start']}"
+                f" | Delay: {server['auto_start_delay']}"
             )
 
     def refresh_server_settings(self, server_id: int):
@@ -145,7 +147,7 @@ class Controller:
 
     @staticmethod
     def check_system_user():
-        if helper_users.get_user_id_by_name("system") is not None:
+        if HelperUsers.get_user_id_by_name("system") is not None:
             return True
         else:
             return False
@@ -162,11 +164,11 @@ class Controller:
         self.helper.websocket_helper.broadcast_user(
             exec_user["user_id"], "notification", "Preparing your support logs"
         )
-        tempDir = tempfile.mkdtemp()
-        tempZipStorage = tempfile.mkdtemp()
-        full_temp = os.path.join(tempDir, "support_logs")
+        temp_dir = tempfile.mkdtemp()
+        temp_zip_storage = tempfile.mkdtemp()
+        full_temp = os.path.join(temp_dir, "support_logs")
         os.mkdir(full_temp)
-        tempZipStorage = os.path.join(tempZipStorage, "support_logs")
+        temp_zip_storage = os.path.join(temp_zip_storage, "support_logs")
         crafty_path = os.path.join(full_temp, "crafty")
         os.mkdir(crafty_path)
         server_path = os.path.join(full_temp, "server")
@@ -180,7 +182,7 @@ class Controller:
             auth_servers = []
             for server in user_servers:
                 if (
-                    Enum_Permissions_Server.Logs
+                    EnumPermissionsServer.LOGS
                     in self.server_perms.get_user_id_permissions_list(
                         exec_user["user_id"], server["server_id"]
                     )
@@ -211,30 +213,30 @@ class Controller:
             "interval",
             seconds=1,
             id="logs_" + str(exec_user["user_id"]),
-            args=[full_temp, tempZipStorage + ".zip", exec_user],
+            args=[full_temp, temp_zip_storage + ".zip", exec_user],
         )
-        FileHelpers.make_archive(tempZipStorage, tempDir)
+        FileHelpers.make_archive(temp_zip_storage, temp_dir)
 
         if len(self.helper.websocket_helper.clients) > 0:
             self.helper.websocket_helper.broadcast_user(
                 exec_user["user_id"],
                 "support_status_update",
-                Helpers.calc_percent(full_temp, tempZipStorage + ".zip"),
+                Helpers.calc_percent(full_temp, temp_zip_storage + ".zip"),
             )
 
-        tempZipStorage += ".zip"
+        temp_zip_storage += ".zip"
         self.helper.websocket_helper.broadcast_user(
             exec_user["user_id"], "send_logs_bootbox", {}
         )
 
-        self.users.set_support_path(exec_user["user_id"], tempZipStorage)
+        self.users.set_support_path(exec_user["user_id"], temp_zip_storage)
 
         self.users.stop_prepare(exec_user["user_id"])
         self.support_scheduler.remove_job("logs_" + str(exec_user["user_id"]))
 
     @staticmethod
     def add_system_user():
-        helper_users.add_user(
+        HelperUsers.add_user(
             "system",
             Helpers.random_string_generator(64),
             "default@example.com",
@@ -243,9 +245,9 @@ class Controller:
         )
 
     def get_server_settings(self, server_id):
-        for s in self.servers_list:
-            if int(s["server_id"]) == int(server_id):
-                return s["server_settings"]
+        for server in self.servers_list:
+            if int(server["server_id"]) == int(server_id):
+                return server["server_settings"]
 
         logger.warning(f"Unable to find server object for server id {server_id}")
         return False
@@ -276,34 +278,34 @@ class Controller:
             return {"percent": 0, "total_files": 0}
 
     def get_server_obj(self, server_id: Union[str, int]) -> Union[bool, Server]:
-        for s in self.servers_list:
-            if str(s["server_id"]) == str(server_id):
-                return s["server_obj"]
+        for server in self.servers_list:
+            if str(server["server_id"]) == str(server_id):
+                return server["server_obj"]
 
         logger.warning(f"Unable to find server object for server id {server_id}")
         return False  # TODO: Change to None
 
     def get_server_data(self, server_id: str):
-        for s in self.servers_list:
-            if str(s["server_id"]) == str(server_id):
-                return s["server_data_obj"]
+        for server in self.servers_list:
+            if str(server["server_id"]) == str(server_id):
+                return server["server_data_obj"]
 
         logger.warning(f"Unable to find server object for server id {server_id}")
         return False
 
     @staticmethod
     def list_defined_servers():
-        servers = helper_servers.get_all_defined_servers()
+        servers = HelperServers.get_all_defined_servers()
         return servers
 
     def list_running_servers(self):
         running_servers = []
 
         # for each server
-        for s in self.servers_list:
+        for servers in self.servers_list:
 
             # is the server running?
-            srv_obj = s["server_obj"]
+            srv_obj = servers["server_obj"]
             running = srv_obj.check_running()
             # if so, let's add a dictionary to the list of running servers
             if running:
@@ -319,11 +321,11 @@ class Controller:
         logger.info("Stopping All Servers")
         Console.info("Stopping All Servers")
 
-        for s in servers:
-            logger.info(f"Stopping Server ID {s['id']} - {s['name']}")
-            Console.info(f"Stopping Server ID {s['id']} - {s['name']}")
+        for server in servers:
+            logger.info(f"Stopping Server ID {server['id']} - {server['name']}")
+            Console.info(f"Stopping Server ID {server['id']} - {server['name']}")
 
-            self.stop_server(s["id"])
+            self.stop_server(server["id"])
 
             # let's wait 2 seconds to let everything flush out
             time.sleep(2)
@@ -363,16 +365,18 @@ class Controller:
 
         try:
             # do a eula.txt
-            with open(os.path.join(server_dir, "eula.txt"), "w", encoding="utf-8") as f:
-                f.write("eula=false")
-                f.close()
+            with open(
+                os.path.join(server_dir, "eula.txt"), "w", encoding="utf-8"
+            ) as file:
+                file.write("eula=false")
+                file.close()
 
             # setup server.properties with the port
             with open(
                 os.path.join(server_dir, "server.properties"), "w", encoding="utf-8"
-            ) as f:
-                f.write(f"server-port={port}")
-                f.close()
+            ) as file:
+                file.write(f"server-port={port}")
+                file.close()
 
         except Exception as e:
             logger.error(f"Unable to create required server files due to :{e}")
@@ -465,9 +469,9 @@ class Controller:
             )
             with open(
                 os.path.join(new_server_dir, "server.properties"), "w", encoding="utf-8"
-            ) as f:
-                f.write(f"server-port={port}")
-                f.close()
+            ) as file:
+                file.write(f"server-port={port}")
+                file.close()
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
 
@@ -518,22 +522,22 @@ class Controller:
             new_server_dir.replace(" ", "^ ")
             backup_path.replace(" ", "^ ")
 
-        tempDir = Helpers.get_os_understandable_path(zip_path)
+        temp_dir = Helpers.get_os_understandable_path(zip_path)
         Helpers.ensure_dir_exists(new_server_dir)
         Helpers.ensure_dir_exists(backup_path)
         has_properties = False
         # extracts archive to temp directory
-        for item in os.listdir(tempDir):
+        for item in os.listdir(temp_dir):
             if str(item) == "server.properties":
                 has_properties = True
             try:
-                if not os.path.isdir(os.path.join(tempDir, item)):
+                if not os.path.isdir(os.path.join(temp_dir, item)):
                     FileHelpers.move_file(
-                        os.path.join(tempDir, item), os.path.join(new_server_dir, item)
+                        os.path.join(temp_dir, item), os.path.join(new_server_dir, item)
                     )
                 else:
                     FileHelpers.move_dir(
-                        os.path.join(tempDir, item), os.path.join(new_server_dir, item)
+                        os.path.join(temp_dir, item), os.path.join(new_server_dir, item)
                     )
             except Exception as ex:
                 logger.error(f"ERROR IN ZIP IMPORT: {ex}")
@@ -544,9 +548,9 @@ class Controller:
             )
             with open(
                 os.path.join(new_server_dir, "server.properties"), "w", encoding="utf-8"
-            ) as f:
-                f.write(f"server-port={port}")
-                f.close()
+            ) as file:
+                file.write(f"server-port={port}")
+                file.close()
 
         full_jar_path = os.path.join(new_server_dir, server_jar)
 
@@ -615,9 +619,9 @@ class Controller:
             )
             with open(
                 os.path.join(new_server_dir, "server.properties"), "w", encoding="utf-8"
-            ) as f:
-                f.write(f"server-port={port}")
-                f.close()
+            ) as file:
+                file.write(f"server-port={port}")
+                file.close()
 
         full_jar_path = os.path.join(new_server_dir, server_exe)
 
@@ -658,22 +662,22 @@ class Controller:
             new_server_dir.replace(" ", "^ ")
             backup_path.replace(" ", "^ ")
 
-        tempDir = Helpers.get_os_understandable_path(zip_path)
+        temp_dir = Helpers.get_os_understandable_path(zip_path)
         Helpers.ensure_dir_exists(new_server_dir)
         Helpers.ensure_dir_exists(backup_path)
         has_properties = False
         # extracts archive to temp directory
-        for item in os.listdir(tempDir):
+        for item in os.listdir(temp_dir):
             if str(item) == "server.properties":
                 has_properties = True
             try:
-                if not os.path.isdir(os.path.join(tempDir, item)):
+                if not os.path.isdir(os.path.join(temp_dir, item)):
                     FileHelpers.move_file(
-                        os.path.join(tempDir, item), os.path.join(new_server_dir, item)
+                        os.path.join(temp_dir, item), os.path.join(new_server_dir, item)
                     )
                 else:
                     FileHelpers.move_dir(
-                        os.path.join(tempDir, item), os.path.join(new_server_dir, item)
+                        os.path.join(temp_dir, item), os.path.join(new_server_dir, item)
                     )
             except Exception as ex:
                 logger.error(f"ERROR IN ZIP IMPORT: {ex}")
@@ -684,9 +688,9 @@ class Controller:
             )
             with open(
                 os.path.join(new_server_dir, "server.properties"), "w", encoding="utf-8"
-            ) as f:
-                f.write(f"server-port={port}")
-                f.close()
+            ) as file:
+                file.write(f"server-port={port}")
+                file.close()
 
         full_jar_path = os.path.join(new_server_dir, server_exe)
 
@@ -723,7 +727,7 @@ class Controller:
     def rename_backup_dir(self, old_server_id, new_server_id, new_uuid):
         server_data = self.servers.get_server_data_by_id(old_server_id)
         old_bu_path = server_data["backup_path"]
-        Server_Perms_Controller.backup_role_swap(old_server_id, new_server_id)
+        ServerPermsController.backup_role_swap(old_server_id, new_server_id)
         if not Helpers.is_os_windows():
             backup_path = Helpers.validate_traversal(
                 self.helper.backup_path, old_bu_path
@@ -758,7 +762,6 @@ class Controller:
         server_type: str,
     ):
         # put data in the db
-
         new_id = self.servers.create_server(
             name,
             server_uuid,
@@ -781,12 +784,12 @@ class Controller:
                     os.path.join(server_dir, "crafty_managed.txt"),
                     "w",
                     encoding="utf-8",
-                ) as f:
-                    f.write(
+                ) as file:
+                    file.write(
                         "The server is managed by Crafty Controller.\n "
                         "Leave this directory/files alone please"
                     )
-                    f.close()
+                    file.close()
 
             except Exception as e:
                 logger.error(f"Unable to create required server files due to :{e}")
@@ -799,17 +802,17 @@ class Controller:
 
     def remove_server(self, server_id, files):
         counter = 0
-        for s in self.servers_list:
+        for server in self.servers_list:
 
             # if this is the droid... im mean server we are looking for...
-            if str(s["server_id"]) == str(server_id):
+            if str(server["server_id"]) == str(server_id):
                 server_data = self.get_server_data(server_id)
                 server_name = server_data["server_name"]
 
                 logger.info(f"Deleting Server: ID {server_id} | Name: {server_name} ")
                 Console.info(f"Deleting Server: ID {server_id} | Name: {server_name} ")
 
-                srv_obj = s["server_obj"]
+                srv_obj = server["server_obj"]
                 running = srv_obj.check_running()
 
                 if running:
@@ -839,7 +842,7 @@ class Controller:
 
                 # Cleanup scheduled tasks
                 try:
-                    helpers_management.delete_scheduled_task_by_server(server_id)
+                    HelpersManagement.delete_scheduled_task_by_server(server_id)
                 except DoesNotExist:
                     logger.info("No scheduled jobs exist. Continuing.")
                 # remove the server from the DB
@@ -852,8 +855,8 @@ class Controller:
 
     @staticmethod
     def clear_unexecuted_commands():
-        helpers_management.clear_unexecuted_commands()
+        HelpersManagement.clear_unexecuted_commands()
 
     @staticmethod
     def clear_support_status():
-        helper_users.clear_support_status()
+        HelperUsers.clear_support_status()

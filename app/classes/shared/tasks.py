@@ -9,8 +9,8 @@ from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from app.classes.models.management import helpers_management
-from app.classes.models.users import helper_users
+from app.classes.models.management import HelpersManagement
+from app.classes.models.users import HelperUsers
 from app.classes.shared.console import Console
 from app.classes.web.tornado_handler import Webserver
 
@@ -70,7 +70,7 @@ class TasksManager:
         return self.main_thread_exiting
 
     def reload_schedule_from_db(self):
-        jobs = helpers_management.get_schedules_enabled()
+        jobs = HelpersManagement.get_schedules_enabled()
         logger.info("Reload from DB called. Current enabled schedules: ")
         for item in jobs:
             logger.info(f"JOB: {item}")
@@ -78,19 +78,19 @@ class TasksManager:
     def command_watcher(self):
         while True:
             # select any commands waiting to be processed
-            commands = helpers_management.get_unactioned_commands()
-            for c in commands:
+            commands = HelpersManagement.get_unactioned_commands()
+            for cmd in commands:
                 try:
-                    svr = self.controller.get_server_obj(c.server_id)
+                    svr = self.controller.get_server_obj(cmd.server_id)
                 except:
                     logger.error(
                         "Server value requested does note exist! "
                         "Purging item from waiting commands."
                     )
-                    helpers_management.mark_command_complete(c.command_id)
+                    HelpersManagement.mark_command_complete(cmd.command_id)
 
-                user_id = c.user_id
-                command = c.command
+                user_id = cmd.user_id
+                command = cmd.command
 
                 if command == "start_server":
                     svr.run_threaded_server(user_id)
@@ -108,7 +108,7 @@ class TasksManager:
                     svr.jar_update()
                 else:
                     svr.send_command(command)
-                helpers_management.mark_command_complete(c.command_id)
+                HelpersManagement.mark_command_complete(cmd.command_id)
 
             time.sleep(1)
 
@@ -153,7 +153,7 @@ class TasksManager:
         self.realtime_thread.start()
 
     def scheduler_thread(self):
-        schedules = helpers_management.get_schedules_enabled()
+        schedules = HelpersManagement.get_schedules_enabled()
         self.scheduler.add_listener(self.schedule_watcher, mask=EVENT_JOB_EXECUTED)
         # self.scheduler.add_job(
         #    self.scheduler.print_jobs, "interval", seconds=10, id="-1"
@@ -165,7 +165,7 @@ class TasksManager:
                 if schedule.cron_string != "":
                     try:
                         self.scheduler.add_job(
-                            helpers_management.add_command,
+                            HelpersManagement.add_command,
                             CronTrigger.from_crontab(
                                 schedule.cron_string, timezone=str(self.tz)
                             ),
@@ -189,7 +189,7 @@ class TasksManager:
                 else:
                     if schedule.interval_type == "hours":
                         self.scheduler.add_job(
-                            helpers_management.add_command,
+                            HelpersManagement.add_command,
                             "cron",
                             minute=0,
                             hour="*/" + str(schedule.interval),
@@ -203,7 +203,7 @@ class TasksManager:
                         )
                     elif schedule.interval_type == "minutes":
                         self.scheduler.add_job(
-                            helpers_management.add_command,
+                            HelpersManagement.add_command,
                             "cron",
                             minute="*/" + str(schedule.interval),
                             id=str(schedule.schedule_id),
@@ -217,7 +217,7 @@ class TasksManager:
                     elif schedule.interval_type == "days":
                         curr_time = schedule.start_time.split(":")
                         self.scheduler.add_job(
-                            helpers_management.add_command,
+                            HelpersManagement.add_command,
                             "cron",
                             day="*/" + str(schedule.interval),
                             hour=curr_time[0],
@@ -237,7 +237,7 @@ class TasksManager:
             logger.info(f"JOB: {item}")
 
     def schedule_job(self, job_data):
-        sch_id = helpers_management.create_scheduled_task(
+        sch_id = HelpersManagement.create_scheduled_task(
             job_data["server_id"],
             job_data["action"],
             job_data["interval"],
@@ -254,13 +254,13 @@ class TasksManager:
         # Checks to make sure some doofus didn't actually make the newly
         # created task a child of itself.
         if str(job_data["parent"]) == str(sch_id):
-            helpers_management.update_scheduled_task(sch_id, {"parent": None})
+            HelpersManagement.update_scheduled_task(sch_id, {"parent": None})
             # Check to see if it's enabled and is not a chain reaction.
         if job_data["enabled"] and job_data["interval_type"] != "reaction":
             if job_data["cron_string"] != "":
                 try:
                     self.scheduler.add_job(
-                        helpers_management.add_command,
+                        HelpersManagement.add_command,
                         CronTrigger.from_crontab(
                             job_data["cron_string"], timezone=str(self.tz)
                         ),
@@ -282,7 +282,7 @@ class TasksManager:
             else:
                 if job_data["interval_type"] == "hours":
                     self.scheduler.add_job(
-                        helpers_management.add_command,
+                        HelpersManagement.add_command,
                         "cron",
                         minute=0,
                         hour="*/" + str(job_data["interval"]),
@@ -296,7 +296,7 @@ class TasksManager:
                     )
                 elif job_data["interval_type"] == "minutes":
                     self.scheduler.add_job(
-                        helpers_management.add_command,
+                        HelpersManagement.add_command,
                         "cron",
                         minute="*/" + str(job_data["interval"]),
                         id=str(sch_id),
@@ -310,7 +310,7 @@ class TasksManager:
                 elif job_data["interval_type"] == "days":
                     curr_time = job_data["start_time"].split(":")
                     self.scheduler.add_job(
-                        helpers_management.add_command,
+                        HelpersManagement.add_command,
                         "cron",
                         day="*/" + str(job_data["interval"]),
                         hour=curr_time[0],
@@ -329,14 +329,14 @@ class TasksManager:
                 logger.info(f"JOB: {item}")
 
     def remove_all_server_tasks(self, server_id):
-        schedules = helpers_management.get_schedules_by_server(server_id)
+        schedules = HelpersManagement.get_schedules_by_server(server_id)
         for schedule in schedules:
             if schedule.interval != "reaction":
                 self.remove_job(schedule.schedule_id)
 
     def remove_job(self, sch_id):
-        job = helpers_management.get_scheduled_task_model(sch_id)
-        for schedule in helpers_management.get_child_schedules(sch_id):
+        job = HelpersManagement.get_scheduled_task_model(sch_id)
+        for schedule in HelpersManagement.get_child_schedules(sch_id):
             self.controller.management_helper.update_scheduled_task(
                 schedule.schedule_id, {"parent": None}
             )
@@ -352,11 +352,11 @@ class TasksManager:
             )
 
     def update_job(self, sch_id, job_data):
-        helpers_management.update_scheduled_task(sch_id, job_data)
+        HelpersManagement.update_scheduled_task(sch_id, job_data)
         # Checks to make sure some doofus didn't actually make the newly
         # created task a child of itself.
         if str(job_data["parent"]) == str(sch_id):
-            helpers_management.update_scheduled_task(sch_id, {"parent": None})
+            HelpersManagement.update_scheduled_task(sch_id, {"parent": None})
         try:
             if job_data["interval"] != "reaction":
                 self.scheduler.remove_job(str(sch_id))
@@ -371,7 +371,7 @@ class TasksManager:
                 if job_data["cron_string"] != "":
                     try:
                         self.scheduler.add_job(
-                            helpers_management.add_command,
+                            HelpersManagement.add_command,
                             CronTrigger.from_crontab(
                                 job_data["cron_string"], timezone=str(self.tz)
                             ),
@@ -390,7 +390,7 @@ class TasksManager:
                 else:
                     if job_data["interval_type"] == "hours":
                         self.scheduler.add_job(
-                            helpers_management.add_command,
+                            HelpersManagement.add_command,
                             "cron",
                             minute=0,
                             hour="*/" + str(job_data["interval"]),
@@ -404,7 +404,7 @@ class TasksManager:
                         )
                     elif job_data["interval_type"] == "minutes":
                         self.scheduler.add_job(
-                            helpers_management.add_command,
+                            HelpersManagement.add_command,
                             "cron",
                             minute="*/" + str(job_data["interval"]),
                             id=str(sch_id),
@@ -418,7 +418,7 @@ class TasksManager:
                     elif job_data["interval_type"] == "days":
                         curr_time = job_data["start_time"].split(":")
                         self.scheduler.add_job(
-                            helpers_management.add_command,
+                            HelpersManagement.add_command,
                             "cron",
                             day="*/" + str(job_data["interval"]),
                             hour=curr_time[0],
@@ -449,7 +449,7 @@ class TasksManager:
                 )
                 self.controller.management.add_to_audit_log_raw(
                     "system",
-                    helper_users.get_user_id_by_name("system"),
+                    HelperUsers.get_user_id_by_name("system"),
                     task.server_id,
                     f"Task with id {task.schedule_id} completed successfully",
                     "127.0.0.1",
@@ -461,7 +461,7 @@ class TasksManager:
                 # check for any child tasks for this. It's kind of backward,
                 # but this makes DB management a lot easier. One to one
                 # instead of one to many.
-                for schedule in helpers_management.get_child_schedules_by_server(
+                for schedule in HelpersManagement.get_child_schedules_by_server(
                     task.schedule_id, task.server_id
                 ):
                     # event job ID's are strings so we need to look at
@@ -472,7 +472,7 @@ class TasksManager:
                                 seconds=schedule.delay
                             )
                             self.scheduler.add_job(
-                                helpers_management.add_command,
+                                HelpersManagement.add_command,
                                 "date",
                                 run_date=delaytime,
                                 id=str(schedule.schedule_id),
@@ -526,22 +526,22 @@ class TasksManager:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
-        host_stats = helpers_management.get_latest_hosts_stats()
+        host_stats = HelpersManagement.get_latest_hosts_stats()
 
         while True:
 
             if host_stats.get(
                 "cpu_usage"
-            ) != helpers_management.get_latest_hosts_stats().get(
+            ) != HelpersManagement.get_latest_hosts_stats().get(
                 "cpu_usage"
             ) or host_stats.get(
                 "mem_percent"
-            ) != helpers_management.get_latest_hosts_stats().get(
+            ) != HelpersManagement.get_latest_hosts_stats().get(
                 "mem_percent"
             ):
                 # Stats are different
 
-                host_stats = helpers_management.get_latest_hosts_stats()
+                host_stats = HelpersManagement.get_latest_hosts_stats()
                 if len(self.helper.websocket_helper.clients) > 0:
                     # There are clients
                     self.helper.websocket_helper.broadcast_page(

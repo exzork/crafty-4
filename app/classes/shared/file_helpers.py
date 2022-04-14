@@ -60,19 +60,19 @@ class FileHelpers:
     def make_archive(path_to_destination, path_to_zip):
         # create a ZipFile object
         path_to_destination += ".zip"
-        with ZipFile(path_to_destination, "w") as z:
+        with ZipFile(path_to_destination, "w") as zip_file:
             for root, _dirs, files in os.walk(path_to_zip, topdown=True):
                 ziproot = path_to_zip
                 for file in files:
                     try:
                         logger.info(f"backing up: {os.path.join(root, file)}")
                         if os.name == "nt":
-                            z.write(
+                            zip_file.write(
                                 os.path.join(root, file),
                                 os.path.join(root.replace(ziproot, ""), file),
                             )
                         else:
-                            z.write(
+                            zip_file.write(
                                 os.path.join(root, file),
                                 os.path.join(root.replace(ziproot, "/"), file),
                             )
@@ -89,19 +89,19 @@ class FileHelpers:
     def make_compressed_archive(path_to_destination, path_to_zip):
         # create a ZipFile object
         path_to_destination += ".zip"
-        with ZipFile(path_to_destination, "w", ZIP_DEFLATED) as z:
+        with ZipFile(path_to_destination, "w", ZIP_DEFLATED) as zip_file:
             for root, _dirs, files in os.walk(path_to_zip, topdown=True):
                 ziproot = path_to_zip
                 for file in files:
                     try:
                         logger.info(f"backing up: {os.path.join(root, file)}")
                         if os.name == "nt":
-                            z.write(
+                            zip_file.write(
                                 os.path.join(root, file),
                                 os.path.join(root.replace(ziproot, ""), file),
                             )
                         else:
-                            z.write(
+                            zip_file.write(
                                 os.path.join(root, file),
                                 os.path.join(root.replace(ziproot, "/"), file),
                             )

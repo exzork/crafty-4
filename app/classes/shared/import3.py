@@ -2,13 +2,13 @@ import json
 import os
 import logging
 
-from app.classes.controllers.users_controller import helper_users
+from app.classes.controllers.users_controller import HelperUsers
 from app.classes.shared.console import Console
 
 logger = logging.getLogger(__name__)
 
 
-class import3:
+class Import3:
     def __init__(self, helper, controller):
         self.helper = helper
         self.controller = controller
@@ -38,7 +38,7 @@ class import3:
         # If there is only one user to import json needs to call the data differently
         if isinstance(json_data, list):
             for user in json_data:
-                helper_users.add_rawpass_user(user["username"], user["password"])
+                HelperUsers.add_rawpass_user(user["username"], user["password"])
                 Console.info(f"Imported user {user['username']} from Crafty 3")
                 logger.info(f"Imported user {user['username']} from Crafty 3")
         else:

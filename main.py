@@ -6,13 +6,13 @@ import argparse
 import logging.config
 import signal
 import peewee
-from app.classes.models.users import helper_users
+from app.classes.models.users import HelperUsers
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 
 console = Console()
 helper = Helpers()
-if helper.checkRoot():
+if helper.check_root():
     Console.critical(
         "Root detected. Root/Admin access denied. "
         "Run Crafty again with non-elevated permissions."
@@ -23,7 +23,7 @@ if helper.checkRoot():
 # pylint: disable=wrong-import-position
 try:
     from app.classes.models.base_model import database_proxy
-    from app.classes.shared.main_models import db_builder
+    from app.classes.shared.main_models import DatabaseBuilder
     from app.classes.shared.tasks import TasksManager
     from app.classes.shared.main_controller import Controller
     from app.classes.shared.migration import MigrationManager
@@ -114,11 +114,11 @@ if __name__ == "__main__":
     migration_manager.up()  # Automatically runs migrations
 
     # do our installer stuff
-    user_helper = helper_users(database, helper)
-    installer = db_builder(database, helper, user_helper)
-    fresh_install = installer.is_fresh_install()
+    user_helper = HelperUsers(database, helper)
+    installer = DatabaseBuilder(database, helper, user_helper)
+    FRESH_INSTALL = installer.is_fresh_install()
 
-    if fresh_install:
+    if FRESH_INSTALL:
         Console.debug("Fresh install detected")
         Console.warning(
             f"We have detected a fresh install. Please be sure to forward "

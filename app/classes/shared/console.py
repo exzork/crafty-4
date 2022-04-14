@@ -54,30 +54,30 @@ class Console:
 
     @staticmethod
     def debug(message):
-        dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        Console.magenta(f"[+] Crafty: {dt} - DEBUG:\t{message}")
+        date_time = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
+        Console.magenta(f"[+] Crafty: {date_time} - DEBUG:\t{message}")
 
     @staticmethod
     def info(message):
-        dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        Console.white(f"[+] Crafty: {dt} - INFO:\t{message}")
+        date_time = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
+        Console.white(f"[+] Crafty: {date_time} - INFO:\t{message}")
 
     @staticmethod
     def warning(message):
-        dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        Console.cyan(f"[+] Crafty: {dt} - WARNING:\t{message}")
+        date_time = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
+        Console.cyan(f"[+] Crafty: {date_time} - WARNING:\t{message}")
 
     @staticmethod
     def error(message):
-        dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        Console.yellow(f"[+] Crafty: {dt} - ERROR:\t{message}")
+        date_time = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
+        Console.yellow(f"[+] Crafty: {date_time} - ERROR:\t{message}")
 
     @staticmethod
     def critical(message):
-        dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        Console.red(f"[+] Crafty: {dt} - CRITICAL:\t{message}")
+        date_time = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
+        Console.red(f"[+] Crafty: {date_time} - CRITICAL:\t{message}")
 
     @staticmethod
     def help(message):
-        dt = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
-        Console.green(f"[+] Crafty: {dt} - HELP:\t{message}")
+        date_time = datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
+        Console.green(f"[+] Crafty: {date_time} - HELP:\t{message}")

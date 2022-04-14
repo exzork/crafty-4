@@ -6,8 +6,8 @@ import logging
 from datetime import datetime
 import requests
 
-from app.classes.controllers.servers_controller import Servers_Controller
-from app.classes.models.server_permissions import Permissions_Servers
+from app.classes.controllers.servers_controller import ServersController
+from app.classes.models.server_permissions import PermissionsServers
 
 logger = logging.getLogger(__name__)
 
@@ -21,16 +21,16 @@ class ServerJars:
         full_url = f"{self.base_url}{call_url}"
 
         try:
-            r = requests.get(full_url, timeout=2)
+            response = requests.get(full_url, timeout=2)
 
-            if r.status_code not in [200, 201]:
+            if response.status_code not in [200, 201]:
                 return {}
         except Exception as e:
             logger.error(f"Unable to connect to serverjar.com api due to error: {e}")
             return {}
 
         try:
-            api_data = json.loads(r.content)
+            api_data = json.loads(response.content)
         except Exception as e:
             logger.error(f"Unable to parse serverjar.com api result due to error: {e}")
             return {}
@@ -60,37 +60,14 @@ class ServerJars:
         data = self._read_cache()
         return data.get("servers")
 
-    def get_serverjar_data_sorted(self):
-        data = self.get_serverjar_data()
-
-        def str_to_int(x, counter=0):
-            try:
-                return ord(x[0]) + str_to_int(x[1:], counter + 1) + len(x)
-            except IndexError:
-                return 0
-
-        def to_int(x):
-            try:
-                return int(x)
-            except ValueError:
-                temp = x.split("-")
-                return to_int(temp[0]) + str_to_int(temp[1]) / 100000
-
-        sort_key_fn = lambda x: [to_int(y) for y in x.split(".")]
-
-        for key in data.keys():
-            data[key] = sorted(data[key], key=sort_key_fn)
-
-        return data
-
     def _check_api_alive(self):
         logger.info("Checking serverjars.com API status")
 
         check_url = f"{self.base_url}/api/fetchTypes"
         try:
-            r = requests.get(check_url, timeout=2)
+            response = requests.get(check_url, timeout=2)
 
-            if r.status_code in [200, 201]:
+            if response.status_code in [200, 201]:
                 logger.info("Serverjars.com API is alive")
                 return True
         except Exception as e:
@@ -170,13 +147,13 @@ class ServerJars:
         # delaying download for server register to finish
         time.sleep(3)
         fetch_url = f"{self.base_url}/api/fetchJar/{server}/{version}"
-        server_users = Permissions_Servers.get_server_user_list(server_id)
+        server_users = PermissionsServers.get_server_user_list(server_id)
 
         # We need to make sure the server is registered before
         # we submit a db update for it's stats.
         while True:
             try:
-                Servers_Controller.set_download(server_id)
+                ServersController.set_download(server_id)
                 for user in server_users:
                     self.helper.websocket_helper.broadcast_user(
                         user, "send_start_reload", {}
@@ -191,7 +168,7 @@ class ServerJars:
             try:
                 with open(path, "wb") as output:
                     shutil.copyfileobj(r.raw, output)
-                    Servers_Controller.finish_download(server_id)
+                    ServersController.finish_download(server_id)
 
                     for user in server_users:
                         self.helper.websocket_helper.broadcast_user(
@@ -204,8 +181,8 @@ class ServerJars:
                     return True
             except Exception as e:
                 logger.error(f"Unable to save jar to {path} due to error:{e}")
-                Servers_Controller.finish_download(server_id)
-                server_users = Permissions_Servers.get_server_user_list(server_id)
+                ServersController.finish_download(server_id)
+                server_users = PermissionsServers.get_server_user_list(server_id)
                 for user in server_users:
                     self.helper.websocket_helper.broadcast_user(
                         user, "notification", "Executable download finished"

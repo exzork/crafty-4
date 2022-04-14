@@ -4,7 +4,7 @@ from typing import Optional, Dict, Any, Tuple
 import jwt
 from jwt import PyJWTError
 
-from app.classes.models.users import helper_users, ApiKeys
+from app.classes.models.users import HelperUsers, ApiKeys
 
 logger = logging.getLogger(__name__)
 
@@ -52,11 +52,11 @@ class Authentication:
         key: Optional[ApiKeys] = None
         if "token_id" in data:
             key_id = data["token_id"]
-            key = helper_users.get_user_api_key(key_id)
+            key = HelperUsers.get_user_api_key(key_id)
             if key is None:
                 return None
         user_id: str = data["user_id"]
-        user = helper_users.get_user(user_id)
+        user = HelperUsers.get_user(user_id)
         # TODO: Have a cache or something so we don't constantly
         # have to query the database
         if int(user.get("valid_tokens_from").timestamp()) < iat:
