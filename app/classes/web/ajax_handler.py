@@ -424,7 +424,7 @@ class AjaxHandler(BaseHandler):
         elif page == "unzip_server":
             path = self.get_argument("path", None)
             if Helpers.check_file_exists(path):
-                self.helper.unzipServer(path, exec_user["user_id"])
+                self.helper.unzip_server(path, exec_user["user_id"])
             else:
                 user_id = exec_user["user_id"]
                 if user_id:
