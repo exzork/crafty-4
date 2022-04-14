@@ -1,4 +1,5 @@
 import logging
+import typing
 from enum import Enum
 from peewee import (
     ForeignKeyField,
@@ -45,21 +46,24 @@ class Permissions_Crafty:
     # **********************************************************************************
     @staticmethod
     def get_permissions_list():
-        permissions_list = []
+        permissions_list: typing.List[Enum_Permissions_Crafty] = []
         for member in Enum_Permissions_Crafty.__members__.items():
             permissions_list.append(member[1])
         return permissions_list
 
     @staticmethod
     def get_permissions(permissions_mask):
-        permissions_list = []
+        permissions_list: typing.List[Enum_Permissions_Crafty] = []
         for member in Enum_Permissions_Crafty.__members__.items():
             if Permissions_Crafty.has_permission(permissions_mask, member[1]):
                 permissions_list.append(member[1])
         return permissions_list
 
     @staticmethod
-    def has_permission(permission_mask, permission_tested: Enum_Permissions_Crafty):
+    def has_permission(
+        permission_mask: typing.Mapping[int, str],
+        permission_tested: Enum_Permissions_Crafty,
+    ):
         result = False
         if permission_mask[permission_tested.value] == "1":
             result = True

@@ -1,5 +1,6 @@
 import logging
 from typing import Optional
+import typing
 
 from app.classes.models.users import helper_users
 from app.classes.models.crafty_permissions import (
@@ -16,12 +17,58 @@ class Users_Controller:
         self.users_helper = users_helper
         self.authentication = authentication
 
+        _permissions_props = {
+            "name": {
+                "type": "string",
+                "enum": [
+                    permission.name
+                    for permission in Permissions_Crafty.get_permissions_list()
+                ],
+            },
+            "quantity": {"type": "number", "minimum": 0},
+            "enabled": {"type": "boolean"},
+        }
+        self.user_jsonschema_props: typing.Final = {
+            "username": {
+                "type": "string",
+                "maxLength": 20,
+                "minLength": 4,
+                "pattern": "^[a-z0-9_]+$",
+            },
+            "password": {"type": "string", "maxLength": 20, "minLength": 4},
+            "email": {"type": "string", "format": "email"},
+            "enabled": {"type": "boolean"},
+            "lang": {
+                "type": "string",
+                "maxLength": 10,
+                "minLength": 2,
+            },
+            "superuser": {"type": "boolean"},
+            "permissions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": _permissions_props,
+                    "required": ["name", "quantity", "enabled"],
+                },
+            },
+            "roles": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+            "hints": {"type": "boolean"},
+        }
+
     # **********************************************************************************
     #                                   Users Methods
     # **********************************************************************************
     @staticmethod
     def get_all_users():
         return helper_users.get_all_users()
+
+    @staticmethod
+    def get_all_user_ids():
+        return helper_users.get_all_user_ids()
 
     @staticmethod
     def get_id_by_name(username):
@@ -107,6 +154,17 @@ class Users_Controller:
 
         self.users_helper.update_user(user_id, up_data)
 
+    def raw_update_user(
+        self, user_id: int, up_data: typing.Optional[typing.Dict[str, typing.Any]]
+    ):
+        """Directly passes the data to the model helper.
+
+        Args:
+            user_id (int): The id of the user to update.
+            up_data (typing.Optional[typing.Dict[str, typing.Any]]): Update data.
+        """
+        self.users_helper.update_user(user_id, up_data)
+
     def add_user(
         self,
         username,
@@ -159,7 +217,7 @@ class Users_Controller:
         return token_data["user_id"]
 
     def get_user_by_api_token(self, token: str):
-        _, _, user = self.authentication.check(token)
+        _, _, user = self.authentication.check_err(token)
         return user
 
     def get_api_key_by_token(self, token: str):

@@ -1,5 +1,6 @@
 from enum import Enum
 import logging
+import typing
 from peewee import (
     ForeignKeyField,
     CharField,
@@ -51,14 +52,14 @@ class Permissions_Servers:
 
     @staticmethod
     def get_permissions_list():
-        permissions_list = []
+        permissions_list: typing.List[Enum_Permissions_Server] = []
         for member in Enum_Permissions_Server.__members__.items():
             permissions_list.append(member[1])
         return permissions_list
 
     @staticmethod
     def get_permissions(permissions_mask):
-        permissions_list = []
+        permissions_list: typing.List[Enum_Permissions_Server] = []
         for member in Enum_Permissions_Server.__members__.items():
             if Permissions_Servers.has_permission(permissions_mask, member[1]):
                 permissions_list.append(member[1])

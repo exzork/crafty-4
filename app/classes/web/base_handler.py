@@ -1,14 +1,39 @@
 import logging
-from typing import Union, List, Optional, Tuple, Dict, Any
+import re
+import typing as t
+import orjson
 import bleach
 import tornado.web
 
+from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
 from app.classes.models.users import ApiKeys
 
 logger = logging.getLogger(__name__)
 
+bearer_pattern = re.compile(r"^Bearer ", flags=re.IGNORECASE)
+
 
 class BaseHandler(tornado.web.RequestHandler):
+    def set_default_headers(self) -> None:
+        """
+        Fix CORS
+        """
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, x-requested-with, Authorization",
+        )
+        self.set_header(
+            "Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS"
+        )
+
+    def options(self, *_, **__):
+        """
+        Fix CORS
+        """
+        # no body
+        self.set_status(204)
+        self.finish()
 
     nobleach = {bool, type(None)}
     redactables = ("pass", "api")
@@ -30,12 +55,12 @@ class BaseHandler(tornado.web.RequestHandler):
         )
         return remote_ip
 
-    current_user: Optional[Tuple[Optional[ApiKeys], Dict[str, Any], Dict[str, Any]]]
+    current_user: t.Tuple[t.Optional[ApiKeys], t.Dict[str, t.Any], t.Dict[str, t.Any]]
 
     def get_current_user(
         self,
-    ) -> Optional[Tuple[Optional[ApiKeys], Dict[str, Any], Dict[str, Any]]]:
-        return self.controller.authentication.check(self.get_cookie("token"))
+    ) -> t.Tuple[t.Optional[ApiKeys], t.Dict[str, t.Any], t.Dict[str, t.Any]]:
+        return self.controller.authentication.check_err(self.get_cookie("token"))
 
     def autobleach(self, name, text):
         for r in self.redactables:
@@ -53,15 +78,15 @@ class BaseHandler(tornado.web.RequestHandler):
     def get_argument(
         self,
         name: str,
-        default: Union[
+        default: t.Union[
             None, str, tornado.web._ArgDefaultMarker
         ] = tornado.web._ARG_DEFAULT,
         strip: bool = True,
-    ) -> Optional[str]:
+    ) -> t.Optional[str]:
         arg = self._get_argument(name, default, self.request.arguments, strip)
         return self.autobleach(name, arg)
 
-    def get_arguments(self, name: str, strip: bool = True) -> List[str]:
+    def get_arguments(self, name: str, strip: bool = True) -> t.List[str]:
         if not isinstance(strip, bool):
             raise AssertionError
         args = self._get_arguments(name, self.request.arguments, strip)
@@ -69,3 +94,117 @@ class BaseHandler(tornado.web.RequestHandler):
         for arg in args:
             args_ret += self.autobleach(name, arg)
         return args_ret
+
+    def access_denied(self, user: t.Optional[str], reason: t.Optional[str]):
+        ip = self.get_remote_ip()
+        route = self.request.path
+        if user is not None:
+            user_data = f"User {user} from IP {ip}"
+        else:
+            user_data = f"An unknown user from IP {ip}"
+        if reason:
+            ending = f"to the API route {route} because {reason}"
+        else:
+            ending = f"to the API route {route}"
+        logger.info(f"{user_data} was denied access {ending}")
+        self.finish_json(
+            403,
+            {
+                "status": "error",
+                "error": "ACCESS_DENIED",
+                "info": "You were denied access to the requested resource",
+            },
+        )
+
+    def _auth_get_api_token(self) -> t.Optional[str]:
+        logger.debug("Searching for specified token")
+        api_token = self.get_argument("token", None)
+        if api_token is None and self.request.headers.get("Authorization"):
+            api_token = bearer_pattern.sub(
+                "", self.request.headers.get("Authorization")
+            )
+        elif api_token is None:
+            api_token = self.get_cookie("token")
+        return api_token
+
+    def authenticate_user(
+        self,
+    ) -> t.Optional[
+        t.Tuple[
+            t.List,
+            t.List[Enum_Permissions_Crafty],
+            t.List[str],
+            bool,
+            t.Dict[str, t.Any],
+        ]
+    ]:
+        try:
+            api_key, _token_data, user = self.controller.authentication.check_err(
+                self._auth_get_api_token()
+            )
+
+            superuser = user["superuser"]
+            if api_key is not None:
+                superuser = superuser and api_key.superuser
+
+            exec_user_role = set()
+            if superuser:
+                authorized_servers = self.controller.list_defined_servers()
+                exec_user_role.add("Super User")
+                exec_user_crafty_permissions = (
+                    self.controller.crafty_perms.list_defined_crafty_permissions()
+                )
+
+            else:
+                if api_key is not None:
+                    exec_user_crafty_permissions = (
+                        self.controller.crafty_perms.get_api_key_permissions_list(
+                            api_key
+                        )
+                    )
+                else:
+                    exec_user_crafty_permissions = (
+                        self.controller.crafty_perms.get_crafty_permissions_list(
+                            user["user_id"]
+                        )
+                    )
+                logger.debug(user["roles"])
+                for r in user["roles"]:
+                    role = self.controller.roles.get_role(r)
+                    exec_user_role.add(role["role_name"])
+                authorized_servers = self.controller.servers.get_authorized_servers(
+                    user["user_id"]  # TODO: API key authorized servers?
+                )
+
+            logger.debug("Checking results")
+            if user:
+                return (
+                    authorized_servers,
+                    exec_user_crafty_permissions,
+                    exec_user_role,
+                    superuser,
+                    user,
+                )
+            else:
+                logging.debug("Auth unsuccessful")
+                self.access_denied(None, "the user provided an invalid token")
+                return None
+        except Exception as auth_exception:
+            logger.debug(
+                "An error occured while authenticating an API user:",
+                exc_info=auth_exception,
+            )
+            self.finish_json(
+                403,
+                {
+                    "status": "error",
+                    "error": "ACCESS_DENIED",
+                    "info": "An error occured while authenticating the user",
+                },
+            )
+            return None
+
+    def finish_json(self, status: int, data: t.Dict[str, t.Any]):
+        self.set_status(status)
+        self.set_header("Content-Type", "application/json")
+        self.finish(orjson.dumps(data))  # pylint: disable=no-member

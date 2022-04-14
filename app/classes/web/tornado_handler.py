@@ -17,6 +17,7 @@ from app.classes.web.file_handler import FileHandler
 from app.classes.web.public_handler import PublicHandler
 from app.classes.web.panel_handler import PanelHandler
 from app.classes.web.default_handler import DefaultHandler
+from app.classes.web.routes.api.api_handlers import api_handlers
 from app.classes.web.server_handler import ServerHandler
 from app.classes.web.ajax_handler import AjaxHandler
 from app.classes.web.api_handler import (
@@ -150,7 +151,7 @@ class Webserver:
             (r"/ws", SocketHandler, handler_args),
             (r"/upload", UploadHandler, handler_args),
             (r"/status", StatusHandler, handler_args),
-            # API Routes
+            # API Routes V1
             (r"/api/v1/stats/servers", ServersStats, handler_args),
             (r"/api/v1/stats/node", NodeStats, handler_args),
             (r"/api/v1/server/send_command", SendCommand, handler_args),
@@ -161,6 +162,8 @@ class Webserver:
             (r"/api/v1/list_servers", ListServers, handler_args),
             (r"/api/v1/users/create_user", CreateUser, handler_args),
             (r"/api/v1/users/delete_user", DeleteUser, handler_args),
+            # API Routes V2
+            *api_handlers(handler_args),
         ]
 
         app = tornado.web.Application(
@@ -194,7 +197,7 @@ class Webserver:
             static_path=os.path.join(self.helper.webroot, "static"),
             debug=debug_errors,
             cookie_secret=cookie_secret,
-            xsrf_cookies=True,
+            xsrf_cookies=False,
             autoreload=False,
             log_function=self.log_function,
             default_handler_class=HTTPHandler,

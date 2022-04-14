@@ -394,7 +394,7 @@ class helpers_management:
         return dir_list
 
     def add_excluded_backup_dir(self, server_id: int, dir_to_add: str):
-        dir_list = self.get_excluded_backup_dirs()
+        dir_list = self.get_excluded_backup_dirs(server_id)
         if dir_to_add not in dir_list:
             dir_list.append(dir_to_add)
             excluded_dirs = ",".join(dir_list)
@@ -406,7 +406,7 @@ class helpers_management:
             )
 
     def del_excluded_backup_dir(self, server_id: int, dir_to_del: str):
-        dir_list = self.get_excluded_backup_dirs()
+        dir_list = self.get_excluded_backup_dirs(server_id)
         if dir_to_del in dir_list:
             dir_list.remove(dir_to_del)
             excluded_dirs = ",".join(dir_list)

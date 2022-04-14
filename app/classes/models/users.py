@@ -1,6 +1,6 @@
 import logging
 import datetime
-from typing import Optional, Union
+import typing as t
 
 from peewee import (
     ForeignKeyField,
@@ -45,6 +45,15 @@ class Users(BaseModel):
         table_name = "users"
 
 
+PUBLIC_USER_ATTRS: t.Final = [
+    "user_id",
+    "created",
+    "username",
+    "enabled",
+    "superuser",
+    "lang",  # maybe remove?
+]
+
 # **********************************************************************************
 #                                   API Keys Class
 # **********************************************************************************
@@ -88,6 +97,11 @@ class helper_users:
     @staticmethod
     def get_all_users():
         query = Users.select().where(Users.username != "system")
+        return query
+
+    @staticmethod
+    def get_all_user_ids():
+        query = Users.select(Users.user_id).where(Users.username != "system")
         return query
 
     @staticmethod
@@ -153,7 +167,7 @@ class helper_users:
         self,
         username: str,
         password: str = None,
-        email: Optional[str] = None,
+        email: t.Optional[str] = None,
         enabled: bool = True,
         superuser: bool = False,
     ) -> str:
@@ -177,7 +191,7 @@ class helper_users:
     def add_rawpass_user(
         username: str,
         password: str = None,
-        email: Optional[str] = None,
+        email: t.Optional[str] = None,
         enabled: bool = True,
         superuser: bool = False,
     ) -> str:
@@ -212,7 +226,7 @@ class helper_users:
 
     @staticmethod
     def get_super_user_list():
-        final_users = []
+        final_users: t.List[int] = []
         super_users = Users.select().where(
             Users.superuser == True  # pylint: disable=singleton-comparison
         )
@@ -224,8 +238,7 @@ class helper_users:
     def remove_user(self, user_id):
         with self.database.atomic():
             User_Roles.delete().where(User_Roles.user_id == user_id).execute()
-            user = Users.get(Users.user_id == user_id)
-            return user.delete_instance()
+            return Users.delete().where(Users.user_id == user_id).execute()
 
     @staticmethod
     def set_support_path(user_id, support_path):
@@ -284,7 +297,7 @@ class helper_users:
         ).execute()
 
     @staticmethod
-    def add_user_roles(user: Union[dict, Users]):
+    def add_user_roles(user: t.Union[dict, Users]):
         if isinstance(user, dict):
             user_id = user["user_id"]
         else:
@@ -329,6 +342,10 @@ class helper_users:
     def remove_roles_from_role_id(role_id):
         User_Roles.delete().where(User_Roles.role_id == role_id).execute()
 
+    @staticmethod
+    def get_users_from_role(role_id):
+        User_Roles.select().where(User_Roles.role_id == role_id).execute()
+
     # **********************************************************************************
     #                                   ApiKeys Methods
     # **********************************************************************************
@@ -346,8 +363,8 @@ class helper_users:
         name: str,
         user_id: str,
         superuser: bool = False,
-        server_permissions_mask: Optional[str] = None,
-        crafty_permissions_mask: Optional[str] = None,
+        server_permissions_mask: t.Optional[str] = None,
+        crafty_permissions_mask: t.Optional[str] = None,
     ):
         return ApiKeys.insert(
             {

@@ -101,6 +101,17 @@ class TasksManager:
                 elif command == "restart_server":
                     svr.restart_threaded_server(user_id)
 
+                elif command == "kill_server":
+                    try:
+                        svr.kill()
+                        time.sleep(5)
+                        svr.cleanup_server_object()
+                        svr.record_server_stats()
+                    except Exception as e:
+                        logger.error(
+                            f"Could not find PID for requested termsig. Full error: {e}"
+                        )
+
                 elif command == "backup_server":
                     svr.backup_server()
 

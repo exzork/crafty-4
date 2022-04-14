@@ -34,7 +34,7 @@ class Authentication:
 
     def check_no_iat(self, token) -> Optional[Dict[str, Any]]:
         try:
-            return jwt.decode(token, self.secret, algorithms=["HS256"])
+            return jwt.decode(str(token), self.secret, algorithms=["HS256"])
         except PyJWTError as error:
             logger.debug("Error while checking JWT token: ", exc_info=error)
             return None
@@ -44,7 +44,7 @@ class Authentication:
         token,
     ) -> Optional[Tuple[Optional[ApiKeys], Dict[str, Any], Dict[str, Any]]]:
         try:
-            data = jwt.decode(token, self.secret, algorithms=["HS256"])
+            data = jwt.decode(str(token), self.secret, algorithms=["HS256"])
         except PyJWTError as error:
             logger.debug("Error while checking JWT token: ", exc_info=error)
             return None
@@ -64,6 +64,18 @@ class Authentication:
             return key, data, user
         else:
             return None
+
+    def check_err(
+        self,
+        token,
+    ) -> Tuple[Optional[ApiKeys], Dict[str, Any], Dict[str, Any]]:
+        # Without this function there would be runtime exceptions like the following:
+        # "None" object is not iterable
+
+        output = self.check(token)
+        if output is None:
+            raise Exception("Invalid token")
+        return output
 
     def check_bool(self, token) -> bool:
         return self.check(token) is not None

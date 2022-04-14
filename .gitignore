@@ -18,8 +18,10 @@ env.bak/
 venv.bak/
 
 .idea/
-servers/
-backups/
+/servers/
+/backups/
+/docker/servers/
+/docker/backups/
 session.lock
 .header
 default.json

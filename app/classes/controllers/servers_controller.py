@@ -1,6 +1,7 @@
 import os
 import logging
 import json
+import typing as t
 
 from app.classes.controllers.roles_controller import Roles_Controller
 from app.classes.models.servers import helper_servers
@@ -91,7 +92,7 @@ class Servers_Controller:
 
     @staticmethod
     def get_authorized_servers(user_id):
-        server_data = []
+        server_data: t.List[t.Dict[str, t.Any]] = []
         user_roles = helper_users.user_role_query(user_id)
         for us in user_roles:
             role_servers = Permissions_Servers.get_role_servers_from_role_id(us.role_id)
@@ -101,6 +102,20 @@ class Servers_Controller:
         return server_data
 
     @staticmethod
+    def get_authorized_users(server_id: str):
+        user_ids: t.Set[int] = set()
+        roles_list = Permissions_Servers.get_roles_from_server(server_id)
+        for role in roles_list:
+            role_users = helper_users.get_users_from_role(role.role_id)
+            for user_role in role_users:
+                user_ids.add(user_role.user_id)
+
+        for user_id in helper_users.get_super_user_list():
+            user_ids.add(user_id)
+
+        return user_ids
+
+    @staticmethod
     def get_all_servers_stats():
         return helper_servers.get_all_servers_stats()
 
@@ -108,7 +123,7 @@ class Servers_Controller:
     def get_authorized_servers_stats_api_key(api_key: ApiKeys):
         server_data = []
         authorized_servers = Servers_Controller.get_authorized_servers(
-            api_key.user.user_id
+            api_key.user.user_id  # TODO: API key authorized servers?
         )
 
         for s in authorized_servers:
