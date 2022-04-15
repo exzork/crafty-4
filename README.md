@@ -61,29 +61,10 @@ The image is located at: `registry.gitlab.com/crafty-controller/crafty-4:latest`
 | :latest | [![pipeline status](https://gitlab.com/crafty-controller/crafty-4/badges/master/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-4/-/commits/master) |
 | :dev | [![pipeline status](https://gitlab.com/crafty-controller/crafty-4/badges/dev/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-4/-/commits/dev) |
 
-While the repository is still **private / pre-release**,
-Before you can pull the image you must authenticate docker with the Container Registry.
+<br>
 
-To authenticate you will need a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
-with the minimum scope:
+**Here are some example methods for getting started🚀:**
 
-- For read (*pull*) access, `read_registry`.
-- For write (*push*) access, `write_registry`.
-
-When you have this just run:
-```bash
-$ docker login registry.gitlab.com -u <username> -p <token>
-```
-or
-```bash
-$ echo <token> | docker login registry.gitlab.com -u <username> --password-stdin
-```
-or
-```bash
-$ cat ~/my_password.txt | docker login registry.gitlab.com -u <username> --password-stdin
-```
-
-Then use one of the following methods:
 ### **docker-compose.yml:**
 ```sh
 # Make your compose file
