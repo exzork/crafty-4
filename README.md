@@ -77,6 +77,7 @@ services:
   crafty:
     container_name: crafty_container
     image: registry.gitlab.com/crafty-controller/crafty-4:latest
+    restart: always
     environment:
       - TZ=Etc/UTC
     ports:
@@ -101,6 +102,8 @@ $ docker-compose up -d && docker-compose logs -f
 ```sh
 $ docker run \
 	--name crafty_container \
+	--detach \
+	--restart always \
 	-p 8000:8000 \
 	-p 8443:8443 \
 	-p 8123:8123 \
@@ -126,6 +129,8 @@ $ docker build . -t crafty
 
 $ docker run \
 	--name crafty_container \
+	--detach \
+	--restart always \
 	-p 8000:8000 \
 	-p 8443:8443 \
 	-p 8123:8123 \
