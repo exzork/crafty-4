@@ -2,8 +2,8 @@ from datetime import datetime
 import logging
 import re
 
-from app.classes.controllers.crafty_perms_controller import Enum_Permissions_Crafty
-from app.classes.controllers.server_perms_controller import Enum_Permissions_Server
+from app.classes.controllers.crafty_perms_controller import EnumPermissionsCrafty
+from app.classes.controllers.server_perms_controller import EnumPermissionsServer
 from app.classes.web.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
@@ -42,17 +42,17 @@ class ApiHandler(BaseHandler):
 
     def authenticate_user(self) -> bool:
         self.permissions = {
-            "Commands": Enum_Permissions_Server.Commands,
-            "Terminal": Enum_Permissions_Server.Terminal,
-            "Logs": Enum_Permissions_Server.Logs,
-            "Schedule": Enum_Permissions_Server.Schedule,
-            "Backup": Enum_Permissions_Server.Backup,
-            "Files": Enum_Permissions_Server.Files,
-            "Config": Enum_Permissions_Server.Config,
-            "Players": Enum_Permissions_Server.Players,
-            "Server_Creation": Enum_Permissions_Crafty.Server_Creation,
-            "User_Config": Enum_Permissions_Crafty.User_Config,
-            "Roles_Config": Enum_Permissions_Crafty.Roles_Config,
+            "Commands": EnumPermissionsServer.COMMANDS,
+            "Terminal": EnumPermissionsServer.TERMINAL,
+            "Logs": EnumPermissionsServer.LOGS,
+            "Schedule": EnumPermissionsServer.SCHEDULE,
+            "Backup": EnumPermissionsServer.BACKUP,
+            "Files": EnumPermissionsServer.FILES,
+            "Config": EnumPermissionsServer.CONFIG,
+            "Players": EnumPermissionsServer.PLAYERS,
+            "Server_Creation": EnumPermissionsCrafty.SERVER_CREATION,
+            "User_Config": EnumPermissionsCrafty.USER_CONFIG,
+            "Roles_Config": EnumPermissionsCrafty.ROLES_CONFIG,
         }
         try:
             logger.debug("Searching for specified token")

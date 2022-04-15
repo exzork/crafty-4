@@ -5,7 +5,7 @@ import threading
 import logging
 from app.classes.shared.console import Console
 
-from app.classes.shared.import3 import import3
+from app.classes.shared.import3 import Import3
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class MainPrompt(cmd.Cmd):
                 print(f"Name: {thread.name} Identifier: {thread.ident}")
 
     def do_import3(self, _line):
-        import3.start_import()
+        Import3.start_import()
 
     def universal_exit(self):
         logger.info("Stopping all server daemons / threads")

@@ -146,47 +146,51 @@ class Helpers:
     def cmdparse(cmd_in):
         # Parse a string into arguments
         cmd_out = []  # "argv" output array
-        ci = -1  # command index - pointer to the argument we're building in cmd_out
-        np = True  # whether we're creating a new argument/parameter
+        cmd_index = (
+            -1
+        )  # command index - pointer to the argument we're building in cmd_out
+        new_param = True  # whether we're creating a new argument/parameter
         esc = False  # whether an escape character was encountered
-        stch = None  # if we're dealing with a quote, save the quote type here.
+        quote_char = None  # if we're dealing with a quote, save the quote type here.
         # Nested quotes to be dealt with by the command
-        for c in cmd_in:  # for character in string
-            if np:  # if set, begin a new argument and increment the command index.
+        for char in cmd_in:  # for character in string
+            if (
+                new_param
+            ):  # if set, begin a new argument and increment the command index.
                 # Continue the loop.
-                if c == " ":
+                if char == " ":
                     continue
                 else:
-                    ci += 1
+                    cmd_index += 1
                     cmd_out.append("")
-                    np = False
+                    new_param = False
             if esc:  # if we encountered an escape character on the last loop,
                 # append this char regardless of what it is
-                if c not in Helpers.allowed_quotes:
-                    cmd_out[ci] += "\\"
-                cmd_out[ci] += c
+                if char not in Helpers.allowed_quotes:
+                    cmd_out[cmd_index] += "\\"
+                cmd_out[cmd_index] += char
                 esc = False
             else:
-                if c == "\\":  # if the current character is an escape character,
+                if char == "\\":  # if the current character is an escape character,
                     # set the esc flag and continue to next loop
                     esc = True
                 elif (
-                    c == " " and stch is None
+                    char == " " and quote_char is None
                 ):  # if we encounter a space and are not dealing with a quote,
                     # set the new argument flag and continue to next loop
-                    np = True
+                    new_param = True
                 elif (
-                    c == stch
+                    char == quote_char
                 ):  # if we encounter the character that matches our start quote,
                     # end the quote and continue to next loop
-                    stch = None
-                elif stch is None and (
-                    c in Helpers.allowed_quotes
+                    quote_char = None
+                elif quote_char is None and (
+                    char in Helpers.allowed_quotes
                 ):  # if we're not in the middle of a quote and we get a quotable
                     # character, start a quote and proceed to the next loop
-                    stch = c
+                    quote_char = char
                 else:  # else, just store the character in the current arg
-                    cmd_out[ci] += c
+                    cmd_out[cmd_index] += char
         return cmd_out
 
     def get_setting(self, key, default_return=False):
@@ -244,12 +248,12 @@ class Helpers:
         try:
             # doesn't even have to be reachable
             s.connect(("10.255.255.255", 1))
-            IP = s.getsockname()[0]
+            ip = s.getsockname()[0]
         except Exception:
-            IP = "127.0.0.1"
+            ip = "127.0.0.1"
         finally:
             s.close()
-        return IP
+        return ip
 
     def get_version(self):
         version_data = {}
@@ -266,16 +270,16 @@ class Helpers:
 
     @staticmethod
     def get_announcements():
-        r = requests.get("https://craftycontrol.com/notify.json", timeout=2)
+        response = requests.get("https://craftycontrol.com/notify.json", timeout=2)
         data = (
             '[{"id":"1","date":"Unknown",'
             '"title":"Error getting Announcements",'
             '"desc":"Error getting Announcements","link":""}]'
         )
 
-        if r.status_code in [200, 201]:
+        if response.status_code in [200, 201]:
             try:
-                data = json.loads(r.content)
+                data = json.loads(response.content)
             except Exception as e:
                 logger.error(f"Failed to load json content with error: {e}")
 
@@ -344,8 +348,8 @@ class Helpers:
         base = pathlib.Path(base_path).resolve()
         file = pathlib.Path(filename)
         fileabs = base.joinpath(file).resolve()
-        cp = pathlib.Path(os.path.commonpath([base, fileabs]))
-        if base == cp:
+        common_path = pathlib.Path(os.path.commonpath([base, fileabs]))
+        if base == common_path:
             return fileabs
         else:
             raise ValueError("Path traversal detected")
@@ -402,7 +406,7 @@ class Helpers:
             return False
 
     @staticmethod
-    def checkRoot():
+    def check_root():
         if Helpers.is_os_windows():
             if ctypes.windll.shell32.IsUserAnAdmin() == 1:
                 return True
@@ -415,7 +419,7 @@ class Helpers:
                 return False
 
     @staticmethod
-    def unzipFile(zip_path):
+    def unzip_file(zip_path):
         new_dir_list = zip_path.split("/")
         new_dir = ""
         for i in range(len(new_dir_list) - 1):
@@ -426,26 +430,37 @@ class Helpers:
 
         if Helpers.check_file_perms(zip_path) and os.path.isfile(zip_path):
             Helpers.ensure_dir_exists(new_dir)
-            tempDir = tempfile.mkdtemp()
+            temp_dir = tempfile.mkdtemp()
             try:
                 with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                    zip_ref.extractall(tempDir)
+                    zip_ref.extractall(temp_dir)
                 for i in enumerate(zip_ref.filelist):
                     if len(zip_ref.filelist) > 1 or not zip_ref.filelist[
                         i
                     ].filename.endswith("/"):
                         break
 
-                full_root_path = tempDir
+                full_root_path = temp_dir
 
                 for item in os.listdir(full_root_path):
-                    try:
-                        FileHelpers.move_dir(
-                            os.path.join(full_root_path, item),
-                            os.path.join(new_dir, item),
-                        )
-                    except Exception as ex:
-                        logger.error(f"ERROR IN ZIP IMPORT: {ex}")
+                    print(item)
+                    if os.path.isdir(os.path.join(full_root_path, item)):
+                        print("dir")
+                        try:
+                            FileHelpers.move_dir(
+                                os.path.join(full_root_path, item),
+                                os.path.join(new_dir, item),
+                            )
+                        except Exception as ex:
+                            logger.error(f"ERROR IN ZIP IMPORT: {ex}")
+                    else:
+                        try:
+                            FileHelpers.move_file(
+                                os.path.join(full_root_path, item),
+                                os.path.join(new_dir, item),
+                            )
+                        except Exception as ex:
+                            logger.error(f"ERROR IN ZIP IMPORT: {ex}")
             except Exception as ex:
                 print(ex)
         else:
@@ -497,9 +512,9 @@ class Helpers:
         source_size = 0
         files_count = 0
         for path, _dirs, files in os.walk(source_path):
-            for f in files:
-                fp = os.path.join(path, f)
-                source_size += os.stat(fp).st_size
+            for file in files:
+                full_path = os.path.join(path, file)
+                source_size += os.stat(full_path).st_size
                 files_count += 1
         dest_size = os.path.getsize(str(dest_path))
         percent = round((dest_size / source_size) * 100, 1)
@@ -719,11 +734,13 @@ class Helpers:
                 "DNS:127.0.0.1",
             ]
         ).encode()
-        subjectAltNames_Ext = crypto.X509Extension(b"subjectAltName", False, alt_names)
-        basicConstraints_Ext = crypto.X509Extension(
+        subject_alt_names_ext = crypto.X509Extension(
+            b"subjectAltName", False, alt_names
+        )
+        basic_constraints_ext = crypto.X509Extension(
             b"basicConstraints", True, b"CA:false"
         )
-        cert.add_extensions([subjectAltNames_Ext, basicConstraints_Ext])
+        cert.add_extensions([subject_alt_names_ext, basic_constraints_ext])
         cert.set_serial_number(random.randint(1, 255))
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(365 * 24 * 60 * 60)
@@ -903,15 +920,15 @@ class Helpers:
                     </input></div><li>"""
         return output
 
-    def unzipServer(self, zip_path, user_id):
+    def unzip_server(self, zip_path, user_id):
         if Helpers.check_file_perms(zip_path):
-            tempDir = tempfile.mkdtemp()
+            temp_dir = tempfile.mkdtemp()
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 # extracts archive to temp directory
-                zip_ref.extractall(tempDir)
+                zip_ref.extractall(temp_dir)
             if user_id:
                 self.websocket_helper.broadcast_user(
-                    user_id, "send_temp_path", {"path": tempDir}
+                    user_id, "send_temp_path", {"path": temp_dir}
                 )
 
     def backup_select(self, path, user_id):
@@ -924,11 +941,11 @@ class Helpers:
     def unzip_backup_archive(backup_path, zip_name):
         zip_path = os.path.join(backup_path, zip_name)
         if Helpers.check_file_perms(zip_path):
-            tempDir = tempfile.mkdtemp()
+            temp_dir = tempfile.mkdtemp()
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 # extracts archive to temp directory
-                zip_ref.extractall(tempDir)
-            return tempDir
+                zip_ref.extractall(temp_dir)
+            return temp_dir
         else:
             return False
 
@@ -949,10 +966,6 @@ class Helpers:
         )
 
     @staticmethod
-    def in_path_old(x, y):
-        return os.path.abspath(y).__contains__(os.path.abspath(x))
-
-    @staticmethod
     def copy_files(source, dest):
         if os.path.isfile(source):
             FileHelpers.copy_file(source, dest)
@@ -963,16 +976,16 @@ class Helpers:
     @staticmethod
     def download_file(executable_url, jar_path):
         try:
-            r = requests.get(executable_url, timeout=5)
+            response = requests.get(executable_url, timeout=5)
         except Exception as ex:
             logger.error("Could not download executable: %s", ex)
             return False
-        if r.status_code != 200:
+        if response.status_code != 200:
             logger.error("Unable to download file from %s", executable_url)
             return False
 
         try:
-            open(jar_path, "wb").write(r.content)
+            open(jar_path, "wb").write(response.content)
         except Exception as e:
             logger.error("Unable to finish executable download. Error: %s", e)
             return False
@@ -985,7 +998,7 @@ class Helpers:
         return text
 
     @staticmethod
-    def getLangPage(text):
+    def get_lang_page(text):
         lang = text.split("_")[0]
         region = text.split("_")[1]
         if region == "EN":

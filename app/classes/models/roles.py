@@ -29,7 +29,7 @@ class Roles(BaseModel):
 # **********************************************************************************
 #                                   Roles Helpers
 # **********************************************************************************
-class helper_roles:
+class HelperRoles:
     def __init__(self, database):
         self.database = database
 
@@ -70,6 +70,6 @@ class helper_roles:
 
     @staticmethod
     def role_id_exists(role_id):
-        if not helper_roles.get_role(role_id):
+        if not HelperRoles.get_role(role_id):
             return False
         return True

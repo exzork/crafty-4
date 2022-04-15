@@ -17,9 +17,9 @@ from tornado import iostream
 from tzlocal import get_localzone
 from cron_validator import CronValidator
 
-from app.classes.models.server_permissions import Enum_Permissions_Server
-from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
-from app.classes.models.management import helpers_management
+from app.classes.models.server_permissions import EnumPermissionsServer
+from app.classes.models.crafty_permissions import EnumPermissionsCrafty
+from app.classes.models.management import HelpersManagement
 from app.classes.shared.helpers import Helpers
 from app.classes.web.base_handler import BaseHandler
 
@@ -185,10 +185,10 @@ class PanelHandler(BaseHandler):
             )
         page_data["num_players"] = total_players
 
-        for s in page_data["servers"]:
+        for server in page_data["servers"]:
             try:
-                data = json.loads(s["int_ping_results"])
-                s["int_ping_results"] = data
+                data = json.loads(server["int_ping_results"])
+                server["int_ping_results"] = data
             except Exception as e:
                 logger.error(f"Failed server data for page with error: {e}")
 
@@ -267,9 +267,9 @@ class PanelHandler(BaseHandler):
             "user_role": exec_user_role,
             "user_crafty_permissions": exec_user_crafty_permissions,
             "crafty_permissions": {
-                "Server_Creation": Enum_Permissions_Crafty.Server_Creation,
-                "User_Config": Enum_Permissions_Crafty.User_Config,
-                "Roles_Config": Enum_Permissions_Crafty.Roles_Config,
+                "Server_Creation": EnumPermissionsCrafty.SERVER_CREATION,
+                "User_Config": EnumPermissionsCrafty.USER_CONFIG,
+                "Roles_Config": EnumPermissionsCrafty.ROLES_CONFIG,
             },
             "server_stats": {
                 "total": len(defined_servers),
@@ -285,7 +285,7 @@ class PanelHandler(BaseHandler):
             "error": error,
             "time": formatted_time,
             "lang": self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
-            "lang_page": Helpers.getLangPage(
+            "lang_page": Helpers.get_lang_page(
                 self.controller.users.get_user_lang_by_id(exec_user["user_id"])
             ),
             "super_user": superuser,
@@ -307,8 +307,10 @@ class PanelHandler(BaseHandler):
 
         # Get grvatar hash for profile pictures
         if exec_user["email"] != "default@example.com" or "":
-            g = libgravatar.Gravatar(libgravatar.sanitize_email(exec_user["email"]))
-            url = g.get_image(
+            gravatar = libgravatar.Gravatar(
+                libgravatar.sanitize_email(exec_user["email"])
+            )
+            url = gravatar.get_image(
                 size=80,
                 default="404",
                 force_default=False,
@@ -498,14 +500,14 @@ class PanelHandler(BaseHandler):
             )
             page_data["active_link"] = subpage
             page_data["permissions"] = {
-                "Commands": Enum_Permissions_Server.Commands,
-                "Terminal": Enum_Permissions_Server.Terminal,
-                "Logs": Enum_Permissions_Server.Logs,
-                "Schedule": Enum_Permissions_Server.Schedule,
-                "Backup": Enum_Permissions_Server.Backup,
-                "Files": Enum_Permissions_Server.Files,
-                "Config": Enum_Permissions_Server.Config,
-                "Players": Enum_Permissions_Server.Players,
+                "Commands": EnumPermissionsServer.COMMANDS,
+                "Terminal": EnumPermissionsServer.TERMINAL,
+                "Logs": EnumPermissionsServer.LOGS,
+                "Schedule": EnumPermissionsServer.SCHEDULE,
+                "Backup": EnumPermissionsServer.BACKUP,
+                "Files": EnumPermissionsServer.FILES,
+                "Config": EnumPermissionsServer.CONFIG,
+                "Players": EnumPermissionsServer.PLAYERS,
             }
             page_data[
                 "user_permissions"
@@ -581,7 +583,7 @@ class PanelHandler(BaseHandler):
                             "/panel/error?error=Unauthorized access To Schedules"
                         )
                         return
-                page_data["schedules"] = helpers_management.get_schedules_by_server(
+                page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                     server_id
                 )
 
@@ -767,7 +769,7 @@ class PanelHandler(BaseHandler):
             page_data["user"]["roles"] = set()
             page_data["user"]["hints"] = True
 
-            if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
+            if EnumPermissionsCrafty.USER_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
                     "/panel/error?error=Unauthorized access: not a user editor"
                 )
@@ -806,7 +808,7 @@ class PanelHandler(BaseHandler):
 
         elif page == "add_schedule":
             server_id = self.get_argument("id", None)
-            page_data["schedules"] = helpers_management.get_schedules_by_server(
+            page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                 server_id
             )
             page_data["get_players"] = lambda: self.controller.stats.get_server_players(
@@ -814,14 +816,14 @@ class PanelHandler(BaseHandler):
             )
             page_data["active_link"] = "schedules"
             page_data["permissions"] = {
-                "Commands": Enum_Permissions_Server.Commands,
-                "Terminal": Enum_Permissions_Server.Terminal,
-                "Logs": Enum_Permissions_Server.Logs,
-                "Schedule": Enum_Permissions_Server.Schedule,
-                "Backup": Enum_Permissions_Server.Backup,
-                "Files": Enum_Permissions_Server.Files,
-                "Config": Enum_Permissions_Server.Config,
-                "Players": Enum_Permissions_Server.Players,
+                "Commands": EnumPermissionsServer.COMMANDS,
+                "Terminal": EnumPermissionsServer.TERMINAL,
+                "Logs": EnumPermissionsServer.LOGS,
+                "Schedule": EnumPermissionsServer.SCHEDULE,
+                "Backup": EnumPermissionsServer.BACKUP,
+                "Files": EnumPermissionsServer.FILES,
+                "Config": EnumPermissionsServer.CONFIG,
+                "Players": EnumPermissionsServer.PLAYERS,
             }
             page_data[
                 "user_permissions"
@@ -854,7 +856,7 @@ class PanelHandler(BaseHandler):
             page_data["schedule"]["difficulty"] = "basic"
             page_data["schedule"]["interval_type"] = "days"
 
-            if not Enum_Permissions_Server.Schedule in page_data["user_permissions"]:
+            if not EnumPermissionsServer.SCHEDULE in page_data["user_permissions"]:
                 if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access To Schedules")
                     return
@@ -863,7 +865,7 @@ class PanelHandler(BaseHandler):
 
         elif page == "edit_schedule":
             server_id = self.get_argument("id", None)
-            page_data["schedules"] = helpers_management.get_schedules_by_server(
+            page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                 server_id
             )
             sch_id = self.get_argument("sch_id", None)
@@ -873,14 +875,14 @@ class PanelHandler(BaseHandler):
             )
             page_data["active_link"] = "schedules"
             page_data["permissions"] = {
-                "Commands": Enum_Permissions_Server.Commands,
-                "Terminal": Enum_Permissions_Server.Terminal,
-                "Logs": Enum_Permissions_Server.Logs,
-                "Schedule": Enum_Permissions_Server.Schedule,
-                "Backup": Enum_Permissions_Server.Backup,
-                "Files": Enum_Permissions_Server.Files,
-                "Config": Enum_Permissions_Server.Config,
-                "Players": Enum_Permissions_Server.Players,
+                "Commands": EnumPermissionsServer.COMMANDS,
+                "Terminal": EnumPermissionsServer.TERMINAL,
+                "Logs": EnumPermissionsServer.LOGS,
+                "Schedule": EnumPermissionsServer.SCHEDULE,
+                "Backup": EnumPermissionsServer.BACKUP,
+                "Files": EnumPermissionsServer.FILES,
+                "Config": EnumPermissionsServer.CONFIG,
+                "Players": EnumPermissionsServer.PLAYERS,
             }
             page_data[
                 "user_permissions"
@@ -933,7 +935,7 @@ class PanelHandler(BaseHandler):
             if sch_id is None or server_id is None:
                 self.redirect("/panel/error?error=Invalid server ID or Schedule ID")
 
-            if not Enum_Permissions_Server.Schedule in page_data["user_permissions"]:
+            if not EnumPermissionsServer.SCHEDULE in page_data["user_permissions"]:
                 if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access To Schedules")
                     return
@@ -985,9 +987,7 @@ class PanelHandler(BaseHandler):
             if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
-            elif (
-                Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions
-            ):
+            elif EnumPermissionsCrafty.USER_CONFIG not in exec_user_crafty_permissions:
                 if str(user_id) != str(exec_user["user_id"]):
                     self.redirect(
                         "/panel/error?error=Unauthorized access: not a user editor"
@@ -1029,7 +1029,7 @@ class PanelHandler(BaseHandler):
 
             if (
                 not superuser
-                and Enum_Permissions_Crafty.User_Config
+                and EnumPermissionsCrafty.USER_CONFIG
                 not in exec_user_crafty_permissions
             ):
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
@@ -1075,7 +1075,7 @@ class PanelHandler(BaseHandler):
             page_data["user-roles"] = user_roles
             page_data["users"] = self.controller.users.get_all_users()
 
-            if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
+            if EnumPermissionsCrafty.ROLES_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
@@ -1103,7 +1103,7 @@ class PanelHandler(BaseHandler):
             page_data["user-roles"] = user_roles
             page_data["users"] = self.controller.users.get_all_users()
 
-            if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
+            if EnumPermissionsCrafty.ROLES_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
@@ -1165,7 +1165,7 @@ class PanelHandler(BaseHandler):
             self.redirect(f"/panel/server_detail?id={server_id}&subpage=files")
 
         elif page == "download_support_package":
-            tempZipStorage = exec_user["support_logs"]
+            temp_zip_storage = exec_user["support_logs"]
             # We'll reset the support path for this user now.
             self.controller.users.set_support_path(exec_user["user_id"], "")
 
@@ -1174,8 +1174,8 @@ class PanelHandler(BaseHandler):
                 "Content-Disposition", "attachment; filename=" + "support_logs.zip"
             )
             chunk_size = 1024 * 1024 * 4  # 4 MiB
-            if tempZipStorage != "":
-                with open(tempZipStorage, "rb") as f:
+            if temp_zip_storage != "":
+                with open(temp_zip_storage, "rb") as f:
                     while True:
                         chunk = f.read(chunk_size)
                         if not chunk:
@@ -1230,14 +1230,14 @@ class PanelHandler(BaseHandler):
 
         server_id = self.get_argument("id", None)
         permissions = {
-            "Commands": Enum_Permissions_Server.Commands,
-            "Terminal": Enum_Permissions_Server.Terminal,
-            "Logs": Enum_Permissions_Server.Logs,
-            "Schedule": Enum_Permissions_Server.Schedule,
-            "Backup": Enum_Permissions_Server.Backup,
-            "Files": Enum_Permissions_Server.Files,
-            "Config": Enum_Permissions_Server.Config,
-            "Players": Enum_Permissions_Server.Players,
+            "Commands": EnumPermissionsServer.COMMANDS,
+            "Terminal": EnumPermissionsServer.TERMINAL,
+            "Logs": EnumPermissionsServer.LOGS,
+            "Schedule": EnumPermissionsServer.SCHEDULE,
+            "Backup": EnumPermissionsServer.BACKUP,
+            "Files": EnumPermissionsServer.FILES,
+            "Config": EnumPermissionsServer.CONFIG,
+            "Players": EnumPermissionsServer.PLAYERS,
         }
         exec_user_role = set()
         if superuser:
@@ -1758,7 +1758,7 @@ class PanelHandler(BaseHandler):
                 superuser = False
             if not exec_user["superuser"]:
                 if (
-                    Enum_Permissions_Crafty.User_Config
+                    EnumPermissionsCrafty.USER_CONFIG
                     not in exec_user_crafty_permissions
                 ):
                     if str(user_id) != str(exec_user["user_id"]):
@@ -1926,7 +1926,7 @@ class PanelHandler(BaseHandler):
             else:
                 new_superuser = False
 
-            if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
+            if EnumPermissionsCrafty.USER_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
                     "/panel/error?error=Unauthorized access: not a user editor"
                 )
@@ -1981,7 +1981,7 @@ class PanelHandler(BaseHandler):
             role_id = bleach.clean(self.get_argument("id", None))
             role_name = bleach.clean(self.get_argument("role_name", None))
 
-            if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
+            if EnumPermissionsCrafty.ROLES_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
@@ -2017,7 +2017,7 @@ class PanelHandler(BaseHandler):
         elif page == "add_role":
             role_name = bleach.clean(self.get_argument("role_name", None))
 
-            if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
+            if EnumPermissionsCrafty.ROLES_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
@@ -2057,7 +2057,7 @@ class PanelHandler(BaseHandler):
             self.set_status(404)
             page_data = {
                 "lang": self.helper.get_setting("language"),
-                "lang_page": Helpers.getLangPage(self.helper.get_setting("language")),
+                "lang_page": Helpers.get_lang_page(self.helper.get_setting("language")),
             }
             self.render(
                 "public/404.html", translate=self.translator.translate, data=page_data
@@ -2078,7 +2078,7 @@ class PanelHandler(BaseHandler):
             "hosts_data": self.controller.management.get_latest_hosts_stats(),
             "show_contribute": self.helper.get_setting("show_contribute_link", True),
             "lang": self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
-            "lang_page": Helpers.getLangPage(
+            "lang_page": Helpers.get_lang_page(
                 self.controller.users.get_user_lang_by_id(exec_user["user_id"])
             ),
         }

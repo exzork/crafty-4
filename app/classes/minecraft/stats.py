@@ -5,8 +5,8 @@ import base64
 import psutil
 
 from app.classes.minecraft.mc_ping import ping
-from app.classes.models.management import Host_Stats
-from app.classes.models.servers import helper_servers
+from app.classes.models.management import HostStats
+from app.classes.models.servers import HelperServers
 from app.classes.shared.helpers import Helpers
 
 logger = logging.getLogger(__name__)
@@ -121,7 +121,7 @@ class Stats:
 
     def get_server_players(self, server_id):
 
-        server = helper_servers.get_server_data_by_id(server_id)
+        server = HelperServers.get_server_data_by_id(server_id)
 
         logger.info(f"Getting players for server {server}")
 
@@ -134,7 +134,7 @@ class Stats:
         server_port = server["server_port"]
 
         logger.debug(f"Pinging {internal_ip} on port {server_port}")
-        if helper_servers.get_server_type_by_id(server_id) != "minecraft-bedrock":
+        if HelperServers.get_server_type_by_id(server_id) != "minecraft-bedrock":
             int_mc_ping = ping(internal_ip, int(server_port))
 
             ping_data = {}
@@ -174,7 +174,7 @@ class Stats:
         return ping_data
 
     @staticmethod
-    def parse_server_RakNet_ping(ping_obj: object):
+    def parse_server_raknet_ping(ping_obj: object):
 
         try:
             server_icon = base64.encodebytes(ping_obj["icon"])
@@ -196,17 +196,17 @@ class Stats:
         stats_to_send = self.get_node_stats()
         node_stats = stats_to_send.get("node_stats")
 
-        Host_Stats.insert(
+        HostStats.insert(
             {
-                Host_Stats.boot_time: node_stats.get("boot_time", "Unknown"),
-                Host_Stats.cpu_usage: round(node_stats.get("cpu_usage", 0), 2),
-                Host_Stats.cpu_cores: node_stats.get("cpu_count", 0),
-                Host_Stats.cpu_cur_freq: node_stats.get("cpu_cur_freq", 0),
-                Host_Stats.cpu_max_freq: node_stats.get("cpu_max_freq", 0),
-                Host_Stats.mem_usage: node_stats.get("mem_usage", "0 MB"),
-                Host_Stats.mem_percent: node_stats.get("mem_percent", 0),
-                Host_Stats.mem_total: node_stats.get("mem_total", "0 MB"),
-                Host_Stats.disk_json: node_stats.get("disk_data", "{}"),
+                HostStats.boot_time: node_stats.get("boot_time", "Unknown"),
+                HostStats.cpu_usage: round(node_stats.get("cpu_usage", 0), 2),
+                HostStats.cpu_cores: node_stats.get("cpu_count", 0),
+                HostStats.cpu_cur_freq: node_stats.get("cpu_cur_freq", 0),
+                HostStats.cpu_max_freq: node_stats.get("cpu_max_freq", 0),
+                HostStats.mem_usage: node_stats.get("mem_usage", "0 MB"),
+                HostStats.mem_percent: node_stats.get("mem_percent", 0),
+                HostStats.mem_total: node_stats.get("mem_total", "0 MB"),
+                HostStats.disk_json: node_stats.get("disk_data", "{}"),
             }
         ).execute()
 
@@ -239,7 +239,7 @@ class Stats:
         now = datetime.datetime.now()
         last_week = now.day - max_age
 
-        Host_Stats.delete().where(Host_Stats.time < last_week).execute()
+        HostStats.delete().where(HostStats.time < last_week).execute()
 
 
 #        Server_Stats.delete().where(Server_Stats.created < last_week).execute()

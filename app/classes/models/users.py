@@ -16,7 +16,7 @@ from playhouse.shortcuts import model_to_dict
 
 from app.classes.shared.helpers import Helpers
 from app.classes.models.base_model import BaseModel
-from app.classes.models.roles import Roles, helper_roles
+from app.classes.models.roles import Roles, HelperRoles
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ class ApiKeys(BaseModel):
 # **********************************************************************************
 #                                   User Roles Class
 # **********************************************************************************
-class User_Roles(BaseModel):
+class UserRoles(BaseModel):
     user_id = ForeignKeyField(Users, backref="user_role")
     role_id = ForeignKeyField(Roles, backref="user_role")
 
@@ -76,7 +76,7 @@ class User_Roles(BaseModel):
 # **********************************************************************************
 #                                   Users Helpers
 # **********************************************************************************
-class helper_users:
+class HelperUsers:
     def __init__(self, database, helper):
         self.database = database
         self.helper = helper
@@ -128,7 +128,7 @@ class helper_users:
 
         if user:
             # I know it should apply it without setting it but I'm just making sure
-            user = helper_users.add_user_roles(user)
+            user = HelperUsers.add_user_roles(user)
             return user
         else:
             # logger.debug("user: ({}) {}".format(user_id, {}))
@@ -146,7 +146,7 @@ class helper_users:
     @staticmethod
     def get_user_model(user_id: str) -> Users:
         user = Users.get(Users.user_id == user_id)
-        user = helper_users.add_user_roles(user)
+        user = HelperUsers.add_user_roles(user)
         return user
 
     def add_user(
@@ -223,7 +223,7 @@ class helper_users:
 
     def remove_user(self, user_id):
         with self.database.atomic():
-            User_Roles.delete().where(User_Roles.user_id == user_id).execute()
+            UserRoles.delete().where(UserRoles.user_id == user_id).execute()
             user = Users.get(Users.user_id == user_id)
             return user.delete_instance()
 
@@ -249,7 +249,7 @@ class helper_users:
 
     @staticmethod
     def user_id_exists(user_id):
-        if not helper_users.get_user(user_id):
+        if not HelperUsers.get_user(user_id):
             return False
         return True
 
@@ -259,28 +259,28 @@ class helper_users:
 
     @staticmethod
     def get_or_create(user_id, role_id):
-        return User_Roles.get_or_create(user_id=user_id, role_id=role_id)
+        return UserRoles.get_or_create(user_id=user_id, role_id=role_id)
 
     @staticmethod
     def get_user_roles_id(user_id):
         roles_list = []
-        roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        roles = UserRoles.select().where(UserRoles.user_id == user_id)
         for r in roles:
-            roles_list.append(helper_roles.get_role(r.role_id)["role_id"])
+            roles_list.append(HelperRoles.get_role(r.role_id)["role_id"])
         return roles_list
 
     @staticmethod
     def get_user_roles_names(user_id):
         roles_list = []
-        roles = User_Roles.select().where(User_Roles.user_id == user_id)
+        roles = UserRoles.select().where(UserRoles.user_id == user_id)
         for r in roles:
-            roles_list.append(helper_roles.get_role(r.role_id)["role_name"])
+            roles_list.append(HelperRoles.get_role(r.role_id)["role_name"])
         return roles_list
 
     @staticmethod
     def add_role_to_user(user_id, role_id):
-        User_Roles.insert(
-            {User_Roles.user_id: user_id, User_Roles.role_id: role_id}
+        UserRoles.insert(
+            {UserRoles.user_id: user_id, UserRoles.role_id: role_id}
         ).execute()
 
     @staticmethod
@@ -294,9 +294,9 @@ class helper_users:
         # it had those TODOs & comments made by mac - Lukas
 
         roles_query = (
-            User_Roles.select()
+            UserRoles.select()
             .join(Roles, JOIN.INNER)
-            .where(User_Roles.user_id == user_id)
+            .where(UserRoles.user_id == user_id)
         )
         # TODO: this query needs to be narrower
         roles = set()
@@ -313,21 +313,21 @@ class helper_users:
 
     @staticmethod
     def user_role_query(user_id):
-        user_query = User_Roles.select().where(User_Roles.user_id == user_id)
+        user_query = UserRoles.select().where(UserRoles.user_id == user_id)
         query = Roles.select().where(Roles.role_id == -1)
-        for u in user_query:
-            query = query + Roles.select().where(Roles.role_id == u.role_id)
+        for user in user_query:
+            query = query + Roles.select().where(Roles.role_id == user.role_id)
         return query
 
     @staticmethod
     def delete_user_roles(user_id, removed_roles):
-        User_Roles.delete().where(User_Roles.user_id == user_id).where(
-            User_Roles.role_id.in_(removed_roles)
+        UserRoles.delete().where(UserRoles.user_id == user_id).where(
+            UserRoles.role_id.in_(removed_roles)
         ).execute()
 
     @staticmethod
     def remove_roles_from_role_id(role_id):
-        User_Roles.delete().where(User_Roles.role_id == role_id).execute()
+        UserRoles.delete().where(UserRoles.role_id == role_id).execute()
 
     # **********************************************************************************
     #                                   ApiKeys Methods

@@ -78,8 +78,8 @@ class Players(list):
     def report(self):
         players = []
 
-        for x in self:
-            players.append(str(x))
+        for player in self:
+            players.append(str(player))
 
         r_data = {"online": self.online, "max": self.max, "players": players}
 
@@ -179,11 +179,11 @@ def ping(ip, port):
 
 # For the rest of requests see wiki.vg/Protocol
 def ping_bedrock(ip, port):
-    rd = random.Random()
+    rand = random.Random()
     try:
         # pylint: disable=consider-using-f-string
-        rd.seed("".join(re.findall("..", "%012x" % uuid.getnode())))
-        client_guid = uuid.UUID(int=rd.getrandbits(32)).int
+        rand.seed("".join(re.findall("..", "%012x" % uuid.getnode())))
+        client_guid = uuid.UUID(int=rand.getrandbits(32)).int
     except:
         client_guid = 0
     try:

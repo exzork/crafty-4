@@ -7,7 +7,7 @@ import bleach
 import libgravatar
 import requests
 
-from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
+from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.file_helpers import FileHelpers
 from app.classes.web.base_handler import BaseHandler
@@ -18,8 +18,11 @@ logger = logging.getLogger(__name__)
 class ServerHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, page):
-        # pylint: disable=unused-variable
-        api_key, token_data, exec_user = self.current_user
+        (
+            api_key,
+            _token_data,
+            exec_user,
+        ) = self.current_user
         superuser = exec_user["superuser"]
         if api_key is not None:
             superuser = superuser and api_key.superuser
@@ -58,9 +61,9 @@ class ServerHandler(BaseHandler):
             "roles": list_roles,
             "user_crafty_permissions": exec_user_crafty_permissions,
             "crafty_permissions": {
-                "Server_Creation": Enum_Permissions_Crafty.Server_Creation,
-                "User_Config": Enum_Permissions_Crafty.User_Config,
-                "Roles_Config": Enum_Permissions_Crafty.Roles_Config,
+                "Server_Creation": EnumPermissionsCrafty.SERVER_CREATION,
+                "User_Config": EnumPermissionsCrafty.USER_CONFIG,
+                "Roles_Config": EnumPermissionsCrafty.ROLES_CONFIG,
             },
             "server_stats": {
                 "total": len(self.controller.list_defined_servers()),
@@ -74,7 +77,7 @@ class ServerHandler(BaseHandler):
             "menu_servers": defined_servers,
             "show_contribute": self.helper.get_setting("show_contribute_link", True),
             "lang": self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
-            "lang_page": Helpers.getLangPage(
+            "lang_page": Helpers.get_lang_page(
                 self.controller.users.get_user_lang_by_id(exec_user["user_id"])
             ),
             "api_key": {
@@ -95,8 +98,10 @@ class ServerHandler(BaseHandler):
             rating = "g"
 
         if exec_user["email"] != "default@example.com" or "":
-            g = libgravatar.Gravatar(libgravatar.sanitize_email(exec_user["email"]))
-            url = g.get_image(
+            gravatar = libgravatar.Gravatar(
+                libgravatar.sanitize_email(exec_user["email"])
+            )
+            url = gravatar.get_image(
                 size=80,
                 default="404",
                 force_default=False,
@@ -155,8 +160,7 @@ class ServerHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, page):
-        # pylint: disable=unused-variable
-        api_key, token_data, exec_user = self.current_user
+        api_key, _token_data, exec_user = self.current_user
         superuser = exec_user["superuser"]
         if api_key is not None:
             superuser = superuser and api_key.superuser
@@ -167,7 +171,7 @@ class ServerHandler(BaseHandler):
             "user_data": exec_user,
             "show_contribute": self.helper.get_setting("show_contribute_link", True),
             "lang": self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
-            "lang_page": Helpers.getLangPage(
+            "lang_page": Helpers.get_lang_page(
                 self.controller.users.get_user_lang_by_id(exec_user["user_id"])
             ),
         }
@@ -327,7 +331,6 @@ class ServerHandler(BaseHandler):
                 server_type, server_version = server_parts
                 # TODO: add server type check here and call the correct server
                 # add functions if not a jar
-                role_ids = self.controller.users.get_user_roles_id(exec_user["user_id"])
                 new_server_id = self.controller.create_jar_server(
                     server_type, server_version, server_name, min_mem, max_mem, port
                 )
@@ -445,7 +448,6 @@ class ServerHandler(BaseHandler):
                 server_type, server_version = server_parts
                 # TODO: add server type check here and call the correct server
                 # add functions if not a jar
-                role_ids = self.controller.users.get_user_roles_id(exec_user["user_id"])
                 new_server_id = self.controller.create_jar_server(
                     server_type, server_version, server_name, min_mem, max_mem, port
                 )

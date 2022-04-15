@@ -9,7 +9,7 @@ class StatusHandler(BaseHandler):
     def get(self):
         page_data = {}
         page_data["lang"] = self.helper.get_setting("language")
-        page_data["lang_page"] = self.helper.getLangPage(
+        page_data["lang_page"] = self.helper.get_lang_page(
             self.helper.get_setting("language")
         )
         page_data["servers"] = self.controller.servers.get_all_servers_stats()

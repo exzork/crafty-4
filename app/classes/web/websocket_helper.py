@@ -17,8 +17,9 @@ class WebSocketHelper:
     def remove_client(self, client):
         self.clients.remove(client)
 
-    # pylint: disable=no-self-use
-    def send_message(self, client, event_type: str, data):
+    def send_message(
+        self, client, event_type: str, data
+    ):  # pylint: disable=no-self-use
         if client.check_auth():
             message = str(json.dumps({"event": event_type, "data": data}))
             client.write_message_helper(message)

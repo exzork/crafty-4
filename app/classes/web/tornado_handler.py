@@ -44,8 +44,8 @@ logger = logging.getLogger(__name__)
 class Webserver:
     def __init__(self, helper, controller, tasks_manager):
         self.ioloop = None
-        self.HTTP_Server = None
-        self.HTTPS_Server = None
+        self.http_server = None
+        self.https_server = None
         self.helper = helper
         self.controller = controller
         self.tasks_manager = tasks_manager
@@ -177,7 +177,7 @@ class Webserver:
             static_handler_class=CustomStaticHandler,
             serve_traceback=debug_errors,
         )
-        HTTPhanders = [
+        http_handers = [
             (r"/", HTTPHandler, handler_args),
             (r"/public/(.*)", HTTPHandlerPage, handler_args),
             (r"/panel/(.*)", HTTPHandlerPage, handler_args),
@@ -188,8 +188,8 @@ class Webserver:
             (r"/ws", HTTPHandlerPage, handler_args),
             (r"/upload", HTTPHandlerPage, handler_args),
         ]
-        HTTPapp = tornado.web.Application(
-            HTTPhanders,
+        http_app = tornado.web.Application(
+            http_handers,
             template_path=os.path.join(self.helper.webroot, "templates"),
             static_path=os.path.join(self.helper.webroot, "static"),
             debug=debug_errors,
@@ -202,11 +202,11 @@ class Webserver:
             serve_traceback=debug_errors,
         )
 
-        self.HTTP_Server = tornado.httpserver.HTTPServer(HTTPapp)
-        self.HTTP_Server.listen(http_port)
+        self.http_server = tornado.httpserver.HTTPServer(http_app)
+        self.http_server.listen(http_port)
 
-        self.HTTPS_Server = tornado.httpserver.HTTPServer(app, ssl_options=cert_objects)
-        self.HTTPS_Server.listen(https_port)
+        self.https_server = tornado.httpserver.HTTPServer(app, ssl_options=cert_objects)
+        self.https_server.listen(https_port)
 
         logger.info(
             f"https://{Helpers.get_local_ip()}:{https_port} "
@@ -226,7 +226,7 @@ class Webserver:
         logger.info("Shutting Down Web Server")
         Console.info("Shutting Down Web Server")
         self.ioloop.stop()
-        self.HTTP_Server.stop()
-        self.HTTPS_Server.stop()
+        self.http_server.stop()
+        self.https_server.stop()
         logger.info("Web Server Stopped")
         Console.info("Web Server Stopped")

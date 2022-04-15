@@ -5,7 +5,7 @@ import tornado.web
 import tornado.options
 import tornado.httpserver
 
-from app.classes.models.server_permissions import Enum_Permissions_Server
+from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.main_controller import Controller
@@ -40,10 +40,10 @@ class UploadHandler(BaseHandler):
         user_id = exec_user["user_id"]
         stream_size_value = self.helper.get_setting("stream_size_GB")
 
-        MAX_STREAMED_SIZE = (1024 * 1024 * 1024) * stream_size_value
+        max_streamed_size = (1024 * 1024 * 1024) * stream_size_value
 
         self.content_len = int(self.request.headers.get("Content-Length"))
-        if self.content_len > MAX_STREAMED_SIZE:
+        if self.content_len > max_streamed_size:
             logger.error(
                 f"User with ID {user_id} attempted to upload a file that"
                 f" exceeded the max body size."
@@ -91,7 +91,7 @@ class UploadHandler(BaseHandler):
             Console.warning("Server ID not found in upload handler call")
             self.do_upload = False
 
-        if Enum_Permissions_Server.Files not in exec_user_server_permissions:
+        if EnumPermissionsServer.FILES not in exec_user_server_permissions:
             logger.warning(
                 f"User {user_id} tried to upload a file to "
                 f"{server_id} without permissions!"
@@ -137,7 +137,7 @@ class UploadHandler(BaseHandler):
                 logger.error(f"Upload failed with error: {e}")
                 self.do_upload = False
         # If max_body_size is not set, you cannot upload files > 100MB
-        self.request.connection.set_max_body_size(MAX_STREAMED_SIZE)
+        self.request.connection.set_max_body_size(max_streamed_size)
 
     def post(self):
         logger.info("Upload completed")

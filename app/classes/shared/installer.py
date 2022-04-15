@@ -2,7 +2,7 @@ import sys
 import subprocess
 
 
-class install:
+class Install:
     @staticmethod
     def is_venv():
         return hasattr(sys, "real_prefix") or (
@@ -24,4 +24,4 @@ class install:
         sys.exit(0)
 
 
-installer = install()
+installer = Install()

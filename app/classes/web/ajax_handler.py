@@ -7,7 +7,7 @@ import bleach
 import tornado.web
 import tornado.escape
 
-from app.classes.models.server_permissions import Enum_Permissions_Server
+from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.server import ServerOutBuf
@@ -68,11 +68,13 @@ class AjaxHandler(BaseHandler):
             else:
                 data = ServerOutBuf.lines.get(server_id, [])
 
-            for d in data:
+            for line in data:
                 try:
-                    d = re.sub("(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)|(> )", "", d)
-                    d = re.sub("[A-z]{2}\b\b", "", d)
-                    line = self.helper.log_colors(html.escape(d))
+                    line = re.sub(
+                        "(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)|(> )", "", line
+                    )
+                    line = re.sub("[A-z]{2}\b\b", "", line)
+                    line = self.helper.log_colors(html.escape(line))
                     self.write(f"{line}<br />")
                     # self.write(d.encode("utf-8"))
 
@@ -265,14 +267,14 @@ class AjaxHandler(BaseHandler):
         server_id = self.get_argument("id", None)
 
         permissions = {
-            "Commands": Enum_Permissions_Server.Commands,
-            "Terminal": Enum_Permissions_Server.Terminal,
-            "Logs": Enum_Permissions_Server.Logs,
-            "Schedule": Enum_Permissions_Server.Schedule,
-            "Backup": Enum_Permissions_Server.Backup,
-            "Files": Enum_Permissions_Server.Files,
-            "Config": Enum_Permissions_Server.Config,
-            "Players": Enum_Permissions_Server.Players,
+            "Commands": EnumPermissionsServer.COMMANDS,
+            "Terminal": EnumPermissionsServer.TERMINAL,
+            "Logs": EnumPermissionsServer.LOGS,
+            "Schedule": EnumPermissionsServer.SCHEDULE,
+            "Backup": EnumPermissionsServer.BACKUP,
+            "Files": EnumPermissionsServer.FILES,
+            "Config": EnumPermissionsServer.CONFIG,
+            "Players": EnumPermissionsServer.PLAYERS,
         }
         user_perms = self.controller.server_perms.get_user_id_permissions_list(
             exec_user["user_id"], server_id
@@ -384,10 +386,10 @@ class AjaxHandler(BaseHandler):
             if server_data["type"] == "minecraft-java":
                 backup_path = svr_obj.backup_path
                 if Helpers.validate_traversal(backup_path, zip_name):
-                    tempDir = Helpers.unzip_backup_archive(backup_path, zip_name)
+                    temp_dir = Helpers.unzip_backup_archive(backup_path, zip_name)
                     new_server = self.controller.import_zip_server(
                         svr_obj.server_name,
-                        tempDir,
+                        temp_dir,
                         server_data["executable"],
                         "1",
                         "2",
@@ -404,10 +406,10 @@ class AjaxHandler(BaseHandler):
             else:
                 backup_path = svr_obj.backup_path
                 if Helpers.validate_traversal(backup_path, zip_name):
-                    tempDir = Helpers.unzip_backup_archive(backup_path, zip_name)
+                    temp_dir = Helpers.unzip_backup_archive(backup_path, zip_name)
                     new_server = self.controller.import_bedrock_zip_server(
                         svr_obj.server_name,
-                        tempDir,
+                        temp_dir,
                         server_data["executable"],
                         server_data["server_port"],
                     )
@@ -422,7 +424,7 @@ class AjaxHandler(BaseHandler):
         elif page == "unzip_server":
             path = self.get_argument("path", None)
             if Helpers.check_file_exists(path):
-                self.helper.unzipServer(path, exec_user["user_id"])
+                self.helper.unzip_server(path, exec_user["user_id"])
             else:
                 user_id = exec_user["user_id"]
                 if user_id:
@@ -454,14 +456,14 @@ class AjaxHandler(BaseHandler):
         server_id = self.get_argument("id", None)
 
         permissions = {
-            "Commands": Enum_Permissions_Server.Commands,
-            "Terminal": Enum_Permissions_Server.Terminal,
-            "Logs": Enum_Permissions_Server.Logs,
-            "Schedule": Enum_Permissions_Server.Schedule,
-            "Backup": Enum_Permissions_Server.Backup,
-            "Files": Enum_Permissions_Server.Files,
-            "Config": Enum_Permissions_Server.Config,
-            "Players": Enum_Permissions_Server.Players,
+            "Commands": EnumPermissionsServer.COMMANDS,
+            "Terminal": EnumPermissionsServer.TERMINAL,
+            "Logs": EnumPermissionsServer.LOGS,
+            "Schedule": EnumPermissionsServer.SCHEDULE,
+            "Backup": EnumPermissionsServer.BACKUP,
+            "Files": EnumPermissionsServer.FILES,
+            "Config": EnumPermissionsServer.CONFIG,
+            "Players": EnumPermissionsServer.PLAYERS,
         }
         user_perms = self.controller.server_perms.get_user_id_permissions_list(
             exec_user["user_id"], server_id

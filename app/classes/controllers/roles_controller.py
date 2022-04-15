@@ -1,34 +1,34 @@
 import logging
 
-from app.classes.models.roles import helper_roles
-from app.classes.models.server_permissions import Permissions_Servers
+from app.classes.models.roles import HelperRoles
+from app.classes.models.server_permissions import PermissionsServers
 from app.classes.shared.helpers import Helpers
 
 logger = logging.getLogger(__name__)
 
 
-class Roles_Controller:
+class RolesController:
     def __init__(self, users_helper, roles_helper):
         self.users_helper = users_helper
         self.roles_helper = roles_helper
 
     @staticmethod
     def get_all_roles():
-        return helper_roles.get_all_roles()
+        return HelperRoles.get_all_roles()
 
     @staticmethod
     def get_roleid_by_name(role_name):
-        return helper_roles.get_roleid_by_name(role_name)
+        return HelperRoles.get_roleid_by_name(role_name)
 
     @staticmethod
     def get_role(role_id):
-        return helper_roles.get_role(role_id)
+        return HelperRoles.get_role(role_id)
 
     @staticmethod
     def update_role(role_id: str, role_data=None, permissions_mask: str = "00000000"):
         if role_data is None:
             role_data = {}
-        base_data = Roles_Controller.get_role_with_servers(role_id)
+        base_data = RolesController.get_role_with_servers(role_id)
         up_data = {}
         added_servers = set()
         removed_servers = set()
@@ -45,37 +45,35 @@ class Roles_Controller:
             f"role: {role_data} +server:{added_servers} -server{removed_servers}"
         )
         for server in added_servers:
-            Permissions_Servers.get_or_create(role_id, server, permissions_mask)
+            PermissionsServers.get_or_create(role_id, server, permissions_mask)
         for server in base_data["servers"]:
-            Permissions_Servers.update_role_permission(
-                role_id, server, permissions_mask
-            )
+            PermissionsServers.update_role_permission(role_id, server, permissions_mask)
             # TODO: This is horribly inefficient and we should be using bulk queries
             # but im going for functionality at this point
-        Permissions_Servers.delete_roles_permissions(role_id, removed_servers)
+        PermissionsServers.delete_roles_permissions(role_id, removed_servers)
         if up_data:
-            helper_roles.update_role(role_id, up_data)
+            HelperRoles.update_role(role_id, up_data)
 
     @staticmethod
     def add_role(role_name):
-        return helper_roles.add_role(role_name)
+        return HelperRoles.add_role(role_name)
 
     def remove_role(self, role_id):
-        role_data = Roles_Controller.get_role_with_servers(role_id)
-        Permissions_Servers.delete_roles_permissions(role_id, role_data["servers"])
+        role_data = RolesController.get_role_with_servers(role_id)
+        PermissionsServers.delete_roles_permissions(role_id, role_data["servers"])
         self.users_helper.remove_roles_from_role_id(role_id)
         return self.roles_helper.remove_role(role_id)
 
     @staticmethod
     def role_id_exists(role_id):
-        return helper_roles.role_id_exists(role_id)
+        return HelperRoles.role_id_exists(role_id)
 
     @staticmethod
     def get_role_with_servers(role_id):
-        role = helper_roles.get_role(role_id)
+        role = HelperRoles.get_role(role_id)
 
         if role:
-            servers_query = Permissions_Servers.get_servers_from_role(role_id)
+            servers_query = PermissionsServers.get_servers_from_role(role_id)
             # TODO: this query needs to be narrower
             servers = set()
             for s in servers_query:
