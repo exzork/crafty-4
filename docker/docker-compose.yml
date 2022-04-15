@@ -5,6 +5,7 @@ services:
   crafty:
     container_name: crafty_container
     build: ..
+    restart: always
     environment:
       - TZ=Etc/UTC
     ports:
