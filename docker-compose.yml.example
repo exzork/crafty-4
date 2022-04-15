@@ -3,8 +3,8 @@ version: '3'
 
 services:
   crafty:
-    container_name: crafty_commander
-    image: registry.gitlab.com/crafty-controller/crafty-commander:latest
+    container_name: crafty_container
+    image: registry.gitlab.com/crafty-controller/crafty-4:latest
     environment:
       - TZ=Etc/UTC
     ports:
@@ -14,8 +14,8 @@ services:
       - "19132:19132/udp"  # BEDROCK
       - "25500-25600:25500-25600"  # MC SERV PORT RANGE
     volumes:
-      - ./docker/backups:/commander/backups
-      - ./docker/logs:/commander/logs
-      - ./docker/servers:/commander/servers
-      - ./docker/config:/commander/app/config
-      - ./docker/import:/commander/import
+      - ./docker/backups:/crafty/backups
+      - ./docker/logs:/crafty/logs
+      - ./docker/servers:/crafty/servers
+      - ./docker/config:/crafty/app/config
+      - ./docker/import:/crafty/import

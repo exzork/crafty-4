@@ -2,11 +2,11 @@
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Supported Python Versions](https://shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20-blue)](https://www.python.org)
-[![Version(temp-hardcoded)](https://img.shields.io/badge/release-v4.0.0--alpha3.5-orange)](https://gitlab.com/crafty-controller/crafty-commander)
-[![Code Quality(temp-hardcoded)](https://img.shields.io/badge/code%20quality-10-brightgreen)](https://gitlab.com/crafty-controller/crafty-commander)
-[![Build Status](https://gitlab.com/crafty-controller/crafty-commander/badges/master/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-commander/-/commits/master)
+[![Version(temp-hardcoded)](https://img.shields.io/badge/release-v4.0.0--beta-orange)](https://gitlab.com/crafty-controller/crafty-4)
+[![Code Quality(temp-hardcoded)](https://img.shields.io/badge/code%20quality-10-brightgreen)](https://gitlab.com/crafty-controller/crafty-4)
+[![Build Status](https://gitlab.com/crafty-controller/crafty-4/badges/master/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-4/-/commits/master)
 
-# Crafty Controller 4.0.0-alpha.3.5
+# Crafty Controller 4.0.0-beta
 > Python based Control Panel for your Minecraft Server
 
 ## What is Crafty Controller?
@@ -39,7 +39,7 @@ With `Crafty Controller 4.0` we have focused on building our DevOps Principles, 
 > __**⚠ 🔻WARNING: [WSL/WSL2 | WINDOWS 11 | DOCKER DESKTOP]🔻**__ <br>
  BE ADVISED! Upstream is currently broken for Minecraft running on **Docker under WSL/WSL2, Windows 11 / DOCKER DESKTOP!** <br>
  On '**Stop**' or '**Restart**' of the MC Server, there is a 90% chance the World's Chunks will be shredded irreparably! <br>
- Please only run Docker on Linux, If you are using Windows we have a portable installs found here: [Latest-Stable](https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/master/download?job=win-prod-build), [Latest-Development](https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/dev/download?job=win-dev-build)
+ Please only run Docker on Linux, If you are using Windows we have a portable installs found here: [Latest-Stable](https://gitlab.com/crafty-controller/crafty-4/-/jobs/artifacts/master/download?job=win-prod-build), [Latest-Development](https://gitlab.com/crafty-controller/crafty-4/-/jobs/artifacts/dev/download?job=win-dev-build)
 
 ----
 
@@ -55,11 +55,11 @@ As the Dockerfile uses the permission structure of `crafty:root` **internally** 
 ### - Using the registry image 🌎
 The provided image supports both `arm64` and `amd64` out the box, if you have issues though you can build it yourself with the `compose` file in `docker/`.
 
-The image is located at: `registry.gitlab.com/crafty-controller/crafty-commander:latest`
+The image is located at: `registry.gitlab.com/crafty-controller/crafty-4:latest`
 | Branch             | Status                                                                |
 | ----------------- | ------------------------------------------------------------------ |
-| :latest | [![pipeline status](https://gitlab.com/crafty-controller/crafty-commander/badges/master/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-commander/-/commits/master) |
-| :dev | [![pipeline status](https://gitlab.com/crafty-controller/crafty-commander/badges/dev/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-commander/-/commits/dev) |
+| :latest | [![pipeline status](https://gitlab.com/crafty-controller/crafty-4/badges/master/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-4/-/commits/master) |
+| :dev | [![pipeline status](https://gitlab.com/crafty-controller/crafty-4/badges/dev/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-4/-/commits/dev) |
 
 While the repository is still **private / pre-release**,
 Before you can pull the image you must authenticate docker with the Container Registry.
@@ -94,8 +94,8 @@ version: '3'
 
 services:
   crafty:
-    container_name: crafty_commander
-    image: registry.gitlab.com/crafty-controller/crafty-commander:latest
+    container_name: crafty_container
+    image: registry.gitlab.com/crafty-controller/crafty-4:latest
     environment:
       - TZ=Etc/UTC
     ports:
@@ -105,11 +105,11 @@ services:
       - "19132:19132/udp" # BEDROCK
       - "25500-25600:25500-25600" # MC SERV PORT RANGE
     volumes:
-      - ./docker/backups:/commander/backups
-      - ./docker/logs:/commander/logs
-      - ./docker/servers:/commander/servers
-      - ./docker/config:/commander/app/config
-      - ./docker/import:/commander/import
+      - ./docker/backups:/crafty/backups
+      - ./docker/logs:/crafty/logs
+      - ./docker/servers:/crafty/servers
+      - ./docker/config:/crafty/app/config
+      - ./docker/import:/crafty/import
 ```
 ```sh
 $ docker-compose up -d && docker-compose logs -f
@@ -119,19 +119,19 @@ $ docker-compose up -d && docker-compose logs -f
 ### **docker run:**
 ```sh
 $ docker run \
-	--name crafty_commander \
+	--name crafty_container \
 	-p 8000:8000 \
 	-p 8443:8443 \
 	-p 8123:8123 \
 	-p 19132:19132/udp \
 	-p 25500-25600:25500-25600 \
 	-e TZ=Etc/UTC \
-	-v "/$(pwd)/docker/backups:/commander/backups" \
-	-v "/$(pwd)/docker/logs:/commander/logs" \
-	-v "/$(pwd)/docker/servers:/commander/servers" \
-	-v "/$(pwd)/docker/config:/commander/app/config" \
-	-v "/$(pwd)/docker/import:/commander/import" \
-	registry.gitlab.com/crafty-controller/crafty-commander:latest
+	-v "/$(pwd)/docker/backups:/crafty/backups" \
+	-v "/$(pwd)/docker/logs:/crafty/logs" \
+	-v "/$(pwd)/docker/servers:/crafty/servers" \
+	-v "/$(pwd)/docker/config:/crafty/app/config" \
+	-v "/$(pwd)/docker/import:/crafty/import" \
+	registry.gitlab.com/crafty-controller/crafty-4:latest
 ```
 
 ### **Building from the cloned repository:**
@@ -144,18 +144,18 @@ If you'd rather not use `docker-compose` you can use the following `docker run` 
 $ docker build . -t crafty
 
 $ docker run \
-	--name crafty_commander \
+	--name crafty_container \
 	-p 8000:8000 \
 	-p 8443:8443 \
 	-p 8123:8123 \
 	-p 19132:19132/udp \
 	-p 25500-25600:25500-25600 \
 	-e TZ=Etc/UTC \
-	-v "/$(pwd)/docker/backups:/commander/backups" \
-	-v "/$(pwd)/docker/logs:/commander/logs" \
-	-v "/$(pwd)/docker/servers:/commander/servers" \
-	-v "/$(pwd)/docker/config:/commander/app/config" \
-	-v "/$(pwd)/docker/import:/commander/import" \
+	-v "/$(pwd)/docker/backups:/crafty/backups" \
+	-v "/$(pwd)/docker/logs:/crafty/logs" \
+	-v "/$(pwd)/docker/servers:/crafty/servers" \
+	-v "/$(pwd)/docker/config:/crafty/app/config" \
+	-v "/$(pwd)/docker/import:/crafty/import" \
 	crafty
 ```
 A fresh build will take several minutes depending on your system, but will be rapid thereafter.
