@@ -443,13 +443,24 @@ class Helpers:
                 full_root_path = temp_dir
 
                 for item in os.listdir(full_root_path):
-                    try:
-                        FileHelpers.move_dir(
-                            os.path.join(full_root_path, item),
-                            os.path.join(new_dir, item),
-                        )
-                    except Exception as ex:
-                        logger.error(f"ERROR IN ZIP IMPORT: {ex}")
+                    print(item)
+                    if os.path.isdir(os.path.join(full_root_path, item)):
+                        print("dir")
+                        try:
+                            FileHelpers.move_dir(
+                                os.path.join(full_root_path, item),
+                                os.path.join(new_dir, item),
+                            )
+                        except Exception as ex:
+                            logger.error(f"ERROR IN ZIP IMPORT: {ex}")
+                    else:
+                        try:
+                            FileHelpers.move_file(
+                                os.path.join(full_root_path, item),
+                                os.path.join(new_dir, item),
+                            )
+                        except Exception as ex:
+                            logger.error(f"ERROR IN ZIP IMPORT: {ex}")
             except Exception as ex:
                 print(ex)
         else:
