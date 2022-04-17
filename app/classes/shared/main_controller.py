@@ -234,9 +234,8 @@ class Controller:
         self.users.stop_prepare(exec_user["user_id"])
         self.support_scheduler.remove_job("logs_" + str(exec_user["user_id"]))
 
-    @staticmethod
-    def add_system_user():
-        HelperUsers.add_user(
+    def add_system_user(self):
+        self.users_helper.add_user(
             "system",
             Helpers.random_string_generator(64),
             "default@example.com",

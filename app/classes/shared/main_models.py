@@ -2,6 +2,7 @@ import logging
 from playhouse.shortcuts import model_to_dict
 
 from app.classes.shared.helpers import Helpers  # pylint: disable=unused-import
+from app.classes.shared.console import Console
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,7 @@ class DatabaseBuilder:
 
     def default_settings(self):
         logger.info("Fresh Install Detected - Creating Default Settings")
-        self.helper.console.info("Fresh Install Detected - Creating Default Settings")
+        Console.info("Fresh Install Detected - Creating Default Settings")
         default_data = self.helper.find_default_password()
 
         username = default_data.get("username", "admin")
