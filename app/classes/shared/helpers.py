@@ -516,12 +516,15 @@ class Helpers:
                 full_path = os.path.join(path, file)
                 source_size += os.stat(full_path).st_size
                 files_count += 1
-        dest_size = os.path.getsize(str(dest_path))
-        percent = round((dest_size / source_size) * 100, 1)
+        try:
+            dest_size = os.path.getsize(str(dest_path))
+            percent = round((dest_size / source_size) * 100, 1)
+        except:
+            percent = 0
         if percent >= 0:
             results = {"percent": percent, "total_files": files_count}
         else:
-            results = {"percent": 0, "total_files": 0}
+            results = {"percent": 0, "total_files": files_count}
         return results
 
     @staticmethod
