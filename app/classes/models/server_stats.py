@@ -328,7 +328,7 @@ class HelperServerStats:
     def can_stop_no_players(server_id, time_limit):
         HelperServerStats.select_database(server_id)
         can = False
-        ttl_no_players = HelperServerStats.get_TTL_without_player(server_id)
+        ttl_no_players = HelperServerStats.get_ttl_without_player(server_id)
         if (time_limit == -1) or (ttl_no_players > time_limit):
             can = True
         return can
