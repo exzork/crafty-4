@@ -307,7 +307,7 @@ class HelperServerStats:
         return first_run.first_run
 
     @staticmethod
-    def get_TTL_without_player(server_id):
+    def get_ttl_without_player(server_id):
         HelperServerStats.select_database(server_id)
         last_stat = (
             ServerStats.select()
