@@ -94,8 +94,28 @@ class HelperServers:
         server_log_file: str,
         server_stop: str,
         server_type: str,
-        server_port=25565,
-    ):
+        server_port: int = 25565,
+    ) -> int:
+        """Create a server in the database
+
+        Args:
+            name: The name of the server
+            server_uuid: This is the UUID of the server
+            server_dir: The directory where the server is located
+            backup_path: The path to the backup folder
+            server_command: The command to start the server
+            server_file: The name of the server file
+            server_log_file: The path to the server log file
+            server_stop: This is the command to stop the server
+            server_type: This is the type of server you're creating.
+            server_port: The port the server will run on, defaults to 25565 (optional)
+
+        Returns:
+            int: The new server's id
+
+        Raises:
+            PeeweeException: If the server already exists
+        """
         return Servers.insert(
             {
                 Servers.server_name: name,

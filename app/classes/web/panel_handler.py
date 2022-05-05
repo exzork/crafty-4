@@ -300,6 +300,8 @@ class PanelHandler(BaseHandler):
             else None,
             "superuser": superuser,
         }
+
+        # http://en.gravatar.com/site/implement/images/#rating
         if self.helper.get_setting("allow_nsfw_profile_pictures"):
             rating = "x"
         else:

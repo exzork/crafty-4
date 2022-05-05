@@ -1,5 +1,6 @@
 import logging
 from typing import Optional
+import typing
 
 from app.classes.models.users import HelperUsers
 from app.classes.models.crafty_permissions import (
@@ -16,12 +17,81 @@ class UsersController:
         self.users_helper = users_helper
         self.authentication = authentication
 
+        _permissions_props = {
+            "name": {
+                "type": "string",
+                "enum": [
+                    permission.name
+                    for permission in PermissionsCrafty.get_permissions_list()
+                ],
+            },
+            "quantity": {"type": "number", "minimum": 0},
+            "enabled": {"type": "boolean"},
+        }
+        self.user_jsonschema_props: typing.Final = {
+            "username": {
+                "type": "string",
+                "maxLength": 20,
+                "minLength": 4,
+                "pattern": "^[a-z0-9_]+$",
+                "examples": ["admin"],
+                "title": "Username",
+            },
+            "password": {
+                "type": "string",
+                "maxLength": 20,
+                "minLength": 4,
+                "examples": ["crafty"],
+                "title": "Password",
+            },
+            "email": {
+                "type": "string",
+                "format": "email",
+                "examples": ["default@example.com"],
+                "title": "E-Mail",
+            },
+            "enabled": {
+                "type": "boolean",
+                "examples": [True],
+                "title": "Enabled",
+            },
+            "lang": {
+                "type": "string",
+                "maxLength": 10,
+                "minLength": 2,
+                "examples": ["en"],
+                "title": "Language",
+            },
+            "superuser": {
+                "type": "boolean",
+                "examples": [False],
+                "title": "Superuser",
+            },
+            "permissions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": _permissions_props,
+                    "required": ["name", "quantity", "enabled"],
+                },
+            },
+            "roles": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+            "hints": {"type": "boolean"},
+        }
+
     # **********************************************************************************
     #                                   Users Methods
     # **********************************************************************************
     @staticmethod
     def get_all_users():
         return HelperUsers.get_all_users()
+
+    @staticmethod
+    def get_all_user_ids():
+        return HelperUsers.get_all_user_ids()
 
     @staticmethod
     def get_id_by_name(username):
@@ -80,16 +150,16 @@ class UsersController:
         permissions_mask = user_crafty_data.get("permissions_mask", "000")
 
         if "server_quantity" in user_crafty_data:
-            limit_server_creation = user_crafty_data["server_quantity"][
-                EnumPermissionsCrafty.SERVER_CREATION.name
-            ]
+            limit_server_creation = user_crafty_data["server_quantity"].get(
+                EnumPermissionsCrafty.SERVER_CREATION.name, 0
+            )
 
-            limit_user_creation = user_crafty_data["server_quantity"][
-                EnumPermissionsCrafty.USER_CONFIG.name
-            ]
-            limit_role_creation = user_crafty_data["server_quantity"][
-                EnumPermissionsCrafty.ROLES_CONFIG.name
-            ]
+            limit_user_creation = user_crafty_data["server_quantity"].get(
+                EnumPermissionsCrafty.USER_CONFIG.name, 0
+            )
+            limit_role_creation = user_crafty_data["server_quantity"].get(
+                EnumPermissionsCrafty.ROLES_CONFIG.name, 0
+            )
         else:
             limit_server_creation = 0
             limit_user_creation = 0
@@ -105,6 +175,17 @@ class UsersController:
 
         self.users_helper.delete_user_roles(user_id, removed_roles)
 
+        self.users_helper.update_user(user_id, up_data)
+
+    def raw_update_user(
+        self, user_id: int, up_data: typing.Optional[typing.Dict[str, typing.Any]]
+    ):
+        """Directly passes the data to the model helper.
+
+        Args:
+            user_id (int): The id of the user to update.
+            up_data (typing.Optional[typing.Dict[str, typing.Any]]): Update data.
+        """
         self.users_helper.update_user(user_id, up_data)
 
     def add_user(
@@ -159,7 +240,7 @@ class UsersController:
         return token_data["user_id"]
 
     def get_user_by_api_token(self, token: str):
-        _, _, user = self.authentication.check(token)
+        _, _, user = self.authentication.check_err(token)
         return user
 
     def get_api_key_by_token(self, token: str):

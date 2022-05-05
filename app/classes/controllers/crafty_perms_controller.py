@@ -39,7 +39,7 @@ class CraftyPermsController:
         return True
         # TODO: Complete if we need a User Addition limit
         # return crafty_permissions.can_add_in_crafty(
-        #     user_id, Enum_Permissions_Crafty.User_Config
+        #     user_id, EnumPermissionsCrafty.USER_CONFIG
         # )
 
     @staticmethod
@@ -47,7 +47,7 @@ class CraftyPermsController:
         return True
         # TODO: Complete if we need a Role Addition limit
         # return crafty_permissions.can_add_in_crafty(
-        #     user_id, Enum_Permissions_Crafty.Roles_Config
+        #     user_id, EnumPermissionsCrafty.ROLES_CONFIG
         # )
 
     @staticmethod
@@ -66,6 +66,14 @@ class CraftyPermsController:
 
     @staticmethod
     def add_server_creation(user_id):
+        """Increase the "Server Creation" counter for this use
+
+        Args:
+            user_id (int): The modifiable user's ID
+
+        Returns:
+            int: The new count of servers created by this user
+        """
         return PermissionsCrafty.add_server_creation(user_id)
 
     @staticmethod

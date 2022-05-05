@@ -22,17 +22,10 @@ class ServerJars:
 
         try:
             response = requests.get(full_url, timeout=2)
-
-            if response.status_code not in [200, 201]:
-                return {}
-        except Exception as e:
-            logger.error(f"Unable to connect to serverjar.com api due to error: {e}")
-            return {}
-
-        try:
+            response.raise_for_status()
             api_data = json.loads(response.content)
         except Exception as e:
-            logger.error(f"Unable to parse serverjar.com api result due to error: {e}")
+            logger.error(f"Unable to load {full_url} api due to error: {e}")
             return {}
 
         api_result = api_data.get("status")

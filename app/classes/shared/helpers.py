@@ -270,18 +270,17 @@ class Helpers:
 
     @staticmethod
     def get_announcements():
-        response = requests.get("https://craftycontrol.com/notify.json", timeout=2)
         data = (
             '[{"id":"1","date":"Unknown",'
             '"title":"Error getting Announcements",'
             '"desc":"Error getting Announcements","link":""}]'
         )
 
-        if response.status_code in [200, 201]:
-            try:
-                data = json.loads(response.content)
-            except Exception as e:
-                logger.error(f"Failed to load json content with error: {e}")
+        try:
+            response = requests.get("https://craftycontrol.com/notify.json", timeout=2)
+            data = json.loads(response.content)
+        except Exception as e:
+            logger.error(f"Failed to fetch notifications with error: {e}")
 
         return data
 

@@ -12,6 +12,7 @@ from apscheduler.triggers.cron import CronTrigger
 from app.classes.models.management import HelpersManagement
 from app.classes.models.users import HelperUsers
 from app.classes.shared.console import Console
+from app.classes.shared.main_controller import Controller
 from app.classes.web.tornado_handler import Webserver
 
 logger = logging.getLogger("apscheduler")
@@ -32,6 +33,8 @@ scheduler_intervals = {
 
 
 class TasksManager:
+    controller: Controller
+
     def __init__(self, helper, controller):
         self.helper = helper
         self.controller = controller
@@ -100,6 +103,17 @@ class TasksManager:
 
                 elif command == "restart_server":
                     svr.restart_threaded_server(user_id)
+
+                elif command == "kill_server":
+                    try:
+                        svr.kill()
+                        time.sleep(5)
+                        svr.cleanup_server_object()
+                        svr.record_server_stats()
+                    except Exception as e:
+                        logger.error(
+                            f"Could not find PID for requested termsig. Full error: {e}"
+                        )
 
                 elif command == "backup_server":
                     svr.backup_server()
