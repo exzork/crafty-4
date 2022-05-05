@@ -72,7 +72,7 @@ class Helpers:
         installer.do_install()
 
     @staticmethod
-    def float_to_string(gbs: int):
+    def float_to_string(gbs: float):
         s = str(float(gbs) * 1000).rstrip("0").rstrip(".")
         return s
 
@@ -232,7 +232,7 @@ class Helpers:
                 return default_return
 
             with open(self.settings_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=1)
+                json.dump(data, f, indent=2)
 
         except Exception as e:
             logger.critical(

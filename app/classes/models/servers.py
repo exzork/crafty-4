@@ -95,6 +95,7 @@ class HelperServers:
         server_stop: str,
         server_type: str,
         server_port: int = 25565,
+        server_host: str = "127.0.0.1",
     ) -> int:
         """Create a server in the database
 
@@ -108,7 +109,8 @@ class HelperServers:
             server_log_file: The path to the server log file
             server_stop: This is the command to stop the server
             server_type: This is the type of server you're creating.
-            server_port: The port the server will run on, defaults to 25565 (optional)
+            server_port: The port the server will be monitored on, defaults to 25565
+            server_host: The host the server will be monitored on, defaults to 127.0.0.1
 
         Returns:
             int: The new server's id
@@ -128,6 +130,7 @@ class HelperServers:
                 Servers.crash_detection: False,
                 Servers.log_path: server_log_file,
                 Servers.server_port: server_port,
+                Servers.server_ip: server_host,
                 Servers.stop_command: server_stop,
                 Servers.backup_path: backup_path,
                 Servers.type: server_type,

@@ -30,6 +30,7 @@ new_server_schema = {
                     "version": "1.18.2",
                     "mem_min": 1,
                     "mem_max": 2,
+                    "server_properties_port": 25565,
                 },
             },
         }
@@ -90,7 +91,6 @@ new_server_schema = {
                     "type": "string",
                     "default": "127.0.0.1",
                     "examples": ["127.0.0.1"],
-                    "pattern": "^.*$",
                 },
                 "port": {
                     "title": "Port",
@@ -142,7 +142,14 @@ new_server_schema = {
                 "download_jar_create_data": {
                     "title": "JAR download data",
                     "type": "object",
-                    "required": ["type", "version", "mem_min", "mem_max"],
+                    "required": [
+                        "type",
+                        "version",
+                        "mem_min",
+                        "mem_max",
+                        "server_properties_port",
+                        "agree_to_eula",
+                    ],
                     "properties": {
                         "type": {
                             "title": "Server JAR Type",
@@ -155,18 +162,30 @@ new_server_schema = {
                             "examples": ["1.18.2"],
                         },
                         "mem_min": {
-                            "title": "Minimum JVM memory",
+                            "title": "Minimum JVM memory (in GiBs)",
                             "type": "number",
                             "examples": [1],
                             "default": 1,
                             "exclusiveMinimum": 0,
                         },
                         "mem_max": {
-                            "title": "Maximum JVM memory",
+                            "title": "Maximum JVM memory (in GiBs)",
                             "type": "number",
                             "examples": [2],
                             "default": 2,
                             "exclusiveMinimum": 0,
+                        },
+                        "server_properties_port": {
+                            "title": "Port",
+                            "type": "integer",
+                            "examples": [25565],
+                            "default": 25565,
+                            "minimum": 0,
+                        },
+                        "agree_to_eula": {
+                            "title": "Agree to the EULA",
+                            "type": "boolean",
+                            "default": False,
                         },
                     },
                 },
@@ -178,6 +197,8 @@ new_server_schema = {
                         "jarfile",
                         "mem_min",
                         "mem_max",
+                        "server_properties_port",
+                        "agree_to_eula",
                     ],
                     "properties": {
                         "existing_server_path": {
@@ -190,21 +211,33 @@ new_server_schema = {
                             "title": "JAR file",
                             "description": "The JAR file relative to the previous path",
                             "type": "string",
-                            "examples": ["paper.jar"],
+                            "examples": ["paper.jar", "jars/vanilla-1.12.jar"],
                         },
                         "mem_min": {
-                            "title": "Minimum JVM memory",
+                            "title": "Minimum JVM memory (in GiBs)",
                             "type": "number",
                             "examples": [1],
                             "default": 1,
                             "exclusiveMinimum": 0,
                         },
                         "mem_max": {
-                            "title": "Maximum JVM memory",
+                            "title": "Maximum JVM memory (in GiBs)",
                             "type": "number",
                             "examples": [2],
                             "default": 2,
                             "exclusiveMinimum": 0,
+                        },
+                        "server_properties_port": {
+                            "title": "Port",
+                            "type": "integer",
+                            "examples": [25565],
+                            "default": 25565,
+                            "minimum": 0,
+                        },
+                        "agree_to_eula": {
+                            "title": "Agree to the EULA",
+                            "type": "boolean",
+                            "default": False,
                         },
                     },
                 },
@@ -217,6 +250,8 @@ new_server_schema = {
                         "jarfile",
                         "mem_min",
                         "mem_max",
+                        "server_properties_port",
+                        "agree_to_eula",
                     ],
                     "properties": {
                         "zip_path": {
@@ -229,7 +264,7 @@ new_server_schema = {
                             "title": "Server root directory",
                             "description": "The server root in the ZIP archive",
                             "type": "string",
-                            "examples": ["/", "/paper-server/"],
+                            "examples": ["/", "/paper-server/", "server-1"],
                         },
                         "jarfile": {
                             "title": "JAR file",
@@ -238,18 +273,30 @@ new_server_schema = {
                             "examples": ["paper.jar", "jars/vanilla-1.12.jar"],
                         },
                         "mem_min": {
-                            "title": "Minimum JVM memory",
+                            "title": "Minimum JVM memory (in GiBs)",
                             "type": "number",
                             "examples": [1],
                             "default": 1,
                             "exclusiveMinimum": 0,
                         },
                         "mem_max": {
-                            "title": "Maximum JVM memory",
+                            "title": "Maximum JVM memory (in GiBs)",
                             "type": "number",
                             "examples": [2],
                             "default": 2,
                             "exclusiveMinimum": 0,
+                        },
+                        "server_properties_port": {
+                            "title": "Port",
+                            "type": "integer",
+                            "examples": [25565],
+                            "default": 25565,
+                            "minimum": 0,
+                        },
+                        "agree_to_eula": {
+                            "title": "Agree to the EULA",
+                            "type": "boolean",
+                            "default": False,
                         },
                     },
                 },
@@ -333,7 +380,7 @@ new_server_schema = {
                             "title": "Server root directory",
                             "description": "The server root in the ZIP archive",
                             "type": "string",
-                            "examples": ["/", "/paper-server/"],
+                            "examples": ["/", "/paper-server/", "server-1"],
                         },
                         "command": {
                             "title": "Command",
@@ -382,6 +429,7 @@ new_server_schema = {
             "properties": {
                 "working_directory": {
                     "title": "Working directory",
+                    "description": '"" means the default',
                     "type": "string",
                     "default": "",
                     "examples": ["/mnt/mydrive/server-configs/", "./subdirectory", ""],
@@ -390,6 +438,7 @@ new_server_schema = {
                     "title": "Executable Updation",
                     "description": "Also configurable later on and for other servers",
                     "type": "object",
+                    "required": ["enabled", "file", "url"],
                     "properties": {
                         "enabled": {
                             "title": "Enabled",
@@ -413,7 +462,7 @@ new_server_schema = {
                     "title": "Creation type",
                     "type": "string",
                     "default": "raw_exec",
-                    "enum": ["raw_exec", "import_exec", "import_zip"],
+                    "enum": ["raw_exec", "import_server", "import_zip"],
                 },
                 "raw_exec_create_data": {
                     "title": "Raw execution command create data",
@@ -462,7 +511,7 @@ new_server_schema = {
                             "title": "Server root directory",
                             "description": "The server root in the ZIP archive",
                             "type": "string",
-                            "examples": ["/", "/paper-server/"],
+                            "examples": ["/", "/paper-server/", "server-1"],
                         },
                         "command": {
                             "title": "Command",
@@ -485,7 +534,9 @@ new_server_schema = {
                         },
                         {
                             "if": {
-                                "properties": {"create_type": {"const": "import_exec"}}
+                                "properties": {
+                                    "create_type": {"const": "import_server"}
+                                }
                             },
                             "then": {"required": ["import_server_create_data"]},
                         },
@@ -611,12 +662,21 @@ class ApiServersIndexHandler(BaseApiHandler):
                 },
             )
 
-        # TODO: implement everything
+        new_server_id, new_server_uuid = self.controller.create_api_server(data)
+
+        # Increase the server creation counter
+        self.controller.crafty_perms.add_server_creation(user["user_id"])
+
+        self.controller.stats.record_stats()
 
         self.controller.management.add_to_audit_log(
             user["user_id"],
-            f"Created server {'1234'} (ID:{123})",
-            server_id=0,
+            (
+                f"created server {data['name']}"
+                f" (ID: {new_server_id})"
+                f" (UUID: {new_server_uuid})"
+            ),
+            server_id=new_server_id,
             source_ip=self.get_remote_ip(),
         )
 
@@ -624,5 +684,11 @@ class ApiServersIndexHandler(BaseApiHandler):
 
         self.finish_json(
             201,
-            {"status": "ok", "data": {"server_id": ""}},
+            {
+                "status": "ok",
+                "data": {
+                    "new_server_id": str(new_server_id),
+                    "new_server_uuid": new_server_uuid,
+                },
+            },
         )
