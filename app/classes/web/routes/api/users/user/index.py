@@ -212,6 +212,7 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
                 )
 
         # TODO: make this more efficient
+        # TODO: add permissions and roles because I forgot
         user_obj = HelperUsers.get_user_model(user_id)
 
         self.controller.management.add_to_audit_log(

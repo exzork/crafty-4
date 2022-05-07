@@ -17,6 +17,10 @@ class RolesController:
         return HelperRoles.get_all_roles()
 
     @staticmethod
+    def get_all_role_ids():
+        return HelperRoles.get_all_role_ids()
+
+    @staticmethod
     def get_roleid_by_name(role_name):
         return HelperRoles.get_roleid_by_name(role_name)
 
@@ -36,8 +40,12 @@ class RolesController:
             if key == "role_id":
                 continue
             elif key == "servers":
-                added_servers = role_data["servers"].difference(base_data["servers"])
-                removed_servers = base_data["servers"].difference(role_data["servers"])
+                added_servers = set(role_data["servers"]).difference(
+                    set(base_data["servers"])
+                )
+                removed_servers = set(base_data["servers"]).difference(
+                    set(role_data["servers"])
+                )
             elif base_data[key] != role_data[key]:
                 up_data[key] = role_data[key]
         up_data["last_update"] = Helpers.get_time_as_string()
@@ -73,12 +81,8 @@ class RolesController:
         role = HelperRoles.get_role(role_id)
 
         if role:
-            servers_query = PermissionsServers.get_servers_from_role(role_id)
-            # TODO: this query needs to be narrower
-            servers = set()
-            for s in servers_query:
-                servers.add(s.server_id.server_id)
-            role["servers"] = servers
+            server_ids = PermissionsServers.get_server_ids_from_role(role_id)
+            role["servers"] = list(server_ids)
             # logger.debug("role: ({}) {}".format(role_id, role))
             return role
         else:

@@ -100,9 +100,13 @@ class HelperUsers:
         return query
 
     @staticmethod
-    def get_all_user_ids():
-        query = Users.select(Users.user_id).where(Users.username != "system")
-        return query
+    def get_all_user_ids() -> t.List[int]:
+        return [
+            user.user_id
+            for user in Users.select(Users.user_id)
+            .where(Users.username != "system")
+            .execute()
+        ]
 
     @staticmethod
     def get_user_lang_by_id(user_id):
@@ -147,6 +151,24 @@ class HelperUsers:
         else:
             # logger.debug("user: ({}) {}".format(user_id, {}))
             return {}
+
+    @staticmethod
+    def get_user_columns(
+        user_id: t.Union[str, int], column_names: t.List[str]
+    ) -> t.List[t.Any]:
+        columns = [getattr(Users, column) for column in column_names]
+        return model_to_dict(
+            Users.select(*columns).where(Users.user_id == user_id).get(),
+            only=columns,
+        )
+
+    @staticmethod
+    def get_user_column(user_id: t.Union[str, int], column_name: str) -> t.Any:
+        column = getattr(Users, column_name)
+        return model_to_dict(
+            Users.select(column).where(Users.user_id == user_id).get(),
+            only=[column],
+        )[column_name]
 
     @staticmethod
     def check_system_user(user_id):
@@ -284,11 +306,10 @@ class HelperUsers:
 
     @staticmethod
     def get_user_roles_names(user_id):
-        roles_list = []
-        roles = UserRoles.select().where(UserRoles.user_id == user_id)
-        for r in roles:
-            roles_list.append(HelperRoles.get_role(r.role_id)["role_name"])
-        return roles_list
+        roles = UserRoles.select(UserRoles.role_id).where(UserRoles.user_id == user_id)
+        return [
+            HelperRoles.get_role_column(role.role_id, "role_name") for role in roles
+        ]
 
     @staticmethod
     def add_role_to_user(user_id, role_id):

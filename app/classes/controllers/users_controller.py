@@ -1,6 +1,5 @@
 import logging
-from typing import Optional
-import typing
+import typing as t
 
 from app.classes.models.users import HelperUsers
 from app.classes.models.crafty_permissions import (
@@ -28,7 +27,7 @@ class UsersController:
             "quantity": {"type": "number", "minimum": 0},
             "enabled": {"type": "boolean"},
         }
-        self.user_jsonschema_props: typing.Final = {
+        self.user_jsonschema_props: t.Final = {
             "username": {
                 "type": "string",
                 "maxLength": 20,
@@ -90,7 +89,7 @@ class UsersController:
         return HelperUsers.get_all_users()
 
     @staticmethod
-    def get_all_user_ids():
+    def get_all_user_ids() -> t.List[int]:
         return HelperUsers.get_all_user_ids()
 
     @staticmethod
@@ -134,8 +133,12 @@ class UsersController:
             if key == "user_id":
                 continue
             elif key == "roles":
-                added_roles = user_data["roles"].difference(base_data["roles"])
-                removed_roles = base_data["roles"].difference(user_data["roles"])
+                added_roles = set(user_data["roles"]).difference(
+                    set(base_data["roles"])
+                )
+                removed_roles = set(base_data["roles"]).difference(
+                    set(user_data["roles"])
+                )
             elif key == "password":
                 if user_data["password"] is not None and user_data["password"] != "":
                     up_data["password"] = self.helper.encode_pass(user_data["password"])
@@ -177,14 +180,12 @@ class UsersController:
 
         self.users_helper.update_user(user_id, up_data)
 
-    def raw_update_user(
-        self, user_id: int, up_data: typing.Optional[typing.Dict[str, typing.Any]]
-    ):
+    def raw_update_user(self, user_id: int, up_data: t.Optional[t.Dict[str, t.Any]]):
         """Directly passes the data to the model helper.
 
         Args:
             user_id (int): The id of the user to update.
-            up_data (typing.Optional[typing.Dict[str, typing.Any]]): Update data.
+            up_data (t.Optional[t.Dict[str, t.Any]]): Update data.
         """
         self.users_helper.update_user(user_id, up_data)
 
@@ -286,8 +287,8 @@ class UsersController:
         name: str,
         user_id: str,
         superuser: bool = False,
-        server_permissions_mask: Optional[str] = None,
-        crafty_permissions_mask: Optional[str] = None,
+        server_permissions_mask: t.Optional[str] = None,
+        crafty_permissions_mask: t.Optional[str] = None,
     ):
         return self.users_helper.add_user_api_key(
             name, user_id, superuser, server_permissions_mask, crafty_permissions_mask

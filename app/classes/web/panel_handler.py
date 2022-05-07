@@ -29,11 +29,11 @@ logger = logging.getLogger(__name__)
 class PanelHandler(BaseHandler):
     def get_user_roles(self) -> Dict[str, list]:
         user_roles = {}
-        for user in self.controller.users.get_all_users():
-            user_roles_list = self.controller.users.get_user_roles_names(user.user_id)
+        for user_id in self.controller.users.get_all_user_ids():
+            user_roles_list = self.controller.users.get_user_roles_names(user_id)
             # user_servers =
             # self.controller.servers.get_authorized_servers(user.user_id)
-            user_roles[user.user_id] = user_roles_list
+            user_roles[user_id] = user_roles_list
         return user_roles
 
     def get_role_servers(self) -> set:

@@ -28,10 +28,7 @@ class ApiUsersIndexHandler(BaseApiHandler):
 
         if EnumPermissionsCrafty.USER_CONFIG in exec_user_crafty_permissions:
             if get_only_ids:
-                data = [
-                    user.user_id
-                    for user in self.controller.users.get_all_user_ids().execute()
-                ]
+                data = self.controller.users.get_all_user_ids()
             else:
                 data = [
                     {key: getattr(user_res, key) for key in PUBLIC_USER_ATTRS}

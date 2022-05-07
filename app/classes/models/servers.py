@@ -1,5 +1,6 @@
 import logging
 import datetime
+import typing as t
 from peewee import (
     ForeignKeyField,
     CharField,
@@ -9,6 +10,7 @@ from peewee import (
     IntegerField,
     FloatField,
 )
+from playhouse.shortcuts import model_to_dict
 
 from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.models.base_model import BaseModel
@@ -161,6 +163,24 @@ class HelperServers:
             return DatabaseShortcuts.return_rows(query)[0]
         except IndexError:
             return {}
+
+    @staticmethod
+    def get_server_columns(
+        server_id: t.Union[str, int], column_names: t.List[str]
+    ) -> t.List[t.Any]:
+        columns = [getattr(Servers, column) for column in column_names]
+        return model_to_dict(
+            Servers.select(*columns).where(Servers.server_id == server_id).get(),
+            only=columns,
+        )
+
+    @staticmethod
+    def get_server_column(server_id: t.Union[str, int], column_name: str) -> t.Any:
+        column = getattr(Servers, column_name)
+        return model_to_dict(
+            Servers.select(column).where(Servers.server_id == server_id).get(),
+            only=[column],
+        )[column_name]
 
     # **********************************************************************************
     #                                     Servers Methods
