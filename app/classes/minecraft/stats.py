@@ -210,36 +210,9 @@ class Stats:
             }
         ).execute()
 
-        # server_stats = stats_to_send.get("servers")
-        # for server in server_stats:
-        #     Server_Stats.insert(
-        #         {
-        #             Server_Stats.server_id: server.get("id", 0),
-        #             Server_Stats.started: server.get("started", ""),
-        #             Server_Stats.running: server.get("running", False),
-        #             Server_Stats.cpu: server.get("cpu", 0),
-        #             Server_Stats.mem: server.get("mem", 0),
-        #             Server_Stats.mem_percent: server.get("mem_percent", 0),
-        #             Server_Stats.world_name: server.get("world_name", ""),
-        #             Server_Stats.world_size: server.get("world_size", ""),
-        #             Server_Stats.server_port: server.get("server_port", ""),
-        #             Server_Stats.int_ping_results: server.get(
-        #                 "int_ping_results", False
-        #             ),
-        #             Server_Stats.online: server.get("online", False),
-        #             Server_Stats.max: server.get("max", False),
-        #             Server_Stats.players: server.get("players", False),
-        #             Server_Stats.desc: server.get("desc", False),
-        #             Server_Stats.version: server.get("version", False),
-        #         }
-        #     ).execute()
-
         # delete old data
         max_age = self.helper.get_setting("history_max_age")
         now = datetime.datetime.now()
         last_week = now.day - max_age
 
         HostStats.delete().where(HostStats.time < last_week).execute()
-
-
-#        Server_Stats.delete().where(Server_Stats.created < last_week).execute()

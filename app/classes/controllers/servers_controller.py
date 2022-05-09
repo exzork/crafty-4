@@ -4,6 +4,7 @@ import json
 
 from app.classes.controllers.roles_controller import RolesController
 from app.classes.models.servers import HelperServers
+from app.classes.models.server_stats import HelperServerStats
 from app.classes.models.users import HelperUsers, ApiKeys
 from app.classes.models.server_permissions import (
     PermissionsServers,
@@ -58,15 +59,15 @@ class ServersController:
 
     @staticmethod
     def set_download(server_id):
-        return HelperServers.set_download(server_id)
+        return HelperServerStats.set_download(server_id)
 
     @staticmethod
     def finish_download(server_id):
-        return HelperServers.finish_download(server_id)
+        return HelperServerStats.finish_download(server_id)
 
     @staticmethod
     def get_download_status(server_id):
-        return HelperServers.get_download_status(server_id)
+        return HelperServerStats.get_download_status(server_id)
 
     def remove_server(self, server_id):
         roles_list = PermissionsServers.get_roles_from_server(server_id)
@@ -104,7 +105,7 @@ class ServersController:
 
     @staticmethod
     def get_all_servers_stats():
-        return HelperServers.get_all_servers_stats()
+        return HelperServerStats.get_all_servers_stats()
 
     @staticmethod
     def get_authorized_servers_stats_api_key(api_key: ApiKeys):
@@ -114,7 +115,7 @@ class ServersController:
         )
 
         for server in authorized_servers:
-            latest = HelperServers.get_latest_server_stats(server.get("server_id"))
+            latest = HelperServerStats.get_latest_server_stats(server.get("server_id"))
             key_permissions = PermissionsServers.get_api_key_permissions_list(
                 api_key, server.get("server_id")
             )
@@ -137,7 +138,7 @@ class ServersController:
         authorized_servers = ServersController.get_authorized_servers(user_id)
 
         for server in authorized_servers:
-            latest = HelperServers.get_latest_server_stats(server.get("server_id"))
+            latest = HelperServerStats.get_latest_server_stats(server.get("server_id"))
             # TODO
             user_permissions = PermissionsServers.get_user_id_permissions_list(
                 user_id, server.get("server_id")
@@ -165,11 +166,11 @@ class ServersController:
     # **********************************************************************************
     @staticmethod
     def get_server_stats_by_id(server_id):
-        return HelperServers.get_server_stats_by_id(server_id)
+        return HelperServerStats.get_server_stats_by_id(server_id)
 
     @staticmethod
     def server_id_exists(server_id):
-        return HelperServers.server_id_exists(server_id)
+        return HelperServerStats.server_id_exists(server_id)
 
     @staticmethod
     def get_server_type_by_id(server_id):
@@ -188,7 +189,7 @@ class ServersController:
 
     @staticmethod
     def is_crashed(server_id):
-        return HelperServers.is_crashed(server_id)
+        return HelperServerStats.is_crashed(server_id)
 
     @staticmethod
     def server_id_authorized_api_key(server_id: str, api_key: ApiKeys) -> bool:
@@ -197,34 +198,36 @@ class ServersController:
         # There is no view server permission
         # permission_helper.both_have_perm(api_key)
 
-    def set_update(self, server_id, value):
-        return self.servers_helper.set_update(server_id, value)
+    @staticmethod
+    def set_update(server_id, value):
+        return HelperServerStats.set_update(server_id, value)
 
     @staticmethod
     def get_ttl_without_player(server_id):
-        return HelperServers.get_ttl_without_player(server_id)
+        return HelperServerStats.get_ttl_without_player(server_id)
 
     @staticmethod
     def can_stop_no_players(server_id, time_limit):
-        return HelperServers.can_stop_no_players(server_id, time_limit)
+        return HelperServerStats.can_stop_no_players(server_id, time_limit)
 
-    def set_waiting_start(self, server_id, value):
-        self.servers_helper.set_waiting_start(server_id, value)
+    @staticmethod
+    def set_waiting_start(server_id, value):
+        HelperServerStats.set_waiting_start(server_id, value)
 
     @staticmethod
     def get_waiting_start(server_id):
-        return HelperServers.get_waiting_start(server_id)
+        return HelperServerStats.get_waiting_start(server_id)
 
     @staticmethod
     def get_update_status(server_id):
-        return HelperServers.get_update_status(server_id)
+        return HelperServerStats.get_update_status(server_id)
 
     # **********************************************************************************
     #                                    Servers Helpers Methods
     # **********************************************************************************
     @staticmethod
     def get_banned_players(server_id):
-        stats = HelperServers.get_server_stats_by_id(server_id)
+        stats = HelperServerStats.get_server_stats_by_id(server_id)
         server_path = stats["server_id"]["path"]
         path = os.path.join(server_path, "banned-players.json")
 
