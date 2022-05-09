@@ -76,7 +76,10 @@ class UsersController:
             },
             "roles": {
                 "type": "array",
-                "items": {"type": "string"},
+                "items": {
+                    "type": "string",
+                    "minLength": 1,
+                },
             },
             "hints": {"type": "boolean"},
         }

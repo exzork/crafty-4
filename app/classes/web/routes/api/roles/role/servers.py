@@ -15,6 +15,9 @@ class ApiRolesRoleServersHandler(BaseApiHandler):
             _,
         ) = auth_data
 
+        # GET /api/v2/roles/role/servers?ids=true
+        get_only_ids = self.get_query_argument("ids", None) == "true"
+
         if not superuser:
             return self.finish_json(400, {"status": "error", "error": "NOT_AUTHORIZED"})
 
@@ -22,6 +25,8 @@ class ApiRolesRoleServersHandler(BaseApiHandler):
             200,
             {
                 "status": "ok",
-                "data": PermissionsServers.get_server_ids_from_role(role_id),
+                "data": PermissionsServers.get_server_ids_from_role(role_id)
+                if get_only_ids
+                else self.controller.roles.get_server_ids_and_perms_from_role(role_id),
             },
         )

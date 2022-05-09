@@ -191,6 +191,10 @@ class HelperServers:
         return DatabaseShortcuts.return_rows(query)
 
     @staticmethod
+    def get_all_server_ids() -> t.List[int]:
+        return [server.server_id for server in Servers.select(Servers.server_id)]
+
+    @staticmethod
     def get_all_servers_stats():
         servers = HelperServers.get_all_defined_servers()
         server_data = []

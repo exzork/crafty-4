@@ -11,21 +11,21 @@ logger = logging.getLogger(__name__)
 server_patch_schema = {
     "type": "object",
     "properties": {
-        "server_name": {"type": "string"},
-        "path": {"type": "string"},
+        "server_name": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "minLength": 1},
         "backup_path": {"type": "string"},
         "executable": {"type": "string"},
-        "log_path": {"type": "string"},
-        "execution_command": {"type": "string"},
+        "log_path": {"type": "string", "minLength": 1},
+        "execution_command": {"type": "string", "minLength": 1},
         "auto_start": {"type": "boolean"},
         "auto_start_delay": {"type": "integer"},
         "crash_detection": {"type": "boolean"},
         "stop_command": {"type": "string"},
-        "executable_update_url": {"type": "string"},
-        "server_ip": {"type": "string"},
+        "executable_update_url": {"type": "string", "minLength": 1},
+        "server_ip": {"type": "string", "minLength": 1},
         "server_port": {"type": "integer"},
         "logs_delete_after": {"type": "integer"},
-        "type": {"type": "string"},
+        "type": {"type": "string", "minLength": 1},
     },
     "anyOf": [
         # Require at least one property

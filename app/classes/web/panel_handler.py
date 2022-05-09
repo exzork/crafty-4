@@ -2,7 +2,7 @@
 import time
 import datetime
 import os
-from typing import Dict, Any, Tuple
+import typing as t
 import json
 import logging
 import threading
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 class PanelHandler(BaseHandler):
-    def get_user_roles(self) -> Dict[str, list]:
+    def get_user_roles(self) -> t.Dict[str, list]:
         user_roles = {}
         for user_id in self.controller.users.get_all_user_ids():
             user_roles_list = self.controller.users.get_user_roles_names(user_id)
@@ -36,7 +36,7 @@ class PanelHandler(BaseHandler):
             user_roles[user_id] = user_roles_list
         return user_roles
 
-    def get_role_servers(self) -> set:
+    def get_role_servers(self) -> t.Set[int]:
         servers = set()
         for server in self.controller.list_defined_servers():
             argument = int(
@@ -50,7 +50,7 @@ class PanelHandler(BaseHandler):
                 servers.add(server["server_id"])
         return servers
 
-    def get_perms_quantity(self) -> Tuple[str, dict]:
+    def get_perms_quantity(self) -> t.Tuple[str, dict]:
         permissions_mask: str = "000"
         server_quantity: dict = {}
         for (
@@ -258,7 +258,7 @@ class PanelHandler(BaseHandler):
                 user_order.remove(server_id)
         defined_servers = page_servers
 
-        page_data: Dict[str, Any] = {
+        page_data: t.Dict[str, t.Any] = {
             # todo: make this actually pull and compare version data
             "update_available": False,
             "serverTZ": get_localzone(),

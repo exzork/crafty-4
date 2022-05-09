@@ -1,7 +1,8 @@
 import logging
+import typing as t
 
 from app.classes.models.roles import HelperRoles
-from app.classes.models.server_permissions import PermissionsServers
+from app.classes.models.server_permissions import PermissionsServers, RoleServers
 from app.classes.shared.helpers import Helpers
 
 logger = logging.getLogger(__name__)
@@ -65,6 +66,90 @@ class RolesController:
     @staticmethod
     def add_role(role_name):
         return HelperRoles.add_role(role_name)
+
+    class RoleServerJsonType(t.TypedDict):
+        server_id: t.Union[str, int]
+        permissions: str
+
+    @staticmethod
+    def get_server_ids_and_perms_from_role(
+        role_id: t.Union[str, int]
+    ) -> t.List[RoleServerJsonType]:
+        # FIXME: somehow retrieve only the server ids, not the whole servers
+        return [
+            {
+                "server_id": role_servers.server_id.server_id,
+                "permissions": role_servers.permissions,
+            }
+            for role_servers in (
+                RoleServers.select(
+                    RoleServers.server_id, RoleServers.permissions
+                ).where(RoleServers.role_id == role_id)
+            )
+        ]
+
+    @staticmethod
+    def add_role_advanced(
+        name: str,
+        servers: t.Iterable[RoleServerJsonType],
+    ) -> int:
+        """Add a role with a name and a list of servers
+
+        Args:
+            name (str): The new role's name
+            servers (t.List[RoleServerJsonType]): The new role's servers
+
+        Returns:
+            int: The new role's ID
+        """
+        role_id: t.Final[int] = HelperRoles.add_role(name)
+        for server in servers:
+            PermissionsServers.get_or_create(
+                role_id, server["server_id"], server["permissions"]
+            )
+        return role_id
+
+    @staticmethod
+    def update_role_advanced(
+        role_id: t.Union[str, int],
+        role_name: t.Optional[str],
+        servers: t.Optional[t.Iterable[RoleServerJsonType]],
+    ) -> None:
+        """Update a role with a name and a list of servers
+
+        Args:
+            role_id (t.Union[str, int]): The ID of the role to be modified
+            role_name (t.Optional[str]): An optional new name for the role
+            servers (t.Optional[t.Iterable[RoleServerJsonType]]): An optional list of servers for the role
+        """  # pylint: disable=line-too-long
+        logger.debug(f"updating role {role_id} with advanced options")
+
+        if servers is not None:
+            base_data = RolesController.get_role_with_servers(role_id)
+
+            server_ids = {server["server_id"] for server in servers}
+            server_permissions_map = {
+                server["server_id"]: server["permissions"] for server in servers
+            }
+
+            added_servers = server_ids.difference(set(base_data["servers"]))
+            removed_servers = set(base_data["servers"]).difference(server_ids)
+            logger.debug(
+                f"role: {role_id} +server:{added_servers} -server{removed_servers}"
+            )
+            for server_id in added_servers:
+                PermissionsServers.get_or_create(
+                    role_id, server_id, server_permissions_map[server_id]
+                )
+            if len(removed_servers) != 0:
+                PermissionsServers.delete_roles_permissions(role_id, removed_servers)
+        if role_name is not None:
+            up_data = {
+                "role_name": role_name,
+                "last_update": Helpers.get_time_as_string(),
+            }
+            # TODO: do the last_update on the db side
+            HelperRoles.update_role(role_id, up_data)
 
     def remove_role(self, role_id):
         role_data = RolesController.get_role_with_servers(role_id)

@@ -179,9 +179,9 @@ class PermissionsServers:
         RoleServers.save(role_server)
 
     @staticmethod
-    def delete_roles_permissions(role_id, removed_servers=None):
-        if removed_servers is None:
-            removed_servers = {}
+    def delete_roles_permissions(
+        role_id: t.Union[str, int], removed_servers: t.Sequence[t.Union[str, int]]
+    ):
         return (
             RoleServers.delete()
             .where(RoleServers.role_id == role_id)

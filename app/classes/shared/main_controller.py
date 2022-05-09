@@ -5,7 +5,7 @@ import shutil
 import time
 import logging
 import tempfile
-from typing import Union
+import typing as t
 from peewee import DoesNotExist
 
 # TZLocal is set as a hidden import on win pipeline
@@ -276,7 +276,7 @@ class Controller:
         except:
             return {"percent": 0, "total_files": 0}
 
-    def get_server_obj(self, server_id: Union[str, int]) -> Union[bool, Server]:
+    def get_server_obj(self, server_id: t.Union[str, int]) -> t.Union[bool, Server]:
         for server in self.servers_list:
             if str(server["server_id"]) == str(server_id):
                 return server["server_obj"]
@@ -296,6 +296,10 @@ class Controller:
     def list_defined_servers():
         servers = HelperServers.get_all_defined_servers()
         return servers
+
+    @staticmethod
+    def get_all_server_ids() -> t.List[int]:
+        return HelperServers.get_all_server_ids()
 
     def list_running_servers(self):
         running_servers = []

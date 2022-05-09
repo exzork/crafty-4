@@ -86,12 +86,10 @@ class HelperRoles:
         return Roles.update(up_data).where(Roles.role_id == role_id).execute()
 
     def remove_role(self, role_id):
-        with self.database.atomic():
-            role = Roles.get(Roles.role_id == role_id)
-            return role.delete_instance()
+        return Roles.delete().where(Roles.role_id == role_id).execute()
 
     @staticmethod
-    def role_id_exists(role_id):
+    def role_id_exists(role_id) -> bool:
         if not HelperRoles.get_role(role_id):
             return False
         return True
