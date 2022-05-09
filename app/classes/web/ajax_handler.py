@@ -200,7 +200,7 @@ class AjaxHandler(BaseHandler):
                     if os.path.isdir(rel):
                         output += f"""<li class="tree-item" data-path="{dpath}">
                             \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
-                            <input type="checkbox" name="root_path" value="{dpath}">
+                            <input type="checkbox" name="root_path" value="{dpath}" checked>
                             <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
                             <i class="far fa-folder"></i>
                             <i class="far fa-folder-open"></i>
@@ -212,7 +212,7 @@ class AjaxHandler(BaseHandler):
                         class="tree-item tree-nested d-block tree-ctx-item tree-file"
                         data-path="{dpath}"
                         data-name="{filename}"
-                        onclick=""><input type='checkbox' name='root_path' value='{dpath}'><span style="margin-right: 6px;">
+                        onclick=""><input type='checkbox' name='root_path' value='{dpath}' checked><span style="margin-right: 6px;">
                         <i class="far fa-file"></i></span></input>{filename}</li>"""
 
                 else:
