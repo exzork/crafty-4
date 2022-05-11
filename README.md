@@ -2,9 +2,9 @@
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Supported Python Versions](https://shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20-blue)](https://www.python.org)
-[![Version(temp-hardcoded)](https://img.shields.io/badge/release-v4.0.0--beta-orange)](https://github.com/arcadia-technology/crafty-4)
-[![Code Quality(temp-hardcoded)](https://img.shields.io/badge/code%20quality-10-brightgreen)](https://github.com/arcadia-technology/crafty-4)
-[![Build Status](https://github.com/arcadia-technology/crafty-4/actions/workflows/docker-build.yml/badge.svg)](https://github.com/arcadia-technology/crafty-4/actions/workflows/docker-build.yml)
+[![Version(temp-hardcoded)](https://img.shields.io/badge/release-v4.0.0--beta-orange)](https://gitlab.com/crafty-controller/crafty-4)
+[![Code Quality(temp-hardcoded)](https://img.shields.io/badge/code%20quality-10-brightgreen)](https://gitlab.com/crafty-controller/crafty-4)
+[![Build Status](https://gitlab.com/crafty-controller/crafty-4/badges/master/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-4/-/commits/master)
 
 # Crafty Controller 4.0.0-beta
 > Python based Control Panel for your Minecraft Server
@@ -23,7 +23,7 @@ Project Homepage - https://craftycontrol.com
 
 Discord Server - https://discord.gg/9VJPhCE
 
-Git Repository - https://github.com/arcadia-technology/crafty-4
+Git Repository - https://gitlab.com/crafty-controller/crafty-4
 
 <br>
 
@@ -55,11 +55,11 @@ As the Dockerfile uses the permission structure of `crafty:root` **internally** 
 ### - Using the registry image 🌎
 The provided image supports both `arm64` and `amd64` out the box, if you have issues though you can build it yourself with the `compose` file in `docker/`.
 
-The image is located at: `ghcr.io/arcadia-technology/crafty-4:latest`
+The image is located at: `registry.gitlab.com/crafty-controller/crafty-4:latest`
 | Branch             | Status                                                                |
 | ----------------- | ------------------------------------------------------------------ |
-| :latest | [![Pipeline status](https://github.com/arcadia-technology/crafty-4/actions/workflows/docker-build.yml/badge.svg)](https://github.com/arcadia-technology/crafty-4/actions/workflows/docker-build.yml) |
-| :dev | [![Pipeline status](https://github.com/arcadia-technology/crafty-4/actions/workflows/docker-build.yml/badge.svg?branch=dev)](https://github.com/arcadia-technology/crafty-4/actions/workflows/docker-build.yml) |
+| :latest | [![pipeline status](https://gitlab.com/crafty-controller/crafty-4/badges/master/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-4/-/commits/master) |
+| :dev | [![pipeline status](https://gitlab.com/crafty-controller/crafty-4/badges/dev/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-4/-/commits/dev)
 
 <br>
 
@@ -76,7 +76,7 @@ version: '3'
 services:
   crafty:
     container_name: crafty_container
-    image: ghcr.io/arcadia-technology/crafty-4:latest
+    image: registry.gitlab.com/crafty-controller/crafty-4:latest
     restart: always
     environment:
       - TZ=Etc/UTC
@@ -115,7 +115,7 @@ $ docker run \
 	-v "/$(pwd)/docker/servers:/crafty/servers" \
 	-v "/$(pwd)/docker/config:/crafty/app/config" \
 	-v "/$(pwd)/docker/import:/crafty/import" \
-	ghcr.io/arcadia-technology/crafty-4:latest
+	registry.gitlab.com/crafty-controller/crafty-4:latest
 ```
 
 ### **Building from the cloned repository:**
