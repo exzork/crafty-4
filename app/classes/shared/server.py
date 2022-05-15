@@ -117,12 +117,6 @@ class Server:
         self.backup_thread = threading.Thread(
             target=self.a_backup_server, daemon=True, name=f"backup_{self.name}"
         )
-        self.server_scheduler.add_job(
-            self.realtime_stats,
-            "interval",
-            seconds=5,
-            id="stats_" + str(self.server_id),
-        )
         self.is_backingup = False
         # Reset crash and update at initialization
         HelperServerStats.server_crash_reset(self.server_id)
@@ -190,6 +184,21 @@ class Server:
         # Register an shedule for polling server stats when running
         logger.info(f"Polling server statistics {self.name} every {5} seconds")
         Console.info(f"Polling server statistics {self.name} every {5} seconds")
+        try:
+            self.server_scheduler.add_job(
+                self.realtime_stats,
+                "interval",
+                seconds=5,
+                id="stats_" + str(self.server_id),
+            )
+        except:
+            self.server_scheduler.remove_job("stats_" + str(self.server_id))
+            self.server_scheduler.add_job(
+                self.realtime_stats,
+                "interval",
+                seconds=5,
+                id="stats_" + str(self.server_id),
+            )
 
     def setup_server_run_command(self):
         # configure the server
@@ -582,6 +591,9 @@ class Server:
         self.cleanup_server_object()
         server_users = PermissionsServers.get_server_user_list(self.server_id)
 
+        # remove the stats polling job since server is stopped
+        self.server_scheduler.remove_job("stats_" + str(self.server_id))
+
         self.record_server_stats()
 
         for user in server_users:
@@ -629,6 +641,8 @@ class Server:
 
         # clear the old scheduled watcher task
         self.server_scheduler.remove_job(f"c_{self.server_id}")
+        # remove the stats polling job since server is stopped
+        self.server_scheduler.remove_job("stats_" + str(self.server_id))
 
         # the server crashed, or isn't found - so let's reset things.
         logger.warning(
@@ -671,6 +685,7 @@ class Server:
             proc.kill()
         # kill the main process we are after
         logger.info("Sending SIGKILL to parent")
+        self.server_scheduler.remove_job("stats_" + str(self.server_id))
         self.process.kill()
 
     def get_start_time(self):
