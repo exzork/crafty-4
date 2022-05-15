@@ -264,8 +264,7 @@ class HelpersManagement:
 
     @staticmethod
     def delete_scheduled_task(schedule_id):
-        sch = Schedules.get(Schedules.schedule_id == schedule_id)
-        return Schedules.delete_instance(sch)
+        return Schedules.delete().where(Schedules.schedule_id == schedule_id).execute()
 
     @staticmethod
     def update_scheduled_task(schedule_id, updates):

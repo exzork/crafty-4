@@ -224,8 +224,7 @@ class HelperUsers:
     def remove_user(self, user_id):
         with self.database.atomic():
             UserRoles.delete().where(UserRoles.user_id == user_id).execute()
-            user = Users.get(Users.user_id == user_id)
-            return user.delete_instance()
+            Users.delete().where(Users.user_id == user_id).execute()
 
     @staticmethod
     def set_support_path(user_id, support_path):
