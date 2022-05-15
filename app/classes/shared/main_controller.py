@@ -812,6 +812,7 @@ class Controller:
                 Console.info(f"Deleting Server: ID {server_id} | Name: {server_name} ")
 
                 srv_obj = server["server_obj"]
+                srv_obj.server_scheduler.shutdown()
                 running = srv_obj.check_running()
 
                 if running:
@@ -841,7 +842,6 @@ class Controller:
 
                 # Cleanup scheduled tasks
                 try:
-                    srv_obj.remove_stats_job()
                     HelpersManagement.delete_scheduled_task_by_server(server_id)
                 except DoesNotExist:
                     logger.info("No scheduled jobs exist. Continuing.")
