@@ -70,9 +70,7 @@ class AjaxHandler(BaseHandler):
 
             for line in data:
                 try:
-                    line = re.sub(
-                        "(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)|(> )", "", line
-                    )
+                    line = re.sub("(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)", "", line)
                     line = re.sub("[A-z]{2}\b\b", "", line)
                     line = self.helper.log_colors(html.escape(line))
                     self.write(f"{line}<br />")
