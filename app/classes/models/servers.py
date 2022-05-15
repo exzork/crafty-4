@@ -205,9 +205,7 @@ class HelperServers:
 
     @staticmethod
     def server_id_exists(server_id):
-        if not HelperServers.get_server_data_by_id(server_id):
-            return False
-        return True
+        return Servers.select().where(Servers.server_id == server_id).count() != 0
 
     @staticmethod
     def sever_crashed(server_id):
