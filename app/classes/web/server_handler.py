@@ -27,10 +27,9 @@ class ServerHandler(BaseHandler):
         if api_key is not None:
             superuser = superuser and api_key.superuser
 
-        exec_user_role = set()
         if superuser:
             defined_servers = self.controller.list_defined_servers()
-            exec_user_role.add("Super User")
+            exec_user_role = {"Super User"}
             exec_user_crafty_permissions = (
                 self.controller.crafty_perms.list_defined_crafty_permissions()
             )
@@ -47,6 +46,7 @@ class ServerHandler(BaseHandler):
                 exec_user["user_id"]
             )
             list_roles = []
+            exec_user_role = set()
             for r in exec_user["roles"]:
                 role = self.controller.roles.get_role(r)
                 exec_user_role.add(role["role_name"])

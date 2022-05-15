@@ -210,10 +210,9 @@ class PanelHandler(BaseHandler):
         if api_key is not None:
             superuser = superuser and api_key.superuser
 
-        exec_user_role = set()
         if superuser:  # TODO: Figure out a better solution
             defined_servers = self.controller.list_defined_servers()
-            exec_user_role.add("Super User")
+            exec_user_role = {"Super User"}
             exec_user_crafty_permissions = (
                 self.controller.crafty_perms.list_defined_crafty_permissions()
             )
@@ -229,6 +228,7 @@ class PanelHandler(BaseHandler):
                     )
                 )
             logger.debug(exec_user["roles"])
+            exec_user_role = set()
             for r in exec_user["roles"]:
                 role = self.controller.roles.get_role(r)
                 exec_user_role.add(role["role_name"])
@@ -946,12 +946,11 @@ class PanelHandler(BaseHandler):
             user_id = self.get_argument("id", None)
             role_servers = self.controller.servers.get_authorized_servers(user_id)
             page_role_servers = []
-            servers = set()
             for server in role_servers:
                 page_role_servers.append(server["server_id"])
             page_data["new_user"] = False
             page_data["user"] = self.controller.users.get_user_by_id(user_id)
-            page_data["servers"] = servers
+            page_data["servers"] = set()
             page_data["role-servers"] = page_role_servers
             page_data["roles_all"] = self.controller.roles.get_all_roles()
             page_data["servers_all"] = self.controller.list_defined_servers()
@@ -1239,10 +1238,9 @@ class PanelHandler(BaseHandler):
             "Config": EnumPermissionsServer.CONFIG,
             "Players": EnumPermissionsServer.PLAYERS,
         }
-        exec_user_role = set()
         if superuser:
             # defined_servers = self.controller.list_defined_servers()
-            exec_user_role.add("Super User")
+            exec_user_role = {"Super User"}
             exec_user_crafty_permissions = (
                 self.controller.crafty_perms.list_defined_crafty_permissions()
             )
@@ -1254,6 +1252,7 @@ class PanelHandler(BaseHandler):
             )
             # defined_servers =
             # self.controller.servers.get_authorized_servers(exec_user["user_id"])
+            exec_user_role = set()
             for r in exec_user["roles"]:
                 role = self.controller.roles.get_role(r)
                 exec_user_role.add(role["role_name"])

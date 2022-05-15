@@ -75,9 +75,7 @@ class RolesController:
         if role:
             servers_query = PermissionsServers.get_servers_from_role(role_id)
             # TODO: this query needs to be narrower
-            servers = set()
-            for s in servers_query:
-                servers.add(s.server_id.server_id)
+            servers = {s.server_id.server_id for s in servers_query}
             role["servers"] = servers
             # logger.debug("role: ({}) {}".format(role_id, role))
             return role

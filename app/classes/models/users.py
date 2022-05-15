@@ -299,9 +299,7 @@ class HelperUsers:
             .where(UserRoles.user_id == user_id)
         )
         # TODO: this query needs to be narrower
-        roles = set()
-        for r in roles_query:
-            roles.add(r.role_id.role_id)
+        roles = {r.role_id.role_id for r in roles_query}
 
         if isinstance(user, dict):
             user["roles"] = roles
