@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+from threading import Thread
 import time
 import argparse
 import logging.config
@@ -135,46 +136,6 @@ if __name__ == "__main__":
     tasks_manager = TasksManager(helper, controller)
     tasks_manager.start_webserver()
 
-    # slowing down reporting just for a 1/2 second so messages look cleaner
-    time.sleep(0.5)
-
-    # init servers
-    logger.info("Initializing all servers defined")
-    Console.info("Initializing all servers defined")
-    controller.init_all_servers()
-    servers = controller.list_defined_servers()
-
-    # start stats logging
-    tasks_manager.start_stats_recording()
-
-    # once the controller is up and stats are logging, we can kick off
-    # the scheduler officially
-    tasks_manager.start_scheduler()
-
-    # refresh our cache and schedule for every 12 hoursour cache refresh
-    # for serverjars.com
-    tasks_manager.serverjar_cache_refresher()
-
-    logger.info("Checking Internet. This may take a minute.")
-    Console.info("Checking Internet. This may take a minute.")
-
-    if not helper.check_internet():
-        Console.warning(
-            "We have detected the machine running Crafty has no "
-            "connection to the internet. Client connections to "
-            "the server may be limited."
-        )
-
-    if not controller.check_system_user():
-        controller.add_system_user()
-
-    Crafty = MainPrompt(helper, tasks_manager, migration_manager)
-
-    project_root = os.path.dirname(__file__)
-    controller.set_project_root(project_root)
-    controller.clear_unexecuted_commands()
-    controller.clear_support_status()
-
     def sigterm_handler(*sig):
         print()  # for newline
         logger.info(
@@ -187,6 +148,59 @@ if __name__ == "__main__":
         Crafty.universal_exit()
 
     signal.signal(signal.SIGTERM, sigterm_handler)
+
+    # slowing down reporting just for a 1/2 second so messages look cleaner
+    time.sleep(0.5)
+
+    # init servers
+    logger.info("Initializing all servers defined")
+    Console.info("Initializing all servers defined")
+    controller.init_all_servers()
+    servers = controller.list_defined_servers()
+
+    def tasks_starter():
+        # start stats logging
+        tasks_manager.start_stats_recording()
+
+        # once the controller is up and stats are logging, we can kick off
+        # the scheduler officially
+        tasks_manager.start_scheduler()
+
+        # refresh our cache and schedule for every 12 hoursour cache refresh
+        # for serverjars.com
+        tasks_manager.serverjar_cache_refresher()
+
+    tasks_starter_thread = Thread(target=tasks_starter, name="tasks_starter")
+    tasks_starter_thread.start()
+
+    def internet_check():
+        logger.info("Checking Internet. This may take a minute.")
+        Console.info("\nChecking Internet. This may take a minute.")
+
+        if not helper.check_internet():
+            logger.warning(
+                "We have detected the machine running Crafty has no "
+                "connection to the internet. Client connections to "
+                "the server may be limited."
+            )
+            Console.warning(
+                "We have detected the machine running Crafty has no "
+                "connection to the internet. Client connections to "
+                "the server may be limited."
+            )
+
+    internet_check_thread = Thread(target=internet_check, name="internet_check")
+    internet_check_thread.start()
+
+    if not controller.check_system_user():
+        controller.add_system_user()
+
+    Crafty = MainPrompt(helper, tasks_manager, migration_manager)
+
+    project_root = os.path.dirname(__file__)
+    controller.set_project_root(project_root)
+    controller.clear_unexecuted_commands()
+    controller.clear_support_status()
 
     if not args.daemon:
         try:
