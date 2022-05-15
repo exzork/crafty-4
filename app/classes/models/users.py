@@ -298,8 +298,7 @@ class HelperUsers:
             .join(Roles, JOIN.INNER)
             .where(UserRoles.user_id == user_id)
         )
-        # TODO: this query needs to be narrower
-        roles = {r.role_id.role_id for r in roles_query}
+        roles = {r.role_id_id for r in roles_query}
 
         if isinstance(user, dict):
             user["roles"] = roles

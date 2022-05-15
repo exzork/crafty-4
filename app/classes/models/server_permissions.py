@@ -207,14 +207,16 @@ class PermissionsServers:
     def get_server_user_list(server_id):
         final_users = []
         server_roles = RoleServers.select().where(RoleServers.server_id == server_id)
-        super_users = Users.select().where(
+        super_users = Users.select(Users.user_id).where(
             Users.superuser == True  # pylint: disable=singleton-comparison
         )
         for role in server_roles:
-            users = UserRoles.select().where(UserRoles.role_id == role.role_id)
+            users = UserRoles.select(UserRoles.user_id).where(
+                UserRoles.role_id == role.role_id
+            )
             for user in users:
-                if user.user_id.user_id not in final_users:
-                    final_users.append(user.user_id.user_id)
+                if user.user_id_id not in final_users:
+                    final_users.append(user.user_id_id)
         for suser in super_users:
             if suser.user_id not in final_users:
                 final_users.append(suser.user_id)

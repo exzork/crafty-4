@@ -109,9 +109,7 @@ class ServersController:
     @staticmethod
     def get_authorized_servers_stats_api_key(api_key: ApiKeys):
         server_data = []
-        authorized_servers = ServersController.get_authorized_servers(
-            api_key.user.user_id
-        )
+        authorized_servers = ServersController.get_authorized_servers(api_key.user_id)
 
         for server in authorized_servers:
             latest = HelperServers.get_latest_server_stats(server.get("server_id"))

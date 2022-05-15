@@ -1893,7 +1893,7 @@ class PanelHandler(BaseHandler):
 
             self.write(
                 self.controller.authentication.generate(
-                    key.user_id.user_id, {"token_id": key.token_id}
+                    key.user_id_id, {"token_id": key.token_id}
                 )
             )
             self.finish()
