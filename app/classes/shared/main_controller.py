@@ -841,6 +841,7 @@ class Controller:
 
                 # Cleanup scheduled tasks
                 try:
+                    srv_obj.remove_stats_job()
                     HelpersManagement.delete_scheduled_task_by_server(server_id)
                 except DoesNotExist:
                     logger.info("No scheduled jobs exist. Continuing.")

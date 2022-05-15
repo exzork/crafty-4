@@ -504,6 +504,9 @@ class Server:
                     f"Assuming it was never started."
                 )
 
+    def remove_stats_job(self):
+        self.server_scheduler.remove_job("stats_" + str(self.server_id))
+
     def start_crash_detection(self):
         # This is only used if the crash detection settings change
         # while the server is running.
