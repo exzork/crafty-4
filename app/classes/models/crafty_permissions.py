@@ -87,12 +87,7 @@ class PermissionsCrafty:
 
     @staticmethod
     def get_all_permission_quantity_list():
-        quantity_list = {
-            EnumPermissionsCrafty.SERVER_CREATION.name: -1,
-            EnumPermissionsCrafty.USER_CONFIG.name: -1,
-            EnumPermissionsCrafty.ROLES_CONFIG.name: -1,
-        }
-        return quantity_list
+        return {name: -1 for name, _ in EnumPermissionsCrafty.__members__.items()}
 
     @staticmethod
     def get_permission_quantity_list(user_id):
@@ -188,10 +183,9 @@ class PermissionsCrafty:
 
     @staticmethod
     def add_server_creation(user_id):
-        user_crafty = PermissionsCrafty.get_user_crafty(user_id)
-        user_crafty.created_server += 1
-        UserCrafty.save(user_crafty)
-        return user_crafty.created_server
+        UserCrafty.update(created_server=UserCrafty.created_server + 1).where(
+            UserCrafty.user_id == user_id
+        ).execute()
 
     @staticmethod
     def get_api_key_permissions_list(key: ApiKeys):
