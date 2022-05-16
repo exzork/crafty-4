@@ -137,23 +137,17 @@ class PermissionsCrafty:
         limit_user_creation,
         limit_role_creation,
     ):
-        try:
-            user_crafty = UserCrafty.select().where(UserCrafty.user_id == user_id).get()
-            user_crafty.permissions = permissions_mask
-            user_crafty.limit_server_creation = limit_server_creation
-            user_crafty.limit_user_creation = limit_user_creation
-            user_crafty.limit_role_creation = limit_role_creation
-            UserCrafty.save(user_crafty)
-        except:
-            UserCrafty.insert(
-                {
-                    UserCrafty.user_id: user_id,
-                    UserCrafty.permissions: permissions_mask,
-                    UserCrafty.limit_server_creation: limit_server_creation,
-                    UserCrafty.limit_user_creation: limit_user_creation,
-                    UserCrafty.limit_role_creation: limit_role_creation,
-                }
-            ).execute()
+        # http://docs.peewee-orm.com/en/latest/peewee/querying.html#upsert
+
+        UserCrafty.replace(
+            {
+                UserCrafty.user_id: user_id,
+                UserCrafty.permissions: permissions_mask,
+                UserCrafty.limit_server_creation: limit_server_creation,
+                UserCrafty.limit_user_creation: limit_user_creation,
+                UserCrafty.limit_role_creation: limit_role_creation,
+            }
+        ).execute()
 
     @staticmethod
     def get_created_quantity_list(user_id):
