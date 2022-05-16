@@ -69,11 +69,13 @@ class UsersController:
             elif key == "password":
                 if user_data["password"] is not None and user_data["password"] != "":
                     up_data["password"] = self.helper.encode_pass(user_data["password"])
+            elif key == "lang":
+                up_data["lang"] = user_data["lang"]
+            elif key == "hints":
+                up_data["hints"] = user_data["hints"]
             elif base_data[key] != user_data[key]:
                 up_data[key] = user_data[key]
         up_data["last_update"] = self.helper.get_time_as_string()
-        up_data["lang"] = user_data["lang"]
-        up_data["hints"] = user_data["hints"]
         logger.debug(f"user: {user_data} +role:{added_roles} -role:{removed_roles}")
         for role in added_roles:
             HelperUsers.get_or_create(user_id=user_id, role_id=role)

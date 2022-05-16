@@ -3,6 +3,7 @@ import cmd
 import time
 import threading
 import logging
+import getpass
 from app.classes.shared.console import Console
 
 from app.classes.shared.import3 import Import3
@@ -11,11 +12,13 @@ logger = logging.getLogger(__name__)
 
 
 class MainPrompt(cmd.Cmd):
-    def __init__(self, helper, tasks_manager, migration_manager):
+    def __init__(self, helper, tasks_manager, migration_manager, main_controller):
         super().__init__()
         self.helper = helper
         self.tasks_manager = tasks_manager
         self.migration_manager = migration_manager
+        self.controller = main_controller
+
         # overrides the default Prompt
         self.prompt = f"Crafty Controller v{self.helper.get_version_string()} > "
 
@@ -48,6 +51,30 @@ class MainPrompt(cmd.Cmd):
             self.migration_manager.create(migration_name, False)
         else:
             Console.info("Unknown migration command")
+
+    def do_set_passwd(self, line):
+
+        try:
+            username = str(line).lower()
+            user_id = self.controller.users.get_id_by_name(username)
+        except Exception as e:
+            Console.error(f"User: {line} Not Found")
+            return False
+        new_pass = getpass.getpass(prompt=f"NEW password for: {username} > ")
+        new_pass_conf = getpass.getpass(prompt="Re-enter your password: > ")
+
+        if new_pass != new_pass_conf:
+            Console.error("Passwords do not match. Please try again.")
+            return False
+
+        if len(new_pass) > 512:
+            Console.warning("Password Too Long")
+            return False
+
+        if len(new_pass) < 6:
+            Console.warning("Password Too Short")
+            return False
+        self.controller.users.update_user(user_id, {"password": new_pass})
 
     @staticmethod
     def do_threads(_line):
