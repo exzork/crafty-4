@@ -45,34 +45,28 @@ class PermissionsCrafty:
     # **********************************************************************************
     @staticmethod
     def get_permissions_list():
-        permissions_list = []
-        for member in EnumPermissionsCrafty.__members__.items():
-            permissions_list.append(member[1])
-        return permissions_list
+        return [
+            permission for _, permission in EnumPermissionsCrafty.__members__.items()
+        ]
 
     @staticmethod
     def get_permissions(permissions_mask):
-        permissions_list = []
-        for member in EnumPermissionsCrafty.__members__.items():
-            if PermissionsCrafty.has_permission(permissions_mask, member[1]):
-                permissions_list.append(member[1])
-        return permissions_list
+        return [
+            permission
+            for _, permission in EnumPermissionsCrafty.__members__.items()
+            if PermissionsCrafty.has_permission(permissions_mask, permission)
+        ]
 
     @staticmethod
     def has_permission(permission_mask, permission_tested: EnumPermissionsCrafty):
-        result = False
-        if permission_mask[permission_tested.value] == "1":
-            result = True
-        return result
+        return permission_mask[permission_tested.value] == "1"
 
     @staticmethod
     def set_permission(
         permission_mask, permission_tested: EnumPermissionsCrafty, value
     ):
-        lst = list(permission_mask)
-        lst[permission_tested.value] = str(value)
-        permission_mask = "".join(lst)
-        return permission_mask
+        index = permission_tested.value
+        return permission_mask[:index] + str(value) + permission_mask[index + 1 :]
 
     @staticmethod
     def get_permission(permission_mask, permission_tested: EnumPermissionsCrafty):
@@ -80,7 +74,7 @@ class PermissionsCrafty:
 
     @staticmethod
     def get_crafty_permissions_mask(user_id):
-        permissions_mask = ""
+        # TODO: only get the permissions of the UserCrafty
         user_crafty = PermissionsCrafty.get_user_crafty(user_id)
         permissions_mask = user_crafty.permissions
         return permissions_mask
@@ -105,7 +99,7 @@ class PermissionsCrafty:
     @staticmethod
     def get_user_crafty(user_id):
         try:
-            user_crafty = UserCrafty.select().where(UserCrafty.user_id == user_id).get()
+            user_crafty = UserCrafty.get(UserCrafty.user_id == user_id)
         except DoesNotExist:
             user_crafty = UserCrafty.insert(
                 {
@@ -188,8 +182,10 @@ class PermissionsCrafty:
             return PermissionsCrafty.get_permissions_list()
         else:
             if user["superuser"]:
+                # User is superuser but API key isn't
                 user_permissions_mask = "111"
             else:
+                # Not superuser
                 user_permissions_mask = PermissionsCrafty.get_crafty_permissions_mask(
                     user["user_id"]
                 )
