@@ -5,7 +5,7 @@ import shutil
 import time
 import logging
 import tempfile
-from typing import Union
+from typing import Optional, Union
 from peewee import DoesNotExist
 
 # TZLocal is set as a hidden import on win pipeline
@@ -276,13 +276,21 @@ class Controller:
         except:
             return {"percent": 0, "total_files": 0}
 
-    def get_server_obj(self, server_id: Union[str, int]) -> Union[bool, Server]:
+    def get_server_obj(self, server_id: Union[str, int]) -> Server:
         for server in self.servers_list:
             if str(server["server_id"]) == str(server_id):
                 return server["server_obj"]
 
         logger.warning(f"Unable to find server object for server id {server_id}")
-        return False  # TODO: Change to None
+        raise Exception(f"Unable to find server object for server id {server_id}")
+
+    def get_server_obj_optional(self, server_id: Union[str, int]) -> Optional[Server]:
+        for server in self.servers_list:
+            if str(server["server_id"]) == str(server_id):
+                return server["server_obj"]
+
+        logger.warning(f"Unable to find server object for server id {server_id}")
+        return None
 
     def get_server_data(self, server_id: str):
         for server in self.servers_list:

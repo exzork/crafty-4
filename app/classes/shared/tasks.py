@@ -84,10 +84,11 @@ class TasksManager:
                     svr = self.controller.get_server_obj(cmd.server_id)
                 except:
                     logger.error(
-                        "Server value requested does note exist! "
+                        "Server value requested does not exist! "
                         "Purging item from waiting commands."
                     )
                     HelpersManagement.mark_command_complete(cmd.command_id)
+                    continue
 
                 user_id = cmd.user_id
                 command = cmd.command
