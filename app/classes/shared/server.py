@@ -17,7 +17,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.classes.minecraft.stats import Stats
 from app.classes.minecraft.mc_ping import ping, ping_bedrock
-from app.classes.models.servers import ServerStats, HelperServers
+from app.classes.models.servers import HelperServers
+from app.classes.models.server_stats import HelperServerStats
 from app.classes.models.management import HelpersManagement
 from app.classes.models.users import HelperUsers
 from app.classes.models.server_permissions import PermissionsServers
@@ -118,8 +119,8 @@ class Server:
         )
         self.is_backingup = False
         # Reset crash and update at initialization
-        HelperServers.server_crash_reset(self.server_id)
-        HelperServers.set_update(self.server_id, False)
+        HelperServerStats.server_crash_reset(self.server_id)
+        HelperServerStats.set_update(self.server_id, False)
 
     # **********************************************************************************
     #                               Minecraft Server Management
@@ -142,6 +143,7 @@ class Server:
         self.name = server_name
         self.settings = server_data_obj
 
+        HelperServerStats.init_database(server_id)
         self.record_server_stats()
 
         # build our server run command
@@ -163,7 +165,7 @@ class Server:
         Console.info(f"Starting server ID: {self.server_id} - {self.name}")
         logger.info(f"Starting server ID: {self.server_id} - {self.name}")
         # Sets waiting start to false since we're attempting to start the server.
-        HelperServers.set_waiting_start(self.server_id, False)
+        HelperServerStats.set_waiting_start(self.server_id, False)
         self.run_threaded_server(None)
 
         # remove the scheduled job since it's ran
@@ -230,7 +232,7 @@ class Server:
         else:
             user_lang = HelperUsers.get_user_lang_by_id(user_id)
 
-        if HelperServers.get_download_status(self.server_id):
+        if HelperServerStats.get_download_status(self.server_id):
             if user_id:
                 self.helper.websocket_helper.broadcast_user(
                     user_id,
@@ -413,7 +415,7 @@ class Server:
         ).start()
 
         self.is_crashed = False
-        HelperServers.server_crash_reset(self.server_id)
+        HelperServerStats.server_crash_reset(self.server_id)
 
         self.start_time = str(datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
 
@@ -421,7 +423,7 @@ class Server:
             logger.info(f"Server {self.name} running with PID {self.process.pid}")
             Console.info(f"Server {self.name} running with PID {self.process.pid}")
             self.is_crashed = False
-            HelperServers.server_crash_reset(self.server_id)
+            HelperServerStats.server_crash_reset(self.server_id)
             self.record_server_stats()
             check_internet_thread = threading.Thread(
                 target=self.check_internet_thread,
@@ -434,11 +436,11 @@ class Server:
             )
             check_internet_thread.start()
             # Checks if this is the servers first run.
-            if HelperServers.get_first_run(self.server_id):
-                HelperServers.set_first_run(self.server_id)
-                loc_server_port = HelperServers.get_server_stats_by_id(self.server_id)[
-                    "server_port"
-                ]
+            if HelperServerStats.get_first_run(self.server_id):
+                HelperServerStats.set_first_run(self.server_id)
+                loc_server_port = HelperServerStats.get_server_stats_by_id(
+                    self.server_id
+                )["server_port"]
                 # Sends port reminder message.
                 self.helper.websocket_helper.broadcast_user(
                     user_id,
@@ -718,7 +720,7 @@ class Server:
             self.server_scheduler.remove_job("c_" + str(self.server_id))
             return
 
-        HelperServers.sever_crashed(self.server_id)
+        HelperServerStats.sever_crashed(self.server_id)
         # if we haven't tried to restart more 3 or more times
         if self.restart_count <= 3:
 
@@ -742,7 +744,7 @@ class Server:
 
             self.restart_count = 0
             self.is_crashed = True
-            HelperServers.sever_crashed(self.server_id)
+            HelperServerStats.sever_crashed(self.server_id)
 
             # cancel the watcher task
             self.server_scheduler.remove_job("c_" + str(self.server_id))
@@ -972,7 +974,7 @@ class Server:
             return []
 
     def jar_update(self):
-        HelperServers.set_update(self.server_id, True)
+        HelperServerStats.set_update(self.server_id, True)
         update_thread = threading.Thread(
             target=self.a_jar_update, daemon=True, name=f"exe_update_{self.name}"
         )
@@ -980,7 +982,7 @@ class Server:
 
     def check_update(self):
 
-        if HelperServers.get_server_stats_by_id(self.server_id)["updating"]:
+        if HelperServerStats.get_server_stats_by_id(self.server_id)["updating"]:
             return True
         else:
             return False
@@ -1053,11 +1055,11 @@ class Server:
             self.settings["executable_update_url"], current_executable
         )
 
-        while HelperServers.get_server_stats_by_id(self.server_id)["updating"]:
+        while HelperServerStats.get_server_stats_by_id(self.server_id)["updating"]:
             if downloaded and not self.is_backingup:
                 logger.info("Executable updated successfully. Starting Server")
 
-                HelperServers.set_update(self.server_id, False)
+                HelperServerStats.set_update(self.server_id, False)
                 if len(self.helper.websocket_helper.clients) > 0:
                     # There are clients
                     self.check_update()
@@ -1453,29 +1455,11 @@ class Server:
     def record_server_stats(self):
 
         server = self.get_servers_stats()
-        ServerStats.insert(
-            {
-                ServerStats.server_id: server.get("id", 0),
-                ServerStats.started: server.get("started", ""),
-                ServerStats.running: server.get("running", False),
-                ServerStats.cpu: server.get("cpu", 0),
-                ServerStats.mem: server.get("mem", 0),
-                ServerStats.mem_percent: server.get("mem_percent", 0),
-                ServerStats.world_name: server.get("world_name", ""),
-                ServerStats.world_size: server.get("world_size", ""),
-                ServerStats.server_port: server.get("server_port", ""),
-                ServerStats.int_ping_results: server.get("int_ping_results", False),
-                ServerStats.online: server.get("online", False),
-                ServerStats.max: server.get("max", False),
-                ServerStats.players: server.get("players", False),
-                ServerStats.desc: server.get("desc", False),
-                ServerStats.version: server.get("version", False),
-            }
-        ).execute()
+        HelperServerStats.insert_server_stats(server)
 
         # delete old data
         max_age = self.helper.get_setting("history_max_age")
         now = datetime.datetime.now()
         last_week = now.day - max_age
 
-        ServerStats.delete().where(ServerStats.created < last_week).execute()
+        HelperServerStats.remove_old_stats(server.get("id", 0), last_week)

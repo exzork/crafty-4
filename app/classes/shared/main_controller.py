@@ -988,6 +988,7 @@ class Controller:
                 Console.info(f"Deleting Server: ID {server_id} | Name: {server_name} ")
 
                 srv_obj = server["server_obj"]
+                srv_obj.server_scheduler.shutdown()
                 running = srv_obj.check_running()
 
                 if running:
