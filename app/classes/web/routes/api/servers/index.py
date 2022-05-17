@@ -701,8 +701,6 @@ class ApiServersIndexHandler(BaseApiHandler):
             source_ip=self.get_remote_ip(),
         )
 
-        self.controller.crafty_perms.add_server_creation(user["user_id"])
-
         self.finish_json(
             201,
             {
