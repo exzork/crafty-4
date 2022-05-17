@@ -65,7 +65,7 @@ class ApiRolesRoleIndexHandler(BaseApiHandler):
             _,
             _,
             superuser,
-            _,
+            user,
         ) = auth_data
 
         if not superuser:
@@ -78,6 +78,13 @@ class ApiRolesRoleIndexHandler(BaseApiHandler):
             {"status": "ok", "data": role_id},
         )
 
+        self.controller.management.add_to_audit_log(
+            user["user_id"],
+            f"deleted role with ID {role_id}",
+            server_id=0,
+            source_ip=self.get_remote_ip(),
+        )
+
     def patch(self, role_id: str):
         auth_data = self.authenticate_user()
         if not auth_data:
@@ -87,7 +94,7 @@ class ApiRolesRoleIndexHandler(BaseApiHandler):
             _,
             _,
             superuser,
-            _,
+            user,
         ) = auth_data
 
         if not superuser:
@@ -114,6 +121,13 @@ class ApiRolesRoleIndexHandler(BaseApiHandler):
 
         self.controller.roles.update_role_advanced(
             role_id, data.get("role_name", None), data.get("servers", None)
+        )
+
+        self.controller.management.add_to_audit_log(
+            user["user_id"],
+            f"modified role with ID {role_id}",
+            server_id=0,
+            source_ip=self.get_remote_ip(),
         )
 
         self.finish_json(

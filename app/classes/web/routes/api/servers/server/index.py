@@ -112,6 +112,13 @@ class ApiServersServerIndexHandler(BaseApiHandler):
             setattr(self, key, data[key])
         self.controller.servers.update_server(server_obj)
 
+        self.controller.management.add_to_audit_log(
+            auth_data[4]["user_id"],
+            f"modified the server with ID {server_id}",
+            server_id,
+            self.get_remote_ip(),
+        )
+
         return self.finish_json(200, {"status": "ok"})
 
     def delete(self, server_id: str):
@@ -144,18 +151,15 @@ class ApiServersServerIndexHandler(BaseApiHandler):
             + self.controller.servers.get_server_friendly_name(server_id)
         )
 
-        server_data = self.controller.get_server_data(server_id)
-        server_name = server_data["server_name"]
+        self.tasks_manager.remove_all_server_tasks(server_id)
+        self.controller.remove_server(server_id, remove_files)
 
         self.controller.management.add_to_audit_log(
             auth_data[4]["user_id"],
-            f"deleted server {server_id} named {server_name}",
+            f"deleted the server {server_id}",
             server_id,
             self.get_remote_ip(),
         )
-
-        self.tasks_manager.remove_all_server_tasks(server_id)
-        self.controller.remove_server(server_id, remove_files)
 
         self.finish_json(
             200,

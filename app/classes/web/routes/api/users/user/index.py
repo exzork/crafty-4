@@ -75,7 +75,8 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
         if (user_id in ["@me", user["user_id"]]) and self.helper.get_setting(
             "allow_self_delete", False
         ):
-            self.controller.users.remove_user(user["user_id"])
+            user_id = user["user_id"]
+            self.controller.users.remove_user(user_id)
         elif EnumPermissionsCrafty.USER_CONFIG not in exec_user_crafty_permissions:
             return self.finish_json(
                 400,
@@ -87,6 +88,13 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
         else:
             # has User_Config permission
             self.controller.users.remove_user(user_id)
+
+        self.controller.management.add_to_audit_log(
+            user["user_id"],
+            f"deleted the user {user_id}",
+            server_id=0,
+            source_ip=self.get_remote_ip(),
+        )
 
         self.finish_json(
             200,
