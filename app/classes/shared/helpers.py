@@ -826,8 +826,8 @@ class Helpers:
                 output += f"""<li class="tree-item" data-path="{dpath}">
                     \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
                     <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
-                      <i class="far fa-folder"></i>
-                      <i class="far fa-folder-open"></i>
+                      <i style="color: #8862e0;" class="far fa-folder"></i>
+                      <i style="color: #8862e0;" class="far fa-folder-open"></i>
                       {filename}
                       </span>
                     </div><li>
@@ -835,7 +835,7 @@ class Helpers:
             else:
                 if filename != "crafty_managed.txt":
                     output += f"""<li
-                    class="tree-nested d-block tree-ctx-item tree-file tree-item"
+                    class="d-block tree-ctx-item tree-file tree-item"
                     data-path="{dpath}"
                     data-name="{filename}"
                     onclick="clickOnFile(event)"><span style="margin-right: 6px;">
@@ -864,15 +864,15 @@ class Helpers:
                 output += f"""<li class="tree-item" data-path="{dpath}">
                     \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
                     <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
-                      <i class="far fa-folder"></i>
-                      <i class="far fa-folder-open"></i>
+                      <i style="color: #8862e0;" class="far fa-folder"></i>
+                      <i style="color: #8862e0;" class="far fa-folder-open"></i>
                       {filename}
                       </span>
                     </div><li>"""
             else:
                 if filename != "crafty_managed.txt":
                     output += f"""<li
-                    class="tree-nested d-block tree-ctx-item tree-file tree-item"
+                    class="d-block tree-ctx-item tree-file tree-item"
                     data-path="{dpath}"
                     data-name="{filename}"
                     onclick="clickOnFile(event)"><span style="margin-right: 6px;">
@@ -894,8 +894,8 @@ class Helpers:
                     \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
                     <input type="radio" name="root_path" value="{dpath}">
                     <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
-                      <i class="far fa-folder"></i>
-                      <i class="far fa-folder-open"></i>
+                      <i style="color: #8862e0;" class="far fa-folder"></i>
+                      <i style="color: #8862e0;" class="far fa-folder-open"></i>
                       {filename}
                       </span>
                     </input></div><li>
@@ -916,8 +916,8 @@ class Helpers:
                     \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
                     <input type="radio" name="root_path" value="{dpath}">
                     <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
-                      <i class="far fa-folder"></i>
-                      <i class="far fa-folder-open"></i>
+                      <i style="color: #8862e0;" class="far fa-folder"></i>
+                      <i style="color: #8862e0;" class="far fa-folder-open"></i>
                       {filename}
                       </span>
                     </input></div><li>"""

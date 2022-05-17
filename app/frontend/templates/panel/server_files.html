@@ -39,12 +39,15 @@
               <noscript>
                 {{ translate('serverFiles', 'noscript', data['lang']) }}
               </noscript>
-              <div id="files-tree-nav" class="overlay">
+              <div id="files-tree-nav" class="overlay" style="background-color: #9f9daf !important;">
 
                 <!-- Button to close the overlay navigation -->
 
                 <!-- Overlay content -->
-                <div id="files-tree-nav-content" class="overlay-content">
+                <div id="files-tree-nav-content" class="overlay-content" style="background-color: #9f9daf;">
+                  <h4 id="context-title" style="color:#4b00ff; text-align: center; padding: 3px;">
+                  </h4>
+                  <p style="width: 90%; border-bottom: 2px solid black; margin:0 auto;"></p>
                   <a onclick="createFileE(event)" href="javascript:void(0)" id="createFile" href="#">{{
                     translate('serverFiles', 'createFile', data['lang']) }}</a>
                   <a onclick="createDirE(event)" href="javascript:void(0)" id="createDir" href="#">{{
@@ -72,7 +75,7 @@
                 .overlay {
                   display: none;
                   flex-direction: column;
-                  background-color: #fff;
+                  background-color: #9f9daf;
                   border-radius: 10px;
                   box-shadow: 0 10px 20px rgb(64 64 64 / 5%);
                   padding: 10px 0;
@@ -97,7 +100,7 @@
                 .overlay-content {
                   display: flex;
                   flex-direction: column;
-                  background-color: #fff;
+                  background-color: #9f9daf;
                   border-radius: 10px;
                   box-shadow: 0 10px 20px rgb(64 64 64 / 5%);
                   padding: 10px 0;
@@ -125,7 +128,7 @@
                 /* When you mouse over the navigation links, change their color */
                 .overlay a:hover,
                 .overlay a:focus {
-                  background: #f1f3f7;
+                  background: grey;
                   color: #4b00ff;
                 }
 
@@ -445,6 +448,9 @@
       e.stopImmediatePropagation();
       var ctxmenuPath = e.target.getAttribute('data-path');
       var ctxmenuName = e.target.getAttribute('data-name');
+
+      document.getElementById('context-title').innerHTML = ctxmenuName;
+      console.log(ctxmenuName);
       if (!ctxmenuPath) {
         console.log({ 'event.target': e.target, ctxmenuPath });
         return;
@@ -925,6 +931,9 @@
         $('#createDir').toggle(isDir);
         $('#deleteDir').toggle(isDir);
         $('#upload').toggle(isDir);
+
+        document.getElementById('context-title').innerHTML = ctxmenuName;
+        console.log(ctxmenuName);
 
         var isFile = event.target.classList.contains('tree-file');
         $('#deleteFile').toggle(isFile);

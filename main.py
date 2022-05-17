@@ -131,7 +131,7 @@ if __name__ == "__main__":
     else:
         Console.debug("Existing install detected")
 
-    # now the tables are created, we can load the tasks_manger and server controller
+    # now the tables are created, we can load the tasks_manager and server controller
     controller = Controller(database, helper)
     tasks_manager = TasksManager(helper, controller)
     tasks_manager.start_webserver()

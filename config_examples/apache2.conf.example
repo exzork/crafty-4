@@ -34,9 +34,9 @@
     RewriteCond %{HTTP:Connection} upgrade [NC]
     RewriteRule .* "wss://127.0.0.1:8443%{REQUEST_URI}" [P]
 
-    SSLCertificateFile /var/opt/minecraft/crafty-commander/app/config/web/certs/commander.cert.pem
+    SSLCertificateFile /var/opt/minecraft/crafty4/app/config/web/certs/commander.cert.pem
 
-    SSLCertificateKeyFile /var/opt/minecraft/crafty-commander/app/config/web/certs/commander.key.pem
+    SSLCertificateKeyFile /var/opt/minecraft/crafty4/app/config/web/certs/commander.key.pem
 
     ProxyPass / https://127.0.0.1:8443/
     ProxyPassReverse / https://127.0.0.1:8443/
