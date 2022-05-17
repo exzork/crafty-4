@@ -169,7 +169,7 @@ class PanelHandler(BaseHandler):
                         server_id, exec_user["user_id"]
                     ):
                         print(f'User {exec_user["user_id"]} does not have permission')
-                        self.redirect("/pandel/error?error=Invalid Server ID")
+                        self.redirect("/panel/error?error=Invalid Server ID")
                         return None
         return server_id
 
@@ -864,11 +864,16 @@ class PanelHandler(BaseHandler):
             template = "panel/server_schedule_edit.html"
 
         elif page == "edit_schedule":
-            server_id = self.get_argument("id", None)
+            server_id = self.check_server_id()
+            if not server_id:
+                return
+
             page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                 server_id
             )
             sch_id = self.get_argument("sch_id", None)
+            if sch_id is None:
+                self.redirect("/panel/error?error=Invalid Schedule ID")
             schedule = self.controller.management.get_scheduled_task_model(sch_id)
             page_data["get_players"] = lambda: self.controller.stats.get_server_players(
                 server_id
@@ -931,9 +936,6 @@ class PanelHandler(BaseHandler):
             else:
                 difficulty = "advanced"
             page_data["schedule"]["difficulty"] = difficulty
-
-            if sch_id is None or server_id is None:
-                self.redirect("/panel/error?error=Invalid server ID or Schedule ID")
 
             if not EnumPermissionsServer.SCHEDULE in page_data["user_permissions"]:
                 if not superuser:
@@ -1349,7 +1351,23 @@ class PanelHandler(BaseHandler):
 
         if page == "server_backup":
             logger.debug(self.request.arguments)
-            server_id = self.get_argument("id", None)
+
+            server_id = self.check_server_id()
+            if not server_id:
+                return
+
+            if (
+                not permissions["Backup"]
+                in self.controller.server_perms.get_user_id_permissions_list(
+                    exec_user["user_id"], server_id
+                )
+                and not superuser
+            ):
+                self.redirect(
+                    "/panel/error?error=Unauthorized access: User not authorized"
+                )
+                return
+
             server_obj = self.controller.servers.get_server_obj(server_id)
             compress = self.get_argument("compress", False)
             check_changed = self.get_argument("changed")
@@ -1365,25 +1383,6 @@ class PanelHandler(BaseHandler):
             else:
                 backup_path = server_obj.backup_path
             max_backups = bleach.clean(self.get_argument("max_backups", None))
-
-            if not permissions[
-                "Backup"
-            ] in self.controller.server_perms.get_user_id_permissions_list(
-                exec_user["user_id"], server_id
-            ):
-                if not superuser:
-                    self.redirect(
-                        "/panel/error?error=Unauthorized access: User not authorized"
-                    )
-                return
-            elif server_id is None:
-                self.redirect("/panel/error?error=Invalid Server ID")
-                return
-            else:
-                # does this server id exist?
-                if not self.controller.servers.server_id_exists(server_id):
-                    self.redirect("/panel/error?error=Invalid Server ID")
-                    return
 
             server_obj = self.controller.servers.get_server_obj(server_id)
             server_obj.backup_path = backup_path
@@ -1405,7 +1404,22 @@ class PanelHandler(BaseHandler):
             self.redirect(f"/panel/server_detail?id={server_id}&subpage=backup")
 
         if page == "new_schedule":
-            server_id = bleach.clean(self.get_argument("id", None))
+            server_id = self.check_server_id()
+            if not server_id:
+                return
+
+            if (
+                not permissions["Schedule"]
+                in self.controller.server_perms.get_user_id_permissions_list(
+                    exec_user["user_id"], server_id
+                )
+                and not superuser
+            ):
+                self.redirect(
+                    "/panel/error?error=Unauthorized access: User not authorized"
+                )
+                return
+
             difficulty = bleach.clean(self.get_argument("difficulty", None))
             server_obj = self.controller.servers.get_server_obj(server_id)
             enabled = bleach.clean(self.get_argument("enabled", "0"))
@@ -1473,85 +1487,67 @@ class PanelHandler(BaseHandler):
             else:
                 one_time = False
 
-            if not superuser and not permissions[
-                "Schedule"
-            ] in self.controller.server_perms.get_user_id_permissions_list(
-                exec_user["user_id"], server_id
-            ):
-                self.redirect(
-                    "/panel/error?error=Unauthorized access: User not authorized"
-                )
-                return
-            elif server_id is None:
-                self.redirect("/panel/error?error=Invalid Server ID")
-                return
+            if interval_type == "days":
+                job_data = {
+                    "server_id": server_id,
+                    "action": action,
+                    "interval_type": interval_type,
+                    "interval": interval,
+                    "command": command,
+                    "start_time": sch_time,
+                    "enabled": enabled,
+                    "one_time": one_time,
+                    "cron_string": "",
+                    "parent": None,
+                    "delay": 0,
+                }
+            elif difficulty == "reaction":
+                job_data = {
+                    "server_id": server_id,
+                    "action": action,
+                    "interval_type": interval_type,
+                    "interval": "",
+                    # We'll base every interval off of a midnight start time.
+                    "start_time": "",
+                    "command": command,
+                    "cron_string": "",
+                    "enabled": enabled,
+                    "one_time": one_time,
+                    "parent": parent,
+                    "delay": delay,
+                }
+            elif difficulty == "advanced":
+                job_data = {
+                    "server_id": server_id,
+                    "action": action,
+                    "interval_type": "",
+                    "interval": "",
+                    # We'll base every interval off of a midnight start time.
+                    "start_time": "",
+                    "command": command,
+                    "cron_string": cron_string,
+                    "enabled": enabled,
+                    "one_time": one_time,
+                    "parent": None,
+                    "delay": 0,
+                }
             else:
-                # does this server id exist?
-                if not self.controller.servers.server_id_exists(server_id):
-                    self.redirect("/panel/error?error=Invalid Server ID")
-                    return
+                job_data = {
+                    "server_id": server_id,
+                    "action": action,
+                    "interval_type": interval_type,
+                    "interval": interval,
+                    "command": command,
+                    "enabled": enabled,
+                    # We'll base every interval off of a midnight start time.
+                    "start_time": "00:00",
+                    "one_time": one_time,
+                    "cron_string": "",
+                    "parent": None,
+                    "delay": 0,
+                }
 
-                if interval_type == "days":
-                    job_data = {
-                        "server_id": server_id,
-                        "action": action,
-                        "interval_type": interval_type,
-                        "interval": interval,
-                        "command": command,
-                        "start_time": sch_time,
-                        "enabled": enabled,
-                        "one_time": one_time,
-                        "cron_string": "",
-                        "parent": None,
-                        "delay": 0,
-                    }
-                elif difficulty == "reaction":
-                    job_data = {
-                        "server_id": server_id,
-                        "action": action,
-                        "interval_type": interval_type,
-                        "interval": "",
-                        # We'll base every interval off of a midnight start time.
-                        "start_time": "",
-                        "command": command,
-                        "cron_string": "",
-                        "enabled": enabled,
-                        "one_time": one_time,
-                        "parent": parent,
-                        "delay": delay,
-                    }
-                elif difficulty == "advanced":
-                    job_data = {
-                        "server_id": server_id,
-                        "action": action,
-                        "interval_type": "",
-                        "interval": "",
-                        # We'll base every interval off of a midnight start time.
-                        "start_time": "",
-                        "command": command,
-                        "cron_string": cron_string,
-                        "enabled": enabled,
-                        "one_time": one_time,
-                        "parent": None,
-                        "delay": 0,
-                    }
-                else:
-                    job_data = {
-                        "server_id": server_id,
-                        "action": action,
-                        "interval_type": interval_type,
-                        "interval": interval,
-                        "command": command,
-                        "enabled": enabled,
-                        # We'll base every interval off of a midnight start time.
-                        "start_time": "00:00",
-                        "one_time": one_time,
-                        "cron_string": "",
-                        "parent": None,
-                        "delay": 0,
-                    }
-
-                self.tasks_manager.schedule_job(job_data)
+            self.tasks_manager.schedule_job(job_data)
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
@@ -1563,7 +1559,26 @@ class PanelHandler(BaseHandler):
             self.redirect(f"/panel/server_detail?id={server_id}&subpage=schedules")
 
         if page == "edit_schedule":
-            server_id = bleach.clean(self.get_argument("id", None))
+            server_id = self.check_server_id()
+            if not server_id:
+                return
+
+            if (
+                not permissions["Schedule"]
+                in self.controller.server_perms.get_user_id_permissions_list(
+                    exec_user["user_id"], server_id
+                )
+                and not superuser
+            ):
+                self.redirect(
+                    "/panel/error?error=Unauthorized access: User not authorized"
+                )
+                return
+
+            sch_id = self.get_argument("sch_id", None)
+            if sch_id is None:
+                self.redirect("/panel/error?error=Invalid Schedule ID")
+
             difficulty = bleach.clean(self.get_argument("difficulty", None))
             server_obj = self.controller.servers.get_server_obj(server_id)
             enabled = bleach.clean(self.get_argument("enabled", "0"))
@@ -1603,7 +1618,6 @@ class PanelHandler(BaseHandler):
             else:
                 interval_type = ""
                 cron_string = bleach.clean(self.get_argument("cron", ""))
-                sch_id = self.get_argument("sch_id", None)
                 try:
                     CronValidator.parse(cron_string)
                 except Exception as e:
@@ -1631,85 +1645,66 @@ class PanelHandler(BaseHandler):
             else:
                 one_time = False
 
-            if not superuser and not permissions[
-                "Schedule"
-            ] in self.controller.server_perms.get_user_id_permissions_list(
-                exec_user["user_id"], server_id
-            ):
-                self.redirect(
-                    "/panel/error?error=Unauthorized access: User not authorized"
-                )
-                return
-            elif server_id is None:
-                self.redirect("/panel/error?error=Invalid Server ID")
-                return
+            if interval_type == "days":
+                job_data = {
+                    "server_id": server_id,
+                    "action": action,
+                    "interval_type": interval_type,
+                    "interval": interval,
+                    "command": command,
+                    "start_time": sch_time,
+                    "enabled": enabled,
+                    "one_time": one_time,
+                    "cron_string": "",
+                    "parent": None,
+                    "delay": 0,
+                }
+            elif difficulty == "advanced":
+                job_data = {
+                    "server_id": server_id,
+                    "action": action,
+                    "interval_type": "",
+                    "interval": "",
+                    # We'll base every interval off of a midnight start time.
+                    "start_time": "",
+                    "command": command,
+                    "cron_string": cron_string,
+                    "delay": "",
+                    "parent": "",
+                    "enabled": enabled,
+                    "one_time": one_time,
+                }
+            elif difficulty == "reaction":
+                job_data = {
+                    "server_id": server_id,
+                    "action": action,
+                    "interval_type": interval_type,
+                    "interval": "",
+                    # We'll base every interval off of a midnight start time.
+                    "start_time": "",
+                    "command": command,
+                    "cron_string": "",
+                    "enabled": enabled,
+                    "one_time": one_time,
+                    "parent": parent,
+                    "delay": delay,
+                }
             else:
-                # does this server id exist?
-                if not self.controller.servers.server_id_exists(server_id):
-                    self.redirect("/panel/error?error=Invalid Server ID")
-                    return
-
-                if interval_type == "days":
-                    job_data = {
-                        "server_id": server_id,
-                        "action": action,
-                        "interval_type": interval_type,
-                        "interval": interval,
-                        "command": command,
-                        "start_time": sch_time,
-                        "enabled": enabled,
-                        "one_time": one_time,
-                        "cron_string": "",
-                        "parent": None,
-                        "delay": 0,
-                    }
-                elif difficulty == "advanced":
-                    job_data = {
-                        "server_id": server_id,
-                        "action": action,
-                        "interval_type": "",
-                        "interval": "",
-                        # We'll base every interval off of a midnight start time.
-                        "start_time": "",
-                        "command": command,
-                        "cron_string": cron_string,
-                        "delay": "",
-                        "parent": "",
-                        "enabled": enabled,
-                        "one_time": one_time,
-                    }
-                elif difficulty == "reaction":
-                    job_data = {
-                        "server_id": server_id,
-                        "action": action,
-                        "interval_type": interval_type,
-                        "interval": "",
-                        # We'll base every interval off of a midnight start time.
-                        "start_time": "",
-                        "command": command,
-                        "cron_string": "",
-                        "enabled": enabled,
-                        "one_time": one_time,
-                        "parent": parent,
-                        "delay": delay,
-                    }
-                else:
-                    job_data = {
-                        "server_id": server_id,
-                        "action": action,
-                        "interval_type": interval_type,
-                        "interval": interval,
-                        "command": command,
-                        "enabled": enabled,
-                        # We'll base every interval off of a midnight start time.
-                        "start_time": "00:00",
-                        "delay": "",
-                        "parent": "",
-                        "one_time": one_time,
-                        "cron_string": "",
-                    }
-                sch_id = self.get_argument("sch_id", None)
-                self.tasks_manager.update_job(sch_id, job_data)
+                job_data = {
+                    "server_id": server_id,
+                    "action": action,
+                    "interval_type": interval_type,
+                    "interval": interval,
+                    "command": command,
+                    "enabled": enabled,
+                    # We'll base every interval off of a midnight start time.
+                    "start_time": "00:00",
+                    "delay": "",
+                    "parent": "",
+                    "one_time": one_time,
+                    "cron_string": "",
+                }
+            self.tasks_manager.update_job(sch_id, job_data)
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
