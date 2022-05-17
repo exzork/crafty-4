@@ -16,8 +16,12 @@ from tornado import iostream
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
 from cron_validator import CronValidator
+from app.classes.models.roles import HelperRoles
 
-from app.classes.models.server_permissions import EnumPermissionsServer
+from app.classes.models.server_permissions import (
+    EnumPermissionsServer,
+    PermissionsServers,
+)
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.models.management import HelpersManagement
 from app.classes.shared.helpers import Helpers
@@ -39,15 +43,27 @@ class PanelHandler(BaseHandler):
     def get_role_servers(self) -> set:
         servers = set()
         for server in self.controller.list_defined_servers():
-            argument = int(
-                float(
-                    bleach.clean(
-                        self.get_argument(f"server_{server['server_id']}_access", "0")
-                    )
+            argument = self.get_argument(f"server_{server['server_id']}_access", "0")
+            if argument == "0":
+                print("doesn't exist " + f"server_{server['server_id']}_access")
+                continue
+
+            permission_mask = "0" * len(EnumPermissionsServer)
+            for permission in self.controller.server_perms.list_defined_permissions():
+                argument = self.get_argument(
+                    f"permission_{server['server_id']}_{permission.name}", "0"
                 )
-            )
-            if argument:
-                servers.add(server["server_id"])
+                print(
+                    "trying to get "
+                    + f"permission_{server['server_id']}_{permission.name}"
+                )
+                if argument == "1":
+                    print(f"{permission.name} is 1")
+                    permission_mask = self.controller.server_perms.set_permission(
+                        permission_mask, permission, "1"
+                    )
+
+            servers.add((server["server_id"], permission_mask))
         return servers
 
     def get_perms_quantity(self) -> Tuple[str, dict]:
@@ -85,19 +101,9 @@ class PanelHandler(BaseHandler):
             permission
         ) in self.controller.crafty_perms.list_defined_crafty_permissions():
             argument = self.get_argument(f"permission_{permission.name}", None)
-            if argument is not None:
+            if argument is not None and argument == "1":
                 permissions_mask = self.controller.crafty_perms.set_permission(
-                    permissions_mask, permission, 1 if argument == "1" else 0
-                )
-        return permissions_mask
-
-    def get_perms_server(self) -> str:
-        permissions_mask = "00000000"
-        for permission in self.controller.server_perms.list_defined_permissions():
-            argument = self.get_argument(f"permission_{permission.name}", None)
-            if argument is not None:
-                permissions_mask = self.controller.server_perms.set_permission(
-                    permissions_mask, permission, 1 if argument == "1" else 0
+                    permissions_mask, permission, "1"
                 )
         return permissions_mask
 
@@ -1085,7 +1091,7 @@ class PanelHandler(BaseHandler):
             page_data[
                 "permissions_all"
             ] = self.controller.server_perms.list_defined_permissions()
-            page_data["permissions_list"] = set()
+            page_data["permissions_dict"] = {}
             template = "panel/panel_edit_role.html"
 
         elif page == "edit_role":
@@ -1098,8 +1104,8 @@ class PanelHandler(BaseHandler):
                 "permissions_all"
             ] = self.controller.server_perms.list_defined_permissions()
             page_data[
-                "permissions_list"
-            ] = self.controller.server_perms.get_role_permissions(role_id)
+                "permissions_dict"
+            ] = self.controller.server_perms.get_role_permissions_dict(role_id)
             page_data["user-roles"] = user_roles
             page_data["users"] = self.controller.users.get_all_users()
 
@@ -1999,16 +2005,43 @@ class PanelHandler(BaseHandler):
                     return
 
             servers = self.get_role_servers()
-            permissions_mask = self.get_perms_server()
 
-            role_data = {"role_name": role_name, "servers": servers}
-            self.controller.roles.update_role(
-                role_id, role_data=role_data, permissions_mask=permissions_mask
+            # TODO: use update_role_advanced when API v2 gets merged
+            base_data = self.controller.roles.get_role_with_servers(role_id)
+
+            server_ids = {server[0] for server in servers}
+            server_permissions_map = {server[0]: server[1] for server in servers}
+
+            added_servers = server_ids.difference(set(base_data["servers"]))
+            removed_servers = set(base_data["servers"]).difference(server_ids)
+            same_servers = server_ids.intersection(set(base_data["servers"]))
+            logger.debug(
+                f"role: {role_id} +server:{added_servers} -server{removed_servers}"
             )
+            for server_id in added_servers:
+                PermissionsServers.get_or_create(
+                    role_id, server_id, server_permissions_map[server_id]
+                )
+            for server_id in same_servers:
+                print(
+                    f"!!same servers? {server_id} {server_permissions_map[server_id]}"
+                )
+                PermissionsServers.update_role_permission(
+                    role_id, server_id, server_permissions_map[server_id]
+                )
+            if len(removed_servers) != 0:
+                PermissionsServers.delete_roles_permissions(role_id, removed_servers)
+
+            up_data = {
+                "role_name": role_name,
+                "last_update": Helpers.get_time_as_string(),
+            }
+            # TODO: do the last_update on the db side
+            HelperRoles.update_role(role_id, up_data)
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
-                f"Edited role {role_name} (RID:{role_id}) with servers {servers}",
+                f"edited role {role_name} (RID:{role_id}) with servers {servers}",
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )
@@ -2032,22 +2065,15 @@ class PanelHandler(BaseHandler):
                     return
 
             servers = self.get_role_servers()
-            permissions_mask = self.get_perms_server()
 
             role_id = self.controller.roles.add_role(role_name)
-            self.controller.roles.update_role(
-                role_id, {"servers": servers}, permissions_mask
-            )
+            # TODO: use add_role_advanced when API v2 gets merged
+            for server in servers:
+                PermissionsServers.get_or_create(role_id, server[0], server[1])
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
-                f"Added role {role_name} (RID:{role_id})",
-                server_id=0,
-                source_ip=self.get_remote_ip(),
-            )
-            self.controller.management.add_to_audit_log(
-                exec_user["user_id"],
-                f"Edited role {role_name} (RID:{role_id}) with servers {servers}",
+                f"created role {role_name} (RID:{role_id})",
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )

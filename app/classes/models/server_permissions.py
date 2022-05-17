@@ -6,6 +6,7 @@ from peewee import (
     CompositeKey,
     JOIN,
 )
+import typing as t
 
 from app.classes.models.base_model import BaseModel
 from app.classes.models.servers import Servers
@@ -153,6 +154,18 @@ class PermissionsServers:
             permissions_mask = role_server.permissions
         permissions_list = PermissionsServers.get_permissions(permissions_mask)
         return permissions_list
+
+    @staticmethod
+    def get_role_permissions_dict(role_id):
+        permissions_dict: t.Dict[str, t.List[EnumPermissionsServer]] = {}
+        role_servers = RoleServers.select(
+            RoleServers.server_id, RoleServers.permissions
+        ).where(RoleServers.role_id == role_id)
+        for role_server in role_servers:
+            permissions_dict[
+                role_server.server_id_id
+            ] = PermissionsServers.get_permissions(role_server.permissions)
+        return permissions_dict
 
     @staticmethod
     def update_role_permission(role_id, server_id, permissions_mask):

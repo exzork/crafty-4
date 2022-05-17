@@ -37,180 +37,229 @@
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-            <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
-              <li class="nav-item">
-                <a class="nav-link active" href="/panel/edit_role?id={{ data['role']['role_id'] }}&subpage=config" role="tab" aria-selected="true">
-                  <i class="fas fa-cogs"></i>{{ translate('rolesConfig', 'config', data['lang']) }}</a>
-              </li>
-              <!-- <li class="nav-item">
-                <a class="nav-link" href="/panel/edit_role?id={{ data['role']['role_id'] }}&subpage=other" role="tab" aria-selected="false">
-                  <i class="fas fa-folder-tree"></i>Other</a>
-              </li> -->
-            </ul>
-            <div class="row">
-                <div class="col-md-6 col-sm-12">
-                  {% if data['new_role'] %}
-                    <form class="forms-sample" method="post" action="/panel/add_role">
-                  {% else %}
-                    <form class="forms-sample" method="post" action="/panel/edit_role">
-                  {% end %}
-                      {% raw xsrf_form_html() %}
-                      <input type="hidden" name="id" value="{{ data['role']['role_id'] }}">
-                      <input type="hidden" name="subpage" value="config">
+          <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" href="/panel/edit_role?id={{ data['role']['role_id'] }}&subpage=config" role="tab" aria-selected="true">
+                <i class="fas fa-cogs"></i>{{ translate('rolesConfig', 'config', data['lang']) }}</a>
+            </li>
+            <!-- <li class="nav-item">
+              <a class="nav-link" href="/panel/edit_role?id={{ data['role']['role_id'] }}&subpage=other" role="tab" aria-selected="false">
+                <i class="fas fa-folder-tree"></i>Other</a>
+            </li> -->
+          </ul>
+          <div class="">
+            <div class="">
+              <form class="forms-sample" method="post" action="{{ '/panel/add_role' if data['new_role'] else '/panel/edit_role' }}">
+                {% raw xsrf_form_html() %}
+                <input type="hidden" name="id" value="{{ data['role']['role_id'] }}">
+                <input type="hidden" name="subpage" value="config">
 
-                      <div class="card">
-                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                          <h4 class="card-title"><i class="fas fa-user-tag"></i> {{ translate('rolesConfig', 'roleTitle', data['lang']) }}</h4>
-                        </div>
-                        <div class="card-body">
-                          <div class="form-group">
-                            <label for="role_name">{{ translate('rolesConfig', 'roleName', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('rolesConfig', 'roleDesc', data['lang']) }}</small> </label>
-                            <input type="text" class="form-control" name="role_name" id="role_name" value="{{ data['role']['role_name']  }}" placeholder="Role Name" >
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="card">
-                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                          <h4 class="card-title"><i class="fas fa-server"></i> {{ translate('rolesConfig', 'roleServers', data['lang']) }}  <small class="text-muted ml-1"> {{ translate('rolesConfig', 'serversDesc', data['lang']) }}</small> </h4>
-                        </div>
-                        <div class="card-body">
-                          <div class="form-group">
-                            <div class="table-responsive">
-                              <table class="table table-hover">
-                                <thead>
-                                  <tr class="rounded">
-                                    <th>{{ translate('rolesConfig', 'serverName', data['lang']) }}</th>
-                                    <th>{{ translate('rolesConfig', 'serverAccess', data['lang']) }}</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                {% for server in data['servers_all'] %}
-                                  <tr>
-                                    <td>{{ server['server_name'] }}</td>
-                                    <td>
-                                      {% if server['server_id'] in data['role']['servers'] %}
-                                        <input type="checkbox" class="" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" checked="" value="1">
-                                      {% else %}
-                                        <input type="checkbox" class="" id="server_{{ server['server_id'] }}_access" name="server_{{ server['server_id'] }}_access" value="1">
-                                      {% end %}
-                                    </td>
-                                  </tr>
-                                {% end %}
-
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="card">
-                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                          <h4 class="card-title"><i class="fas fa-user-lock"></i> {{ translate('rolesConfig', 'rolePerms', data['lang']) }}<small class="text-muted ml-1"> - {{ translate('rolesConfig', 'permsServer', data['lang']) }} </small></h4>
-                        </div>
-                        <div class="card-body">
-                          <div class="form-group">
-                            <div class="table-responsive">
-                              <table class="table table-hover">
-                                <thead>
-                                  <tr class="rounded">
-                                    <th>{{ translate('rolesConfig', 'permName', data['lang']) }}</th>
-                                    <th>{{ translate('rolesConfig', 'permAccess', data['lang']) }}</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                {% for permission in data['permissions_all'] %}
-                                  <tr>
-                                    <td>{{ permission.name }}</td>
-                                    <td>
-                                      {% if permission in data['permissions_list'] %}
-                                        <input type="checkbox" class="" id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" checked="" value="1">
-                                      {% else %}
-                                        <input type="checkbox" class="" id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" value="1">
-                                      {% end %}
-                                    </td>
-                                  </tr>
-                                {% end %}
-
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('panelConfig', 'save', data['lang']) }}</button>
-                      <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light"><i class="fas fa-undo-alt"></i> {{ translate('panelConfig', 'cancel', data['lang']) }}</button>
-                    </form>
-
-                </div>
-                <div class="col-md-3 col-sm-12">
-                  <div class="card">
-                    <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                      <h4  class="card-title"><i class="fas fa-users"></i> {{ translate('rolesConfig', 'roleUsers', data['lang']) }}</h4>
+                <div class="card">
+                  <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                    <h4 class="card-title"><i class="fas fa-user-tag"></i> {{ translate('rolesConfig', 'roleTitle', data['lang']) }}</h4>
+                  </div>
+                  <div class="card-body">
+                    <div class="form-group">
+                      <label for="role_name">{{ translate('rolesConfig', 'roleName', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('rolesConfig', 'roleDesc', data['lang']) }}</small> </label>
+                      <input type="text" class="form-control" name="role_name" id="role_name" value="{{ data['role']['role_name']  }}" placeholder="Role Name" >
                     </div>
-                    <div class="card-body">
-                      <div class="table-responsive">
-                        <table class="table table-hover">
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                    <h4 class="card-title"><i class="fas fa-server"></i> {{ translate('rolesConfig', 'roleServers', data['lang']) }}  <small class="text-muted ml-1"> {{ translate('rolesConfig', 'serversDesc', data['lang']) }}</small> </h4>
+                  </div>
+                  <div class="card-body">
+                    <div class="form-group">
+                      <div class="table-responsive rotate-table-parent">
+                        <table class="table table-hover rotate-table">
                           <thead>
+                            <style>
+                              .rotate-table-parent {
+                                padding-top: 2.5rem;
+                                padding-right: 4rem;
+                              }
+
+                              /* https://css-tricks.com/rotated-table-column-headers-now-with-fewer-magic-numbers/ */
+                              table.rotate-table {
+                                --table-border-width: 1px;
+                                border-collapse: collapse;
+                              }
+                              th.rotate-column-header {
+                                /* Something you can count on */
+                                height: 140px;
+                                white-space: nowrap;
+                              }
+
+                              th.rotate-column-header > div {
+                                transform:
+                                  /* Magic Numbers */
+                                  translate(0px, 51px)
+                                  /* 315 is 360 - 45 */
+                                  rotate(315deg);
+                                width: 30px;
+                              }
+                              th.rotate-column-header > div > span {
+                                border-bottom: 1px solid #ccc;
+                                padding: 5px 10px;
+                              }
+                              th.rotate {
+                                white-space: nowrap;
+                                position: relative;
+                              }
+                              th.rotate > div {
+                                /* place div at bottom left of the th parent */
+                                position: absolute;
+                                bottom: 0;
+                                left: 0;
+                                /* Make sure short labels still meet the corner of the parent otherwise you'll get a gap */
+                                text-align: left;
+                                /* Move the top left corner of the span's bottom-border to line up with the top left corner of the td's border-right border so that the border corners are matched
+                                  * Rotate 315 (-45) degrees about matched border corners */
+                                transform:
+                                  translate(calc(100% - var(--table-border-width) / 2), var(--table-border-width))
+                                  rotate(-45deg);
+                                transform-origin: 0% calc(100% - var(--table-border-width));
+                                transition: transform 500ms;
+                                width: 100%;
+                              }
+                              th.rotate > div > span {
+                                /* make sure the bottom of the span is matched up with the bottom of the parent div */
+                                position: absolute;
+                                bottom: 0;
+                                left: 0;
+                                border-bottom: var(--table-border-width) solid #383e5d;
+                                transition: border-bottom-color 500ms;
+                                padding-bottom: 5px;
+                                user-select: none;
+                              }
+                              table.rotate-table > tbody td {
+                                border-right: var(--table-border-width) solid #383e5d;
+                                /* make sure this is at least as wide as sqrt(2) * height of the tallest letter in your font or the headers will overlap each other*/
+                                min-width: 30px;
+                                padding-top: 2px;
+                                padding-left: 5px;
+                                text-align: right;
+                              }
+
+                              @media screen and (min-width: 1650px) {
+                                th.rotate > div {
+                                  transform: translate(15px, 0px) rotate(0deg);
+                                }
+                                th.rotate > div > span {
+                                  border-bottom-color: transparent;
+                                }
+                              }
+                            </style>
                             <tr class="rounded">
-                              <th>{{ translate('rolesConfig', 'roleUserName', data['lang']) }}</th>
-                              <th></th>
+                              <th>{{ translate('rolesConfig', 'serverName', data['lang']) }}</th>
+                              <th class="rotate"><div><span>{{ translate('rolesConfig', 'serverAccess', data['lang']) }}</span></div></th>
+                              {% for permission in data['permissions_all'] %}
+                                <th class="rotate"><div><span>{{ permission.name }}</span></div></th>
+                              {% end %}
                             </tr>
                           </thead>
                           <tbody>
-                          {% for user in data['users'] %}
-                            {% for ruser in data['user-roles'][user.user_id] %}
-                              {% if ruser == data['role']['role_name'] %}
-                                <tr>
-                                  <td>{{ user.username }}</td>
-                                  <td>
-                                    <a href="/panel/edit_user?id={{user.user_id}}"><i class="fas fa-user-edit"></i></a>
-                                  </td>
-                                </tr>
+                          {% for server in data['servers_all'] %}
+                            <tr>
+                              <td>{{ server['server_name'] }}</td>
+                              <td>
+                                <input type="checkbox" class=""
+                                id="server_{{ server['server_id'] }}_access"
+                                name="server_{{ server['server_id'] }}_access"
+                                {{ 'checked' if server['server_id'] in data['role']['servers'] else '' }}
+                                autocomplete="off" value="1">
+                              </td>
+                              {% for permission in data['permissions_all'] %}
+                                <td>
+                                  <input type="checkbox" class=""
+                                  id="permission_{{ server['server_id'] }}_{{ permission.name }}"
+                                  name="permission_{{ server['server_id'] }}_{{ permission.name }}"
+                                  {{ 'checked' if permission in data['permissions_dict'].get(server['server_id'], []) else '' }}
+                                  autocomplete="off" value="1">
+                                </td>
                               {% end %}
-                            {% end %}
+                            </tr>
                           {% end %}
+
                           </tbody>
                         </table>
                       </div>
                     </div>
                   </div>
-                  <br>
-              </div>
-                <div class="col-md-3 col-sm-12">
-                  <div class="card">
-                    <div class="card-body">
-                      <h4 class="card-title">{{ translate('rolesConfig', 'roleConfigArea', data['lang']) }}</h4>
-                      <p class="card-description"> {{ translate('rolesConfig', 'configDesc', data['lang']) }}</p>
-                      <blockquote class="blockquote">
-                        <p class="mb-0">
-                          {{ translate('rolesConfig', 'created', data['lang']) }} {{ str(data['role']['created']) }}
-                            <br />
-                            {{ translate('rolesConfig', 'configUpdate', data['lang']) }} {{ str(data['role']['last_update']) }}
-                            <br />
-                        </p>
-                      </blockquote>
-                      <div class="text-center">
-                        {% if data['new_role'] %}
-                          <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i>{{ translate('rolesConfig', 'delRole', data['lang']) }}</a><br />
-                          <small>{{ translate('rolesConfig', 'doesNotExist', data['lang']) }}</small>
-                        {% else %}
-                          <a href="/panel/remove_role?id={{ data['role']['role_id'] }}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i>{{ translate('rolesConfig', 'delRole', data['lang']) }}</a>
-                        {% end %}
-                    </div>
-                    </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                    <h4 class="card-title"><i class="fas fa-settings"></i> {{ translate('panelConfig', 'save', data['lang']) }}</h4>
                   </div>
+                  <div class="card-body">
+                    <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('panelConfig', 'save', data['lang']) }}</button>
+                    <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light"><i class="fas fa-undo-alt"></i> {{ translate('panelConfig', 'cancel', data['lang']) }}</button>
+                  </div>
+                </div>
+              </form>
+
+              <div class="card">
+                <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                  <h4 class="card-title"><i class="fas fa-users"></i> {{ translate('rolesConfig', 'roleUsers', data['lang']) }}</h4>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr class="rounded">
+                          <th>{{ translate('rolesConfig', 'roleUserName', data['lang']) }}</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for user in data['users'] %}
+                        {% for ruser in data['user-roles'][user.user_id] %}
+                          {% if ruser == data['role']['role_name'] %}
+                            <tr>
+                              <td>{{ user.username }}</td>
+                              <td>
+                                <a href="/panel/edit_user?id={{user.user_id}}"><i class="fas fa-user-edit"></i></a>
+                              </td>
+                            </tr>
+                          {% end %}
+                        {% end %}
+                      {% end %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">{{ translate('rolesConfig', 'roleConfigArea', data['lang']) }}</h4>
+                  <p class="card-description"> {{ translate('rolesConfig', 'configDesc', data['lang']) }}</p>
+                  <blockquote class="blockquote">
+                    <p class="mb-0">
+                      {{ translate('rolesConfig', 'created', data['lang']) }} {{ str(data['role']['created']) }}
+                        <br />
+                        {{ translate('rolesConfig', 'configUpdate', data['lang']) }} {{ str(data['role']['last_update']) }}
+                        <br />
+                    </p>
+                  </blockquote>
+                  <div class="text-center">
+                    {% if data['new_role'] %}
+                      <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i>{{ translate('rolesConfig', 'delRole', data['lang']) }}</a><br />
+                      <small>{{ translate('rolesConfig', 'doesNotExist', data['lang']) }}</small>
+                    {% else %}
+                      <a href="/panel/remove_role?id={{ data['role']['role_id'] }}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i>{{ translate('rolesConfig', 'delRole', data['lang']) }}</a>
+                    {% end %}
+                </div>
               </div>
             </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-
-
-
 </div>
 <!-- content-wrapper ends -->
 
