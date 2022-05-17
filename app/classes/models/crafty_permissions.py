@@ -45,15 +45,13 @@ class PermissionsCrafty:
     # **********************************************************************************
     @staticmethod
     def get_permissions_list():
-        return [
-            permission for _, permission in EnumPermissionsCrafty.__members__.items()
-        ]
+        return list(EnumPermissionsCrafty.__members__.values())
 
     @staticmethod
     def get_permissions(permissions_mask):
         return [
             permission
-            for _, permission in EnumPermissionsCrafty.__members__.items()
+            for permission in EnumPermissionsCrafty.__members__.values()
             if PermissionsCrafty.has_permission(permissions_mask, permission)
         ]
 
@@ -81,7 +79,7 @@ class PermissionsCrafty:
 
     @staticmethod
     def get_all_permission_quantity_list():
-        return {name: -1 for name, _ in EnumPermissionsCrafty.__members__.items()}
+        return {name: -1 for name in EnumPermissionsCrafty.__members__.keys()}
 
     @staticmethod
     def get_permission_quantity_list(user_id):

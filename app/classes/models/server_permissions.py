@@ -51,15 +51,13 @@ class PermissionsServers:
 
     @staticmethod
     def get_permissions_list():
-        return [
-            permission for _, permission in EnumPermissionsServer.__members__.items()
-        ]
+        return list(EnumPermissionsServer.__members__.values())
 
     @staticmethod
     def get_permissions(permissions_mask):
         return [
             permission
-            for _, permission in EnumPermissionsServer.__members__.items()
+            for permission in EnumPermissionsServer.__members__.values()
             if PermissionsServers.has_permission(permissions_mask, permission)
         ]
 
@@ -82,13 +80,13 @@ class PermissionsServers:
 
     @staticmethod
     def get_token_permissions(permissions_mask, api_permissions_mask):
-        permissions_list = []
-        for member in EnumPermissionsServer.__members__.items():
+        return [
+            permission
+            for permission in EnumPermissionsServer.__members__.values()
             if PermissionHelper.both_have_perm(
-                permissions_mask, api_permissions_mask, member[1]
-            ):
-                permissions_list.append(member[1])
-        return permissions_list
+                permissions_mask, api_permissions_mask, permission
+            )
+        ]
 
     # **********************************************************************************
     #                                   Role_Servers Methods
