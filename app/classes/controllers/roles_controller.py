@@ -134,6 +134,7 @@ class RolesController:
 
             added_servers = server_ids.difference(set(base_data["servers"]))
             removed_servers = set(base_data["servers"]).difference(server_ids)
+            same_servers = server_ids.intersection(set(base_data["servers"]))
             logger.debug(
                 f"role: {role_id} +server:{added_servers} -server{removed_servers}"
             )
@@ -143,6 +144,10 @@ class RolesController:
                 )
             if len(removed_servers) != 0:
                 PermissionsServers.delete_roles_permissions(role_id, removed_servers)
+            for server_id in same_servers:
+                PermissionsServers.update_role_permission(
+                    role_id, server_id, server_permissions_map[server_id]
+                )
         if role_name is not None:
             up_data = {
                 "role_name": role_name,
