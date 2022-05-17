@@ -57,7 +57,7 @@ class MainPrompt(cmd.Cmd):
         try:
             username = str(line).lower()
             user_id = self.controller.users.get_id_by_name(username)
-        except Exception as e:
+        except:
             Console.error(f"User: {line} Not Found")
             return False
         new_pass = getpass.getpass(prompt=f"NEW password for: {username} > ")
