@@ -389,7 +389,7 @@
         "command": "Command",
         "command-explain": "What command do you want us to execute? Do not include the '/'",
         "cron": "Cron",
-        "cron-explain": "Enter your cron string",
+        "cron-explain": "Enter your cron string -- NOTE: 0 = Monday on last option.",
         "custom": "Custom Command",
         "days": "Days",
         "enabled": "Enabled",

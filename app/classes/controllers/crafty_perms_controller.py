@@ -35,20 +35,16 @@ class CraftyPermsController:
         )
 
     @staticmethod
-    def can_add_user():  # Add back argument 'user_id' when you work on this
-        return True
-        # TODO: Complete if we need a User Addition limit
-        # return crafty_permissions.can_add_in_crafty(
-        #     user_id, Enum_Permissions_Crafty.User_Config
-        # )
+    def can_add_user(user_id):
+        return PermissionsCrafty.can_add_in_crafty(
+            user_id, EnumPermissionsCrafty.USER_CONFIG
+        )
 
     @staticmethod
-    def can_add_role():  # Add back argument 'user_id' when you work on this
-        return True
-        # TODO: Complete if we need a Role Addition limit
-        # return crafty_permissions.can_add_in_crafty(
-        #     user_id, Enum_Permissions_Crafty.Roles_Config
-        # )
+    def can_add_role(user_id):
+        return PermissionsCrafty.can_add_in_crafty(
+            user_id, EnumPermissionsCrafty.ROLES_CONFIG
+        )
 
     @staticmethod
     def list_all_crafty_permissions_quantity_limits():
@@ -67,6 +63,14 @@ class CraftyPermsController:
     @staticmethod
     def add_server_creation(user_id):
         return PermissionsCrafty.add_server_creation(user_id)
+
+    @staticmethod
+    def add_user_creation(user_id):
+        return PermissionsCrafty.add_user_creation(user_id)
+
+    @staticmethod
+    def add_role_creation(user_id):
+        return PermissionsCrafty.add_role_creation(user_id)
 
     @staticmethod
     def get_api_key_permissions_list(key: ApiKeys):
