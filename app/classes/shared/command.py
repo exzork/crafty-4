@@ -68,11 +68,11 @@ class MainPrompt(cmd.Cmd):
             return False
 
         if len(new_pass) > 512:
-            Console.warning("Password Too Long")
+            Console.warning("Passwords must be greater than 6char long and under 512")
             return False
 
         if len(new_pass) < 6:
-            Console.warning("Password Too Short")
+            Console.warning("Passwords must be greater than 6char long and under 512")
             return False
         self.controller.users.update_user(user_id, {"password": new_pass})
 
