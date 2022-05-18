@@ -220,7 +220,7 @@ win-dev-build:
       --collect-all six
 
   # Download latest:
-  # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/dev/download?job=win-dev-build
+  # | https://gitlab.com/crafty-controller/crafty-4/-/jobs/artifacts/dev/download?job=win-dev-build
   artifacts:
     name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
     paths:
@@ -261,7 +261,7 @@ win-prod-build:
       --collect-all six
 
   # Download latest:
-  # | https://gitlab.com/crafty-controller/crafty-commander/-/jobs/artifacts/master/download?job=win-prod-build
+  # | https://gitlab.com/crafty-controller/crafty-4/-/jobs/artifacts/master/download?job=win-prod-build
   artifacts:
     name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
     paths:

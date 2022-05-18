@@ -2,16 +2,9 @@ import json
 import logging
 import asyncio
 from urllib.parse import parse_qsl
+import tornado.websocket
 
-from app.classes.shared.authentication import authentication
-from app.classes.shared.helpers import helper
-from app.classes.web.websocket_helper import websocket_helper
-
-try:
-    import tornado.websocket
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
+from app.classes.shared.helpers import Helpers
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +17,10 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
     translator = None
     io_loop = None
 
-    def initialize(self, controller=None, tasks_manager=None, translator=None):
+    def initialize(
+        self, helper=None, controller=None, tasks_manager=None, translator=None
+    ):
+        self.helper = helper
         self.controller = controller
         self.tasks_manager = tasks_manager
         self.translator = translator
@@ -39,11 +35,11 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         return remote_ip
 
     def get_user_id(self):
-        _, _, user = authentication.check(self.get_cookie("token"))
+        _, _, user = self.controller.authentication.check(self.get_cookie("token"))
         return user["user_id"]
 
     def check_auth(self):
-        return authentication.check_bool(self.get_cookie("token"))
+        return self.controller.authentication.check_bool(self.get_cookie("token"))
 
     # pylint: disable=arguments-differ
     def open(self):
@@ -51,7 +47,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         if self.check_auth():
             self.handle()
         else:
-            websocket_helper.send_message(
+            self.helper.websocket_helper.send_message(
                 self, "notification", "Not authenticated for WebSocket connection"
             )
             self.close()
@@ -62,7 +58,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
                 "Someone tried to connect via WebSocket without proper authentication",
                 self.get_remote_ip(),
             )
-            websocket_helper.broadcast(
+            self.helper.websocket_helper.broadcast(
                 "notification",
                 "Someone tried to connect via WebSocket without proper authentication",
             )
@@ -74,10 +70,10 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         self.page = self.get_query_argument("page")
         self.page_query_params = dict(
             parse_qsl(
-                helper.remove_prefix(self.get_query_argument("page_query_params"), "?")
+                Helpers.remove_prefix(self.get_query_argument("page_query_params"), "?")
             )
         )
-        websocket_helper.add_client(self)
+        self.helper.websocket_helper.add_client(self)
         logger.debug("Opened WebSocket connection")
 
     # pylint: disable=arguments-renamed
@@ -89,7 +85,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         logger.debug(f"Event Type: {message['event']}, Data: {message['data']}")
 
     def on_close(self):
-        websocket_helper.remove_client(self)
+        self.helper.websocket_helper.remove_client(self)
         logger.debug("Closed WebSocket connection")
 
     async def write_message_int(self, message):

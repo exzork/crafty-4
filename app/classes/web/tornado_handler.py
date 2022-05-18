@@ -3,43 +3,50 @@ import sys
 import json
 import asyncio
 import logging
+import tornado.web
+import tornado.ioloop
+import tornado.log
+import tornado.template
+import tornado.escape
+import tornado.locale
+import tornado.httpserver
 
-from app.classes.shared.translation import translation
-from app.classes.shared.console import console
-from app.classes.shared.helpers import helper
+from app.classes.shared.console import Console
+from app.classes.shared.helpers import Helpers
 from app.classes.web.file_handler import FileHandler
 from app.classes.web.public_handler import PublicHandler
 from app.classes.web.panel_handler import PanelHandler
 from app.classes.web.default_handler import DefaultHandler
 from app.classes.web.server_handler import ServerHandler
 from app.classes.web.ajax_handler import AjaxHandler
-from app.classes.web.api_handler import ServersStats, NodeStats
+from app.classes.web.api_handler import (
+    ServersStats,
+    NodeStats,
+    ServerBackup,
+    StartServer,
+    StopServer,
+    RestartServer,
+    CreateUser,
+    DeleteUser,
+    ListServers,
+    SendCommand,
+)
 from app.classes.web.websocket_handler import SocketHandler
 from app.classes.web.static_handler import CustomStaticHandler
 from app.classes.web.upload_handler import UploadHandler
 from app.classes.web.http_handler import HTTPHandler, HTTPHandlerPage
 from app.classes.web.status_handler import StatusHandler
 
-try:
-    import tornado.web
-    import tornado.ioloop
-    import tornado.log
-    import tornado.template
-    import tornado.escape
-    import tornado.locale
-    import tornado.httpserver
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
 
 
 class Webserver:
-    def __init__(self, controller, tasks_manager):
+    def __init__(self, helper, controller, tasks_manager):
         self.ioloop = None
-        self.HTTP_Server = None
-        self.HTTPS_Server = None
+        self.http_server = None
+        self.https_server = None
+        self.helper = helper
         self.controller = controller
         self.tasks_manager = tasks_manager
         self._asyncio_patch()
@@ -92,16 +99,16 @@ class Webserver:
     def run_tornado(self):
 
         # let's verify we have an SSL cert
-        helper.create_self_signed_cert()
+        self.helper.create_self_signed_cert()
 
-        http_port = helper.get_setting("http_port")
-        https_port = helper.get_setting("https_port")
+        http_port = self.helper.get_setting("http_port")
+        https_port = self.helper.get_setting("https_port")
 
-        debug_errors = helper.get_setting("show_errors")
-        cookie_secret = helper.get_setting("cookie_secret")
+        debug_errors = self.helper.get_setting("show_errors")
+        cookie_secret = self.helper.get_setting("cookie_secret")
 
         if cookie_secret is False:
-            cookie_secret = helper.random_string_generator(32)
+            cookie_secret = self.helper.random_string_generator(32)
 
         if not http_port:
             http_port = 8000
@@ -111,10 +118,10 @@ class Webserver:
 
         cert_objects = {
             "certfile": os.path.join(
-                helper.config_dir, "web", "certs", "commander.cert.pem"
+                self.helper.config_dir, "web", "certs", "commander.cert.pem"
             ),
             "keyfile": os.path.join(
-                helper.config_dir, "web", "certs", "commander.key.pem"
+                self.helper.config_dir, "web", "certs", "commander.key.pem"
             ),
         }
 
@@ -128,9 +135,10 @@ class Webserver:
         tornado.locale.set_default_locale("en_EN")
 
         handler_args = {
+            "helper": self.helper,
             "controller": self.controller,
             "tasks_manager": self.tasks_manager,
-            "translator": translation,
+            "translator": self.helper.translation,
         }
         handlers = [
             (r"/", DefaultHandler, handler_args),
@@ -139,17 +147,26 @@ class Webserver:
             (r"/server/(.*)", ServerHandler, handler_args),
             (r"/ajax/(.*)", AjaxHandler, handler_args),
             (r"/files/(.*)", FileHandler, handler_args),
-            (r"/api/stats/servers", ServersStats, handler_args),
-            (r"/api/stats/node", NodeStats, handler_args),
             (r"/ws", SocketHandler, handler_args),
             (r"/upload", UploadHandler, handler_args),
             (r"/status", StatusHandler, handler_args),
+            # API Routes
+            (r"/api/v1/stats/servers", ServersStats, handler_args),
+            (r"/api/v1/stats/node", NodeStats, handler_args),
+            (r"/api/v1/server/send_command", SendCommand, handler_args),
+            (r"/api/v1/server/backup", ServerBackup, handler_args),
+            (r"/api/v1/server/start", StartServer, handler_args),
+            (r"/api/v1/server/stop", StopServer, handler_args),
+            (r"/api/v1/server/restart", RestartServer, handler_args),
+            (r"/api/v1/list_servers", ListServers, handler_args),
+            (r"/api/v1/users/create_user", CreateUser, handler_args),
+            (r"/api/v1/users/delete_user", DeleteUser, handler_args),
         ]
 
         app = tornado.web.Application(
             handlers,
-            template_path=os.path.join(helper.webroot, "templates"),
-            static_path=os.path.join(helper.webroot, "static"),
+            template_path=os.path.join(self.helper.webroot, "templates"),
+            static_path=os.path.join(self.helper.webroot, "static"),
             debug=debug_errors,
             cookie_secret=cookie_secret,
             xsrf_cookies=True,
@@ -160,7 +177,7 @@ class Webserver:
             static_handler_class=CustomStaticHandler,
             serve_traceback=debug_errors,
         )
-        HTTPhanders = [
+        http_handers = [
             (r"/", HTTPHandler, handler_args),
             (r"/public/(.*)", HTTPHandlerPage, handler_args),
             (r"/panel/(.*)", HTTPHandlerPage, handler_args),
@@ -171,10 +188,10 @@ class Webserver:
             (r"/ws", HTTPHandlerPage, handler_args),
             (r"/upload", HTTPHandlerPage, handler_args),
         ]
-        HTTPapp = tornado.web.Application(
-            HTTPhanders,
-            template_path=os.path.join(helper.webroot, "templates"),
-            static_path=os.path.join(helper.webroot, "static"),
+        http_app = tornado.web.Application(
+            http_handers,
+            template_path=os.path.join(self.helper.webroot, "templates"),
+            static_path=os.path.join(self.helper.webroot, "static"),
             debug=debug_errors,
             cookie_secret=cookie_secret,
             xsrf_cookies=True,
@@ -185,31 +202,31 @@ class Webserver:
             serve_traceback=debug_errors,
         )
 
-        self.HTTP_Server = tornado.httpserver.HTTPServer(HTTPapp)
-        self.HTTP_Server.listen(http_port)
+        self.http_server = tornado.httpserver.HTTPServer(http_app)
+        self.http_server.listen(http_port)
 
-        self.HTTPS_Server = tornado.httpserver.HTTPServer(app, ssl_options=cert_objects)
-        self.HTTPS_Server.listen(https_port)
+        self.https_server = tornado.httpserver.HTTPServer(app, ssl_options=cert_objects)
+        self.https_server.listen(https_port)
 
         logger.info(
-            f"https://{helper.get_local_ip()}:{https_port} "
+            f"https://{Helpers.get_local_ip()}:{https_port} "
             f"is up and ready for connections."
         )
-        console.info(
-            f"https://{helper.get_local_ip()}:{https_port} "
+        Console.info(
+            f"https://{Helpers.get_local_ip()}:{https_port} "
             f"is up and ready for connections."
         )
 
-        console.info("Server Init Complete: Listening For Connections:")
+        Console.info("Server Init Complete: Listening For Connections:")
 
         self.ioloop = tornado.ioloop.IOLoop.current()
         self.ioloop.start()
 
     def stop_web_server(self):
         logger.info("Shutting Down Web Server")
-        console.info("Shutting Down Web Server")
+        Console.info("Shutting Down Web Server")
         self.ioloop.stop()
-        self.HTTP_Server.stop()
-        self.HTTPS_Server.stop()
+        self.http_server.stop()
+        self.https_server.stop()
         logger.info("Web Server Stopped")
-        console.info("Web Server Stopped")
+        Console.info("Web Server Stopped")

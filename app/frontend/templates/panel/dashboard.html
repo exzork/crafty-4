@@ -75,7 +75,8 @@
                   <h3 class="mb-0 font-weight-semibold" id="total_players">{{ data['num_players'] }}</h3>
                 </div>
                 <div class="wrapper my-auto ml-auto ml-lg-4">
-                  <p class="mb-0 text-warning"><span id="max_players">0</span> {{ translate('dashboard', 'max', data['lang']) }}</p>
+                  <p class="mb-0 text-warning"><span id="max_players">0</span> {{ translate('dashboard', 'max',
+                    data['lang']) }}</p>
                 </div>
               </div>
             </div>
@@ -92,9 +93,11 @@
           <h4 class="card-title"><i class="fas fa-server"></i> &nbsp;{{ translate('dashboard', 'allServers',
             data['lang']) }}</h4>
           {% if len(data['servers']) > 0 %}
+          {% if data['user_data']['hints'] %}
           <span class="too_small" title="{{ translate('dashboard', 'cannotSeeOnMobile', data['lang']) }}" ,
                 data-content="{{ translate('dashboard', 'cannotSeeOnMobile2', data['lang']) }}" ,
                 data-placement="top"></span>
+          {% end %}
           {% end %}
           <div><a class="nav-link" href="/server/step1"><i class="fas fa-plus-circle"></i> &nbsp; {{
               translate('dashboard', 'newServer', data['lang']) }}</a></div>
@@ -230,7 +233,9 @@
                     data['lang']) }} <br />
 
                     {% if server['stats']['desc'] != 'False' %}
-                    <div id="desc_id" style="overflow-wrap: break-word !important; max-width: 85px !important; overflow: scroll;">{{ server['stats']['desc'] }}</div> <br />
+                    <div id="desc_id"
+                         style="overflow-wrap: break-word !important; max-width: 85px !important; overflow: scroll;">{{
+                      server['stats']['desc'] }}</div> <br />
                     {% end %}
 
                     {% if server['stats']['version'] != 'False' %}
@@ -251,7 +256,8 @@
                       data['lang']) }}</span>
                     {% end %}
                   </td>
-                  <span class="server-player-totals" id="server_players_{{server['server_data']['server_id']}}" data-players="{{ server['stats']['online']}}" data-max="{{ server['stats']['max'] }}"></span>
+                  <span class="server-player-totals" id="server_players_{{server['server_data']['server_id']}}"
+                        data-players="{{ server['stats']['online']}}" data-max="{{ server['stats']['max'] }}"></span>
                 </tr>
                 {% end %}
               </tbody>
@@ -754,11 +760,15 @@
     $(".clone_button").click(function () {
       server_id = $(this).attr("data-id");
       send_command(server_id, 'clone_server');
-      bootbox.alert({
+      bootbox.dialog({
         backdrop: true,
         title: '{% raw translate("dashboard", "sendingCommand", data["lang"]) %}',
-        message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientClone", data["lang"]) %} </div>'
+        message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientClone", data["lang"]) %} </div>',
+        closeButton: false,
       });
+      setTimeout(function () {
+        location.reload();
+      }, 5000)
     });
 
   });
@@ -798,7 +808,7 @@
 
   $(document).on("mousedown keyup click", function (event) {
     const value = $('.dataTables_filter input').val();
-    const is_mobile = $('#mobile').css('display') == 'none';
+    const is_mobile = $('#mobile').css('display') === 'none';
 
     if ($("table#servers_table tbody").sortable("toArray").length > 1 && value === '' && !is_mobile) {
       $("table#servers_table tbody").sortable("enable");
@@ -857,7 +867,7 @@
 
     // Fixes the appearance of a scrollbar when a user tries to drag an item too low
     // Disabled on mobile since sorting is disabled on mobile
-    if ($('#mobile').css('display') != 'none') {
+    if ($('#mobile').css('display') !== 'none') {
       $("div#servers_table_wrapper").css({ overflow: "hidden" });
     }
   });

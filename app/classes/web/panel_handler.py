@@ -6,28 +6,22 @@ from typing import Dict, Any, Tuple
 import json
 import logging
 import threading
+import bleach
+import libgravatar
+import requests
+import tornado.web
+import tornado.escape
+from tornado import iostream
 
-from app.classes.models.server_permissions import Enum_Permissions_Server
-from app.classes.models.crafty_permissions import Enum_Permissions_Crafty
-from app.classes.models.management import management_helper
-from app.classes.shared.authentication import authentication
-from app.classes.shared.helpers import helper
+# TZLocal is set as a hidden import on win pipeline
+from tzlocal import get_localzone
+from cron_validator import CronValidator
+
+from app.classes.models.server_permissions import EnumPermissionsServer
+from app.classes.models.crafty_permissions import EnumPermissionsCrafty
+from app.classes.models.management import HelpersManagement
+from app.classes.shared.helpers import Helpers
 from app.classes.web.base_handler import BaseHandler
-
-try:
-    import bleach
-    import libgravatar
-    import requests
-    import tornado.web
-    import tornado.escape
-    from tornado import iostream
-
-    # TZLocal is set as a hidden import on win pipeline
-    from tzlocal import get_localzone
-    from cron_validator import CronValidator
-
-except ModuleNotFoundError as ex:
-    helper.auto_installer_fix(ex)
 
 logger = logging.getLogger(__name__)
 
@@ -191,10 +185,10 @@ class PanelHandler(BaseHandler):
             )
         page_data["num_players"] = total_players
 
-        for s in page_data["servers"]:
+        for server in page_data["servers"]:
             try:
-                data = json.loads(s["int_ping_results"])
-                s["int_ping_results"] = data
+                data = json.loads(server["int_ping_results"])
+                server["int_ping_results"] = data
             except Exception as e:
                 logger.error(f"Failed server data for page with error: {e}")
 
@@ -268,14 +262,14 @@ class PanelHandler(BaseHandler):
             # todo: make this actually pull and compare version data
             "update_available": False,
             "serverTZ": get_localzone(),
-            "version_data": helper.get_version_string(),
+            "version_data": self.helper.get_version_string(),
             "user_data": exec_user,
             "user_role": exec_user_role,
             "user_crafty_permissions": exec_user_crafty_permissions,
             "crafty_permissions": {
-                "Server_Creation": Enum_Permissions_Crafty.Server_Creation,
-                "User_Config": Enum_Permissions_Crafty.User_Config,
-                "Roles_Config": Enum_Permissions_Crafty.Roles_Config,
+                "Server_Creation": EnumPermissionsCrafty.SERVER_CREATION,
+                "User_Config": EnumPermissionsCrafty.USER_CONFIG,
+                "Roles_Config": EnumPermissionsCrafty.ROLES_CONFIG,
             },
             "server_stats": {
                 "total": len(defined_servers),
@@ -287,11 +281,11 @@ class PanelHandler(BaseHandler):
             },
             "menu_servers": defined_servers,
             "hosts_data": self.controller.management.get_latest_hosts_stats(),
-            "show_contribute": helper.get_setting("show_contribute_link", True),
+            "show_contribute": self.helper.get_setting("show_contribute_link", True),
             "error": error,
             "time": formatted_time,
             "lang": self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
-            "lang_page": helper.getLangPage(
+            "lang_page": Helpers.get_lang_page(
                 self.controller.users.get_user_lang_by_id(exec_user["user_id"])
             ),
             "super_user": superuser,
@@ -306,15 +300,17 @@ class PanelHandler(BaseHandler):
             else None,
             "superuser": superuser,
         }
-        if helper.get_setting("allow_nsfw_profile_pictures"):
+        if self.helper.get_setting("allow_nsfw_profile_pictures"):
             rating = "x"
         else:
             rating = "g"
 
         # Get grvatar hash for profile pictures
         if exec_user["email"] != "default@example.com" or "":
-            g = libgravatar.Gravatar(libgravatar.sanitize_email(exec_user["email"]))
-            url = g.get_image(
+            gravatar = libgravatar.Gravatar(
+                libgravatar.sanitize_email(exec_user["email"])
+            )
+            url = gravatar.get_image(
                 size=80,
                 default="404",
                 force_default=False,
@@ -322,9 +318,12 @@ class PanelHandler(BaseHandler):
                 filetype_extension=False,
                 use_ssl=True,
             )  # + "?d=404"
-            if requests.head(url).status_code != 404:
-                profile_url = url
-            else:
+            try:
+                if requests.head(url).status_code != 404:
+                    profile_url = url
+                else:
+                    profile_url = "/static/assets/images/faces-clipart/pic-3.png"
+            except:
                 profile_url = "/static/assets/images/faces-clipart/pic-3.png"
         else:
             profile_url = "/static/assets/images/faces-clipart/pic-3.png"
@@ -338,7 +337,9 @@ class PanelHandler(BaseHandler):
             template = "public/error.html"
 
         elif page == "credits":
-            with open(helper.credits_cache, encoding="utf-8") as credits_default_local:
+            with open(
+                self.helper.credits_cache, encoding="utf-8"
+            ) as credits_default_local:
                 try:
                     remote = requests.get(
                         "https://craftycontrol.com/credits", allow_redirects=True
@@ -499,14 +500,14 @@ class PanelHandler(BaseHandler):
             )
             page_data["active_link"] = subpage
             page_data["permissions"] = {
-                "Commands": Enum_Permissions_Server.Commands,
-                "Terminal": Enum_Permissions_Server.Terminal,
-                "Logs": Enum_Permissions_Server.Logs,
-                "Schedule": Enum_Permissions_Server.Schedule,
-                "Backup": Enum_Permissions_Server.Backup,
-                "Files": Enum_Permissions_Server.Files,
-                "Config": Enum_Permissions_Server.Config,
-                "Players": Enum_Permissions_Server.Players,
+                "Commands": EnumPermissionsServer.COMMANDS,
+                "Terminal": EnumPermissionsServer.TERMINAL,
+                "Logs": EnumPermissionsServer.LOGS,
+                "Schedule": EnumPermissionsServer.SCHEDULE,
+                "Backup": EnumPermissionsServer.BACKUP,
+                "Files": EnumPermissionsServer.FILES,
+                "Config": EnumPermissionsServer.CONFIG,
+                "Players": EnumPermissionsServer.PLAYERS,
             }
             page_data[
                 "user_permissions"
@@ -582,7 +583,7 @@ class PanelHandler(BaseHandler):
                             "/panel/error?error=Unauthorized access To Schedules"
                         )
                         return
-                page_data["schedules"] = management_helper.get_schedules_by_server(
+                page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                     server_id
                 )
 
@@ -632,7 +633,7 @@ class PanelHandler(BaseHandler):
                 ).send_backup_status()
                 # makes it so relative path is the only thing shown
                 for file in page_data["exclusions"]:
-                    if helper.is_os_windows():
+                    if Helpers.is_os_windows():
                         exclusions.append(file.replace(server_info["path"] + "\\", ""))
                     else:
                         exclusions.append(file.replace(server_info["path"] + "/", ""))
@@ -642,7 +643,7 @@ class PanelHandler(BaseHandler):
                     page_data["backup_list"] = server.list_backups()
                 except:
                     page_data["backup_list"] = []
-                page_data["backup_path"] = helper.wtol_path(server_info["backup_path"])
+                page_data["backup_path"] = Helpers.wtol_path(server_info["backup_path"])
 
             def get_banned_players_html():
                 banned_players = self.controller.servers.get_banned_players(server_id)
@@ -685,11 +686,11 @@ class PanelHandler(BaseHandler):
             server_info = self.controller.servers.get_server_data_by_id(server_id)
             backup_file = os.path.abspath(
                 os.path.join(
-                    helper.get_os_understandable_path(server_info["backup_path"]), file
+                    Helpers.get_os_understandable_path(server_info["backup_path"]), file
                 )
             )
-            if not helper.in_path(
-                helper.get_os_understandable_path(server_info["backup_path"]),
+            if not Helpers.in_path(
+                Helpers.get_os_understandable_path(server_info["backup_path"]),
                 backup_file,
             ) or not os.path.isfile(backup_file):
                 self.redirect("/panel/error?error=Invalid path detected")
@@ -766,8 +767,9 @@ class PanelHandler(BaseHandler):
             page_data["user"]["last_ip"] = "N/A"
             page_data["user"]["last_update"] = "N/A"
             page_data["user"]["roles"] = set()
+            page_data["user"]["hints"] = True
 
-            if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
+            if EnumPermissionsCrafty.USER_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
                     "/panel/error?error=Unauthorized access: not a user editor"
                 )
@@ -795,10 +797,10 @@ class PanelHandler(BaseHandler):
             else:
                 page_data["super-disabled"] = "disabled"
             for file in sorted(
-                os.listdir(os.path.join(helper.root_dir, "app", "translations"))
+                os.listdir(os.path.join(self.helper.root_dir, "app", "translations"))
             ):
                 if file.endswith(".json"):
-                    if file not in helper.get_setting("disabled_language_files"):
+                    if file not in self.helper.get_setting("disabled_language_files"):
                         if file != str(page_data["languages"][0] + ".json"):
                             page_data["languages"].append(file.split(".")[0])
 
@@ -806,7 +808,7 @@ class PanelHandler(BaseHandler):
 
         elif page == "add_schedule":
             server_id = self.get_argument("id", None)
-            page_data["schedules"] = management_helper.get_schedules_by_server(
+            page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                 server_id
             )
             page_data["get_players"] = lambda: self.controller.stats.get_server_players(
@@ -814,14 +816,14 @@ class PanelHandler(BaseHandler):
             )
             page_data["active_link"] = "schedules"
             page_data["permissions"] = {
-                "Commands": Enum_Permissions_Server.Commands,
-                "Terminal": Enum_Permissions_Server.Terminal,
-                "Logs": Enum_Permissions_Server.Logs,
-                "Schedule": Enum_Permissions_Server.Schedule,
-                "Backup": Enum_Permissions_Server.Backup,
-                "Files": Enum_Permissions_Server.Files,
-                "Config": Enum_Permissions_Server.Config,
-                "Players": Enum_Permissions_Server.Players,
+                "Commands": EnumPermissionsServer.COMMANDS,
+                "Terminal": EnumPermissionsServer.TERMINAL,
+                "Logs": EnumPermissionsServer.LOGS,
+                "Schedule": EnumPermissionsServer.SCHEDULE,
+                "Backup": EnumPermissionsServer.BACKUP,
+                "Files": EnumPermissionsServer.FILES,
+                "Config": EnumPermissionsServer.CONFIG,
+                "Players": EnumPermissionsServer.PLAYERS,
             }
             page_data[
                 "user_permissions"
@@ -854,7 +856,7 @@ class PanelHandler(BaseHandler):
             page_data["schedule"]["difficulty"] = "basic"
             page_data["schedule"]["interval_type"] = "days"
 
-            if not Enum_Permissions_Server.Schedule in page_data["user_permissions"]:
+            if not EnumPermissionsServer.SCHEDULE in page_data["user_permissions"]:
                 if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access To Schedules")
                     return
@@ -863,7 +865,7 @@ class PanelHandler(BaseHandler):
 
         elif page == "edit_schedule":
             server_id = self.get_argument("id", None)
-            page_data["schedules"] = management_helper.get_schedules_by_server(
+            page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                 server_id
             )
             sch_id = self.get_argument("sch_id", None)
@@ -873,14 +875,14 @@ class PanelHandler(BaseHandler):
             )
             page_data["active_link"] = "schedules"
             page_data["permissions"] = {
-                "Commands": Enum_Permissions_Server.Commands,
-                "Terminal": Enum_Permissions_Server.Terminal,
-                "Logs": Enum_Permissions_Server.Logs,
-                "Schedule": Enum_Permissions_Server.Schedule,
-                "Backup": Enum_Permissions_Server.Backup,
-                "Files": Enum_Permissions_Server.Files,
-                "Config": Enum_Permissions_Server.Config,
-                "Players": Enum_Permissions_Server.Players,
+                "Commands": EnumPermissionsServer.COMMANDS,
+                "Terminal": EnumPermissionsServer.TERMINAL,
+                "Logs": EnumPermissionsServer.LOGS,
+                "Schedule": EnumPermissionsServer.SCHEDULE,
+                "Backup": EnumPermissionsServer.BACKUP,
+                "Files": EnumPermissionsServer.FILES,
+                "Config": EnumPermissionsServer.CONFIG,
+                "Players": EnumPermissionsServer.PLAYERS,
             }
             page_data[
                 "user_permissions"
@@ -933,7 +935,7 @@ class PanelHandler(BaseHandler):
             if sch_id is None or server_id is None:
                 self.redirect("/panel/error?error=Invalid server ID or Schedule ID")
 
-            if not Enum_Permissions_Server.Schedule in page_data["user_permissions"]:
+            if not EnumPermissionsServer.SCHEDULE in page_data["user_permissions"]:
                 if not superuser:
                     self.redirect("/panel/error?error=Unauthorized access To Schedules")
                     return
@@ -975,19 +977,17 @@ class PanelHandler(BaseHandler):
                 page_data["super-disabled"] = "disabled"
 
             for file in sorted(
-                os.listdir(os.path.join(helper.root_dir, "app", "translations"))
+                os.listdir(os.path.join(self.helper.root_dir, "app", "translations"))
             ):
                 if file.endswith(".json"):
-                    if file not in helper.get_setting("disabled_language_files"):
+                    if file not in self.helper.get_setting("disabled_language_files"):
                         if file != str(page_data["languages"][0] + ".json"):
                             page_data["languages"].append(file.split(".")[0])
 
             if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
-            elif (
-                Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions
-            ):
+            elif EnumPermissionsCrafty.USER_CONFIG not in exec_user_crafty_permissions:
                 if str(user_id) != str(exec_user["user_id"]):
                     self.redirect(
                         "/panel/error?error=Unauthorized access: not a user editor"
@@ -1029,7 +1029,7 @@ class PanelHandler(BaseHandler):
 
             if (
                 not superuser
-                and Enum_Permissions_Crafty.User_Config
+                and EnumPermissionsCrafty.USER_CONFIG
                 not in exec_user_crafty_permissions
             ):
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
@@ -1075,7 +1075,7 @@ class PanelHandler(BaseHandler):
             page_data["user-roles"] = user_roles
             page_data["users"] = self.controller.users.get_all_users()
 
-            if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
+            if EnumPermissionsCrafty.ROLES_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
@@ -1103,7 +1103,7 @@ class PanelHandler(BaseHandler):
             page_data["user-roles"] = user_roles
             page_data["users"] = self.controller.users.get_all_users()
 
-            if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
+            if EnumPermissionsCrafty.ROLES_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
@@ -1146,7 +1146,7 @@ class PanelHandler(BaseHandler):
             template = "panel/activity_logs.html"
 
         elif page == "download_file":
-            file = helper.get_os_understandable_path(self.get_argument("path", ""))
+            file = Helpers.get_os_understandable_path(self.get_argument("path", ""))
             name = self.get_argument("name", "")
 
             server_id = self.check_server_id()
@@ -1155,8 +1155,8 @@ class PanelHandler(BaseHandler):
 
             server_info = self.controller.servers.get_server_data_by_id(server_id)
 
-            if not helper.in_path(
-                helper.get_os_understandable_path(server_info["path"]), file
+            if not Helpers.in_path(
+                Helpers.get_os_understandable_path(server_info["path"]), file
             ) or not os.path.isfile(file):
                 self.redirect("/panel/error?error=Invalid path detected")
                 return
@@ -1165,7 +1165,7 @@ class PanelHandler(BaseHandler):
             self.redirect(f"/panel/server_detail?id={server_id}&subpage=files")
 
         elif page == "download_support_package":
-            tempZipStorage = exec_user["support_logs"]
+            temp_zip_storage = exec_user["support_logs"]
             # We'll reset the support path for this user now.
             self.controller.users.set_support_path(exec_user["user_id"], "")
 
@@ -1174,8 +1174,8 @@ class PanelHandler(BaseHandler):
                 "Content-Disposition", "attachment; filename=" + "support_logs.zip"
             )
             chunk_size = 1024 * 1024 * 4  # 4 MiB
-            if tempZipStorage != "":
-                with open(tempZipStorage, "rb") as f:
+            if temp_zip_storage != "":
+                with open(temp_zip_storage, "rb") as f:
                     while True:
                         chunk = f.read(chunk_size)
                         if not chunk:
@@ -1230,14 +1230,14 @@ class PanelHandler(BaseHandler):
 
         server_id = self.get_argument("id", None)
         permissions = {
-            "Commands": Enum_Permissions_Server.Commands,
-            "Terminal": Enum_Permissions_Server.Terminal,
-            "Logs": Enum_Permissions_Server.Logs,
-            "Schedule": Enum_Permissions_Server.Schedule,
-            "Backup": Enum_Permissions_Server.Backup,
-            "Files": Enum_Permissions_Server.Files,
-            "Config": Enum_Permissions_Server.Config,
-            "Players": Enum_Permissions_Server.Players,
+            "Commands": EnumPermissionsServer.COMMANDS,
+            "Terminal": EnumPermissionsServer.TERMINAL,
+            "Logs": EnumPermissionsServer.LOGS,
+            "Schedule": EnumPermissionsServer.SCHEDULE,
+            "Backup": EnumPermissionsServer.BACKUP,
+            "Files": EnumPermissionsServer.FILES,
+            "Config": EnumPermissionsServer.CONFIG,
+            "Players": EnumPermissionsServer.PLAYERS,
         }
         exec_user_role = set()
         if superuser:
@@ -1271,13 +1271,13 @@ class PanelHandler(BaseHandler):
             server_obj = self.controller.servers.get_server_obj(server_id)
             if superuser:
                 server_path = self.get_argument("server_path", None)
-                if helper.is_os_windows():
+                if Helpers.is_os_windows():
                     server_path.replace(" ", "^ ")
-                    server_path = helper.wtol_path(server_path)
+                    server_path = Helpers.wtol_path(server_path)
                 log_path = self.get_argument("log_path", None)
-                if helper.is_os_windows():
+                if Helpers.is_os_windows():
                     log_path.replace(" ", "^ ")
-                    log_path = helper.wtol_path(log_path)
+                    log_path = Helpers.wtol_path(log_path)
                 executable = self.get_argument("executable", None)
                 execution_command = self.get_argument("execution_command", None)
                 server_ip = self.get_argument("server_ip", None)
@@ -1308,12 +1308,14 @@ class PanelHandler(BaseHandler):
 
             server_obj.server_name = server_name
             if superuser:
-                if helper.validate_traversal(
-                    helper.get_servers_root_dir(), server_path
+                if Helpers.validate_traversal(
+                    self.helper.get_servers_root_dir(), server_path
                 ):
                     server_obj.path = server_path
                     server_obj.log_path = log_path
-                if helper.validate_traversal(helper.get_servers_root_dir(), executable):
+                if Helpers.validate_traversal(
+                    self.helper.get_servers_root_dir(), executable
+                ):
                     server_obj.executable = executable
                 server_obj.execution_command = execution_command
                 server_obj.server_ip = server_ip
@@ -1358,9 +1360,9 @@ class PanelHandler(BaseHandler):
                 checked = self.controller.management.get_excluded_backup_dirs(server_id)
             if superuser:
                 backup_path = bleach.clean(self.get_argument("backup_path", None))
-                if helper.is_os_windows():
+                if Helpers.is_os_windows():
                     backup_path.replace(" ", "^ ")
-                    backup_path = helper.wtol_path(backup_path)
+                    backup_path = Helpers.wtol_path(backup_path)
             else:
                 backup_path = server_obj.backup_path
             max_backups = bleach.clean(self.get_argument("max_backups", None))
@@ -1473,7 +1475,7 @@ class PanelHandler(BaseHandler):
                 one_time = False
 
             if not superuser and not permissions[
-                "Backup"
+                "Schedule"
             ] in self.controller.server_perms.get_user_id_permissions_list(
                 exec_user["user_id"], server_id
             ):
@@ -1631,7 +1633,7 @@ class PanelHandler(BaseHandler):
                 one_time = False
 
             if not superuser and not permissions[
-                "Backup"
+                "Schedule"
             ] in self.controller.server_perms.get_user_id_permissions_list(
                 exec_user["user_id"], server_id
             ):
@@ -1731,8 +1733,13 @@ class PanelHandler(BaseHandler):
             password1 = bleach.clean(self.get_argument("password1", None))
             email = bleach.clean(self.get_argument("email", "default@example.com"))
             enabled = int(float(self.get_argument("enabled", "0")))
+            try:
+                hints = int(bleach.clean(self.get_argument("hints")))
+                hints = True
+            except:
+                hints = False
             lang = bleach.clean(
-                self.get_argument("language"), helper.get_setting("language")
+                self.get_argument("language"), self.helper.get_setting("language")
             )
 
             if superuser:
@@ -1749,67 +1756,73 @@ class PanelHandler(BaseHandler):
                 superuser = True
             else:
                 superuser = False
+            if not exec_user["superuser"]:
+                if (
+                    EnumPermissionsCrafty.USER_CONFIG
+                    not in exec_user_crafty_permissions
+                ):
+                    if str(user_id) != str(exec_user["user_id"]):
+                        self.redirect(
+                            "/panel/error?error=Unauthorized access: not a user editor"
+                        )
+                        return
 
-            if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
-                if str(user_id) != str(exec_user["user_id"]):
-                    self.redirect(
-                        "/panel/error?error=Unauthorized access: not a user editor"
+                    user_data = {
+                        "username": username,
+                        "password": password0,
+                        "email": email,
+                        "lang": lang,
+                        "hints": hints,
+                    }
+                    self.controller.users.update_user(user_id, user_data=user_data)
+
+                    self.controller.management.add_to_audit_log(
+                        exec_user["user_id"],
+                        f"Edited user {username} (UID:{user_id}) password",
+                        server_id=0,
+                        source_ip=self.get_remote_ip(),
                     )
+                    self.redirect("/panel/panel_config")
                     return
+                elif username is None or username == "":
+                    self.redirect("/panel/error?error=Invalid username")
+                    return
+                elif user_id is None:
+                    self.redirect("/panel/error?error=Invalid User ID")
+                    return
+                else:
+                    # does this user id exist?
+                    if not self.controller.users.user_id_exists(user_id):
+                        self.redirect("/panel/error?error=Invalid User ID")
+                        return
+            else:
+                if password0 != password1:
+                    self.redirect("/panel/error?error=Passwords must match")
+                    return
+
+                roles = self.get_user_role_memberships()
+                permissions_mask, server_quantity = self.get_perms_quantity()
+
+                # if email is None or "":
+                #     email = "default@example.com"
 
                 user_data = {
                     "username": username,
                     "password": password0,
+                    "email": email,
+                    "enabled": enabled,
+                    "roles": roles,
                     "lang": lang,
+                    "superuser": superuser,
+                    "hints": hints,
                 }
-                self.controller.users.update_user(user_id, user_data=user_data)
-
-                self.controller.management.add_to_audit_log(
-                    exec_user["user_id"],
-                    f"Edited user {username} (UID:{user_id}) password",
-                    server_id=0,
-                    source_ip=self.get_remote_ip(),
+                user_crafty_data = {
+                    "permissions_mask": permissions_mask,
+                    "server_quantity": server_quantity,
+                }
+                self.controller.users.update_user(
+                    user_id, user_data=user_data, user_crafty_data=user_crafty_data
                 )
-                self.redirect("/panel/panel_config")
-                return
-            elif username is None or username == "":
-                self.redirect("/panel/error?error=Invalid username")
-                return
-            elif user_id is None:
-                self.redirect("/panel/error?error=Invalid User ID")
-                return
-            else:
-                # does this user id exist?
-                if not self.controller.users.user_id_exists(user_id):
-                    self.redirect("/panel/error?error=Invalid User ID")
-                    return
-
-            if password0 != password1:
-                self.redirect("/panel/error?error=Passwords must match")
-                return
-
-            roles = self.get_user_role_memberships()
-            permissions_mask, server_quantity = self.get_perms_quantity()
-
-            # if email is None or "":
-            #     email = "default@example.com"
-
-            user_data = {
-                "username": username,
-                "password": password0,
-                "email": email,
-                "enabled": enabled,
-                "roles": roles,
-                "lang": lang,
-                "superuser": superuser,
-            }
-            user_crafty_data = {
-                "permissions_mask": permissions_mask,
-                "server_quantity": server_quantity,
-            }
-            self.controller.users.update_user(
-                user_id, user_data=user_data, user_crafty_data=user_crafty_data
-            )
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
@@ -1844,8 +1857,8 @@ class PanelHandler(BaseHandler):
                 name,
                 user_id,
                 superuser,
-                crafty_permissions_mask,
                 server_permissions_mask,
+                crafty_permissions_mask,
             )
 
             self.controller.management.add_to_audit_log(
@@ -1874,13 +1887,15 @@ class PanelHandler(BaseHandler):
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
                 f"Generated a new API token for the key {key.name} "
-                f"from user with UID: {key.user.user_id}",
+                f"from user with UID: {key.user_id}",
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )
 
             self.write(
-                authentication.generate(key.user.user_id, {"token_id": key.token_id})
+                self.controller.authentication.generate(
+                    key.user_id.user_id, {"token_id": key.token_id}
+                )
             )
             self.finish()
 
@@ -1897,19 +1912,21 @@ class PanelHandler(BaseHandler):
             password1 = bleach.clean(self.get_argument("password1", None))
             email = bleach.clean(self.get_argument("email", "default@example.com"))
             enabled = int(float(self.get_argument("enabled", "0")))
+            hints = True
             lang = bleach.clean(
-                self.get_argument("lang", helper.get_setting("language"))
+                self.get_argument("lang", self.helper.get_setting("language"))
             )
+            # We don't want a non-super user to be able to create a super user.
             if superuser:
-                superuser = bleach.clean(self.get_argument("superuser", "0"))
+                new_superuser = bleach.clean(self.get_argument("superuser", "0"))
             else:
-                superuser = "0"
+                new_superuser = "0"
             if superuser == "1":
-                superuser = True
+                new_superuser = True
             else:
-                superuser = False
+                new_superuser = False
 
-            if Enum_Permissions_Crafty.User_Config not in exec_user_crafty_permissions:
+            if EnumPermissionsCrafty.USER_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
                     "/panel/error?error=Unauthorized access: not a user editor"
                 )
@@ -1935,12 +1952,9 @@ class PanelHandler(BaseHandler):
                 password=password0,
                 email=email,
                 enabled=enabled,
-                superuser=superuser,
+                superuser=new_superuser,
             )
-            user_data = {
-                "roles": roles,
-                "lang": lang,
-            }
+            user_data = {"roles": roles, "lang": lang, "hints": True}
             user_crafty_data = {
                 "permissions_mask": permissions_mask,
                 "server_quantity": server_quantity,
@@ -1967,7 +1981,7 @@ class PanelHandler(BaseHandler):
             role_id = bleach.clean(self.get_argument("id", None))
             role_name = bleach.clean(self.get_argument("role_name", None))
 
-            if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
+            if EnumPermissionsCrafty.ROLES_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
@@ -2003,7 +2017,7 @@ class PanelHandler(BaseHandler):
         elif page == "add_role":
             role_name = bleach.clean(self.get_argument("role_name", None))
 
-            if Enum_Permissions_Crafty.Roles_Config not in exec_user_crafty_permissions:
+            if EnumPermissionsCrafty.ROLES_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
@@ -2042,8 +2056,8 @@ class PanelHandler(BaseHandler):
         else:
             self.set_status(404)
             page_data = {
-                "lang": helper.get_setting("language"),
-                "lang_page": helper.getLangPage(helper.get_setting("language")),
+                "lang": self.helper.get_setting("language"),
+                "lang_page": Helpers.get_lang_page(self.helper.get_setting("language")),
             }
             self.render(
                 "public/404.html", translate=self.translator.translate, data=page_data
@@ -2059,12 +2073,12 @@ class PanelHandler(BaseHandler):
         page_data = {
             # todo: make this actually pull and compare version data
             "update_available": False,
-            "version_data": helper.get_version_string(),
+            "version_data": self.helper.get_version_string(),
             "user_data": exec_user,
             "hosts_data": self.controller.management.get_latest_hosts_stats(),
-            "show_contribute": helper.get_setting("show_contribute_link", True),
+            "show_contribute": self.helper.get_setting("show_contribute_link", True),
             "lang": self.controller.users.get_user_lang_by_id(exec_user["user_id"]),
-            "lang_page": helper.getLangPage(
+            "lang_page": Helpers.get_lang_page(
                 self.controller.users.get_user_lang_by_id(exec_user["user_id"])
             ),
         }

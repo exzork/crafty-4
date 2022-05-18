@@ -7,8 +7,8 @@ ENV LOG4J_FORMAT_MSG_NO_LOOKUPS=true
 
 # Create non-root user & required dirs
 RUN useradd -g root -M crafty \
-    && mkdir /commander \
-    && chown -R crafty:root /commander
+    && mkdir /crafty \
+    && chown -R crafty:root /crafty
 
 # Install required system packages
 RUN apt-get update \
@@ -30,7 +30,7 @@ RUN apt-get update \
 
 # Switch to service user for installing crafty deps
 USER crafty
-WORKDIR /commander
+WORKDIR /crafty
 COPY --chown=crafty:root requirements.txt ./
 RUN python3 -m venv ./.venv \
     && . .venv/bin/activate \
@@ -51,8 +51,8 @@ EXPOSE 8443
 EXPOSE 19132
 EXPOSE 25500-25600
 
-# Start Crafty Commander through wrapper
-ENTRYPOINT ["/commander/docker_launcher.sh"]
+# Start Crafty through wrapper
+ENTRYPOINT ["/crafty/docker_launcher.sh"]
 CMD ["-v", "-d", "-i"]
 
 # Add meta labels
@@ -68,6 +68,6 @@ LABEL \
     org.opencontainers.image.description="A Game Server Control Panel / Launcher" \
     org.opencontainers.image.url="https://craftycontrol.com/" \
     org.opencontainers.image.documentation="https://wiki.craftycontrol.com/" \
-    org.opencontainers.image.source="https://gitlab.com/crafty-controller/crafty-commander" \
+    org.opencontainers.image.source="https://gitlab.com/crafty-controller/crafty-4" \
     org.opencontainers.image.vendor="Arcadia Technology, LLC." \
-    org.opencontainers.image.licenses=""
+    org.opencontainers.image.licenses="GPL-3.0"

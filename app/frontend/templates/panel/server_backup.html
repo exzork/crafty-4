@@ -306,6 +306,24 @@
 
 
   $(document).ready(function () {
+    try {
+      if ($('#backup_path').val() == '') {
+        console.log('true')
+        try {
+          document.getElementById('backup_now_button').disabled = true;
+        } catch {
+
+        }
+      } else {
+        document.getElementById('backup_now_button').disabled = false;
+      }
+    } catch {
+      try {
+        document.getElementById('backup_now_button').disabled = false;
+      } catch {
+
+      }
+    }
     console.log("ready!");
     $("#backup_config_box").hide();
     $("#backup_save_note").hide();

@@ -111,7 +111,7 @@
 
 {% block js %}
 <script>
-
+  const serverId = new URLSearchParams(document.location.search).get('id')
 
   //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
   function getCookie(name) {
@@ -145,7 +145,7 @@
     $.ajax({
       type: "POST",
       headers: { 'X-XSRFToken': token },
-      url: '/ajax/send_command?id=1',
+      url: '/ajax/send_command?id=' + serverId,
       data: { command },
       success: function (data) {
         console.log("got response:");

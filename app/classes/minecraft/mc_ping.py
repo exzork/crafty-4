@@ -9,7 +9,7 @@ import uuid
 import random
 
 from app.classes.minecraft.bedrock_ping import BedrockPing
-from app.classes.shared.console import console
+from app.classes.shared.console import Console
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +78,8 @@ class Players(list):
     def report(self):
         players = []
 
-        for x in self:
-            players.append(str(x))
+        for player in self:
+            players.append(str(player))
 
         r_data = {"online": self.online, "max": self.max, "players": players}
 
@@ -106,14 +106,14 @@ def get_code_format(format_name):
             return data.get(format_name)
         else:
             logger.error(f"Format MOTD Error: format name {format_name} does not exist")
-            console.error(
+            Console.error(
                 f"Format MOTD Error: format name {format_name} does not exist"
             )
             return ""
 
     except Exception as e:
         logger.critical(f"Config File Error: Unable to read {format_file} due to {e}")
-        console.critical(f"Config File Error: Unable to read {format_file} due to {e}")
+        Console.critical(f"Config File Error: Unable to read {format_file} due to {e}")
 
     return ""
 
@@ -179,11 +179,11 @@ def ping(ip, port):
 
 # For the rest of requests see wiki.vg/Protocol
 def ping_bedrock(ip, port):
-    rd = random.Random()
+    rand = random.Random()
     try:
         # pylint: disable=consider-using-f-string
-        rd.seed("".join(re.findall("..", "%012x" % uuid.getnode())))
-        client_guid = uuid.UUID(int=rd.getrandbits(32)).int
+        rand.seed("".join(re.findall("..", "%012x" % uuid.getnode())))
+        client_guid = uuid.UUID(int=rand.getrandbits(32)).int
     except:
         client_guid = 0
     try:

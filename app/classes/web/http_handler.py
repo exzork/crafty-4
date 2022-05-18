@@ -1,13 +1,7 @@
 import logging
+import requests
 
-from app.classes.shared.helpers import helper
 from app.classes.web.base_handler import BaseHandler
-
-try:
-    import requests
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +15,7 @@ class HTTPHandler(BaseHandler):
             url = "https://" + url_list[0]
         else:
             url = "https://" + url
-        db_port = helper.get_setting("https_port")
+        db_port = self.helper.get_setting("https_port")
         try:
             resp = requests.get(url + ":" + str(port))
             resp.raise_for_status()
@@ -39,7 +33,7 @@ class HTTPHandlerPage(BaseHandler):
             url = "https://" + url_list[0]
         else:
             url = "https://" + url
-        db_port = helper.get_setting("https_port")
+        db_port = self.helper.get_setting("https_port")
         try:
             resp = requests.get(url + ":" + str(port))
             resp.raise_for_status()

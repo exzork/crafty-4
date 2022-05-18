@@ -5,39 +5,60 @@
         <div class="row">
           <div class="col-sm-4 mr-2">
             {% if data['server_stats']['running'] %}
-            <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-success">{{ translate('serverStats', 'online', data['lang']) }}</span><br />
-            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started">{{ data['server_stats']['started'] }}</span><br />
-            <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime">{{ translate('serverStats', 'errorCalculatingUptime', data['lang']) }}</span>
+            <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status"
+              class="text-success">{{ translate('serverStats', 'online', data['lang']) }}</span><br />
+            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started">{{
+              data['server_stats']['started'] }}</span><br />
+            <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime">{{
+              translate('serverStats', 'errorCalculatingUptime', data['lang']) }}</span>
             {% elif data['server_stats']['crashed'] %}
-            <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-danger"> <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}</span><br />
-            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started" class="text-danger"> <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}</span><br />
-            <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime" class="text-danger"> <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}</span>
+            <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-danger">
+              <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang'])
+              }}</span><br />
+            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started"
+              class="text-danger"> <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed',
+              data['lang']) }}</span><br />
+            <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime" class="text-danger">
+              <i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}</span>
             {% else %}
-            <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status" class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
-            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started" class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
-            <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime" class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span>
+            <b>{{ translate('serverStats', 'serverStatus', data['lang']) }}:</b> <span id="status"
+              class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
+            <b>{{ translate('serverStats', 'serverStarted', data['lang']) }}:</b> <span id="started"
+              class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span><br />
+            <b>{{ translate('serverStats', 'serverUptime', data['lang']) }}:</b> <span id="uptime"
+              class="text-warning">{{ translate('serverStats', 'offline', data['lang']) }}</span>
             {% end %}
             <br>
-            <b>{{ translate('serverStats', 'serverTimeZone', data['lang']) }}:</b> <span class="text-info">{{ data['serverTZ'] }}</span>
+            <b>{{ translate('serverStats', 'serverTimeZone', data['lang']) }}:</b> <span class="text-info">{{
+              data['serverTZ'] }}</span>
           </div>
 
           <div class="col-sm-3 mr-2">
-            <b>{{ translate('serverStats', 'cpuUsage', data['lang']) }}:</b> <span id="cpu">{{ data['server_stats']['cpu'] }}%</span> <br />
-            <b>{{ translate('serverStats', 'memUsage', data['lang']) }}:</b> <span id="mem" >{{ data['server_stats']['mem'] }}</span> <br />
+            <b>{{ translate('serverStats', 'cpuUsage', data['lang']) }}:</b> <span id="cpu">{{
+              data['server_stats']['cpu'] }}%</span> <br />
+            <b>{{ translate('serverStats', 'memUsage', data['lang']) }}:</b> <span id="mem">{{
+              data['server_stats']['mem'] }}</span> <br />
             {% if data['server_stats']['int_ping_results'] %}
-            <b>{{ translate('serverStats', 'players', data['lang']) }}:</b> <span id="players" >{{ data['server_stats']['online'] }} / {{ data['server_stats']['max'] }}</span><br />
+            <b>{{ translate('serverStats', 'players', data['lang']) }}:</b> <span id="players">{{
+              data['server_stats']['online'] }} / {{ data['server_stats']['max'] }}</span><br />
             {% else %}
-            <b>{{ translate('serverStats', 'players', data['lang']) }}:</b> <span id="players" >0/0</span><br />
+            <b>{{ translate('serverStats', 'players', data['lang']) }}:</b> <span id="players">0/0</span><br />
             {% end %}
           </div>
 
           <div class="col-sm-3 mr-2">
             {% if data['server_stats']['version'] != 'False' %}
-            <b>{{ translate('serverStats', 'version', data['lang']) }}:</b> <span id="version">{{ data['server_stats']['version'] }}</span><br />
-            <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> <span id="input_motd" style="max-width: 10px; max-height: 10px" class="input_motd">{{ data['server_stats']['desc'] }}</span> <br />
+            <b>{{ translate('serverStats', 'version', data['lang']) }}:</b> <span id="version">{{
+              data['server_stats']['version'] }}</span><br />
+            <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> <span id="input_motd"
+              style="max-width: 10px; max-height: 10px" class="input_motd">{{ data['server_stats']['desc'] }}</span>
+            <br />
             {% else %}
-            <b>{{ translate('serverStats', 'version', data['lang']) }}:</b> <span id="version">{{ translate('serverStats', 'unableToConnect', data['lang']) }}</span> <br />
-            <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> <span style="max-width: 10px; max-height: 10px" id="input_motd" class="input_motd">{{ translate('serverStats', 'unableToConnect', data['lang']) }}</span> <br />
+            <b>{{ translate('serverStats', 'version', data['lang']) }}:</b> <span id="version">{{
+              translate('serverStats', 'unableToConnect', data['lang']) }}</span> <br />
+            <b>{{ translate('serverStats', 'description', data['lang']) }}:</b> <span
+              style="max-width: 10px; max-height: 10px" id="input_motd" class="input_motd">{{ translate('serverStats',
+              'unableToConnect', data['lang']) }}</span> <br />
             {% end %}
             <b>Server Type: <span class="text-info">{{data['server_stats']['server_type']}}</span></b>
 
@@ -62,6 +83,15 @@
       hours: Math.round(duration._data.hours),
       minutes: duration._data.minutes,
       seconds: duration._data.seconds
+    }
+
+    if (Math.round(duration._data.days)) {
+      obj = {
+        days: Math.round(duration._data.days),
+        hours: Math.round(duration._data.hours -= duration._data.days * 24),
+        minutes: duration._data.minutes,
+        seconds: duration._data.seconds
+      }
     }
 
     output = Object.entries(obj)
@@ -135,9 +165,9 @@
     server_input_motd = document.getElementById('input_motd');
 
     /* TODO Update each element */
-    if (server.running){
-        server_status.setAttribute("class", "text-success");
-        server_status.innerHTML = `{{ translate('serverStats', 'online', data['lang']) }}`;
+    if (server.running) {
+      server_status.setAttribute("class", "text-success");
+      server_status.innerHTML = `{{ translate('serverStats', 'online', data['lang']) }}`;
 
       startedUTC = server.started;
       startedUTC = moment.utc(startedUTC, 'YYYY-MM-DD HH:mm:ss');
@@ -156,9 +186,8 @@
         uptimeLoop = setInterval(calculateUptime, 1000);
       }
     }
-    else
-    {
-      if (server.crashed){
+    else {
+      if (server.crashed) {
         server_status.setAttribute("class", "text-danger");
         server_status.innerHTML = `<i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}`;
         server_started.setAttribute("class", "text-danger");
@@ -167,37 +196,33 @@
         uptimeLoop = null;
         server_uptime.setAttribute("class", "text-danger");
         server_uptime.innerHTML = `<i class="fas fa-exclamation-triangle"></i> {{ translate('dashboard', 'crashed', data['lang']) }}`;
-      }else{
-      server_status.setAttribute("class", "text-warning");
-      server_status.innerHTML = `{{ translate('serverStats', 'offline', data['lang']) }}`;
-      server_started.setAttribute("class", "text-warning");
-      server_started.innerHTML = `{{ translate('serverStats', 'offline', data['lang']) }}`;
-      clearInterval(uptimeLoop);
-      uptimeLoop = null;
-      server_uptime.setAttribute("class", "text-warning");
-      server_uptime.innerHTML = `{{ translate('serverStats', 'offline', data['lang']) }}`;
+      } else {
+        server_status.setAttribute("class", "text-warning");
+        server_status.innerHTML = `{{ translate('serverStats', 'offline', data['lang']) }}`;
+        server_started.setAttribute("class", "text-warning");
+        server_started.innerHTML = `{{ translate('serverStats', 'offline', data['lang']) }}`;
+        clearInterval(uptimeLoop);
+        uptimeLoop = null;
+        server_uptime.setAttribute("class", "text-warning");
+        server_uptime.innerHTML = `{{ translate('serverStats', 'offline', data['lang']) }}`;
       }
     }
 
     server_cpu.innerHTML = server.cpu + ` %`;
     server_mem.innerHTML = server.mem;
 
-    if (server.int_ping_results)
-    {
+    if (server.int_ping_results) {
       server_players.innerHTML = server.online + `/` + server.max;
     }
-    else
-    {
+    else {
       server_players.innerHTML = `0/0`;
     }
 
-    if (server.version)
-    {
+    if (server.version) {
       server_version.innerHTML = server.version;
       server_input_motd.innerHTML = server.desc;
     }
-    else
-    {
+    else {
       server_version.innerHTML = `{{ translate('serverStats', 'unableToConnect', data['lang']) }}`;
       server_input_motd.innerHTML = `{{ translate('serverStats', 'unableToConnect', data['lang']) }}`;
     }

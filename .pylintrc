@@ -94,7 +94,6 @@ disable=C0330,
         fixme,
         import-error,
         inconsistent-return-statements,
-        invalid-name,
         locally-disabled,
         logging-format-interpolation,
         logging-fstring-interpolation,
@@ -236,10 +235,20 @@ function-naming-style=snake_case
 #function-rgx=
 
 # Good variable names which should always be accepted, separated by a comma.
-good-names=i,
+good-names=e,
+           ex,
+           f,
+           i,
+           id,
+           ip,
            j,
            k,
-           ex,
+           p,
+           r,
+           rs,
+           s,
+           tz,
+           v,
            Run,
            _
 

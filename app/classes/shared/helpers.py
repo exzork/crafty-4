@@ -19,10 +19,11 @@ from socket import gethostname
 from contextlib import suppress
 import psutil
 
-from app.classes.shared.console import console
+from app.classes.shared.console import Console
 from app.classes.shared.installer import installer
-from app.classes.shared.file_helpers import file_helper
-from app.classes.web.websocket_helper import websocket_helper
+from app.classes.shared.file_helpers import FileHelpers
+from app.classes.shared.translation import Translation
+from app.classes.web.websocket_helper import WebSocketHelper
 
 logger = logging.getLogger(__name__)
 
@@ -61,17 +62,22 @@ class Helpers:
         self.passhasher = PasswordHasher()
         self.exiting = False
 
+        self.websocket_helper = WebSocketHelper(self)
+        self.translation = Translation(self)
+
     @staticmethod
     def auto_installer_fix(ex):
         logger.critical(f"Import Error: Unable to load {ex.name} module", exc_info=True)
         print(f"Import Error: Unable to load {ex.name} module")
         installer.do_install()
 
-    def float_to_string(self, gbs: int):
+    @staticmethod
+    def float_to_string(gbs: int):
         s = str(float(gbs) * 1000).rstrip("0").rstrip(".")
         return s
 
-    def check_file_perms(self, path):
+    @staticmethod
+    def check_file_perms(path):
         try:
             open(path, "r", encoding="utf-8").close()
             logger.info(f"{path} is readable")
@@ -79,8 +85,9 @@ class Helpers:
         except PermissionError:
             return False
 
-    def is_file_older_than_x_days(self, file, days=1):
-        if self.check_file_exists(file):
+    @staticmethod
+    def is_file_older_than_x_days(file, days=1):
+        if Helpers.check_file_exists(file):
             file_time = os.path.getmtime(file)
             # Check against 24 hours
             if (time.time() - file_time) / 3600 > 24 * days:
@@ -139,47 +146,51 @@ class Helpers:
     def cmdparse(cmd_in):
         # Parse a string into arguments
         cmd_out = []  # "argv" output array
-        ci = -1  # command index - pointer to the argument we're building in cmd_out
-        np = True  # whether we're creating a new argument/parameter
+        cmd_index = (
+            -1
+        )  # command index - pointer to the argument we're building in cmd_out
+        new_param = True  # whether we're creating a new argument/parameter
         esc = False  # whether an escape character was encountered
-        stch = None  # if we're dealing with a quote, save the quote type here.
+        quote_char = None  # if we're dealing with a quote, save the quote type here.
         # Nested quotes to be dealt with by the command
-        for c in cmd_in:  # for character in string
-            if np:  # if set, begin a new argument and increment the command index.
+        for char in cmd_in:  # for character in string
+            if (
+                new_param
+            ):  # if set, begin a new argument and increment the command index.
                 # Continue the loop.
-                if c == " ":
+                if char == " ":
                     continue
                 else:
-                    ci += 1
+                    cmd_index += 1
                     cmd_out.append("")
-                    np = False
+                    new_param = False
             if esc:  # if we encountered an escape character on the last loop,
                 # append this char regardless of what it is
-                if c not in Helpers.allowed_quotes:
-                    cmd_out[ci] += "\\"
-                cmd_out[ci] += c
+                if char not in Helpers.allowed_quotes:
+                    cmd_out[cmd_index] += "\\"
+                cmd_out[cmd_index] += char
                 esc = False
             else:
-                if c == "\\":  # if the current character is an escape character,
+                if char == "\\":  # if the current character is an escape character,
                     # set the esc flag and continue to next loop
                     esc = True
                 elif (
-                    c == " " and stch is None
+                    char == " " and quote_char is None
                 ):  # if we encounter a space and are not dealing with a quote,
                     # set the new argument flag and continue to next loop
-                    np = True
+                    new_param = True
                 elif (
-                    c == stch
+                    char == quote_char
                 ):  # if we encounter the character that matches our start quote,
                     # end the quote and continue to next loop
-                    stch = None
-                elif stch is None and (
-                    c in Helpers.allowed_quotes
+                    quote_char = None
+                elif quote_char is None and (
+                    char in Helpers.allowed_quotes
                 ):  # if we're not in the middle of a quote and we get a quotable
                     # character, start a quote and proceed to the next loop
-                    stch = c
+                    quote_char = char
                 else:  # else, just store the character in the current arg
-                    cmd_out[ci] += c
+                    cmd_out[cmd_index] += char
         return cmd_out
 
     def get_setting(self, key, default_return=False):
@@ -193,30 +204,56 @@ class Helpers:
 
             else:
                 logger.error(f"Config File Error: setting {key} does not exist")
-                console.error(f"Config File Error: setting {key} does not exist")
+                Console.error(f"Config File Error: setting {key} does not exist")
                 return default_return
 
         except Exception as e:
             logger.critical(
                 f"Config File Error: Unable to read {self.settings_file} due to {e}"
             )
-            console.critical(
+            Console.critical(
                 f"Config File Error: Unable to read {self.settings_file} due to {e}"
             )
 
         return default_return
 
-    def get_local_ip(self):
+    def set_setting(self, key, new_value, default_return=False):
+
+        try:
+            with open(self.settings_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            if key in data.keys():
+                data[key] = new_value
+
+            else:
+                logger.error(f"Config File Error: setting {key} does not exist")
+                Console.error(f"Config File Error: setting {key} does not exist")
+                return default_return
+
+            with open(self.settings_file, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=1)
+
+        except Exception as e:
+            logger.critical(
+                f"Config File Error: Unable to read {self.settings_file} due to {e}"
+            )
+            Console.critical(
+                f"Config File Error: Unable to read {self.settings_file} due to {e}"
+            )
+
+    @staticmethod
+    def get_local_ip():
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             # doesn't even have to be reachable
             s.connect(("10.255.255.255", 1))
-            IP = s.getsockname()[0]
+            ip = s.getsockname()[0]
         except Exception:
-            IP = "127.0.0.1"
+            ip = "127.0.0.1"
         finally:
             s.close()
-        return IP
+        return ip
 
     def get_version(self):
         version_data = {}
@@ -227,29 +264,28 @@ class Helpers:
                 version_data = json.load(f)
 
         except Exception as e:
-            console.critical(f"Unable to get version data! \n{e}")
+            Console.critical(f"Unable to get version data! \n{e}")
 
         return version_data
 
     @staticmethod
     def get_announcements():
-        r = requests.get("https://craftycontrol.com/notify.json", timeout=2)
+        response = requests.get("https://craftycontrol.com/notify.json", timeout=2)
         data = (
             '[{"id":"1","date":"Unknown",'
             '"title":"Error getting Announcements",'
             '"desc":"Error getting Announcements","link":""}]'
         )
 
-        if r.status_code in [200, 201]:
+        if response.status_code in [200, 201]:
             try:
-                data = json.loads(r.content)
+                data = json.loads(response.content)
             except Exception as e:
                 logger.error(f"Failed to load json content with error: {e}")
 
         return data
 
     def get_version_string(self):
-
         version_data = self.get_version()
         major = version_data.get("major", "?")
         minor = version_data.get("minor", "?")
@@ -306,19 +342,21 @@ class Helpers:
 
         return line
 
-    def validate_traversal(self, base_path, filename):
+    @staticmethod
+    def validate_traversal(base_path, filename):
         logger.debug(f'Validating traversal ("{base_path}", "{filename}")')
         base = pathlib.Path(base_path).resolve()
         file = pathlib.Path(filename)
         fileabs = base.joinpath(file).resolve()
-        cp = pathlib.Path(os.path.commonpath([base, fileabs]))
-        if base == cp:
+        common_path = pathlib.Path(os.path.commonpath([base, fileabs]))
+        if base == common_path:
             return fileabs
         else:
             raise ValueError("Path traversal detected")
 
-    def tail_file(self, file_name, number_lines=20):
-        if not self.check_file_exists(file_name):
+    @staticmethod
+    def tail_file(file_name, number_lines=20):
+        if not Helpers.check_file_exists(file_name):
             logger.warning(f"Unable to find file to tail: {file_name}")
             return [f"Unable to find file to tail: {file_name}"]
 
@@ -367,8 +405,9 @@ class Helpers:
             logger.critical(f"Unable to write to {path} - Error: {e}")
             return False
 
-    def checkRoot(self):
-        if self.is_os_windows():
+    @staticmethod
+    def check_root():
+        if Helpers.is_os_windows():
             if ctypes.windll.shell32.IsUserAnAdmin() == 1:
                 return True
             else:
@@ -379,7 +418,8 @@ class Helpers:
             else:
                 return False
 
-    def unzipFile(self, zip_path):
+    @staticmethod
+    def unzip_file(zip_path):
         new_dir_list = zip_path.split("/")
         new_dir = ""
         for i in range(len(new_dir_list) - 1):
@@ -388,28 +428,39 @@ class Helpers:
             else:
                 new_dir += "/" + new_dir_list[i]
 
-        if helper.check_file_perms(zip_path) and os.path.isfile(zip_path):
-            helper.ensure_dir_exists(new_dir)
-            tempDir = tempfile.mkdtemp()
+        if Helpers.check_file_perms(zip_path) and os.path.isfile(zip_path):
+            Helpers.ensure_dir_exists(new_dir)
+            temp_dir = tempfile.mkdtemp()
             try:
                 with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                    zip_ref.extractall(tempDir)
+                    zip_ref.extractall(temp_dir)
                 for i in enumerate(zip_ref.filelist):
                     if len(zip_ref.filelist) > 1 or not zip_ref.filelist[
                         i
                     ].filename.endswith("/"):
                         break
 
-                full_root_path = tempDir
+                full_root_path = temp_dir
 
                 for item in os.listdir(full_root_path):
-                    try:
-                        file_helper.move_dir(
-                            os.path.join(full_root_path, item),
-                            os.path.join(new_dir, item),
-                        )
-                    except Exception as ex:
-                        logger.error(f"ERROR IN ZIP IMPORT: {ex}")
+                    print(item)
+                    if os.path.isdir(os.path.join(full_root_path, item)):
+                        print("dir")
+                        try:
+                            FileHelpers.move_dir(
+                                os.path.join(full_root_path, item),
+                                os.path.join(new_dir, item),
+                            )
+                        except Exception as ex:
+                            logger.error(f"ERROR IN ZIP IMPORT: {ex}")
+                    else:
+                        try:
+                            FileHelpers.move_file(
+                                os.path.join(full_root_path, item),
+                                os.path.join(new_dir, item),
+                            )
+                        except Exception as ex:
+                            logger.error(f"ERROR IN ZIP IMPORT: {ex}")
             except Exception as ex:
                 print(ex)
         else:
@@ -422,7 +473,7 @@ class Helpers:
 
         logger.info("Checking app directory writable")
 
-        writeable = self.check_writeable(self.root_dir)
+        writeable = Helpers.check_writeable(self.root_dir)
 
         # if not writeable, let's bomb out
         if not writeable:
@@ -434,13 +485,13 @@ class Helpers:
             with suppress(FileExistsError):
                 os.makedirs(os.path.join(self.root_dir, "logs"))
         except Exception as e:
-            console.error(f"Failed to make logs directory with error: {e} ")
+            Console.error(f"Failed to make logs directory with error: {e} ")
 
         # ensure the log file is there
         try:
             open(log_file, "a", encoding="utf-8").close()
         except Exception as e:
-            console.critical(f"Unable to open log file! {e}")
+            Console.critical(f"Unable to open log file! {e}")
             sys.exit(1)
 
         # del any old session.lock file as this is a new session
@@ -461,16 +512,19 @@ class Helpers:
         source_size = 0
         files_count = 0
         for path, _dirs, files in os.walk(source_path):
-            for f in files:
-                fp = os.path.join(path, f)
-                source_size += os.stat(fp).st_size
+            for file in files:
+                full_path = os.path.join(path, file)
+                source_size += os.stat(full_path).st_size
                 files_count += 1
-        dest_size = os.path.getsize(str(dest_path))
-        percent = round((dest_size / source_size) * 100, 1)
+        try:
+            dest_size = os.path.getsize(str(dest_path))
+            percent = round((dest_size / source_size) * 100, 1)
+        except:
+            percent = 0
         if percent >= 0:
             results = {"percent": percent, "total_files": files_count}
         else:
-            results = {"percent": 0, "total_files": 0}
+            results = {"percent": 0, "total_files": files_count}
         return results
 
     @staticmethod
@@ -540,7 +594,7 @@ class Helpers:
                 pid = data.get("pid")
                 started = data.get("started")
                 if psutil.pid_exists(pid):
-                    console.critical(
+                    Console.critical(
                         f"Another Crafty Controller agent seems to be running..."
                         f"\npid: {pid} \nstarted on: {started}"
                     )
@@ -555,7 +609,7 @@ class Helpers:
 
             except Exception as e:
                 logger.error(f"Failed to locate existing session.lock with error: {e} ")
-                console.error(
+                Console.error(
                     f"Failed to locate existing session.lock with error: {e} "
                 )
 
@@ -570,11 +624,12 @@ class Helpers:
 
     # because this is a recursive function, we will return bytes,
     # and set human readable later
-    def get_dir_size(self, path: str):
+    @staticmethod
+    def get_dir_size(path: str):
         total = 0
         for entry in os.scandir(path):
             if entry.is_dir(follow_symlinks=False):
-                total += self.get_dir_size(entry.path)
+                total += Helpers.get_dir_size(entry.path)
             else:
                 total += entry.stat(follow_symlinks=False).st_size
         return total
@@ -588,11 +643,15 @@ class Helpers:
             )
         ]
 
-    def get_human_readable_files_sizes(self, paths: list):
+    @staticmethod
+    def get_human_readable_files_sizes(paths: list):
         sizes = []
         for p in paths:
             sizes.append(
-                {"path": p, "size": self.human_readable_file_size(os.stat(p).st_size)}
+                {
+                    "path": p,
+                    "size": Helpers.human_readable_file_size(os.stat(p).st_size),
+                }
             )
         return sizes
 
@@ -608,10 +667,12 @@ class Helpers:
         b64_bytes = base64.decodebytes(s_bytes)
         return b64_bytes.decode("utf-8")
 
-    def create_uuid(self):
+    @staticmethod
+    def create_uuid():
         return str(uuid.uuid4())
 
-    def ensure_dir_exists(self, path):
+    @staticmethod
+    def ensure_dir_exists(path):
         """
         ensures a directory exists
 
@@ -637,7 +698,7 @@ class Helpers:
             cert_dir = os.path.join(self.config_dir, "web", "certs")
 
         # create a directory if needed
-        self.ensure_dir_exists(cert_dir)
+        Helpers.ensure_dir_exists(cert_dir)
 
         cert_file = os.path.join(cert_dir, "commander.cert.pem")
         key_file = os.path.join(cert_dir, "commander.key.pem")
@@ -646,16 +707,16 @@ class Helpers:
         logger.info(f"SSL Key File is set to: {key_file}")
 
         # don't create new files if we already have them.
-        if self.check_file_exists(cert_file) and self.check_file_exists(key_file):
+        if Helpers.check_file_exists(cert_file) and Helpers.check_file_exists(key_file):
             logger.info("Cert and Key files already exists, not creating them.")
             return True
 
-        console.info("Generating a self signed SSL")
+        Console.info("Generating a self signed SSL")
         logger.info("Generating a self signed SSL")
 
         # create a key pair
         logger.info("Generating a key pair. This might take a moment.")
-        console.info("Generating a key pair. This might take a moment.")
+        Console.info("Generating a key pair. This might take a moment.")
         k = crypto.PKey()
         k.generate_key(crypto.TYPE_RSA, 4096)
 
@@ -676,11 +737,13 @@ class Helpers:
                 "DNS:127.0.0.1",
             ]
         ).encode()
-        subjectAltNames_Ext = crypto.X509Extension(b"subjectAltName", False, alt_names)
-        basicConstraints_Ext = crypto.X509Extension(
+        subject_alt_names_ext = crypto.X509Extension(
+            b"subjectAltName", False, alt_names
+        )
+        basic_constraints_ext = crypto.X509Extension(
             b"basicConstraints", True, b"CA:false"
         )
-        cert.add_extensions([subjectAltNames_Ext, basicConstraints_Ext])
+        cert.add_extensions([subject_alt_names_ext, basic_constraints_ext])
         cert.set_serial_number(random.randint(1, 255))
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(365 * 24 * 60 * 60)
@@ -731,11 +794,11 @@ class Helpers:
         default_file = os.path.join(self.root_dir, "default.json")
         data = {}
 
-        if self.check_file_exists(default_file):
+        if Helpers.check_file_exists(default_file):
             with open(default_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
-            del_json = helper.get_setting("delete_default_json")
+            del_json = self.get_setting("delete_default_json")
 
             if del_json:
                 os.remove(default_file)
@@ -763,8 +826,8 @@ class Helpers:
                 output += f"""<li class="tree-item" data-path="{dpath}">
                     \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
                     <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
-                      <i class="far fa-folder"></i>
-                      <i class="far fa-folder-open"></i>
+                      <i style="color: #8862e0;" class="far fa-folder"></i>
+                      <i style="color: #8862e0;" class="far fa-folder-open"></i>
                       {filename}
                       </span>
                     </div><li>
@@ -772,7 +835,7 @@ class Helpers:
             else:
                 if filename != "crafty_managed.txt":
                     output += f"""<li
-                    class="tree-nested d-block tree-ctx-item tree-file tree-item"
+                    class="d-block tree-ctx-item tree-file tree-item"
                     data-path="{dpath}"
                     data-name="{filename}"
                     onclick="clickOnFile(event)"><span style="margin-right: 6px;">
@@ -801,15 +864,15 @@ class Helpers:
                 output += f"""<li class="tree-item" data-path="{dpath}">
                     \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
                     <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
-                      <i class="far fa-folder"></i>
-                      <i class="far fa-folder-open"></i>
+                      <i style="color: #8862e0;" class="far fa-folder"></i>
+                      <i style="color: #8862e0;" class="far fa-folder-open"></i>
                       {filename}
                       </span>
                     </div><li>"""
             else:
                 if filename != "crafty_managed.txt":
                     output += f"""<li
-                    class="tree-nested d-block tree-ctx-item tree-file tree-item"
+                    class="d-block tree-ctx-item tree-file tree-item"
                     data-path="{dpath}"
                     data-name="{filename}"
                     onclick="clickOnFile(event)"><span style="margin-right: 6px;">
@@ -831,8 +894,8 @@ class Helpers:
                     \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
                     <input type="radio" name="root_path" value="{dpath}">
                     <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
-                      <i class="far fa-folder"></i>
-                      <i class="far fa-folder-open"></i>
+                      <i style="color: #8862e0;" class="far fa-folder"></i>
+                      <i style="color: #8862e0;" class="far fa-folder-open"></i>
                       {filename}
                       </span>
                     </input></div><li>
@@ -853,39 +916,39 @@ class Helpers:
                     \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
                     <input type="radio" name="root_path" value="{dpath}">
                     <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
-                      <i class="far fa-folder"></i>
-                      <i class="far fa-folder-open"></i>
+                      <i style="color: #8862e0;" class="far fa-folder"></i>
+                      <i style="color: #8862e0;" class="far fa-folder-open"></i>
                       {filename}
                       </span>
                     </input></div><li>"""
         return output
 
-    @staticmethod
-    def unzipServer(zip_path, user_id):
-        if helper.check_file_perms(zip_path):
-            tempDir = tempfile.mkdtemp()
+    def unzip_server(self, zip_path, user_id):
+        if Helpers.check_file_perms(zip_path):
+            temp_dir = tempfile.mkdtemp()
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 # extracts archive to temp directory
-                zip_ref.extractall(tempDir)
+                zip_ref.extractall(temp_dir)
             if user_id:
-                websocket_helper.broadcast_user(
-                    user_id, "send_temp_path", {"path": tempDir}
+                self.websocket_helper.broadcast_user(
+                    user_id, "send_temp_path", {"path": temp_dir}
                 )
 
-    @staticmethod
-    def backup_select(path, user_id):
+    def backup_select(self, path, user_id):
         if user_id:
-            websocket_helper.broadcast_user(user_id, "send_temp_path", {"path": path})
+            self.websocket_helper.broadcast_user(
+                user_id, "send_temp_path", {"path": path}
+            )
 
     @staticmethod
     def unzip_backup_archive(backup_path, zip_name):
         zip_path = os.path.join(backup_path, zip_name)
-        if helper.check_file_perms(zip_path):
-            tempDir = tempfile.mkdtemp()
+        if Helpers.check_file_perms(zip_path):
+            temp_dir = tempfile.mkdtemp()
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 # extracts archive to temp directory
-                zip_ref.extractall(tempDir)
-            return tempDir
+                zip_ref.extractall(temp_dir)
+            return temp_dir
         else:
             return False
 
@@ -906,13 +969,9 @@ class Helpers:
         )
 
     @staticmethod
-    def in_path_old(x, y):
-        return os.path.abspath(y).__contains__(os.path.abspath(x))
-
-    @staticmethod
     def copy_files(source, dest):
         if os.path.isfile(source):
-            file_helper.copy_file(source, dest)
+            FileHelpers.copy_file(source, dest)
             logger.info("Copying jar %s to %s", source, dest)
         else:
             logger.info("Source jar does not exist.")
@@ -920,16 +979,16 @@ class Helpers:
     @staticmethod
     def download_file(executable_url, jar_path):
         try:
-            r = requests.get(executable_url, timeout=5)
+            response = requests.get(executable_url, timeout=5)
         except Exception as ex:
             logger.error("Could not download executable: %s", ex)
             return False
-        if r.status_code != 200:
+        if response.status_code != 200:
             logger.error("Unable to download file from %s", executable_url)
             return False
 
         try:
-            open(jar_path, "wb").write(r.content)
+            open(jar_path, "wb").write(response.content)
         except Exception as e:
             logger.error("Unable to finish executable download. Error: %s", e)
             return False
@@ -942,13 +1001,10 @@ class Helpers:
         return text
 
     @staticmethod
-    def getLangPage(text):
+    def get_lang_page(text):
         lang = text.split("_")[0]
         region = text.split("_")[1]
         if region == "EN":
             return "en"
         else:
             return lang + "-" + region
-
-
-helper = Helpers()
