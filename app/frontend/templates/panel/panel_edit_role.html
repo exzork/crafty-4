@@ -165,20 +165,29 @@
                             <tr>
                               <td>{{ server['server_name'] }}</td>
                               <td>
-                                <input type="checkbox" class=""
+                                <input type="checkbox" class="" onclick="enable_disable(event)" data-id="{{server['server_id']}}"
                                 id="server_{{ server['server_id'] }}_access"
                                 name="server_{{ server['server_id'] }}_access"
                                 {{ 'checked' if server['server_id'] in data['role']['servers'] else '' }}
                                 autocomplete="off" value="1">
                               </td>
                               {% for permission in data['permissions_all'] %}
+                              {% if server['server_id'] in data['role']['servers'] %}
                                 <td>
-                                  <input type="checkbox" class=""
+                                  <input type="checkbox" class="{{server['server_id']}}_perms"
                                   id="permission_{{ server['server_id'] }}_{{ permission.name }}"
                                   name="permission_{{ server['server_id'] }}_{{ permission.name }}"
                                   {{ 'checked' if permission in data['permissions_dict'].get(server['server_id'], []) else '' }}
                                   autocomplete="off" value="1">
                                 </td>
+                              {% else %}
+                              <td>
+                                <input type="checkbox" class="{{server['server_id']}}_perms"
+                                id="permission_{{ server['server_id'] }}_{{ permission.name }}"
+                                name="permission_{{ server['server_id'] }}_{{ permission.name }}"
+                                autocomplete="off" value="1" disabled>
+                              </td>
+                              {% end %}
                               {% end %}
                             </tr>
                           {% end %}
@@ -268,7 +277,19 @@
 {% block js %}
 <script>
 
+  function enable_disable(event) {
+      let server_id = event.target.getAttribute('data-id');
+      console.log(server_id);
+      if (document.getElementById("server_" + server_id + "_access").checked) {
+        $('.'+server_id+'_perms').attr('disabled', false);
+          $('.'+server_id+'_perms').attr('enabled', true);
+      }else{
+          $('.'+server_id+'_perms').prop('checked', false);
+          $('.'+server_id+'_perms').attr('disabled', true);
+          $('.'+server_id+'_perms').attr('enabled', false);
+      }
 
+    }
     //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
     function getCookie(name) {
         var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
