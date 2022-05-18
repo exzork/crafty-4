@@ -1,3 +1,4 @@
+import typing as t
 from enum import Enum
 import logging
 from peewee import (
@@ -6,7 +7,6 @@ from peewee import (
     CompositeKey,
     JOIN,
 )
-import typing as t
 
 from app.classes.models.base_model import BaseModel
 from app.classes.models.servers import Servers
