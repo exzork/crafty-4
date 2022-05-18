@@ -15,7 +15,7 @@ from tornado import iostream
 
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
-from cron_validator import CronValidator
+from croniter import croniter
 
 from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
@@ -1447,11 +1447,9 @@ class PanelHandler(BaseHandler):
             else:
                 interval_type = ""
                 cron_string = bleach.clean(self.get_argument("cron", ""))
-                try:
-                    CronValidator.parse(cron_string)
-                except Exception as e:
+                if not croniter.is_valid(cron_string):
                     self.redirect(
-                        f"/panel/error?error=INVALID FORMAT: Invalid Cron Format. {e}"
+                        "/panel/error?error=INVALID FORMAT: Invalid Cron Format."
                     )
                     return
                 action = bleach.clean(self.get_argument("action", None))
@@ -1605,11 +1603,9 @@ class PanelHandler(BaseHandler):
                 interval_type = ""
                 cron_string = bleach.clean(self.get_argument("cron", ""))
                 sch_id = self.get_argument("sch_id", None)
-                try:
-                    CronValidator.parse(cron_string)
-                except Exception as e:
+                if not croniter.is_valid(cron_string):
                     self.redirect(
-                        f"/panel/error?error=INVALID FORMAT: Invalid Cron Format. {e}"
+                        "/panel/error?error=INVALID FORMAT: Invalid Cron Format."
                     )
                     return
                 action = bleach.clean(self.get_argument("action", None))
