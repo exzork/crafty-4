@@ -206,6 +206,20 @@ class PermissionsCrafty:
         return user_crafty.created_server
 
     @staticmethod
+    def add_user_creation(user_id):
+        user_crafty = PermissionsCrafty.get_user_crafty(user_id)
+        user_crafty.created_user += 1
+        UserCrafty.save(user_crafty)
+        return user_crafty.created_user
+
+    @staticmethod
+    def add_role_creation(user_id):
+        user_crafty = PermissionsCrafty.get_user_crafty(user_id)
+        user_crafty.created_role += 1
+        UserCrafty.save(user_crafty)
+        return user_crafty.created_role
+
+    @staticmethod
     def get_api_key_permissions_list(key: ApiKeys):
         user = HelperUsers.get_user(key.user_id)
         if user["superuser"] and key.superuser:

@@ -29,9 +29,8 @@ class ServerPermsController:
         return permissions_mask
 
     @staticmethod
-    def get_role_permissions(role_id):
-        permissions_list = PermissionsServers.get_role_permissions_list(role_id)
-        return permissions_list
+    def get_role_permissions_dict(role_id):
+        return PermissionsServers.get_role_permissions_dict(role_id)
 
     @staticmethod
     def add_role_server(server_id, role_id, rs_permissions="00000000"):
@@ -70,10 +69,6 @@ class ServerPermsController:
         return PermissionsServers.set_permission(
             permission_mask, permission_tested, value
         )
-
-    @staticmethod
-    def get_role_permissions_list(role_id):
-        return PermissionsServers.get_role_permissions_list(role_id)
 
     @staticmethod
     def get_user_id_permissions_list(user_id: str, server_id: str):
