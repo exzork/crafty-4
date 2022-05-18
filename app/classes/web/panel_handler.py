@@ -15,9 +15,13 @@ from tornado import iostream
 
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
-from cron_validator import CronValidator
+from croniter import croniter
 
-from app.classes.models.server_permissions import EnumPermissionsServer
+from app.classes.models.roles import HelperRoles
+from app.classes.models.server_permissions import (
+    EnumPermissionsServer,
+    PermissionsServers,
+)
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.models.management import HelpersManagement
 from app.classes.shared.helpers import Helpers
@@ -39,15 +43,21 @@ class PanelHandler(BaseHandler):
     def get_role_servers(self) -> set:
         servers = set()
         for server in self.controller.list_defined_servers():
-            argument = int(
-                float(
-                    bleach.clean(
-                        self.get_argument(f"server_{server['server_id']}_access", "0")
-                    )
+            argument = self.get_argument(f"server_{server['server_id']}_access", "0")
+            if argument == "0":
+                continue
+
+            permission_mask = "0" * len(EnumPermissionsServer)
+            for permission in self.controller.server_perms.list_defined_permissions():
+                argument = self.get_argument(
+                    f"permission_{server['server_id']}_{permission.name}", "0"
                 )
-            )
-            if argument:
-                servers.add(server["server_id"])
+                if argument == "1":
+                    permission_mask = self.controller.server_perms.set_permission(
+                        permission_mask, permission, "1"
+                    )
+
+            servers.add((server["server_id"], permission_mask))
         return servers
 
     def get_perms_quantity(self) -> Tuple[str, dict]:
@@ -85,19 +95,9 @@ class PanelHandler(BaseHandler):
             permission
         ) in self.controller.crafty_perms.list_defined_crafty_permissions():
             argument = self.get_argument(f"permission_{permission.name}", None)
-            if argument is not None:
+            if argument is not None and argument == "1":
                 permissions_mask = self.controller.crafty_perms.set_permission(
-                    permissions_mask, permission, 1 if argument == "1" else 0
-                )
-        return permissions_mask
-
-    def get_perms_server(self) -> str:
-        permissions_mask = "00000000"
-        for permission in self.controller.server_perms.list_defined_permissions():
-            argument = self.get_argument(f"permission_{permission.name}", None)
-            if argument is not None:
-                permissions_mask = self.controller.server_perms.set_permission(
-                    permissions_mask, permission, 1 if argument == "1" else 0
+                    permissions_mask, permission, "1"
                 )
         return permissions_mask
 
@@ -158,7 +158,7 @@ class PanelHandler(BaseHandler):
                     if not self.controller.servers.server_id_authorized_api_key(
                         server_id, api_key
                     ):
-                        print(
+                        logger.debug(
                             f"API key {api_key.name} (id: {api_key.token_id}) "
                             f"does not have permission"
                         )
@@ -168,7 +168,9 @@ class PanelHandler(BaseHandler):
                     if not self.controller.servers.server_id_authorized(
                         server_id, exec_user["user_id"]
                     ):
-                        print(f'User {exec_user["user_id"]} does not have permission')
+                        logger.debug(
+                            f'User {exec_user["user_id"]} does not have permission'
+                        )
                         self.redirect("/panel/error?error=Invalid Server ID")
                         return None
         return server_id
@@ -768,6 +770,7 @@ class PanelHandler(BaseHandler):
             page_data["user"]["last_update"] = "N/A"
             page_data["user"]["roles"] = set()
             page_data["user"]["hints"] = True
+            page_data["superuser"] = superuser
 
             if EnumPermissionsCrafty.USER_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
@@ -956,6 +959,7 @@ class PanelHandler(BaseHandler):
             page_data["role-servers"] = page_role_servers
             page_data["roles_all"] = self.controller.roles.get_all_roles()
             page_data["servers_all"] = self.controller.list_defined_servers()
+            page_data["superuser"] = superuser
             page_data[
                 "permissions_all"
             ] = self.controller.crafty_perms.list_defined_crafty_permissions()
@@ -1086,7 +1090,7 @@ class PanelHandler(BaseHandler):
             page_data[
                 "permissions_all"
             ] = self.controller.server_perms.list_defined_permissions()
-            page_data["permissions_list"] = set()
+            page_data["permissions_dict"] = {}
             template = "panel/panel_edit_role.html"
 
         elif page == "edit_role":
@@ -1099,8 +1103,8 @@ class PanelHandler(BaseHandler):
                 "permissions_all"
             ] = self.controller.server_perms.list_defined_permissions()
             page_data[
-                "permissions_list"
-            ] = self.controller.server_perms.get_role_permissions(role_id)
+                "permissions_dict"
+            ] = self.controller.server_perms.get_role_permissions_dict(role_id)
             page_data["user-roles"] = user_roles
             page_data["users"] = self.controller.users.get_all_users()
 
@@ -1460,11 +1464,9 @@ class PanelHandler(BaseHandler):
             else:
                 interval_type = ""
                 cron_string = bleach.clean(self.get_argument("cron", ""))
-                try:
-                    CronValidator.parse(cron_string)
-                except Exception as e:
+                if not croniter.is_valid(cron_string):
                     self.redirect(
-                        f"/panel/error?error=INVALID FORMAT: Invalid Cron Format. {e}"
+                        "/panel/error?error=INVALID FORMAT: Invalid Cron Format."
                     )
                     return
                 action = bleach.clean(self.get_argument("action", None))
@@ -1618,11 +1620,9 @@ class PanelHandler(BaseHandler):
             else:
                 interval_type = ""
                 cron_string = bleach.clean(self.get_argument("cron", ""))
-                try:
-                    CronValidator.parse(cron_string)
-                except Exception as e:
+                if not croniter.is_valid(cron_string):
                     self.redirect(
-                        f"/panel/error?error=INVALID FORMAT: Invalid Cron Format. {e}"
+                        "/panel/error?error=INVALID FORMAT: Invalid Cron Format."
                     )
                     return
                 action = bleach.clean(self.get_argument("action", None))
@@ -1925,6 +1925,15 @@ class PanelHandler(BaseHandler):
                     "/panel/error?error=Unauthorized access: not a user editor"
                 )
                 return
+
+            if (
+                not self.controller.crafty_perms.can_add_user(exec_user["user_id"])
+                and not exec_user["superuser"]
+            ):
+                self.redirect(
+                    "/panel/error?error=Unauthorized access: quantity limit reached"
+                )
+                return
             elif username is None or username == "":
                 self.redirect("/panel/error?error=Invalid username")
                 return
@@ -1969,6 +1978,7 @@ class PanelHandler(BaseHandler):
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )
+            self.controller.crafty_perms.add_user_creation(exec_user["user_id"])
             self.redirect("/panel/panel_config")
 
         elif page == "edit_role":
@@ -1993,16 +2003,40 @@ class PanelHandler(BaseHandler):
                     return
 
             servers = self.get_role_servers()
-            permissions_mask = self.get_perms_server()
 
-            role_data = {"role_name": role_name, "servers": servers}
-            self.controller.roles.update_role(
-                role_id, role_data=role_data, permissions_mask=permissions_mask
+            # TODO: use update_role_advanced when API v2 gets merged
+            base_data = self.controller.roles.get_role_with_servers(role_id)
+
+            server_ids = {server[0] for server in servers}
+            server_permissions_map = {server[0]: server[1] for server in servers}
+
+            added_servers = server_ids.difference(set(base_data["servers"]))
+            removed_servers = set(base_data["servers"]).difference(server_ids)
+            same_servers = server_ids.intersection(set(base_data["servers"]))
+            logger.debug(
+                f"role: {role_id} +server:{added_servers} -server{removed_servers}"
             )
+            for server_id in added_servers:
+                PermissionsServers.get_or_create(
+                    role_id, server_id, server_permissions_map[server_id]
+                )
+            for server_id in same_servers:
+                PermissionsServers.update_role_permission(
+                    role_id, server_id, server_permissions_map[server_id]
+                )
+            if len(removed_servers) != 0:
+                PermissionsServers.delete_roles_permissions(role_id, removed_servers)
+
+            up_data = {
+                "role_name": role_name,
+                "last_update": Helpers.get_time_as_string(),
+            }
+            # TODO: do the last_update on the db side
+            HelperRoles.update_role(role_id, up_data)
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
-                f"Edited role {role_name} (RID:{role_id}) with servers {servers}",
+                f"edited role {role_name} (RID:{role_id}) with servers {servers}",
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )
@@ -2016,6 +2050,14 @@ class PanelHandler(BaseHandler):
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
                 return
+            elif (
+                not self.controller.crafty_perms.can_add_role(exec_user["user_id"])
+                and not exec_user["superuser"]
+            ):
+                self.redirect(
+                    "/panel/error?error=Unauthorized access: quantity limit reached"
+                )
+                return
             elif role_name is None or role_name == "":
                 self.redirect("/panel/error?error=Invalid role name")
                 return
@@ -2026,25 +2068,19 @@ class PanelHandler(BaseHandler):
                     return
 
             servers = self.get_role_servers()
-            permissions_mask = self.get_perms_server()
 
             role_id = self.controller.roles.add_role(role_name)
-            self.controller.roles.update_role(
-                role_id, {"servers": servers}, permissions_mask
-            )
+            # TODO: use add_role_advanced when API v2 gets merged
+            for server in servers:
+                PermissionsServers.get_or_create(role_id, server[0], server[1])
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
-                f"Added role {role_name} (RID:{role_id})",
+                f"created role {role_name} (RID:{role_id})",
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )
-            self.controller.management.add_to_audit_log(
-                exec_user["user_id"],
-                f"Edited role {role_name} (RID:{role_id}) with servers {servers}",
-                server_id=0,
-                source_ip=self.get_remote_ip(),
-            )
+            self.controller.crafty_perms.add_role_creation(exec_user["user_id"])
             self.redirect("/panel/panel_config")
 
         else:
