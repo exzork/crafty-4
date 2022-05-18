@@ -16,8 +16,8 @@ modify_role_schema = {
                 "type": "object",
                 "properties": {
                     "server_id": {
-                        "type": "string",
-                        "minLength": 1,
+                        "type": "integer",
+                        "minimum": 1,
                     },
                     "permissions": {
                         "type": "string",
