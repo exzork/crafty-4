@@ -1,4 +1,8 @@
 from app.classes.web.routes.api.index_handler import ApiIndexHandler
+from app.classes.web.routes.api.jsonschema import (
+    ApiJsonSchemaHandler,
+    ApiJsonSchemaListHandler,
+)
 from app.classes.web.routes.api.not_found import ApiNotFoundHandler
 from app.classes.web.routes.api.auth.invalidate_tokens import (
     ApiAuthInvalidateTokensHandler,
@@ -28,27 +32,63 @@ from app.classes.web.routes.api.users.user.public import ApiUsersUserPublicHandl
 def api_handlers(handler_args):
     return [
         # Auth routes
-        (r"/api/v2/auth/login/?", ApiAuthLoginHandler, handler_args),
+        (
+            r"/api/v2/auth/login/?",
+            ApiAuthLoginHandler,
+            handler_args,
+        ),
         (
             r"/api/v2/auth/invalidate_tokens/?",
             ApiAuthInvalidateTokensHandler,
             handler_args,
         ),
         # User routes
-        (r"/api/v2/users/?", ApiUsersIndexHandler, handler_args),
-        (r"/api/v2/users/([a-z0-9_]+)/?", ApiUsersUserIndexHandler, handler_args),
-        (r"/api/v2/users/(@me)/?", ApiUsersUserIndexHandler, handler_args),
-        (r"/api/v2/users/([a-z0-9_]+)/pfp/?", ApiUsersUserPfpHandler, handler_args),
-        (r"/api/v2/users/(@me)/pfp/?", ApiUsersUserPfpHandler, handler_args),
+        (
+            r"/api/v2/users/?",
+            ApiUsersIndexHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/users/([a-z0-9_]+)/?",
+            ApiUsersUserIndexHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/users/(@me)/?",
+            ApiUsersUserIndexHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/users/([a-z0-9_]+)/pfp/?",
+            ApiUsersUserPfpHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/users/(@me)/pfp/?",
+            ApiUsersUserPfpHandler,
+            handler_args,
+        ),
         (
             r"/api/v2/users/([a-z0-9_]+)/public/?",
             ApiUsersUserPublicHandler,
             handler_args,
         ),
-        (r"/api/v2/users/(@me)/public/?", ApiUsersUserPublicHandler, handler_args),
+        (
+            r"/api/v2/users/(@me)/public/?",
+            ApiUsersUserPublicHandler,
+            handler_args,
+        ),
         # Server routes
-        (r"/api/v2/servers/?", ApiServersIndexHandler, handler_args),
-        (r"/api/v2/servers/([0-9]+)/?", ApiServersServerIndexHandler, handler_args),
+        (
+            r"/api/v2/servers/?",
+            ApiServersIndexHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/servers/([0-9]+)/?",
+            ApiServersServerIndexHandler,
+            handler_args,
+        ),
         (
             r"/api/v2/servers/([0-9]+)/stats/?",
             ApiServersServerStatsHandler,
@@ -59,7 +99,11 @@ def api_handlers(handler_args):
             ApiServersServerActionHandler,
             handler_args,
         ),
-        (r"/api/v2/servers/([0-9]+)/logs/?", ApiServersServerLogsHandler, handler_args),
+        (
+            r"/api/v2/servers/([0-9]+)/logs/?",
+            ApiServersServerLogsHandler,
+            handler_args,
+        ),
         (
             r"/api/v2/servers/([0-9]+)/users/?",
             ApiServersServerUsersHandler,
@@ -70,8 +114,16 @@ def api_handlers(handler_args):
             ApiServersServerPublicHandler,
             handler_args,
         ),
-        (r"/api/v2/roles/?", ApiRolesIndexHandler, handler_args),
-        (r"/api/v2/roles/([a-z0-9_]+)/?", ApiRolesRoleIndexHandler, handler_args),
+        (
+            r"/api/v2/roles/?",
+            ApiRolesIndexHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/roles/([a-z0-9_]+)/?",
+            ApiRolesRoleIndexHandler,
+            handler_args,
+        ),
         (
             r"/api/v2/roles/([a-z0-9_]+)/servers/?",
             ApiRolesRoleServersHandler,
@@ -82,6 +134,24 @@ def api_handlers(handler_args):
             ApiRolesRoleUsersHandler,
             handler_args,
         ),
-        (r"/api/v2/?", ApiIndexHandler, handler_args),
-        (r"/api/v2/(.*)", ApiNotFoundHandler, handler_args),
+        (
+            r"/api/v2/jsonschema/?",
+            ApiJsonSchemaListHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/jsonschema/([a-z0-9_]+)/?",
+            ApiJsonSchemaHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/?",
+            ApiIndexHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/(.*)",
+            ApiNotFoundHandler,
+            handler_args,
+        ),
     ]

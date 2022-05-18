@@ -8,6 +8,7 @@ from app.classes.web.base_api_handler import BaseApiHandler
 
 logger = logging.getLogger(__name__)
 
+# TODO: modify monitoring
 server_patch_schema = {
     "type": "object",
     "properties": {
