@@ -45,7 +45,6 @@ class PanelHandler(BaseHandler):
         for server in self.controller.list_defined_servers():
             argument = self.get_argument(f"server_{server['server_id']}_access", "0")
             if argument == "0":
-                print("doesn't exist " + f"server_{server['server_id']}_access")
                 continue
 
             permission_mask = "0" * len(EnumPermissionsServer)
@@ -53,12 +52,7 @@ class PanelHandler(BaseHandler):
                 argument = self.get_argument(
                     f"permission_{server['server_id']}_{permission.name}", "0"
                 )
-                print(
-                    "trying to get "
-                    + f"permission_{server['server_id']}_{permission.name}"
-                )
                 if argument == "1":
-                    print(f"{permission.name} is 1")
                     permission_mask = self.controller.server_perms.set_permission(
                         permission_mask, permission, "1"
                     )
@@ -164,7 +158,7 @@ class PanelHandler(BaseHandler):
                     if not self.controller.servers.server_id_authorized_api_key(
                         server_id, api_key
                     ):
-                        print(
+                        logger.debug(
                             f"API key {api_key.name} (id: {api_key.token_id}) "
                             f"does not have permission"
                         )
@@ -174,7 +168,9 @@ class PanelHandler(BaseHandler):
                     if not self.controller.servers.server_id_authorized(
                         server_id, exec_user["user_id"]
                     ):
-                        print(f'User {exec_user["user_id"]} does not have permission')
+                        logger.debug(
+                            f'User {exec_user["user_id"]} does not have permission'
+                        )
                         self.redirect("/pandel/error?error=Invalid Server ID")
                         return None
         return server_id
@@ -2023,9 +2019,6 @@ class PanelHandler(BaseHandler):
                     role_id, server_id, server_permissions_map[server_id]
                 )
             for server_id in same_servers:
-                print(
-                    f"!!same servers? {server_id} {server_permissions_map[server_id]}"
-                )
                 PermissionsServers.update_role_permission(
                     role_id, server_id, server_permissions_map[server_id]
                 )
