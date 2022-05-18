@@ -768,6 +768,7 @@ class PanelHandler(BaseHandler):
             page_data["user"]["last_update"] = "N/A"
             page_data["user"]["roles"] = set()
             page_data["user"]["hints"] = True
+            page_data["superuser"] = superuser
 
             if EnumPermissionsCrafty.USER_CONFIG not in exec_user_crafty_permissions:
                 self.redirect(
@@ -955,6 +956,7 @@ class PanelHandler(BaseHandler):
             page_data["role-servers"] = page_role_servers
             page_data["roles_all"] = self.controller.roles.get_all_roles()
             page_data["servers_all"] = self.controller.list_defined_servers()
+            page_data["superuser"] = superuser
             page_data[
                 "permissions_all"
             ] = self.controller.crafty_perms.list_defined_crafty_permissions()
@@ -1927,6 +1929,12 @@ class PanelHandler(BaseHandler):
                     "/panel/error?error=Unauthorized access: not a user editor"
                 )
                 return
+
+            if not self.controller.crafty_perms.can_add_user(exec_user["user_id"]):
+                self.redirect(
+                    "/panel/error?error=Unauthorized access: quantity limit reached"
+                )
+                return
             elif username is None or username == "":
                 self.redirect("/panel/error?error=Invalid username")
                 return
@@ -1971,6 +1979,7 @@ class PanelHandler(BaseHandler):
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )
+            self.controller.crafty_perms.add_user_creation(exec_user["user_id"])
             self.redirect("/panel/panel_config")
 
         elif page == "edit_role":
@@ -2018,6 +2027,11 @@ class PanelHandler(BaseHandler):
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
                 return
+            elif not self.controller.crafty_perms.can_add_role(exec_user["user_id"]):
+                self.redirect(
+                    "/panel/error?error=Unauthorized access: quantity limit reached"
+                )
+                return
             elif role_name is None or role_name == "":
                 self.redirect("/panel/error?error=Invalid role name")
                 return
@@ -2047,6 +2061,7 @@ class PanelHandler(BaseHandler):
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )
+            self.controller.crafty_perms.add_role_creation(exec_user["user_id"])
             self.redirect("/panel/panel_config")
 
         else:
