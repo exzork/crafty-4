@@ -1,7 +1,6 @@
-import typing as t
-from enum import Enum
 import logging
 import typing as t
+from enum import Enum
 from peewee import (
     ForeignKeyField,
     CharField,
