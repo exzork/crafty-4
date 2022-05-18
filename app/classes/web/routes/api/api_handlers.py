@@ -120,17 +120,17 @@ def api_handlers(handler_args):
             handler_args,
         ),
         (
-            r"/api/v2/roles/([a-z0-9_]+)/?",
+            r"/api/v2/roles/([0-9]+)/?",
             ApiRolesRoleIndexHandler,
             handler_args,
         ),
         (
-            r"/api/v2/roles/([a-z0-9_]+)/servers/?",
+            r"/api/v2/roles/([0-9]+)/servers/?",
             ApiRolesRoleServersHandler,
             handler_args,
         ),
         (
-            r"/api/v2/roles/([a-z0-9_]+)/users/?",
+            r"/api/v2/roles/([0-9]+)/users/?",
             ApiRolesRoleUsersHandler,
             handler_args,
         ),

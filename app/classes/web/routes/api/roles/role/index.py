@@ -1,5 +1,6 @@
 from jsonschema import ValidationError, validate
 import orjson
+from peewee import DoesNotExist
 from app.classes.web.base_api_handler import BaseApiHandler
 
 modify_role_schema = {
@@ -51,10 +52,13 @@ class ApiRolesRoleIndexHandler(BaseApiHandler):
         if not superuser:
             return self.finish_json(400, {"status": "error", "error": "NOT_AUTHORIZED"})
 
-        self.finish_json(
-            200,
-            {"status": "ok", "data": self.controller.roles.get_role(role_id)},
-        )
+        try:
+            self.finish_json(
+                200,
+                {"status": "ok", "data": self.controller.roles.get_role(role_id)},
+            )
+        except DoesNotExist:
+            self.finish_json(404, {"status": "error", "error": "ROLE_NOT_FOUND"})
 
     def delete(self, role_id: str):
         auth_data = self.authenticate_user()
@@ -119,9 +123,12 @@ class ApiRolesRoleIndexHandler(BaseApiHandler):
                 },
             )
 
-        self.controller.roles.update_role_advanced(
-            role_id, data.get("role_name", None), data.get("servers", None)
-        )
+        try:
+            self.controller.roles.update_role_advanced(
+                role_id, data.get("role_name", None), data.get("servers", None)
+            )
+        except DoesNotExist:
+            return self.finish_json(404, {"status": "error", "error": "ROLE_NOT_FOUND"})
 
         self.controller.management.add_to_audit_log(
             user["user_id"],
