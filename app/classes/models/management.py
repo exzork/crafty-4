@@ -180,7 +180,12 @@ class HelpersManagement:
 
         server_users = PermissionsServers.get_server_user_list(server_id)
         for user in server_users:
-            self.helper.websocket_helper.broadcast_user(user, "notification", audit_msg)
+            try:
+                self.helper.websocket_helper.broadcast_user(
+                    user, "notification", audit_msg
+                )
+            except Exception as e:
+                logger.error(f"Error broadcasting to user {user} - {e}")
 
         AuditLog.insert(
             {
