@@ -139,5 +139,5 @@ class ApiRolesRoleIndexHandler(BaseApiHandler):
 
         self.finish_json(
             200,
-            {"status": "ok", "data": role_id},
+            {"status": "ok"},
         )
