@@ -134,6 +134,7 @@ class ApiUsersIndexHandler(BaseApiHandler):
                 )
             permissions_mask = "".join(permissions_mask)
 
+        # TODO: do this in the most efficient way
         user_id = self.controller.users.add_user(
             username,
             password,

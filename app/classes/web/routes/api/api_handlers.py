@@ -49,7 +49,7 @@ def api_handlers(handler_args):
             handler_args,
         ),
         (
-            r"/api/v2/users/([a-z0-9_]+)/?",
+            r"/api/v2/users/([0-9]+)/?",
             ApiUsersUserIndexHandler,
             handler_args,
         ),
@@ -59,7 +59,7 @@ def api_handlers(handler_args):
             handler_args,
         ),
         (
-            r"/api/v2/users/([a-z0-9_]+)/pfp/?",
+            r"/api/v2/users/([0-9]+)/pfp/?",
             ApiUsersUserPfpHandler,
             handler_args,
         ),
@@ -69,7 +69,7 @@ def api_handlers(handler_args):
             handler_args,
         ),
         (
-            r"/api/v2/users/([a-z0-9_]+)/public/?",
+            r"/api/v2/users/([0-9]+)/public/?",
             ApiUsersUserPublicHandler,
             handler_args,
         ),
