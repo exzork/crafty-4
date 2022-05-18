@@ -13,10 +13,12 @@ import tornado.httpserver
 
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
+from app.classes.shared.main_controller import Controller
 from app.classes.web.file_handler import FileHandler
 from app.classes.web.public_handler import PublicHandler
 from app.classes.web.panel_handler import PanelHandler
 from app.classes.web.default_handler import DefaultHandler
+from app.classes.web.routes.api.api_handlers import api_handlers
 from app.classes.web.server_handler import ServerHandler
 from app.classes.web.ajax_handler import AjaxHandler
 from app.classes.web.api_handler import (
@@ -42,6 +44,9 @@ logger = logging.getLogger(__name__)
 
 
 class Webserver:
+    controller: Controller
+    helper: Helpers
+
     def __init__(self, helper, controller, tasks_manager):
         self.ioloop = None
         self.http_server = None
@@ -150,7 +155,7 @@ class Webserver:
             (r"/ws", SocketHandler, handler_args),
             (r"/upload", UploadHandler, handler_args),
             (r"/status", StatusHandler, handler_args),
-            # API Routes
+            # API Routes V1
             (r"/api/v1/stats/servers", ServersStats, handler_args),
             (r"/api/v1/stats/node", NodeStats, handler_args),
             (r"/api/v1/server/send_command", SendCommand, handler_args),
@@ -161,6 +166,8 @@ class Webserver:
             (r"/api/v1/list_servers", ListServers, handler_args),
             (r"/api/v1/users/create_user", CreateUser, handler_args),
             (r"/api/v1/users/delete_user", DeleteUser, handler_args),
+            # API Routes V2
+            *api_handlers(handler_args),
         ]
 
         app = tornado.web.Application(

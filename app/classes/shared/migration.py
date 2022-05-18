@@ -81,7 +81,7 @@ class Migrator(object):
             database = database.obj
         self.database: SqliteDatabase = database
         self.table_dict: t.Dict[str, peewee.Model] = {}
-        self.operations: t.List[t.Union[Operation, callable]] = []
+        self.operations: t.List[t.Union[Operation, t.Callable]] = []
         self.migrator = SqliteMigrator(database)
 
     def run(self):

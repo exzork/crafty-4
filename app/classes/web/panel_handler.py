@@ -2,7 +2,7 @@
 import time
 import datetime
 import os
-from typing import Dict, Any, Tuple
+import typing as t
 import json
 import logging
 import threading
@@ -31,16 +31,16 @@ logger = logging.getLogger(__name__)
 
 
 class PanelHandler(BaseHandler):
-    def get_user_roles(self) -> Dict[str, list]:
+    def get_user_roles(self) -> t.Dict[str, list]:
         user_roles = {}
-        for user in self.controller.users.get_all_users():
-            user_roles_list = self.controller.users.get_user_roles_names(user.user_id)
+        for user_id in self.controller.users.get_all_user_ids():
+            user_roles_list = self.controller.users.get_user_roles_names(user_id)
             # user_servers =
             # self.controller.servers.get_authorized_servers(user.user_id)
-            user_roles[user.user_id] = user_roles_list
+            user_roles[user_id] = user_roles_list
         return user_roles
 
-    def get_role_servers(self) -> set:
+    def get_role_servers(self) -> t.Set[int]:
         servers = set()
         for server in self.controller.list_defined_servers():
             argument = self.get_argument(f"server_{server['server_id']}_access", "0")
@@ -60,7 +60,7 @@ class PanelHandler(BaseHandler):
             servers.add((server["server_id"], permission_mask))
         return servers
 
-    def get_perms_quantity(self) -> Tuple[str, dict]:
+    def get_perms_quantity(self) -> t.Tuple[str, dict]:
         permissions_mask: str = "000"
         server_quantity: dict = {}
         for (
@@ -98,6 +98,16 @@ class PanelHandler(BaseHandler):
             if argument is not None and argument == "1":
                 permissions_mask = self.controller.crafty_perms.set_permission(
                     permissions_mask, permission, "1"
+                )
+        return permissions_mask
+
+    def get_perms_server(self) -> str:
+        permissions_mask: str = "00000000"
+        for permission in self.controller.server_perms.list_defined_permissions():
+            argument = self.get_argument(f"permission_{permission.name}", None)
+            if argument is not None:
+                permissions_mask = self.controller.server_perms.set_permission(
+                    permissions_mask, permission, 1 if argument == "1" else 0
                 )
         return permissions_mask
 
@@ -260,7 +270,7 @@ class PanelHandler(BaseHandler):
                 user_order.remove(server_id)
         defined_servers = page_servers
 
-        page_data: Dict[str, Any] = {
+        page_data: t.Dict[str, t.Any] = {
             # todo: make this actually pull and compare version data
             "update_available": False,
             "serverTZ": get_localzone(),
@@ -302,6 +312,8 @@ class PanelHandler(BaseHandler):
             else None,
             "superuser": superuser,
         }
+
+        # http://en.gravatar.com/site/implement/images/#rating
         if self.helper.get_setting("allow_nsfw_profile_pictures"):
             rating = "x"
         else:

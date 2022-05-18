@@ -62,6 +62,14 @@ class CraftyPermsController:
 
     @staticmethod
     def add_server_creation(user_id):
+        """Increase the "Server Creation" counter for this user
+
+        Args:
+            user_id (int): The modifiable user's ID
+
+        Returns:
+            int: The new count of servers created by this user
+        """
         return PermissionsCrafty.add_server_creation(user_id)
 
     @staticmethod

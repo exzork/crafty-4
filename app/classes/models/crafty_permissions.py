@@ -1,4 +1,5 @@
 import logging
+import typing
 from enum import Enum
 from peewee import (
     ForeignKeyField,
@@ -45,21 +46,24 @@ class PermissionsCrafty:
     # **********************************************************************************
     @staticmethod
     def get_permissions_list():
-        permissions_list = []
+        permissions_list: typing.List[EnumPermissionsCrafty] = []
         for member in EnumPermissionsCrafty.__members__.items():
             permissions_list.append(member[1])
         return permissions_list
 
     @staticmethod
     def get_permissions(permissions_mask):
-        permissions_list = []
+        permissions_list: typing.List[EnumPermissionsCrafty] = []
         for member in EnumPermissionsCrafty.__members__.items():
             if PermissionsCrafty.has_permission(permissions_mask, member[1]):
                 permissions_list.append(member[1])
         return permissions_list
 
     @staticmethod
-    def has_permission(permission_mask, permission_tested: EnumPermissionsCrafty):
+    def has_permission(
+        permission_mask: typing.Mapping[int, str],
+        permission_tested: EnumPermissionsCrafty,
+    ):
         result = False
         if permission_mask[permission_tested.value] == "1":
             result = True
@@ -188,6 +192,14 @@ class PermissionsCrafty:
 
     @staticmethod
     def add_server_creation(user_id):
+        """Increase the "Server Creation" counter for this user
+
+        Args:
+            user_id (int): The modifiable user's ID
+
+        Returns:
+            int: The new count of servers created by this user
+        """
         user_crafty = PermissionsCrafty.get_user_crafty(user_id)
         user_crafty.created_server += 1
         UserCrafty.save(user_crafty)
