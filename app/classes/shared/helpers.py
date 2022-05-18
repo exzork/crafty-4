@@ -1000,10 +1000,11 @@ class Helpers:
         return text
 
     @staticmethod
-    def get_lang_page(text):
-        lang = text.split("_")[0]
-        region = text.split("_")[1]
+    def get_lang_page(text) -> str:
+        splitted = text.split("_")
+        if len(splitted) != 2:
+            return "en"
+        lang, region = splitted
         if region == "EN":
             return "en"
-        else:
-            return lang + "-" + region
+        return lang + "-" + region
