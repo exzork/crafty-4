@@ -34,7 +34,7 @@ class ApiServersServerLogsHandler(BaseApiHandler):
                 auth_data[4]["user_id"], server_id
             )
         ):
-            # if the user doesn't have Commands permission, return an error
+            # if the user doesn't have Logs permission, return an error
             return self.finish_json(400, {"status": "error", "error": "NOT_AUTHORIZED"})
 
         server_data = self.controller.servers.get_server_data_by_id(server_id)
