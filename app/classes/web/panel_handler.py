@@ -101,6 +101,16 @@ class PanelHandler(BaseHandler):
                 )
         return permissions_mask
 
+    def get_perms_server(self) -> str:
+        permissions_mask: str = "00000000"
+        for permission in self.controller.server_perms.list_defined_permissions():
+            argument = self.get_argument(f"permission_{permission.name}", None)
+            if argument is not None:
+                permissions_mask = self.controller.server_perms.set_permission(
+                    permissions_mask, permission, 1 if argument == "1" else 0
+                )
+        return permissions_mask
+
     def get_user_role_memberships(self) -> set:
         roles = set()
         for role in self.controller.roles.get_all_roles():
