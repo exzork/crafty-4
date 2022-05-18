@@ -1930,7 +1930,10 @@ class PanelHandler(BaseHandler):
                 )
                 return
 
-            if not self.controller.crafty_perms.can_add_user(exec_user["user_id"]):
+            if (
+                not self.controller.crafty_perms.can_add_user(exec_user["user_id"])
+                and not exec_user["superuser"]
+            ):
                 self.redirect(
                     "/panel/error?error=Unauthorized access: quantity limit reached"
                 )
@@ -2027,7 +2030,10 @@ class PanelHandler(BaseHandler):
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
                 return
-            elif not self.controller.crafty_perms.can_add_role(exec_user["user_id"]):
+            elif (
+                not self.controller.crafty_perms.can_add_role(exec_user["user_id"])
+                and not exec_user["superuser"]
+            ):
                 self.redirect(
                     "/panel/error?error=Unauthorized access: quantity limit reached"
                 )
