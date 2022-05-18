@@ -102,13 +102,10 @@ class ApiRolesIndexHandler(BaseApiHandler):
         # Get the servers
         servers_dict = {server["server_id"]: server for server in data["servers"]}
         server_ids = (
-            {
-                s
-                for s in (
-                    {server["server_id"] for server in data["servers"]}
-                    & set(self.controller.get_all_server_ids())
-                )  # Only allow existing servers
-            }
+            (
+                {server["server_id"] for server in data["servers"]}
+                & set(self.controller.get_all_server_ids())
+            )  # Only allow existing servers
             if "servers" in data
             else set()
         )
