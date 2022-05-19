@@ -383,12 +383,12 @@ class Controller:
                         + ("" if empty else f"\nserver-port={port}")
                     )
 
+        server_file = "server.jar"  # HACK: Throw this horrible default out of here
         root_create_data = data[data["create_type"] + "_create_data"]
         create_data = root_create_data[root_create_data["create_type"] + "_create_data"]
         if data["create_type"] == "minecraft_java":
             if root_create_data["create_type"] == "download_jar":
                 server_file = f"{create_data['type']}-{create_data['version']}.jar"
-                full_jar_path = os.path.join(new_server_path, server_file)
 
                 # Create an EULA file
                 with open(
@@ -399,15 +399,17 @@ class Controller:
                     )
             elif root_create_data["create_type"] == "import_server":
                 _copy_import_dir_files(create_data["existing_server_path"])
-                full_jar_path = os.path.join(new_server_path, create_data["jarfile"])
+                server_file = create_data["jarfile"]
             elif root_create_data["create_type"] == "import_zip":
                 # TODO: Copy files from the zip file to the new server directory
-                full_jar_path = os.path.join(new_server_path, create_data["jarfile"])
+                server_file = create_data["jarfile"]
                 raise Exception("Not yet implemented")
             _create_server_properties_if_needed(create_data["server_properties_port"])
 
             min_mem = create_data["mem_min"]
             max_mem = create_data["mem_max"]
+
+            full_jar_path = os.path.join(new_server_path, server_file)
 
             def _gibs_to_mibs(gibs: float) -> str:
                 return str(int(gibs * 1024))
@@ -438,7 +440,9 @@ class Controller:
             _create_server_properties_if_needed(0, True)
 
             server_command = create_data["command"]
-            server_file = ""
+            server_file = (
+                "./bedrock_server"  # HACK: This is a hack to make the server start
+            )
         elif data["create_type"] == "custom":
             # TODO: working_directory, executable_update
             if root_create_data["create_type"] == "raw_exec":
@@ -458,7 +462,11 @@ class Controller:
             _create_server_properties_if_needed(0, True)
 
             server_command = create_data["command"]
-            server_file = root_create_data["executable_update"].get("file", "")
+
+            server_file_new = root_create_data["executable_update"].get("file", "")
+            if server_file_new != "":
+                # HACK: Horrible hack to make the server start
+                server_file = server_file_new
 
         stop_command = data.get("stop_command", "")
         if stop_command == "":
@@ -480,7 +488,7 @@ class Controller:
             monitoring_type = "minecraft-bedrock"
         elif data["monitoring_type"] == "none":
             # TODO: this needs to be NUKED..
-            # There shouldn't be anything set if there are nothing to monitor
+            # There shouldn't be anything set if there is nothing to monitor
             monitoring_port = 25565
             monitoring_host = "127.0.0.1"
             monitoring_type = "minecraft-java"
