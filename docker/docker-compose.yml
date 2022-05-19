@@ -1,9 +1,11 @@
+---
 version: '3'
 
 services:
   crafty:
-    container_name: crafty_commander
+    container_name: crafty_container
     build: ..
+    restart: always
     environment:
       - TZ=Etc/UTC
     ports:
@@ -13,8 +15,8 @@ services:
       - "19132:19132/udp" # BEDROCK
       - "25500-25600:25500-25600" # MC SERV PORT RANGE
     volumes:
-      - ./backups:/commander/backups
-      - ./logs:/commander/logs
-      - ./servers:/commander/servers
-      - ./config:/commander/app/config
-      - ./import:/commander/import
+      - ./backups:/crafty/backups
+      - ./logs:/crafty/logs
+      - ./servers:/crafty/servers
+      - ./config:/crafty/app/config
+      - ./import:/crafty/import

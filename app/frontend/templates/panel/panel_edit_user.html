@@ -9,22 +9,22 @@
 
 <div class="content-wrapper">
 
-    <!-- Page Title Header Starts-->
+  <!-- Page Title Header Starts-->
   <div class="row page-title-header">
     <div class="col-12">
       <div class="page-header">
         {% if data['new_user'] %}
-          <h4 class="page-title">
-            {{ translate('userConfig', 'pageTitleNew', data['lang']) }}
-              <br />
-              <small>UID: N/A</small>
-          </h4>
+        <h4 class="page-title">
+          {{ translate('userConfig', 'pageTitleNew', data['lang']) }}
+          <br />
+          <small>UID: N/A</small>
+        </h4>
         {% else %}
-          <h4 class="page-title">
-            {{ translate('userConfig', 'pageTitle', data['lang']) }} - {{ data['user']['user_id'] }}
-              <br />
-              <small>UID: {{ data['user']['user_id'] }}</small>
-          </h4>
+        <h4 class="page-title">
+          {{ translate('userConfig', 'pageTitle', data['lang']) }}
+          <br />
+          <small>UID: {{ data['user']['user_id'] }}</small>
+        </h4>
         {% end %}
       </div>
     </div>
@@ -37,197 +37,250 @@
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-            <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
-              <li class="nav-item">
-                <a class="nav-link active" href="/panel/{{ 'add_user' if data['new_user'] else 'edit_user' }}?id={{ data['user']['user_id'] }}&subpage=config" role="tab" aria-selected="true">
-                  <i class="fas fa-cogs"></i> {{ translate('userConfig', 'config', data['lang']) }} - {{ data['user']['user_id'] }}</a>
-              </li>
-              {% if not data['new_user'] %}
-              <li class="nav-item">
-                <a class="nav-link" href="/panel/edit_user_apikeys?id={{ data['user']['user_id'] }}" role="tab" aria-selected="false">
-                  <i class="fas fa-key"></i>{{ translate('userConfig', 'apiKey', data['lang']) }} - {{ data['user']['user_id'] }}</a>
-              </li>
-              {% end %}
-            </ul>
+          <ul class="nav nav-tabs col-md-12 tab-simple-styled " role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active"
+                href="/panel/{{ 'add_user' if data['new_user'] else 'edit_user' }}?id={{ data['user']['user_id'] }}&subpage=config"
+                role="tab" aria-selected="true">
+                <i class="fas fa-cogs"></i> {{ translate('userConfig', 'config', data['lang']) }}</a>
+            </li>
+            {% if not data['new_user'] %}
+            <li class="nav-item">
+              <a class="nav-link" href="/panel/edit_user_apikeys?id={{ data['user']['user_id'] }}" role="tab"
+                aria-selected="false">
+                <i class="fas fa-key"></i>{{ translate('userConfig', 'apiKey', data['lang']) }}</a>
+            </li>
+            {% end %}
+          </ul>
 
-            <div class="row">
-                <div class="col-md-6 col-sm-12">
-                  {% if data['new_user'] %}
-                    <form id="user_form" class="forms-sample" method="post" action="/panel/add_user">
-                  {% else %}
-                    <form id="user_form" class="forms-sample" method="post" action="/panel/edit_user">
+          <div class="row">
+            <div class="col-md-6 col-sm-12">
+              {% if data['new_user'] %}
+              <form id="user_form" class="forms-sample" method="post" action="/panel/add_user">
+                {% else %}
+                <form id="user_form" class="forms-sample" method="post" action="/panel/edit_user">
                   {% end %}
-                      {% raw xsrf_form_html() %}
-                      <input type="hidden" name="id" value="{{ data['user']['user_id'] }}">
-                      <input type="hidden" name="subpage" value="config">
+                  {% raw xsrf_form_html() %}
+                  <input type="hidden" name="id" value="{{ data['user']['user_id'] }}">
+                  <input type="hidden" name="subpage" value="config">
 
 
-                      <div class="card">
-                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                          <h4 class="card-title"><i class="fas fa-user"></i> {{ translate('userConfig', 'userSettings', data['lang']) }} - {{ data['user']['user_id'] }}</h4>
-                        </div>
-                        <div class="card-body">
-                          <div class="form-group">
-                            <label class="form-label" for="username">{{ translate('userConfig', 'userName', data['lang']) }} - {{ data['user']['user_id'] }}<small class="text-muted ml-1"> - {{ translate('userConfig', 'userNameDesc', data['lang']) }} - {{ data['user']['user_id'] }}</small> </label>
-                            <input type="text" class="form-control" name="username" id="username" value="{{ data['user']['username']  }}" placeholder="User Name" >
-                          </div>
-                          <div class="form-group">
-                            <label class="form-label" for="password0">{{ translate('userConfig', 'password', data['lang']) }} - {{ data['user']['user_id'] }}<small class="text-muted ml-1"> - {{ translate('userConfig', 'leaveBlank', data['lang']) }} - {{ data['user']['user_id'] }}</small> </label>
-                            <input type="password" class="form-control" name="password0" id="password0" value="" placeholder="Password" >
-                          </div>
-                          <div class="form-group">
-                            <label class="form-label" for="password1">{{ translate('userConfig', 'repeat', data['lang']) }} - {{ data['user']['user_id'] }} <small class="text-muted ml-1"> - {{ translate('userConfig', 'leaveBlank', data['lang']) }} - {{ data['user']['user_id'] }}</small> </label>
-                            <input type="password" class="form-control" name="password1" id="password1" value="" placeholder="Repeat Password" >
-                          </div>
-                          <div class="form-group">
-                            <label class="form-label" for="email">{{ translate('userConfig', 'gravEmail', data['lang']) }} - {{ data['user']['user_id'] }}<small class="text-muted ml-1"> - {{ translate('userConfig', 'gravDesc', data['lang']) }} - {{ data['user']['user_id'] }}</small> </label>
-                            <input type="email" class="form-control" name="email" id="email" value="{{ data['user']['email'] }}" placeholder="Gravatar Email" >
-                          </div>
-                          <div class="form-group">
-                            <label class="form-label" for="language">{{ translate('userConfig', 'userLang', data['lang']) }}</label>
-                            <select class="form-select form-control form-control-lg select-css" id="language" name="language" form="user_form">
-                            {% for lang in data['languages'] %}
-                            {% if not 'incomplete' in lang %}
-                              <option value="{{lang}}">{{lang}}</option>
-                            {% else %}
-                              <option value="{{lang}}" disabled>{{lang}}</option>
-                            {% end %}
-                            {% end %}
-                            </select>
-                          </div>
-                        </div>
+                  <div class="card">
+                    <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                      <h4 class="card-title"><i class="fas fa-user"></i> {{ translate('userConfig', 'userSettings',
+                        data['lang']) }}</h4>
+                    </div>
+                    <div class="card-body">
+                      <div class="form-group">
+                        <label class="form-label" for="username">{{ translate('userConfig', 'userName', data['lang'])
+                          }}<small class="text-muted ml-1"> - {{ translate('userConfig', 'userNameDesc', data['lang'])
+                            }}</small> </label>
+                        <input type="text" class="form-control" name="username" id="username"
+                          value="{{ data['user']['username']  }}" placeholder="User Name">
                       </div>
-
-                      <div class="card">
-                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                          <h4 class="card-title"><i class="fas fa-user-tag"></i> {{ translate('userConfig', 'userRoles', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('userConfig', 'userRolesDesc', data['lang']) }}</small></h4>
-                        </div>
-                        <div class="card-body">
-                          <div class="form-group">
-                            <div class="table-responsive">
-                              <table class="table table-hover">
-                                <thead>
-                                  <tr class="rounded">
-                                    <th>{{ translate('userConfig', 'roleName', data['lang']) }}</th>
-                                    <th>{{ translate('userConfig', 'member', data['lang']) }}</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                {% for role in data['roles_all'] %}
-                                  <tr>
-                                    <td>{{ role.role_name }}</td>
-                                    <td>
-                                      {% if role.role_id in data['user']['roles'] %}
-                                        <input type="checkbox" class="form-check-input"  id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership" checked="" value="1">
-                                      {% else %}
-                                        <input type="checkbox" class="form-check-input"  id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership" value="1">
-                                      {% end %}
-
-                                    </td>
-                                  </tr>
-                                {% end %}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
+                      <div class="form-group">
+                        <label class="form-label" for="password0">{{ translate('userConfig', 'password', data['lang'])
+                          }}<small class="text-muted ml-1"> - {{ translate('userConfig', 'leaveBlank', data['lang']) }}
+                          </small> </label>
+                        <input type="password" class="form-control" name="password0" id="password0" value=""
+                          placeholder="Password">
                       </div>
-
-                      <!-- Put Permissions Crafty part here -->
-
-                      <div class="card">
-                        <div class="card-header header-sm d-flex justify-content-between align-items-center">
-                          <h4 class="card-title"><i class="fas fa-user-lock"></i> {{ translate('userConfig', 'craftyPerms', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('userConfig', 'craftyPermDesc', data['lang']) }}</small></h4>
-                        </div>
-                        <div class="card-body">
-                          <div class="form-group">
-                            <div class="table-responsive">
-                              <table class="table table-hover">
-                                <thead>
-                                  <tr class="rounded">
-                                    <th>{{ translate('userConfig', 'permName', data['lang']) }}</th>
-                                    <th>{{ translate('userConfig', 'auth', data['lang']) }}</th>
-                                    <th>{{ translate('userConfig', 'uses', data['lang']) }}</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                {% for permission in data['permissions_all'] %}
-                                  <tr>
-                                    <td>{{ permission.name }}</td>
-                                    <td>
-                                      {% if permission in data['permissions_list'] %}
-                                        <input type="checkbox" class="form-check-input"  id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" checked="" value="1">
-                                      {% else %}
-                                        <input type="checkbox" class="form-check-input"  id="permission_{{ permission.name }}" name="permission_{{ permission.name }}" value="1">
-                                      {% end %}
-                                    </td>
-                                    <td><input type="text" class="form-control" name="quantity_{{ permission.name }}" id="quantity_{{ permission.name }}" value="{{ data['quantity_server'][permission.name] }}"></td>
-                                  </tr>
-                                {% end %}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
+                      <div class="form-group">
+                        <label class="form-label" for="password1">{{ translate('userConfig', 'repeat', data['lang']) }}
+                          <small class="text-muted ml-1"> - {{ translate('userConfig', 'leaveBlank', data['lang'])
+                            }}</small> </label>
+                        <input type="password" class="form-control" name="password1" id="password1" value=""
+                          placeholder="Repeat Password">
                       </div>
-
-                      <div class="form-check-flat">
-                        <label for="enabled" class="form-check-label ml-4 mb-4">
-                          {% if data['user']['enabled'] %}
-                              <input type="checkbox" class="form-check-input" id="enabled" name="enabled" checked="" value="1">{{ translate('userConfig', 'enabled', data['lang']) }}
+                      <div class="form-group">
+                        <label class="form-label" for="email">{{ translate('userConfig', 'gravEmail', data['lang'])
+                          }}<small class="text-muted ml-1"> - {{ translate('userConfig', 'gravDesc', data['lang'])
+                            }}</small> </label>
+                        <input type="email" class="form-control" name="email" id="email"
+                          value="{{ data['user']['email'] }}" placeholder="Gravatar Email">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="language">{{ translate('userConfig', 'userLang', data['lang'])
+                          }}</label>
+                        <select class="form-select form-control form-control-lg select-css" id="language"
+                          name="language" form="user_form">
+                          {% for lang in data['languages'] %}
+                          {% if not 'incomplete' in lang %}
+                          <option value="{{lang}}">{{lang}}</option>
                           {% else %}
-                              <input type="checkbox" class="form-check-input" id="enabled" name="enabled" value="1">{{ translate('userConfig', 'enabled', data['lang']) }}
+                          <option value="{{lang}}" disabled>{{lang}}</option>
                           {% end %}
-                        </label>
-
-                        <label for="superuser" class="form-check-label ml-4 mb-4">
-                          {% if data['user']['superuser'] %}
-                              <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser" name="superuser" checked="" value="1" {{ data['super-disabled'] }} >{{ translate('userConfig', 'super', data['lang']) }}
-                          {% else %}
-                              <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser" name="superuser" {{ data['super-disabled'] }} value="1" >{{ translate('userConfig', 'super', data['lang']) }}
                           {% end %}
-                        </label>
-
-                      </div>
-
-                      <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{ translate('panelConfig', 'save', data['lang']) }}</button>
-                      <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light"><i class="fas fa-undo-alt"></i> {{ translate('panelConfig', 'cancel', data['lang']) }}</button>
-                    </form>
-                </div>
-
-                <div class="col-md-6 col-sm-12">
-                    <div class="card">
-                      <div class="card-body">
-                        <h4 class="card-title"><i class="fas fa-user-cog"></i> {{ translate('userConfig', 'configArea', data['lang']) }}</h4>
-                        <p class="card-description"> {{ translate('userConfig', 'configAreaDesc', data['lang']) }}</p>
-                        <blockquote class="blockquote">
-                          <p class="mb-0">
-                            {{ translate('userConfig', 'created', data['lang']) }} {{ str(data['user']['created']) }}
-                              <br />
-                              {{ translate('userConfig', 'lastLogin', data['lang']) }} {{ str(data['user']['last_login']) }}
-                              <br />
-                              {{ translate('userConfig', 'lastUpdate', data['lang']) }} {{ str(data['user']['last_update']) }}
-                              <br />
-                              {{ translate('userConfig', 'lastIP', data['lang']) }} {{ data['user']['last_ip'] }}
-                              <br />
-                          </p>
-                        </blockquote>
+                        </select>
                       </div>
                     </div>
-                    <div class="text-center">
-                        {% if data['new_user'] %}
-                            <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i>{{ translate('userConfig', 'deleteUserB', data['lang']) }}</a><br />
-                            <small>{{ translate('userConfig', 'notExist', data['lang']) }}</small>
-                        {% elif data['user']['superuser'] %}
-                            <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i> {{ translate('userConfig', 'deleteUserB', data['lang']) }}</a><br />
-                            <small>{{ translate('userConfig', 'delSuper', data['lang']) }}</small>
-                        {% else %}
-                            <button class="btn btn-sm btn-danger delete-user"><i class="fas fa-trash"></i> {{ translate('userConfig', 'deleteUserB', data['lang']) }}</a>
-                        {% end %}
+                  </div>
 
+                  <div class="card">
+                    <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                      <h4 class="card-title"><i class="fas fa-user-tag"></i> {{ translate('userConfig', 'userRoles',
+                        data['lang']) }} <small class="text-muted ml-1"> - {{ translate('userConfig', 'userRolesDesc',
+                          data['lang']) }}</small></h4>
                     </div>
-                </div>
+                    <div class="card-body">
+                      <div class="form-group">
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <thead>
+                              <tr class="rounded">
+                                <th>{{ translate('userConfig', 'roleName', data['lang']) }}</th>
+                                <th>{{ translate('userConfig', 'member', data['lang']) }}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {% for role in data['roles_all'] %}
+                              <tr>
+                                <td>{{ role.role_name }}</td>
+                                <td>
+                                  {% if role.role_id in data['user']['roles'] %}
+                                  <input type="checkbox" class="form-check-input"
+                                    id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership"
+                                    checked="" value="1">
+                                  {% else %}
+                                  <input type="checkbox" class="form-check-input"
+                                    id="role_{{ role.role_id }}_membership" name="role_{{ role.role_id }}_membership"
+                                    value="1">
+                                  {% end %}
+
+                                </td>
+                              </tr>
+                              {% end %}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Put Permissions Crafty part here -->
+                  {% if data['superuser'] %}
+                  <div class="card">
+                    <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                      <h4 class="card-title"><i class="fas fa-user-lock"></i> {{ translate('userConfig', 'craftyPerms',
+                        data['lang']) }} <small class="text-muted ml-1"> - {{ translate('userConfig', 'craftyPermDesc',
+                          data['lang']) }}</small></h4>
+                    </div>
+
+                    <div class="card-body">
+                      <div class="form-group">
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <thead>
+                              <tr class="rounded">
+                                <th>{{ translate('userConfig', 'permName', data['lang']) }}</th>
+                                <th>{{ translate('userConfig', 'auth', data['lang']) }}</th>
+                                <th>{{ translate('userConfig', 'uses', data['lang']) }}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {% for permission in data['permissions_all'] %}
+                              <tr>
+                                <td>{{ permission.name }}</td>
+                                <td>
+                                  {% if permission in data['permissions_list'] %}
+                                  <input type="checkbox" class="form-check-input" id="permission_{{ permission.name }}"
+                                    name="permission_{{ permission.name }}" checked="" value="1">
+                                  {% else %}
+                                  <input type="checkbox" class="form-check-input" id="permission_{{ permission.name }}"
+                                    name="permission_{{ permission.name }}" value="1">
+                                  {% end %}
+                                </td>
+                                <td><input type="text" class="form-control" name="quantity_{{ permission.name }}"
+                                    id="quantity_{{ permission.name }}"
+                                    value="{{ data['quantity_server'][permission.name] }}"></td>
+                              </tr>
+                              {% end %}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {% end %}
+                  <div class="form-check-flat">
+                    <label for="enabled" class="form-check-label ml-4 mb-4">
+                      {% if data['user']['enabled'] %}
+                      <input type="checkbox" class="form-check-input" id="enabled" name="enabled" checked=""
+                        value="1">{{ translate('userConfig', 'enabled', data['lang']) }}
+                      {% else %}
+                      <input type="checkbox" class="form-check-input" id="enabled" name="enabled" value="1">{{
+                      translate('userConfig', 'enabled', data['lang']) }}
+                      {% end %}
+                    </label>
+
+                    <label for="superuser" class="form-check-label ml-4 mb-4">
+                      {% if data['user']['superuser'] %}
+                      <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser"
+                        name="superuser" checked="" value="1" {{ data['super-disabled'] }}>{{ translate('userConfig',
+                      'super', data['lang']) }}
+                      {% else %}
+                      <input type="checkbox" onclick="superConfirm()" class="form-check-input" id="superuser"
+                        name="superuser" {{ data['super-disabled'] }} value="1">{{ translate('userConfig', 'super',
+                      data['lang']) }}
+                      {% end %}
+                    </label>
+
+                    <label for="hints" class="form-check-label ml-4 mb-4">
+                      {% if data['user']['hints'] %}
+                      <input type="checkbox" class="form-check-input" id="hints" name="hints" checked=""
+                        value="1">Enable Hints?
+                      {% else %}
+                      <input type="checkbox" class="form-check-input" id="hints" name="hints" value="1"> Enable
+                      Hints?
+                      {% end %}
+                    </label>
+
+                  </div>
+
+                  <button type="submit" class="btn btn-success mr-2"><i class="fas fa-save"></i> {{
+                    translate('panelConfig', 'save', data['lang']) }}</button>
+                  <button type="reset" onclick="location.href='/panel/panel_config'" class="btn btn-light"><i
+                      class="fas fa-undo-alt"></i> {{ translate('panelConfig', 'cancel', data['lang']) }}</button>
+                </form>
             </div>
+
+            <div class="col-md-6 col-sm-12">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title"><i class="fas fa-user-cog"></i> {{ translate('userConfig', 'configArea',
+                    data['lang']) }}</h4>
+                  <p class="card-description"> {{ translate('userConfig', 'configAreaDesc', data['lang']) }}</p>
+                  <blockquote class="blockquote">
+                    <p class="mb-0">
+                      {{ translate('userConfig', 'created', data['lang']) }} {{ str(data['user']['created']) }}
+                      <br />
+                      {{ translate('userConfig', 'lastLogin', data['lang']) }} {{ str(data['user']['last_login']) }}
+                      <br />
+                      {{ translate('userConfig', 'lastUpdate', data['lang']) }} {{ str(data['user']['last_update']) }}
+                      <br />
+                      {{ translate('userConfig', 'lastIP', data['lang']) }} {{ data['user']['last_ip'] }}
+                      <br />
+                    </p>
+                  </blockquote>
+                </div>
+              </div>
+              <div class="text-center">
+                {% if data['new_user'] %}
+                <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i>{{ translate('userConfig',
+                  'deleteUserB', data['lang']) }}</a><br />
+                <small>{{ translate('userConfig', 'notExist', data['lang']) }}</small>
+                {% elif data['user']['superuser'] %}
+                <a class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i> {{ translate('userConfig',
+                  'deleteUserB', data['lang']) }}</a><br />
+                <small>{{ translate('userConfig', 'delSuper', data['lang']) }}</small>
+                {% else %}
+                <button class="btn btn-sm btn-danger delete-user"><i class="fas fa-trash"></i> {{
+                  translate('userConfig', 'deleteUserB', data['lang']) }}</a>
+                  {% end %}
+
+              </div>
+            </div>
+          </div>
 
         </div>
       </div>
@@ -245,70 +298,70 @@
 <script>
   const userId = new URLSearchParams(document.location.search).get('id')
 
-  $( ".delete-user" ).click(function() {
+  $(".delete-user").click(function () {
     var file_to_del = $(this).data("file");
 
-    console.log("User to delete is "+userId);
+    console.log("User to delete is " + userId);
 
     bootbox.confirm({
-        title: "{% raw translate('userConfig', 'deleteUser', data['lang']) %} "+userId,
-        message: "{{ translate('userConfig', 'confirmDelete', data['lang']) }}",
-        buttons: {
-            cancel: {
-                label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
+      title: "{% raw translate('userConfig', 'deleteUser', data['lang']) %} " + userId,
+      message: "{{ translate('userConfig', 'confirmDelete', data['lang']) }}",
+      buttons: {
+        cancel: {
+          label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
             },
-            confirm: {
-              className: 'btn-outline-danger',
-                label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm", data['lang']) }}'
+        confirm: {
+          className: 'btn-outline-danger',
+          label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "confirm", data['lang']) }}'
             }
-        },
-        callback: function (result) {
-            console.log(result);
-            if (result == true) {
-              location.href="/panel/remove_user?id="+userId;
-            }
+      },
+      callback: function (result) {
+        console.log(result);
+        if (result === true) {
+          location.href = "/panel/remove_user?id=" + userId;
         }
+      }
     });
-});
+  });
 
   function superConfirm() {
-    if (document.getElementById('superuser').checked){
-    bootbox.confirm({
-      title: "{{ translate('panelConfig', 'superConfirmTitle', data['lang']) }}",
-      message: "{{ translate('panelConfig', 'superConfirm', data['lang']) }}",
-      buttons: {
+    if (document.getElementById('superuser').checked) {
+      bootbox.confirm({
+        title: "{{ translate('panelConfig', 'superConfirmTitle', data['lang']) }}",
+        message: "{{ translate('panelConfig', 'superConfirm', data['lang']) }}",
+        buttons: {
           cancel: {
-              label: '<i class="fa fa-times"></i> {{ translate('panelConfig', 'cancel', data['lang']) }}'
+            label: '<i class="fa fa-times"></i> {{ translate('panelConfig', 'cancel', data['lang']) }}'
           },
           confirm: {
             className: 'btn-outline-warning',
-              label: '<i class="fa fa-check"></i> {{ translate('serverBackups', 'confirm', data['lang']) }}'
+            label: '<i class="fa fa-check"></i> {{ translate('serverBackups', 'confirm', data['lang']) }}'
           }
-      },
-      callback: function (result) {
-          if (result == true){
+        },
+        callback: function (result) {
+          if (result === true) {
             return;
-          }else{
+          } else {
             document.getElementById('superuser').checked = false;
           }
-      }
-  });
-}else{
-  return
-}
+        }
+      });
+    } else {
+      return
+    }
   }
 
 
-    //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
-    function getCookie(name) {
-        var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
-        return r ? r[1] : undefined;
-    }
+  //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
+  function getCookie(name) {
+    var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+    return r ? r[1] : undefined;
+  }
 
-    $( document ).ready(function() {
-        console.log( "ready!" );
+  $(document).ready(function () {
+    console.log("ready!");
 
-    });
+  });
 
 
 </script>

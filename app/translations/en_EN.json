@@ -176,7 +176,8 @@
         "not-downloaded": "We can't seem to find your executable file. Has it finished downloading? Are the permissions set to executable?",
         "portReminder": "We have detected this is the first time {} has been run. Make sure to forward port {} through your router/firewall to make this remotely accessible from the internet.",
         "start-error": "Server {} failed to start with error code: {}",
-        "terribleFailure": "What a Terrible Failure!"
+        "terribleFailure": "What a Terrible Failure!",
+        "fileTooLarge": "Upload failed. File upload too large. Contact system administrator for assistance."
     },
     "footer": {
         "allRightsReserved": "All rights reserved",
@@ -388,7 +389,7 @@
         "command": "Command",
         "command-explain": "What command do you want us to execute? Do not include the '/'",
         "cron": "Cron",
-        "cron-explain": "Enter your cron string",
+        "cron-explain": "Enter your cron string -- NOTE: 0 = Monday on last option.",
         "custom": "Custom Command",
         "days": "Days",
         "enabled": "Enabled",
@@ -516,7 +517,7 @@
         "notExist": "You cannot delete something that doesn't exist!",
         "pageTitle": "Edit User",
         "pageTitleNew": "Create User",
-        "password": "Password",
+        "password": "New Password",
         "permName": "Permission Name",
         "repeat": "Repeat Password",
         "roleName": "Role Name",

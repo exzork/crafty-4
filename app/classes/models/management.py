@@ -1,47 +1,47 @@
 import logging
 import datetime
+from peewee import (
+    ForeignKeyField,
+    CharField,
+    IntegerField,
+    DateTimeField,
+    FloatField,
+    TextField,
+    AutoField,
+    BooleanField,
+)
+from playhouse.shortcuts import model_to_dict
 
-from app.classes.models.users import Users, users_helper
+from app.classes.models.base_model import BaseModel
+from app.classes.models.users import Users, HelperUsers
 from app.classes.models.servers import Servers
-from app.classes.models.server_permissions import server_permissions
-from app.classes.shared.helpers import helper
-from app.classes.shared.main_models import db_helper
-from app.classes.web.websocket_helper import websocket_helper
-
-try:
-    from peewee import SqliteDatabase, Model, ForeignKeyField, CharField, IntegerField, DateTimeField, FloatField, TextField, AutoField, BooleanField
-    from playhouse.shortcuts import model_to_dict
-
-except ModuleNotFoundError as e:
-    helper.auto_installer_fix(e)
+from app.classes.models.server_permissions import PermissionsServers
+from app.classes.shared.main_models import DatabaseShortcuts
 
 logger = logging.getLogger(__name__)
-peewee_logger = logging.getLogger('peewee')
-peewee_logger.setLevel(logging.INFO)
-database = SqliteDatabase(helper.db_path, pragmas = {
-    'journal_mode': 'wal',
-    'cache_size': -1024 * 10})
 
-#************************************************************************************************
+# **********************************************************************************
 #                                   Audit_Log Class
-#************************************************************************************************
-class Audit_Log(Model):
+# **********************************************************************************
+class AuditLog(BaseModel):
     audit_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
     user_name = CharField(default="")
     user_id = IntegerField(default=0, index=True)
-    source_ip = CharField(default='127.0.0.1')
-    server_id = IntegerField(default=None, index=True) # When auditing global events, use server ID 0
-    log_msg = TextField(default='')
+    source_ip = CharField(default="127.0.0.1")
+    server_id = IntegerField(
+        default=None, index=True
+    )  # When auditing global events, use server ID 0
+    log_msg = TextField(default="")
 
     class Meta:
-        database = database
+        table_name = "audit_log"
 
 
-#************************************************************************************************
+# **********************************************************************************
 #                                   Host_Stats Class
-#************************************************************************************************
-class Host_Stats(Model):
+# **********************************************************************************
+class HostStats(BaseModel):
     time = DateTimeField(default=datetime.datetime.now, index=True)
     boot_time = CharField(default="")
     cpu_usage = FloatField(default=0)
@@ -55,30 +55,28 @@ class Host_Stats(Model):
 
     class Meta:
         table_name = "host_stats"
-        database = database
 
 
-#************************************************************************************************
+# **********************************************************************************
 #                                   Commands Class
-#************************************************************************************************
-class Commands(Model):
+# **********************************************************************************
+class Commands(BaseModel):
     command_id = AutoField()
     created = DateTimeField(default=datetime.datetime.now)
-    server_id = ForeignKeyField(Servers, backref='server', index=True)
-    user = ForeignKeyField(Users, backref='user', index=True)
-    source_ip = CharField(default='127.0.0.1')
-    command = CharField(default='')
+    server_id = ForeignKeyField(Servers, backref="server", index=True)
+    user = ForeignKeyField(Users, backref="user", index=True)
+    source_ip = CharField(default="127.0.0.1")
+    command = CharField(default="")
     executed = BooleanField(default=False)
 
     class Meta:
         table_name = "commands"
-        database = database
 
 
-#************************************************************************************************
+# **********************************************************************************
 #                                   Webhooks Class
-#************************************************************************************************
-class Webhooks(Model):
+# **********************************************************************************
+class Webhooks(BaseModel):
     id = AutoField()
     name = CharField(max_length=64, unique=True, index=True)
     method = CharField(default="POST")
@@ -88,15 +86,14 @@ class Webhooks(Model):
 
     class Meta:
         table_name = "webhooks"
-        database = database
 
 
-#************************************************************************************************
+# **********************************************************************************
 #                                   Schedules Class
-#************************************************************************************************
-class Schedules(Model):
+# **********************************************************************************
+class Schedules(BaseModel):
     schedule_id = IntegerField(unique=True, primary_key=True)
-    server_id = ForeignKeyField(Servers, backref='schedule_server')
+    server_id = ForeignKeyField(Servers, backref="schedule_server")
     enabled = BooleanField()
     action = CharField()
     interval = IntegerField()
@@ -110,44 +107,49 @@ class Schedules(Model):
     delay = IntegerField(default=0)
 
     class Meta:
-        table_name = 'schedules'
-        database = database
+        table_name = "schedules"
 
 
-#************************************************************************************************
+# **********************************************************************************
 #                                   Backups Class
-#************************************************************************************************
-class Backups(Model):
+# **********************************************************************************
+class Backups(BaseModel):
     excluded_dirs = CharField(null=True)
     max_backups = IntegerField()
-    server_id = ForeignKeyField(Servers, backref='backups_server')
+    server_id = ForeignKeyField(Servers, backref="backups_server")
     compress = BooleanField(default=False)
+
     class Meta:
-        table_name = 'backups'
-        database = database
+        table_name = "backups"
 
-class helpers_management:
 
-    #************************************************************************************************
+class HelpersManagement:
+    def __init__(self, database, helper):
+        self.database = database
+        self.helper = helper
+
+    # **********************************************************************************
     #                                   Host_Stats Methods
-    #************************************************************************************************
+    # **********************************************************************************
     @staticmethod
     def get_latest_hosts_stats():
-        #pylint: disable=no-member
-        query = Host_Stats.select().order_by(Host_Stats.id.desc()).get()
+        # pylint: disable=no-member
+        query = HostStats.select().order_by(HostStats.id.desc()).get()
         return model_to_dict(query)
 
-    #************************************************************************************************
+    # **********************************************************************************
     #                                   Commands Methods
-    #************************************************************************************************
+    # **********************************************************************************
     @staticmethod
     def add_command(server_id, user_id, remote_ip, command):
-        Commands.insert({
-            Commands.server_id: server_id,
-            Commands.user: user_id,
-            Commands.source_ip: remote_ip,
-            Commands.command: command
-        }).execute()
+        Commands.insert(
+            {
+                Commands.server_id: server_id,
+                Commands.user: user_id,
+                Commands.source_ip: remote_ip,
+                Commands.command: command,
+            }
+        ).execute()
 
     @staticmethod
     def get_unactioned_commands():
@@ -158,72 +160,80 @@ class helpers_management:
     def mark_command_complete(command_id=None):
         if command_id is not None:
             logger.debug(f"Marking Command {command_id} completed")
-            Commands.update({
-                Commands.executed: True
-            }).where(Commands.command_id == command_id).execute()
+            Commands.update({Commands.executed: True}).where(
+                Commands.command_id == command_id
+            ).execute()
 
-    #************************************************************************************************
+    # **********************************************************************************
     #                                   Audit_Log Methods
-    #************************************************************************************************
+    # **********************************************************************************
     @staticmethod
     def get_actity_log():
-        q = Audit_Log.select()
-        return db_helper.return_db_rows(q)
+        query = AuditLog.select()
+        return DatabaseShortcuts.return_db_rows(query)
 
-    @staticmethod
-    def add_to_audit_log(user_id, log_msg, server_id=None, source_ip=None):
+    def add_to_audit_log(self, user_id, log_msg, server_id=None, source_ip=None):
         logger.debug(f"Adding to audit log User:{user_id} - Message: {log_msg} ")
-        user_data = users_helper.get_user(user_id)
+        user_data = HelperUsers.get_user(user_id)
 
         audit_msg = f"{str(user_data['username']).capitalize()} {log_msg}"
 
-        server_users = server_permissions.get_server_user_list(server_id)
+        server_users = PermissionsServers.get_server_user_list(server_id)
         for user in server_users:
-            websocket_helper.broadcast_user(user,'notification', audit_msg)
+            try:
+                self.helper.websocket_helper.broadcast_user(
+                    user, "notification", audit_msg
+                )
+            except Exception as e:
+                logger.error(f"Error broadcasting to user {user} - {e}")
 
-        Audit_Log.insert({
-            Audit_Log.user_name: user_data['username'],
-            Audit_Log.user_id: user_id,
-            Audit_Log.server_id: server_id,
-            Audit_Log.log_msg: audit_msg,
-            Audit_Log.source_ip: source_ip
-        }).execute()
-        #deletes records when they're more than 100
-        ordered = Audit_Log.select().order_by(+Audit_Log.created)
+        AuditLog.insert(
+            {
+                AuditLog.user_name: user_data["username"],
+                AuditLog.user_id: user_id,
+                AuditLog.server_id: server_id,
+                AuditLog.log_msg: audit_msg,
+                AuditLog.source_ip: source_ip,
+            }
+        ).execute()
+        # deletes records when there's more than 300
+        ordered = AuditLog.select().order_by(+AuditLog.created)
         for item in ordered:
-            if not helper.get_setting('max_audit_entries'):
+            if not self.helper.get_setting("max_audit_entries"):
                 max_entries = 300
             else:
-                max_entries = helper.get_setting('max_audit_entries')
-            if Audit_Log.select().count() > max_entries:
-                Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
+                max_entries = self.helper.get_setting("max_audit_entries")
+            if AuditLog.select().count() > max_entries:
+                AuditLog.delete().where(AuditLog.audit_id == item.audit_id).execute()
             else:
                 return
 
-    @staticmethod
-    def add_to_audit_log_raw(user_name, user_id, server_id, log_msg, source_ip):
-        Audit_Log.insert({
-            Audit_Log.user_name: user_name,
-            Audit_Log.user_id: user_id,
-            Audit_Log.server_id: server_id,
-            Audit_Log.log_msg: log_msg,
-            Audit_Log.source_ip: source_ip
-        }).execute()
-        #deletes records when they're more than 100
-        ordered = Audit_Log.select().order_by(+Audit_Log.created)
+    def add_to_audit_log_raw(self, user_name, user_id, server_id, log_msg, source_ip):
+        AuditLog.insert(
+            {
+                AuditLog.user_name: user_name,
+                AuditLog.user_id: user_id,
+                AuditLog.server_id: server_id,
+                AuditLog.log_msg: log_msg,
+                AuditLog.source_ip: source_ip,
+            }
+        ).execute()
+        # deletes records when there's more than 300
+        ordered = AuditLog.select().order_by(+AuditLog.created)
         for item in ordered:
-            #configurable through app/config/config.json
-            if not helper.get_setting('max_audit_entries'):
+            # configurable through app/config/config.json
+            if not self.helper.get_setting("max_audit_entries"):
                 max_entries = 300
             else:
-                max_entries = helper.get_setting('max_audit_entries')
-            if Audit_Log.select().count() > max_entries:
-                Audit_Log.delete().where(Audit_Log.audit_id == item.audit_id).execute()
+                max_entries = self.helper.get_setting("max_audit_entries")
+            if AuditLog.select().count() > max_entries:
+                AuditLog.delete().where(AuditLog.audit_id == item.audit_id).execute()
             else:
                 return
-    #************************************************************************************************
+
+    # **********************************************************************************
     #                                  Schedules Methods
-    #************************************************************************************************
+    # **********************************************************************************
     @staticmethod
     def create_scheduled_task(
         server_id,
@@ -235,24 +245,26 @@ class helpers_management:
         comment=None,
         enabled=True,
         one_time=False,
-        cron_string='* * * * *',
+        cron_string="* * * * *",
         parent=None,
-        delay=0):
-        sch_id = Schedules.insert({
-            Schedules.server_id: server_id,
-            Schedules.action: action,
-            Schedules.enabled: enabled,
-            Schedules.interval: interval,
-            Schedules.interval_type: interval_type,
-            Schedules.start_time: start_time,
-            Schedules.command: command,
-            Schedules.comment: comment,
-            Schedules.one_time: one_time,
-            Schedules.cron_string: cron_string,
-            Schedules.parent: parent,
-            Schedules.delay: delay
-
-        }).execute()
+        delay=0,
+    ):
+        sch_id = Schedules.insert(
+            {
+                Schedules.server_id: server_id,
+                Schedules.action: action,
+                Schedules.enabled: enabled,
+                Schedules.interval: interval,
+                Schedules.interval_type: interval_type,
+                Schedules.start_time: start_time,
+                Schedules.command: command,
+                Schedules.comment: comment,
+                Schedules.one_time: one_time,
+                Schedules.cron_string: cron_string,
+                Schedules.parent: parent,
+                Schedules.delay: delay,
+            }
+        ).execute()
         return sch_id
 
     @staticmethod
@@ -282,7 +294,11 @@ class helpers_management:
 
     @staticmethod
     def get_child_schedules_by_server(schedule_id, server_id):
-        return Schedules.select().where(Schedules.server_id == server_id, Schedules.parent == schedule_id).execute()
+        return (
+            Schedules.select()
+            .where(Schedules.server_id == server_id, Schedules.parent == schedule_id)
+            .execute()
+        )
 
     @staticmethod
     def get_child_schedules(schedule_id):
@@ -294,22 +310,27 @@ class helpers_management:
 
     @staticmethod
     def get_schedules_enabled():
-        #pylint: disable=singleton-comparison
-        return Schedules.select().where(Schedules.enabled == True).execute()
+        return (
+            Schedules.select()
+            .where(Schedules.enabled == True)  # pylint: disable=singleton-comparison
+            .execute()
+        )
 
-    #************************************************************************************************
+    # **********************************************************************************
     #                                   Backups Methods
-    #************************************************************************************************
+    # **********************************************************************************
     @staticmethod
     def get_backup_config(server_id):
         try:
-            row = Backups.select().where(Backups.server_id == server_id).join(Servers)[0]
+            row = (
+                Backups.select().where(Backups.server_id == server_id).join(Servers)[0]
+            )
             conf = {
                 "backup_path": row.server_id.backup_path,
                 "excluded_dirs": row.excluded_dirs,
                 "max_backups": row.max_backups,
                 "server_id": row.server_id.server_id,
-                "compress": row.compress
+                "compress": row.compress,
             }
         except IndexError:
             conf = {
@@ -321,8 +342,14 @@ class helpers_management:
             }
         return conf
 
-    @staticmethod
-    def set_backup_config(server_id: int, backup_path: str = None, max_backups: int = None, excluded_dirs: list = None, compress: bool = False):
+    def set_backup_config(
+        self,
+        server_id: int,
+        backup_path: str = None,
+        max_backups: int = None,
+        excluded_dirs: list = None,
+        compress: bool = False,
+    ):
         logger.debug(f"Updating server {server_id} backup config with {locals()}")
         if Backups.select().where(Backups.server_id == server_id).count() != 0:
             new_row = False
@@ -331,34 +358,46 @@ class helpers_management:
             conf = {
                 "excluded_dirs": None,
                 "max_backups": 0,
-                "server_id":   server_id,
-                "compress": False
+                "server_id": server_id,
+                "compress": False,
             }
             new_row = True
         if max_backups is not None:
-            conf['max_backups'] = max_backups
+            conf["max_backups"] = max_backups
         if excluded_dirs is not None:
             dirs_to_exclude = ",".join(excluded_dirs)
-            conf['excluded_dirs'] = dirs_to_exclude
-        conf['compress'] = compress
+            conf["excluded_dirs"] = dirs_to_exclude
+        conf["compress"] = compress
         if not new_row:
-            with database.atomic():
+            with self.database.atomic():
                 if backup_path is not None:
-                    u1 = Servers.update(backup_path=backup_path).where(Servers.server_id == server_id).execute()
+                    server_rows = (
+                        Servers.update(backup_path=backup_path)
+                        .where(Servers.server_id == server_id)
+                        .execute()
+                    )
                 else:
-                    u1 = 0
-                u2 = Backups.update(conf).where(Backups.server_id == server_id).execute()
-            logger.debug(f"Updating existing backup record.  {u1}+{u2} rows affected")
+                    server_rows = 0
+                backup_rows = (
+                    Backups.update(conf).where(Backups.server_id == server_id).execute()
+                )
+            logger.debug(
+                f"Updating existing backup record. "
+                f"{server_rows}+{backup_rows} rows affected"
+            )
         else:
-            with database.atomic():
+            with self.database.atomic():
                 conf["server_id"] = server_id
                 if backup_path is not None:
-                    Servers.update(backup_path=backup_path).where(Servers.server_id == server_id)
+                    Servers.update(backup_path=backup_path).where(
+                        Servers.server_id == server_id
+                    )
                 Backups.create(**conf)
             logger.debug("Creating new backup record.")
 
-    def get_excluded_backup_dirs(self, server_id: int):
-        excluded_dirs = self.get_backup_config(server_id)['excluded_dirs']
+    @staticmethod
+    def get_excluded_backup_dirs(server_id: int):
+        excluded_dirs = HelpersManagement.get_backup_config(server_id)["excluded_dirs"]
         if excluded_dirs is not None and excluded_dirs != "":
             dir_list = excluded_dirs.split(",")
         else:
@@ -366,29 +405,31 @@ class helpers_management:
         return dir_list
 
     def add_excluded_backup_dir(self, server_id: int, dir_to_add: str):
-        dir_list = self.get_excluded_backup_dirs()
+        dir_list = self.get_excluded_backup_dirs(server_id)
         if dir_to_add not in dir_list:
             dir_list.append(dir_to_add)
             excluded_dirs = ",".join(dir_list)
             self.set_backup_config(server_id=server_id, excluded_dirs=excluded_dirs)
         else:
-            logger.debug(f"Not adding {dir_to_add} to excluded directories - already in the excluded directory list for server ID {server_id}")
+            logger.debug(
+                f"Not adding {dir_to_add} to excluded directories - "
+                f"already in the excluded directory list for server ID {server_id}"
+            )
 
     def del_excluded_backup_dir(self, server_id: int, dir_to_del: str):
-        dir_list = self.get_excluded_backup_dirs()
+        dir_list = self.get_excluded_backup_dirs(server_id)
         if dir_to_del in dir_list:
             dir_list.remove(dir_to_del)
             excluded_dirs = ",".join(dir_list)
             self.set_backup_config(server_id=server_id, excluded_dirs=excluded_dirs)
         else:
-            logger.debug(f"Not removing {dir_to_del} from excluded directories - not in the excluded directory list for server ID {server_id}")
+            logger.debug(
+                f"Not removing {dir_to_del} from excluded directories - "
+                f"not in the excluded directory list for server ID {server_id}"
+            )
 
     @staticmethod
     def clear_unexecuted_commands():
-        Commands.update({
-            Commands.executed: True
-        #pylint: disable=singleton-comparison
-        }).where(Commands.executed == False).execute()
-
-
-management_helper = helpers_management()
+        Commands.update({Commands.executed: True}).where(
+            Commands.executed == False  # pylint: disable=singleton-comparison
+        ).execute()

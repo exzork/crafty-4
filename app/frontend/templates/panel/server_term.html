@@ -31,7 +31,13 @@
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-          {% include "parts/server_controls_list.html %}
+
+          <span class="d-none d-sm-block">
+            {% include "parts/server_controls_list.html %}
+          </span>
+          <span class="d-block d-sm-none">
+            {% include "parts/m_server_controls_list.html %}
+          </span>
 
           <div class="col-md-12">
             <div class="input-group">
@@ -60,12 +66,12 @@
               <button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate('serverTerm', 'stop', data['lang']) }}</button>
             </div>
             {% elif data['downloading'] %}
-              <div id="control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
-                <button onclick="" id="start-btn" style="max-width: 12rem; white-space: nowrap;" class="btn btn-secondary m-1 flex-grow-1 disabled"><i class="fa fa-spinner fa-spin"></i> {{ translate('serverTerm', 'downloading',
-                  data['lang']) }}</button>
-                <button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1 disabled">{% raw translate('serverTerm', 'restart', data['lang']) %}</button>
-                <button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate('serverTerm', 'stop', data['lang']) }}</button>
-              </div>
+            <div id="control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
+              <button onclick="" id="start-btn" style="max-width: 12rem; white-space: nowrap;" class="btn btn-secondary m-1 flex-grow-1 disabled"><i class="fa fa-spinner fa-spin"></i> {{ translate('serverTerm', 'downloading',
+                data['lang']) }}</button>
+              <button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1 disabled">{% raw translate('serverTerm', 'restart', data['lang']) %}</button>
+              <button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate('serverTerm', 'stop', data['lang']) }}</button>
+            </div>
             {% else %}
             <div id="control_buttons" class="mt-4 flex-wrap d-flex justify-content-between justify-content-md-center align-items-center px-5 px-md-0" style="visibility: visible">
               <button onclick="send_command(serverId, 'start_server');" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate('serverTerm', 'start', data['lang']) }}</button>
@@ -130,16 +136,16 @@
     webSocket.on('update_button_status', function (updateButton) {
       if (updateButton.isUpdating) {
         if (updateButton.server_id == serverId) {
-      console.log(updateButton.isUpdating)
-      document.getElementById('control_buttons').innerHTML = '<button onclick="" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "updating", data["lang"]) }}</button><button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data["lang"]) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data["lang"]) }}</button>';
-    }
-  }
-  else {
-    if (updateButton.server_id == serverId) {
-      window.location.reload()
-      document.getElementById('update_control_buttons').innerHTML = '<button onclick="send_command(serverId, "start_server");" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "start", data["lang"]) }}</button><button onclick="send_command(serverId, "restart_server");" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data["lang"]) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data["lang"]) }}</button>';
-    }
-  }
+          console.log(updateButton.isUpdating)
+          document.getElementById('control_buttons').innerHTML = '<button onclick="" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "updating", data["lang"]) }}</button><button onclick="" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data["lang"]) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data["lang"]) }}</button>';
+        }
+      }
+      else {
+        if (updateButton.server_id == serverId) {
+          window.location.reload()
+          document.getElementById('update_control_buttons').innerHTML = '<button onclick="send_command(serverId, "start_server");" id="start-btn" style="max-width: 7rem;" class="btn btn-primary m-1 flex-grow-1">{{ translate("serverTerm", "start", data["lang"]) }}</button><button onclick="send_command(serverId, "restart_server");" id="restart-btn" style="max-width: 7rem;" class="btn btn-outline-primary m-1 flex-grow-1">{% raw translate("serverTerm", "restart", data["lang"]) %}</button><button onclick="" id="stop-btn" style="max-width: 7rem;" class="btn btn-danger m-1 flex-grow-1 disabled">{{ translate("serverTerm", "stop", data["lang"]) }}</button>';
+        }
+      }
     });
   }
   // Convert running to lower case (example: 'True' converts to 'true') and
@@ -162,10 +168,10 @@
   }
 
   if (webSocket) {
-      webSocket.on('send_start_reload', function () {
-        location.reload()
-      });
-    }
+    webSocket.on('send_start_reload', function () {
+      location.reload()
+    });
+  }
   //{% end %}
 
   function get_server_log() {
@@ -255,7 +261,7 @@
       },
       body: formdata,
     });
-    
+
     let responseData = await res.text();
     console.log("got response:");
     console.log(responseData);
