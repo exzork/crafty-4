@@ -16,6 +16,7 @@ from tornado import iostream
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
 from croniter import croniter
+from app.classes.controllers.roles_controller import RolesController
 
 from app.classes.models.roles import HelperRoles
 from app.classes.models.server_permissions import (
@@ -40,8 +41,8 @@ class PanelHandler(BaseHandler):
             user_roles[user_id] = user_roles_list
         return user_roles
 
-    def get_role_servers(self) -> t.Set[int]:
-        servers = set()
+    def get_role_servers(self) -> t.List[RolesController.RoleServerJsonType]:
+        servers = list()
         for server in self.controller.list_defined_servers():
             argument = self.get_argument(f"server_{server['server_id']}_access", "0")
             if argument == "0":
@@ -57,7 +58,9 @@ class PanelHandler(BaseHandler):
                         permission_mask, permission, "1"
                     )
 
-            servers.add((server["server_id"], permission_mask))
+            servers.append(
+                {"server_id": server["server_id"], "permissions": permission_mask}
+            )
         return servers
 
     def get_perms_quantity(self) -> t.Tuple[str, dict]:
@@ -2022,35 +2025,7 @@ class PanelHandler(BaseHandler):
 
             servers = self.get_role_servers()
 
-            # TODO: use update_role_advanced when API v2 gets merged
-            base_data = self.controller.roles.get_role_with_servers(role_id)
-
-            server_ids = {server[0] for server in servers}
-            server_permissions_map = {server[0]: server[1] for server in servers}
-
-            added_servers = server_ids.difference(set(base_data["servers"]))
-            removed_servers = set(base_data["servers"]).difference(server_ids)
-            same_servers = server_ids.intersection(set(base_data["servers"]))
-            logger.debug(
-                f"role: {role_id} +server:{added_servers} -server{removed_servers}"
-            )
-            for server_id in added_servers:
-                PermissionsServers.get_or_create(
-                    role_id, server_id, server_permissions_map[server_id]
-                )
-            for server_id in same_servers:
-                PermissionsServers.update_role_permission(
-                    role_id, server_id, server_permissions_map[server_id]
-                )
-            if len(removed_servers) != 0:
-                PermissionsServers.delete_roles_permissions(role_id, removed_servers)
-
-            up_data = {
-                "role_name": role_name,
-                "last_update": Helpers.get_time_as_string(),
-            }
-            # TODO: do the last_update on the db side
-            HelperRoles.update_role(role_id, up_data)
+            self.controller.roles.update_role_advanced(role_id, role_name, servers)
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
@@ -2087,10 +2062,7 @@ class PanelHandler(BaseHandler):
 
             servers = self.get_role_servers()
 
-            role_id = self.controller.roles.add_role(role_name)
-            # TODO: use add_role_advanced when API v2 gets merged
-            for server in servers:
-                PermissionsServers.get_or_create(role_id, server[0], server[1])
+            role_id = self.controller.roles.add_role_advanced(role_name, servers)
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
