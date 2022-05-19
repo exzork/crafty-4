@@ -76,7 +76,7 @@ class HelperServerStats:
             db_folder = os.path.join(f"{server['path']}", "db_stats")
             db_file = os.path.join(
                 db_folder,
-                f"{server['server_name']}" + ".sqlite",
+                "crafty_server_stats.sqlite",
             )
             database = SqliteDatabase(
                 db_file, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
@@ -109,7 +109,7 @@ class HelperServerStats:
             db_file = os.path.join(
                 f"{server['path']}",
                 "db_stats",
-                f"{server['server_name']}" + ".sqlite",
+                "crafty_server_stats.sqlite",
             )
             database = SqliteDatabase(
                 db_file, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
