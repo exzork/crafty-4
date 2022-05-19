@@ -9,27 +9,27 @@
   <Privileged>false</Privileged>
   <Support>https://discord.gg/9VJPhCE</Support>
   <Project>https://craftycontrol.com/</Project>
-  <Overview>Crafty Controller is a lightweight Minecraft wrapper with great featuers and a awesome GUI, acessible from a modern web browser.&#xD;
-The username and password appear on the first launch in the Docker logs!&#xD;
+  <Overview>Crafty 4 is the next iteration of our Minecraft Server Wrapper / Controller / Launcher. Boasting a clean new look, rebuilt from the ground up. Crafty 4 brings a whole host of new features such as Bedrock support. With SteamCMD support on the way!&#xD;
+Default login Credentrails are username: "admin" password: "crafty" logs!&#xD;
 Crafty 4 is the successor of Crafty Controller, the Docker image is no longer maintained on DockerHub. (now on GitLab)&#xD;
-For official support join the discord: https://discord.gg/9VJPhCE&#xD;
-For migration from 3.x please refer to the documentation on GitLab: https://gitlab.com/crafty-controller/crafty-commander/-/wikis/home&#xD;
+For official support join the Discord: https://discord.gg/9VJPhCE&#xD;
+For migration from 3.x please refer to the documentation: https://wiki.craftycontrol.com/en/4/&#xD;
 </Overview>
   <Category>GameServers: Other:</Category>
   <WebUI>https://[IP]:[PORT:8443]/</WebUI>
-  <TemplateURL>https://gitlab.com/crafty-controller/crafty-commander/-/blob/dev/docker/unraid.xml</TemplateURL>
-  <Icon>https://gitlab.com/crafty-controller/crafty-commander/-/raw/master/app/frontend/static/assets/images/logo_square.jpg</Icon>
+  <TemplateURL>https://gitlab.com/crafty-controller/crafty-4/-/raw/master/docker/unraid.xml</TemplateURL>
+  <Icon>https://gitlab.com/crafty-controller/crafty-4/-/blob/master/app/frontend/static/assets/images/Crafty_4-0_Logo_square.ico</Icon>
   <ExtraParams/>
   <PostArgs/>
   <CPUset/>
   <DateInstalled/>
-  <DonateText>Help to support Crafty on Patreon</DonateText>
-  <DonateLink>https://www.patreon.com/craftycontroller</DonateLink>
-  <Description>Crafty Controller is a lightweight Minecraft wrapper with great featuers and a awesome GUI, acessible from a modern web browser.&#xD;
-The username and password appear on the first launch in the Docker logs!&#xD;
+  <DonateText>Help to support Crafty on Kofi</DonateText>
+  <DonateLink>https://ko-fi.com/arcadiatech</DonateLink>
+  <Description>Crafty 4 is the next iteration of our Minecraft Server Wrapper / Controller / Launcher. Boasting a clean new look, rebuilt from the ground up. Crafty 4 brings a whole host of new features such as Bedrock support. With SteamCMD support on the way!&#xD;
+Default login Credentrails are username: "admin" password: "crafty" logs!&#xD;
 Crafty 4 is the successor of Crafty Controller, the Docker image is no longer maintained on DockerHub. (now on GitLab)&#xD;
-For official support join the discord: https://discord.gg/9VJPhCE&#xD;
-For migration from 3.x please refer to the documentation on GitLab: https://gitlab.com/crafty-controller/crafty-commander/-/wikis/home&#xD;
+For official support join the Discord: https://discord.gg/9VJPhCE&#xD;
+For migration from 3.x please refer to the documentation: https://wiki.craftycontrol.com/en/4/&#xD;
 </Description>
   <Networking>
     <Mode>bridge</Mode>
