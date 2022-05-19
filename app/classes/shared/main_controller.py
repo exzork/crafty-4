@@ -468,7 +468,7 @@ class Controller:
         log_location = data.get("log_location", "")
         if log_location == "":
             # TODO: different default log locations for server creation types
-            log_location = "/logs/latest.log"
+            log_location = "./logs/latest.log"
 
         if data["monitoring_type"] == "minecraft_java":
             monitoring_port = data["minecraft_java_monitoring_data"]["port"]
