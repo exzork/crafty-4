@@ -66,10 +66,9 @@ class HelperRoles:
     @staticmethod
     def get_role_column(role_id: t.Union[str, int], column_name: str) -> t.Any:
         column = getattr(Roles, column_name)
-        return model_to_dict(
-            Roles.select(column).where(Roles.role_id == role_id).get(),
-            only=[column],
-        )[column_name]
+        return getattr(
+            Roles.select(column).where(Roles.role_id == role_id).get(), column_name
+        )
 
     @staticmethod
     def add_role(role_name):

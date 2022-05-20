@@ -165,19 +165,10 @@ class HelperUsers:
     @staticmethod
     def get_user_column(user_id: t.Union[str, int], column_name: str) -> t.Any:
         column = getattr(Users, column_name)
-        return model_to_dict(
+        return getattr(
             Users.select(column).where(Users.user_id == user_id).get(),
-            only=[column],
-        )[column_name]
-
-    @staticmethod
-    def check_system_user(user_id):
-        try:
-            result = Users.get(Users.user_id == user_id).user_id == user_id
-            if result:
-                return True
-        except:
-            return False
+            column_name,
+        )
 
     @staticmethod
     def get_user_model(user_id: str) -> Users:

@@ -144,10 +144,10 @@ class HelperServers:
     @staticmethod
     def get_server_column(server_id: t.Union[str, int], column_name: str) -> t.Any:
         column = getattr(Servers, column_name)
-        return model_to_dict(
+        return getattr(
             Servers.select(column).where(Servers.server_id == server_id).get(),
-            only=[column],
-        )[column_name]
+            column_name,
+        )
 
     # **********************************************************************************
     #                                     Servers Methods
