@@ -88,11 +88,11 @@ class MainPrompt(cmd.Cmd):
         for thread in threading.enumerate():
             if sys.version_info >= (3, 8):
                 print(
-                    f"Name: {thread.name} Identifier: "
-                    f"{thread.ident} TID/PID: {thread.native_id}"
+                    f"Name: {thread.name}\tIdentifier: "
+                    f"{thread.ident}\tTID/PID: {thread.native_id}"
                 )
             else:
-                print(f"Name: {thread.name} Identifier: {thread.ident}")
+                print(f"Name: {thread.name}\tIdentifier: {thread.ident}")
 
     def print_prompt(self):
         self.stdout.write(self.prompt)
