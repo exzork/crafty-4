@@ -147,10 +147,7 @@ class Controller:
 
     @staticmethod
     def check_system_user():
-        if HelperUsers.get_user_id_by_name("system") is not None:
-            return True
-        else:
-            return False
+        return HelperUsers.get_user_id_by_name("system") is not None
 
     def set_project_root(self, root_dir):
         self.project_root = root_dir
