@@ -180,7 +180,12 @@ class HelpersManagement:
 
         server_users = PermissionsServers.get_server_user_list(server_id)
         for user in server_users:
-            self.helper.websocket_helper.broadcast_user(user, "notification", audit_msg)
+            try:
+                self.helper.websocket_helper.broadcast_user(
+                    user, "notification", audit_msg
+                )
+            except Exception as e:
+                logger.error(f"Error broadcasting to user {user} - {e}")
 
         AuditLog.insert(
             {
@@ -191,7 +196,7 @@ class HelpersManagement:
                 AuditLog.source_ip: source_ip,
             }
         ).execute()
-        # deletes records when they're more than 100
+        # deletes records when there's more than 300
         ordered = AuditLog.select().order_by(+AuditLog.created)
         for item in ordered:
             if not self.helper.get_setting("max_audit_entries"):
@@ -213,7 +218,7 @@ class HelpersManagement:
                 AuditLog.source_ip: source_ip,
             }
         ).execute()
-        # deletes records when they're more than 100
+        # deletes records when there's more than 300
         ordered = AuditLog.select().order_by(+AuditLog.created)
         for item in ordered:
             # configurable through app/config/config.json
@@ -399,7 +404,7 @@ class HelpersManagement:
         return dir_list
 
     def add_excluded_backup_dir(self, server_id: int, dir_to_add: str):
-        dir_list = self.get_excluded_backup_dirs()
+        dir_list = self.get_excluded_backup_dirs(server_id)
         if dir_to_add not in dir_list:
             dir_list.append(dir_to_add)
             excluded_dirs = ",".join(dir_list)
@@ -411,7 +416,7 @@ class HelpersManagement:
             )
 
     def del_excluded_backup_dir(self, server_id: int, dir_to_del: str):
-        dir_list = self.get_excluded_backup_dirs()
+        dir_list = self.get_excluded_backup_dirs(server_id)
         if dir_to_del in dir_list:
             dir_list.remove(dir_to_del)
             excluded_dirs = ",".join(dir_list)

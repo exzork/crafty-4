@@ -1,5 +1,6 @@
 import logging
 import datetime
+import typing as t
 from peewee import (
     CharField,
     AutoField,
@@ -7,6 +8,7 @@ from peewee import (
     BooleanField,
     IntegerField,
 )
+from playhouse.shortcuts import model_to_dict
 
 from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.models.base_model import BaseModel
@@ -61,8 +63,30 @@ class HelperServers:
         server_log_file: str,
         server_stop: str,
         server_type: str,
-        server_port=25565,
-    ):
+        server_port: int = 25565,
+        server_host: str = "127.0.0.1",
+    ) -> int:
+        """Create a server in the database
+
+        Args:
+            name: The name of the server
+            server_uuid: This is the UUID of the server
+            server_dir: The directory where the server is located
+            backup_path: The path to the backup folder
+            server_command: The command to start the server
+            server_file: The name of the server file
+            server_log_file: The path to the server log file
+            server_stop: This is the command to stop the server
+            server_type: This is the type of server you're creating.
+            server_port: The port the server will be monitored on, defaults to 25565
+            server_host: The host the server will be monitored on, defaults to 127.0.0.1
+
+        Returns:
+            int: The new server's id
+
+        Raises:
+            PeeweeException: If the server already exists
+        """
         return Servers.insert(
             {
                 Servers.server_name: name,
@@ -75,6 +99,7 @@ class HelperServers:
                 Servers.crash_detection: False,
                 Servers.log_path: server_log_file,
                 Servers.server_port: server_port,
+                Servers.server_ip: server_host,
                 Servers.stop_command: server_stop,
                 Servers.backup_path: backup_path,
                 Servers.type: server_type,
@@ -105,6 +130,24 @@ class HelperServers:
         except IndexError:
             return {}
 
+    @staticmethod
+    def get_server_columns(
+        server_id: t.Union[str, int], column_names: t.List[str]
+    ) -> t.List[t.Any]:
+        columns = [getattr(Servers, column) for column in column_names]
+        return model_to_dict(
+            Servers.select(*columns).where(Servers.server_id == server_id).get(),
+            only=columns,
+        )
+
+    @staticmethod
+    def get_server_column(server_id: t.Union[str, int], column_name: str) -> t.Any:
+        column = getattr(Servers, column_name)
+        return model_to_dict(
+            Servers.select(column).where(Servers.server_id == server_id).get(),
+            only=[column],
+        )[column_name]
+
     # **********************************************************************************
     #                                     Servers Methods
     # **********************************************************************************
@@ -112,6 +155,10 @@ class HelperServers:
     def get_all_defined_servers():
         query = Servers.select()
         return DatabaseShortcuts.return_rows(query)
+
+    @staticmethod
+    def get_all_server_ids() -> t.List[int]:
+        return [server.server_id for server in Servers.select(Servers.server_id)]
 
     @staticmethod
     def get_server_friendly_name(server_id):

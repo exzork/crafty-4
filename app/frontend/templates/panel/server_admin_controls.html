@@ -14,8 +14,7 @@
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
-          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{
-          data['server_stats']['server_id']['server_name'] }}
+          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{ data['server_stats']['server_id']['server_name'] }}
           <br />
           <small>UUID: {{ data['server_stats']['server_id']['server_uuid'] }}</small>
         </h4>
@@ -25,14 +24,19 @@
   </div>
   <!-- Page Title Header Ends-->
 
-  {% include "parts/details_stats.html" %}
+  {% include "parts/details_stats.html %}
 
   <div class="row">
 
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-          {% include "parts/server_controls_list.html" %}
+          <span class="d-none d-sm-block">
+            {% include "parts/server_controls_list.html %}
+          </span>
+          <span class="d-block d-sm-none">
+            {% include "parts/m_server_controls_list.html %}
+          </span>
 
           <div class="row">
             <div class="col-md-6 col-sm-12">
@@ -73,14 +77,10 @@
                 <li class="playerItem">
                   <h3>{{ player }}</h3>
                   <div class="buttons">
-                    <button onclick="send_command_to_server('ban {{ player }}')" type="button"
-                      class="btn btn-danger">Ban</button>
-                    <button onclick="send_command_to_server('kick {{ player }}')" type="button"
-                      class="btn btn-outline-danger">Kick</button>
-                    <button onclick="send_command_to_server('op {{ player }}')" type="button"
-                      class="btn btn-warning">OP</button>
-                    <button onclick="send_command_to_server('deop {{ player }}')" type="button"
-                      class="btn btn-outline-warning">De-OP</button>
+                    <button onclick="send_command_to_server('ban {{ player }}')" type="button" class="btn btn-danger">Ban</button>
+                    <button onclick="send_command_to_server('kick {{ player }}')" type="button" class="btn btn-outline-danger">Kick</button>
+                    <button onclick="send_command_to_server('op {{ player }}')" type="button" class="btn btn-warning">OP</button>
+                    <button onclick="send_command_to_server('deop {{ player }}')" type="button" class="btn btn-outline-warning">De-OP</button>
                   </div>
                 </li>
                 {% end %}

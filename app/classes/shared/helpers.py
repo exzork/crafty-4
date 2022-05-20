@@ -72,7 +72,7 @@ class Helpers:
         installer.do_install()
 
     @staticmethod
-    def float_to_string(gbs: int):
+    def float_to_string(gbs: float):
         s = str(float(gbs) * 1000).rstrip("0").rstrip(".")
         return s
 
@@ -232,7 +232,7 @@ class Helpers:
                 return default_return
 
             with open(self.settings_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=1)
+                json.dump(data, f, indent=2)
 
         except Exception as e:
             logger.critical(
@@ -270,18 +270,17 @@ class Helpers:
 
     @staticmethod
     def get_announcements():
-        response = requests.get("https://craftycontrol.com/notify.json", timeout=2)
         data = (
             '[{"id":"1","date":"Unknown",'
             '"title":"Error getting Announcements",'
             '"desc":"Error getting Announcements","link":""}]'
         )
 
-        if response.status_code in [200, 201]:
-            try:
-                data = json.loads(response.content)
-            except Exception as e:
-                logger.error(f"Failed to load json content with error: {e}")
+        try:
+            response = requests.get("https://craftycontrol.com/notify.json", timeout=2)
+            data = json.loads(response.content)
+        except Exception as e:
+            logger.error(f"Failed to fetch notifications with error: {e}")
 
         return data
 
@@ -1001,10 +1000,11 @@ class Helpers:
         return text
 
     @staticmethod
-    def get_lang_page(text):
-        lang = text.split("_")[0]
-        region = text.split("_")[1]
+    def get_lang_page(text) -> str:
+        splitted = text.split("_")
+        if len(splitted) != 2:
+            return "en"
+        lang, region = splitted
         if region == "EN":
             return "en"
-        else:
-            return lang + "-" + region
+        return lang + "-" + region

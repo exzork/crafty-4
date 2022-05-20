@@ -14,8 +14,7 @@
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
-          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{
-          data['server_stats']['server_id']['server_name'] }}
+          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{ data['server_stats']['server_id']['server_name'] }}
           <br />
           <small>UUID: {{ data['server_stats']['server_id']['server_uuid'] }}</small>
         </h4>
@@ -25,14 +24,20 @@
   </div>
   <!-- Page Title Header Ends-->
 
-  {% include "parts/details_stats.html" %}
+  {% include "parts/details_stats.html %}
 
   <div class="row">
 
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-          {% include "parts/server_controls_list.html" %}
+
+          <span class="d-none d-sm-block">
+            {% include "parts/server_controls_list.html %}
+          </span>
+          <span class="d-block d-sm-none">
+            {% include "parts/m_server_controls_list.html %}
+          </span>
 
           <div class="row">
             <div class="col-md-12 col-sm-12" style="overflow-x:auto;">
@@ -41,16 +46,16 @@
                   <h4 class="card-title"><i class="fas fa-calendar"></i> Scheduled Tasks</h4>
                   {% if data['user_data']['hints'] %}
                   <span class="too_small" title="{{ translate('serverSchedules', 'cannotSee', data['lang']) }}" ,
-                    data-content="{{ translate('serverSchedules', 'cannotSeeOnMobile', data['lang']) }}" ,
-                    data-placement="bottom"></span>
+                        data-content="{{ translate('serverSchedules', 'cannotSeeOnMobile', data['lang']) }}" ,
+                        data-placement="bottom"></span>
                   {% end %}
                   <div><button
-                      onclick="location.href=`/panel/add_schedule?id={{ data['server_stats']['server_id']['server_id'] }}`"
-                      class="btn btn-info">Create New Schedule <i class="fas fa-pencil-alt"></i></button></div>
+                            onclick="location.href=`/panel/add_schedule?id={{ data['server_stats']['server_id']['server_id'] }}`"
+                            class="btn btn-info">Create New Schedule <i class="fas fa-pencil-alt"></i></button></div>
                 </div>
                 <div class="card-body">
                   <table class="table table-hover d-none d-lg-block responsive-table" id="schedule_table" width="100%"
-                    style="table-layout:fixed;">
+                         style="table-layout:fixed;">
                     <thead>
                       <tr class="rounded">
                         <th style="width: 2%; min-width: 10px;">ID</th>
@@ -100,9 +105,7 @@
                           {% end %}
                         </td>
                         <td id="{{schedule.action}}" class="action">
-                          <button
-                            onclick="window.location.href='/panel/edit_schedule?id={{ data['server_stats']['server_id']['server_id'] }}&sch_id={{schedule.schedule_id}}'"
-                            class="btn btn-info">
+                          <button onclick="window.location.href='/panel/edit_schedule?id={{ data['server_stats']['server_id']['server_id'] }}&sch_id={{schedule.schedule_id}}'" class="btn btn-info">
                             <i class="fas fa-pencil-alt"></i>
                           </button>
                           <br>
@@ -116,8 +119,7 @@
                     </tbody>
                   </table>
                   <hr />
-                  <table class="table table-hover d-block d-lg-none" id="mini_schedule_table" width="100%"
-                    style="table-layout:fixed;">
+                  <table class="table table-hover d-block d-lg-none" id="mini_schedule_table" width="100%" style="table-layout:fixed;">
                     <thead>
                       <tr class="rounded">
                         <th style="width: 25%; min-width: 50px;">Action</th>
@@ -147,8 +149,7 @@
                         </td>
                       </tr>
                       <!-- Modal -->
-                      <div class="modal fade" id="task_details_{{schedule.schedule_id}}" tabindex="-1" role="dialog"
-                        aria-labelledby="exampleModalLabel" aria-hidden="true">
+                      <div class="modal fade" id="task_details_{{schedule.schedule_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog" role="document">
                           <div class="modal-content">
                             <div class="modal-header">
@@ -187,8 +188,7 @@
                                   <h4>Start Time</h4>
                                   <p>{{schedule.start_time}}</p>
                                 </li>
-                                <li id="{{schedule.enabled}}" class="action"
-                                  style="border-top: .1em solid gray; border-bottom: .1em solid gray">
+                                <li id="{{schedule.enabled}}" class="action" style="border-top: .1em solid gray; border-bottom: .1em solid gray">
                                   {% if schedule.enabled %}
                                   <h4>Enabled</h4> <span class="text-success">
                                     <i class="fas fa-check-square"></i> Yes
@@ -202,9 +202,7 @@
                               </ul>
                             </div>
                             <div class="modal-footer">
-                              <button
-                                onclick="window.location.href='/panel/edit_schedule?id={{ data['server_stats']['server_id']['server_id'] }}&sch_id={{schedule.schedule_id}}'"
-                                class="btn btn-info">
+                              <button onclick="window.location.href='/panel/edit_schedule?id={{ data['server_stats']['server_id']['server_id'] }}&sch_id={{schedule.schedule_id}}'" class="btn btn-info">
                                 <i class="fas fa-pencil-alt"></i> Edit
                               </button>
                               <button data-sch={{ schedule.schedule_id }} class="btn btn-danger del_button">

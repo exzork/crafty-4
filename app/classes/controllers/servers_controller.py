@@ -1,6 +1,7 @@
 import os
 import logging
 import json
+import typing as t
 
 from app.classes.controllers.roles_controller import RolesController
 from app.classes.models.servers import HelperServers
@@ -34,9 +35,31 @@ class ServersController:
         server_log_file: str,
         server_stop: str,
         server_type: str,
-        server_port=25565,
-    ):
-        return self.servers_helper.create_server(
+        server_port: int = 25565,
+        server_host: str = "127.0.0.1",
+    ) -> int:
+        """Create a server in the database
+
+        Args:
+            name: The name of the server
+            server_uuid: This is the UUID of the server
+            server_dir: The directory where the server is located
+            backup_path: The path to the backup folder
+            server_command: The command to start the server
+            server_file: The name of the server file
+            server_log_file: The path to the server log file
+            server_stop: This is the command to stop the server
+            server_type: This is the type of server you're creating.
+            server_port: The port the server will be monitored on, defaults to 25565
+            server_host: The host the server will be monitored on, defaults to 127.0.0.1
+
+        Returns:
+            int: The new server's id
+
+        Raises:
+            PeeweeException: If the server already exists
+        """
+        return HelperServers.create_server(
             name,
             server_uuid,
             server_dir,
@@ -47,6 +70,7 @@ class ServersController:
             server_stop,
             server_type,
             server_port,
+            server_host,
         )
 
     @staticmethod
@@ -92,7 +116,7 @@ class ServersController:
 
     @staticmethod
     def get_authorized_servers(user_id):
-        server_data = []
+        server_data: t.List[t.Dict[str, t.Any]] = []
         user_roles = HelperUsers.user_role_query(user_id)
         for user in user_roles:
             role_servers = PermissionsServers.get_role_servers_from_role_id(
@@ -104,13 +128,29 @@ class ServersController:
         return server_data
 
     @staticmethod
+    def get_authorized_users(server_id: str):
+        user_ids: t.Set[int] = set()
+        roles_list = PermissionsServers.get_roles_from_server(server_id)
+        for role in roles_list:
+            role_users = HelperUsers.get_users_from_role(role.role_id)
+            for user_role in role_users:
+                user_ids.add(user_role.user_id)
+
+        for user_id in HelperUsers.get_super_user_list():
+            user_ids.add(user_id)
+
+        return user_ids
+
+    @staticmethod
     def get_all_servers_stats():
         return HelperServerStats.get_all_servers_stats()
 
     @staticmethod
     def get_authorized_servers_stats_api_key(api_key: ApiKeys):
         server_data = []
-        authorized_servers = ServersController.get_authorized_servers(api_key.user_id)
+        authorized_servers = ServersController.get_authorized_servers(
+            api_key.user_id  # TODO: API key authorized servers?
+        )
 
         for server in authorized_servers:
             latest = HelperServerStats.get_latest_server_stats(server.get("server_id"))

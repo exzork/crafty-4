@@ -195,7 +195,7 @@ if __name__ == "__main__":
     if not controller.check_system_user():
         controller.add_system_user()
 
-    Crafty = MainPrompt(helper, tasks_manager, migration_manager)
+    Crafty = MainPrompt(helper, tasks_manager, migration_manager, controller)
 
     project_root = os.path.dirname(__file__)
     controller.set_project_root(project_root)

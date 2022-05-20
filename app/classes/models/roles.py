@@ -1,5 +1,6 @@
 import logging
 import datetime
+import typing as t
 from peewee import (
     CharField,
     DoesNotExist,
@@ -35,8 +36,11 @@ class HelperRoles:
 
     @staticmethod
     def get_all_roles():
-        query = Roles.select()
-        return query
+        return Roles.select()
+
+    @staticmethod
+    def get_all_role_ids() -> t.List[int]:
+        return [role.role_id for role in Roles.select(Roles.role_id).execute()]
 
     @staticmethod
     def get_roleid_by_name(role_name):
@@ -48,6 +52,24 @@ class HelperRoles:
     @staticmethod
     def get_role(role_id):
         return model_to_dict(Roles.get(Roles.role_id == role_id))
+
+    @staticmethod
+    def get_role_columns(
+        role_id: t.Union[str, int], column_names: t.List[str]
+    ) -> t.List[t.Any]:
+        columns = [getattr(Roles, column) for column in column_names]
+        return model_to_dict(
+            Roles.select(*columns).where(Roles.role_id == role_id).get(),
+            only=columns,
+        )
+
+    @staticmethod
+    def get_role_column(role_id: t.Union[str, int], column_name: str) -> t.Any:
+        column = getattr(Roles, column_name)
+        return model_to_dict(
+            Roles.select(column).where(Roles.role_id == role_id).get(),
+            only=[column],
+        )[column_name]
 
     @staticmethod
     def add_role(role_name):
@@ -67,5 +89,5 @@ class HelperRoles:
         return Roles.delete().where(Roles.role_id == role_id).execute()
 
     @staticmethod
-    def role_id_exists(role_id):
+    def role_id_exists(role_id) -> bool:
         return Roles.select().where(Roles.role_id == role_id).count() != 0

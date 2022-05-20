@@ -1,6 +1,6 @@
+import logging
 import typing as t
 from enum import Enum
-import logging
 from peewee import (
     ForeignKeyField,
     CharField,
@@ -93,16 +93,28 @@ class PermissionsServers:
     #                                   Role_Servers Methods
     # **********************************************************************************
     @staticmethod
-    def get_role_servers_from_role_id(roleid):
+    def get_role_servers_from_role_id(roleid: t.Union[str, int]):
         return RoleServers.select().where(RoleServers.role_id == roleid)
 
     @staticmethod
-    def get_servers_from_role(role_id):
+    def get_servers_from_role(role_id: t.Union[str, int]):
         return (
             RoleServers.select()
             .join(Servers, JOIN.INNER)
             .where(RoleServers.role_id == role_id)
         )
+
+    @staticmethod
+    def get_server_ids_from_role(role_id: t.Union[str, int]) -> t.List[int]:
+        # FIXME: somehow retrieve only the server ids, not the whole servers
+        return [
+            role_servers.server_id.server_id
+            for role_servers in (
+                RoleServers.select(RoleServers.server_id).where(
+                    RoleServers.role_id == role_id
+                )
+            )
+        ]
 
     @staticmethod
     def get_roles_from_server(server_id):
@@ -171,9 +183,9 @@ class PermissionsServers:
         ).execute()
 
     @staticmethod
-    def delete_roles_permissions(role_id, removed_servers=None):
-        if removed_servers is None:
-            removed_servers = {}
+    def delete_roles_permissions(
+        role_id: t.Union[str, int], removed_servers: t.Sequence[t.Union[str, int]]
+    ):
         return (
             RoleServers.delete()
             .where(RoleServers.role_id == role_id)

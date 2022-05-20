@@ -1,6 +1,6 @@
 import logging
 import datetime
-from typing import Optional, Union
+import typing as t
 
 from peewee import (
     ForeignKeyField,
@@ -44,6 +44,15 @@ class Users(BaseModel):
     class Meta:
         table_name = "users"
 
+
+PUBLIC_USER_ATTRS: t.Final = [
+    "user_id",
+    "created",
+    "username",
+    "enabled",
+    "superuser",
+    "lang",  # maybe remove?
+]
 
 # **********************************************************************************
 #                                   API Keys Class
@@ -91,6 +100,15 @@ class HelperUsers:
         return query
 
     @staticmethod
+    def get_all_user_ids() -> t.List[int]:
+        return [
+            user.user_id
+            for user in Users.select(Users.user_id)
+            .where(Users.username != "system")
+            .execute()
+        ]
+
+    @staticmethod
     def get_user_lang_by_id(user_id):
         return Users.get(Users.user_id == user_id).lang
 
@@ -135,6 +153,24 @@ class HelperUsers:
             return {}
 
     @staticmethod
+    def get_user_columns(
+        user_id: t.Union[str, int], column_names: t.List[str]
+    ) -> t.List[t.Any]:
+        columns = [getattr(Users, column) for column in column_names]
+        return model_to_dict(
+            Users.select(*columns).where(Users.user_id == user_id).get(),
+            only=columns,
+        )
+
+    @staticmethod
+    def get_user_column(user_id: t.Union[str, int], column_name: str) -> t.Any:
+        column = getattr(Users, column_name)
+        return model_to_dict(
+            Users.select(column).where(Users.user_id == user_id).get(),
+            only=[column],
+        )[column_name]
+
+    @staticmethod
     def check_system_user(user_id):
         try:
             result = Users.get(Users.user_id == user_id).user_id == user_id
@@ -153,7 +189,7 @@ class HelperUsers:
         self,
         username: str,
         password: str = None,
-        email: Optional[str] = None,
+        email: t.Optional[str] = None,
         enabled: bool = True,
         superuser: bool = False,
     ) -> str:
@@ -177,7 +213,7 @@ class HelperUsers:
     def add_rawpass_user(
         username: str,
         password: str = None,
-        email: Optional[str] = None,
+        email: t.Optional[str] = None,
         enabled: bool = True,
         superuser: bool = False,
     ) -> str:
@@ -212,7 +248,7 @@ class HelperUsers:
 
     @staticmethod
     def get_super_user_list():
-        final_users = []
+        final_users: t.List[int] = []
         super_users = Users.select().where(
             Users.superuser == True  # pylint: disable=singleton-comparison
         )
@@ -224,7 +260,7 @@ class HelperUsers:
     def remove_user(self, user_id):
         with self.database.atomic():
             UserRoles.delete().where(UserRoles.user_id == user_id).execute()
-            Users.delete().where(Users.user_id == user_id).execute()
+            return Users.delete().where(Users.user_id == user_id).execute()
 
     @staticmethod
     def set_support_path(user_id, support_path):
@@ -268,11 +304,10 @@ class HelperUsers:
 
     @staticmethod
     def get_user_roles_names(user_id):
-        roles_list = []
-        roles = UserRoles.select().where(UserRoles.user_id == user_id)
-        for r in roles:
-            roles_list.append(HelperRoles.get_role(r.role_id)["role_name"])
-        return roles_list
+        roles = UserRoles.select(UserRoles.role_id).where(UserRoles.user_id == user_id)
+        return [
+            HelperRoles.get_role_column(role.role_id, "role_name") for role in roles
+        ]
 
     @staticmethod
     def add_role_to_user(user_id, role_id):
@@ -281,7 +316,7 @@ class HelperUsers:
         ).execute()
 
     @staticmethod
-    def add_user_roles(user: Union[dict, Users]):
+    def add_user_roles(user: t.Union[dict, Users]):
         if isinstance(user, dict):
             user_id = user["user_id"]
         else:
@@ -323,6 +358,10 @@ class HelperUsers:
     def remove_roles_from_role_id(role_id):
         UserRoles.delete().where(UserRoles.role_id == role_id).execute()
 
+    @staticmethod
+    def get_users_from_role(role_id):
+        UserRoles.select().where(UserRoles.role_id == role_id).execute()
+
     # **********************************************************************************
     #                                   ApiKeys Methods
     # **********************************************************************************
@@ -340,8 +379,8 @@ class HelperUsers:
         name: str,
         user_id: str,
         superuser: bool = False,
-        server_permissions_mask: Optional[str] = None,
-        crafty_permissions_mask: Optional[str] = None,
+        server_permissions_mask: t.Optional[str] = None,
+        crafty_permissions_mask: t.Optional[str] = None,
     ):
         return ApiKeys.insert(
             {

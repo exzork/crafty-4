@@ -1,4 +1,5 @@
 import logging
+import typing
 from enum import Enum
 from peewee import (
     ForeignKeyField,
@@ -168,7 +169,12 @@ class PermissionsCrafty:
         )
 
     @staticmethod
-    def add_server_creation(user_id):
+    def add_server_creation(user_id: int):
+        """Increase the "Server Creation" counter for this user
+
+        Args:
+            user_id (int): The modifiable user's ID
+        """
         UserCrafty.update(created_server=UserCrafty.created_server + 1).where(
             UserCrafty.user_id == user_id
         ).execute()
