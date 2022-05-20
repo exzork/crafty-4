@@ -1,15 +1,18 @@
+from __future__ import annotations
 import json
 import logging
 import datetime
 import base64
-import psutil
 import typing as t
+import psutil
 
 from app.classes.minecraft.mc_ping import ping
 from app.classes.models.management import HostStats
 from app.classes.models.servers import HelperServers
 from app.classes.shared.helpers import Helpers
-from app.classes.shared.main_controller import Controller
+
+if t.TYPE_CHECKING:
+    from app.classes.shared.main_controller import Controller
 
 logger = logging.getLogger(__name__)
 
