@@ -94,6 +94,10 @@ class MainPrompt(cmd.Cmd):
             else:
                 print(f"Name: {thread.name} Identifier: {thread.ident}")
 
+    def print_prompt(self):
+        self.stdout.write(self.prompt)
+        self.stdout.flush()
+
     def do_import3(self, _line):
         Import3.start_import()
 
