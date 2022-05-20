@@ -18,11 +18,7 @@ from tzlocal import get_localzone
 from croniter import croniter
 from app.classes.controllers.roles_controller import RolesController
 
-from app.classes.models.roles import HelperRoles
-from app.classes.models.server_permissions import (
-    EnumPermissionsServer,
-    PermissionsServers,
-)
+from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.models.management import HelpersManagement
 from app.classes.shared.helpers import Helpers
@@ -42,7 +38,7 @@ class PanelHandler(BaseHandler):
         return user_roles
 
     def get_role_servers(self) -> t.List[RolesController.RoleServerJsonType]:
-        servers = list()
+        servers = []
         for server in self.controller.list_defined_servers():
             argument = self.get_argument(f"server_{server['server_id']}_access", "0")
             if argument == "0":
