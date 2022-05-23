@@ -205,7 +205,7 @@ class PermissionsServers:
     @staticmethod
     def get_user_permissions_mask(user: Users, server_id: str):
         if user.superuser:
-            permissions_mask = "1" * len(PermissionsServers.get_permissions_list())
+            permissions_mask = "1" * len(EnumPermissionsServer)
         else:
             roles_list = HelperUsers.get_user_roles_id(user.user_id)
             role_server = (
@@ -217,7 +217,7 @@ class PermissionsServers:
             try:
                 permissions_mask = role_server[0].permissions
             except IndexError:
-                permissions_mask = "0" * len(PermissionsServers.get_permissions_list())
+                permissions_mask = "0" * len(EnumPermissionsServer)
         return permissions_mask
 
     @staticmethod
