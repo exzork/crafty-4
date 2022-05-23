@@ -172,7 +172,7 @@ class RolesController:
 
         if role:
             server_ids = PermissionsServers.get_server_ids_from_role(role_id)
-            role["servers"] = list(server_ids)
+            role["servers"] = server_ids
             # logger.debug("role: ({}) {}".format(role_id, role))
             return role
         else:

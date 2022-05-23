@@ -149,7 +149,7 @@ class ServersController:
     def get_authorized_servers_stats_api_key(api_key: ApiKeys):
         server_data = []
         authorized_servers = ServersController.get_authorized_servers(
-            api_key.user.user_id  # TODO: API key authorized servers?
+            api_key.user_id  # TODO: API key authorized servers?
         )
 
         for server in authorized_servers:

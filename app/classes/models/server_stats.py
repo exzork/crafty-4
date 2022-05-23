@@ -76,7 +76,7 @@ class HelperServerStats:
             db_folder = os.path.join(f"{server['path']}", "db_stats")
             db_file = os.path.join(
                 db_folder,
-                f"{server['server_name']}" + ".sqlite",
+                "crafty_server_stats.sqlite",
             )
             database = SqliteDatabase(
                 db_file, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
@@ -109,7 +109,7 @@ class HelperServerStats:
             db_file = os.path.join(
                 f"{server['path']}",
                 "db_stats",
-                f"{server['server_name']}" + ".sqlite",
+                "crafty_server_stats.sqlite",
             )
             database = SqliteDatabase(
                 db_file, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
@@ -211,26 +211,23 @@ class HelperServerStats:
     @staticmethod
     def sever_crashed(server_id):
         HelperServerStats.select_database(server_id)
-        with database_stats_proxy.atomic():
-            ServerStats.update(crashed=True).where(
-                ServerStats.server_id == server_id
-            ).execute()
+        ServerStats.update(crashed=True).where(
+            ServerStats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def set_download(server_id):
         HelperServerStats.select_database(server_id)
-        with database_stats_proxy.atomic():
-            ServerStats.update(downloading=True).where(
-                ServerStats.server_id == server_id
-            ).execute()
+        ServerStats.update(downloading=True).where(
+            ServerStats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def finish_download(server_id):
         HelperServerStats.select_database(server_id)
-        with database_stats_proxy.atomic():
-            ServerStats.update(downloading=False).where(
-                ServerStats.server_id == server_id
-            ).execute()
+        ServerStats.update(downloading=False).where(
+            ServerStats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def get_download_status(server_id):
@@ -246,10 +243,9 @@ class HelperServerStats:
             return
 
         HelperServerStats.select_database(server_id)
-        with database_stats_proxy.atomic():
-            ServerStats.update(crashed=False).where(
-                ServerStats.server_id == server_id
-            ).execute()
+        ServerStats.update(crashed=False).where(
+            ServerStats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def is_crashed(server_id):
@@ -272,10 +268,9 @@ class HelperServerStats:
             ServerStats.select().where(ServerStats.server_id == server_id)
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
-        with database_stats_proxy.atomic():
-            ServerStats.update(updating=value).where(
-                ServerStats.server_id == server_id
-            ).execute()
+        ServerStats.update(updating=value).where(
+            ServerStats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def get_update_status(server_id):
@@ -295,10 +290,9 @@ class HelperServerStats:
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
             return
-        with database_stats_proxy.atomic():
-            ServerStats.update(first_run=False).where(
-                ServerStats.server_id == server_id
-            ).execute()
+        ServerStats.update(first_run=False).where(
+            ServerStats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def get_first_run(server_id):
@@ -341,10 +335,9 @@ class HelperServerStats:
             ServerStats.select().where(ServerStats.server_id == server_id)
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
-        with database_stats_proxy.atomic():
-            ServerStats.update(waiting_start=value).where(
-                ServerStats.server_id == server_id
-            ).execute()
+        ServerStats.update(waiting_start=value).where(
+            ServerStats.server_id == server_id
+        ).execute()
 
     @staticmethod
     def get_waiting_start(server_id):

@@ -52,18 +52,15 @@ class PermissionsServers:
 
     @staticmethod
     def get_permissions_list():
-        permissions_list: t.List[EnumPermissionsServer] = []
-        for member in EnumPermissionsServer.__members__.items():
-            permissions_list.append(member[1])
-        return permissions_list
+        return list(EnumPermissionsServer.__members__.values())
 
     @staticmethod
     def get_permissions(permissions_mask):
-        permissions_list: t.List[EnumPermissionsServer] = []
-        for member in EnumPermissionsServer.__members__.items():
-            if PermissionsServers.has_permission(permissions_mask, member[1]):
-                permissions_list.append(member[1])
-        return permissions_list
+        return [
+            permission
+            for permission in EnumPermissionsServer.__members__.values()
+            if PermissionsServers.has_permission(permissions_mask, permission)
+        ]
 
     @staticmethod
     def has_permission(permission_mask, permission_tested: EnumPermissionsServer):
@@ -84,13 +81,13 @@ class PermissionsServers:
 
     @staticmethod
     def get_token_permissions(permissions_mask, api_permissions_mask):
-        permissions_list = []
-        for member in EnumPermissionsServer.__members__.items():
+        return [
+            permission
+            for permission in EnumPermissionsServer.__members__.values()
             if PermissionHelper.both_have_perm(
-                permissions_mask, api_permissions_mask, member[1]
-            ):
-                permissions_list.append(member[1])
-        return permissions_list
+                permissions_mask, api_permissions_mask, permission
+            )
+        ]
 
     # **********************************************************************************
     #                                   Role_Servers Methods
@@ -160,10 +157,10 @@ class PermissionsServers:
 
     @staticmethod
     def get_role_permissions_list(role_id):
-        permissions_mask = "00000000"
         role_server = RoleServers.get_or_none(RoleServers.role_id == role_id)
-        if role_server is not None:
-            permissions_mask = role_server.permissions
+        permissions_mask = (
+            "00000000" if role_server is None else role_server.permissions
+        )
         permissions_list = PermissionsServers.get_permissions(permissions_mask)
         return permissions_list
 
@@ -181,14 +178,9 @@ class PermissionsServers:
 
     @staticmethod
     def update_role_permission(role_id, server_id, permissions_mask):
-        role_server = (
-            RoleServers.select()
-            .where(RoleServers.role_id == role_id)
-            .where(RoleServers.server_id == server_id)
-            .get()
-        )
-        role_server.permissions = permissions_mask
-        RoleServers.save(role_server)
+        RoleServers.update(permissions=permissions_mask).where(
+            RoleServers.role_id == role_id, RoleServers.server_id == server_id
+        ).execute()
 
     @staticmethod
     def delete_roles_permissions(
@@ -232,14 +224,16 @@ class PermissionsServers:
     def get_server_user_list(server_id):
         final_users = []
         server_roles = RoleServers.select().where(RoleServers.server_id == server_id)
-        super_users = Users.select().where(
+        super_users = Users.select(Users.user_id).where(
             Users.superuser == True  # pylint: disable=singleton-comparison
         )
         for role in server_roles:
-            users = UserRoles.select().where(UserRoles.role_id == role.role_id)
+            users = UserRoles.select(UserRoles.user_id).where(
+                UserRoles.role_id == role.role_id
+            )
             for user in users:
-                if user.user_id.user_id not in final_users:
-                    final_users.append(user.user_id.user_id)
+                if user.user_id_id not in final_users:
+                    final_users.append(user.user_id_id)
         for suser in super_users:
             if suser.user_id not in final_users:
                 final_users.append(suser.user_id)

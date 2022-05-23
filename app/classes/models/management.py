@@ -269,8 +269,7 @@ class HelpersManagement:
 
     @staticmethod
     def delete_scheduled_task(schedule_id):
-        sch = Schedules.get(Schedules.schedule_id == schedule_id)
-        return Schedules.delete_instance(sch)
+        return Schedules.delete().where(Schedules.schedule_id == schedule_id).execute()
 
     @staticmethod
     def update_scheduled_task(schedule_id, updates):
@@ -329,7 +328,7 @@ class HelpersManagement:
                 "backup_path": row.server_id.backup_path,
                 "excluded_dirs": row.excluded_dirs,
                 "max_backups": row.max_backups,
-                "server_id": row.server_id.server_id,
+                "server_id": row.server_id_id,
                 "compress": row.compress,
             }
         except IndexError:

@@ -275,9 +275,7 @@ class HelperUsers:
 
     @staticmethod
     def user_id_exists(user_id):
-        if not HelperUsers.get_user(user_id):
-            return False
-        return True
+        return Users.select().where(Users.user_id == user_id).count() != 0
 
     # **********************************************************************************
     #                                   User_Roles Methods
@@ -323,10 +321,7 @@ class HelperUsers:
             .join(Roles, JOIN.INNER)
             .where(UserRoles.user_id == user_id)
         )
-        # TODO: this query needs to be narrower
-        roles = set()
-        for r in roles_query:
-            roles.add(r.role_id.role_id)
+        roles = {r.role_id_id for r in roles_query}
 
         if isinstance(user, dict):
             user["roles"] = roles

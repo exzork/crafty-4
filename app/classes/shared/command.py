@@ -22,9 +22,7 @@ class MainPrompt(cmd.Cmd):
         # overrides the default Prompt
         self.prompt = f"Crafty Controller v{self.helper.get_version_string()} > "
 
-    # see MR !233 for pylint exemptino reason
-    @staticmethod
-    def emptyline():  # pylint: disable=arguments-differ
+    def emptyline(self):
         pass
 
     def do_exit(self, _line):
@@ -88,11 +86,15 @@ class MainPrompt(cmd.Cmd):
         for thread in threading.enumerate():
             if sys.version_info >= (3, 8):
                 print(
-                    f"Name: {thread.name} Identifier: "
-                    f"{thread.ident} TID/PID: {thread.native_id}"
+                    f"Name: {thread.name}\tIdentifier: "
+                    f"{thread.ident}\tTID/PID: {thread.native_id}"
                 )
             else:
-                print(f"Name: {thread.name} Identifier: {thread.ident}")
+                print(f"Name: {thread.name}\tIdentifier: {thread.ident}")
+
+    def print_prompt(self):
+        self.stdout.write(self.prompt)
+        self.stdout.flush()
 
     def do_import3(self, _line):
         Import3.start_import()
