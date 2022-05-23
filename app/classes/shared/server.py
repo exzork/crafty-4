@@ -263,27 +263,18 @@ class Server:
 
         # Checks for eula. Creates one if none detected.
         # If EULA is detected and not set to true we offer to set it true.
+        e_flag = False
         if Helpers.check_file_exists(os.path.join(self.settings["path"], "eula.txt")):
-            f = open(
+            with open(
                 os.path.join(self.settings["path"], "eula.txt"), "r", encoding="utf-8"
-            )
-            line = f.readline().lower()
-            if line == "eula=true":
-                e_flag = True
-
-            elif line == "eula = true":
-                e_flag = True
-
-            elif line == "eula= true":
-                e_flag = True
-
-            elif line == "eula =true":
-                e_flag = True
-
-            else:
-                e_flag = False
-        else:
-            e_flag = False
+            ) as f:
+                line = f.readline().lower()
+                e_flag = line in [
+                    "eula=true",
+                    "eula = true",
+                    "eula= true",
+                    "eula =true",
+                ]
 
         if not e_flag:
             if user_id:
@@ -295,9 +286,7 @@ class Server:
                     "Autostart failed due to EULA being false. "
                     "Agree not sent due to auto start."
                 )
-                return False
             return False
-        f.close()
         if Helpers.is_os_windows():
             logger.info("Windows Detected")
         else:
@@ -309,15 +298,16 @@ class Server:
 
         # checks to make sure file is openable (downloaded) and exists.
         try:
-            f = open(
+            with open(
                 os.path.join(
                     self.server_path,
                     HelperServers.get_server_data_by_id(self.server_id)["executable"],
                 ),
                 "r",
                 encoding="utf-8",
-            )
-            f.close()
+            ):
+                # Can open the file
+                pass
 
         except:
             if user_id:

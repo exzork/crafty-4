@@ -120,8 +120,7 @@ class HelperServers:
         return server_obj.save()
 
     def remove_server(self, server_id):
-        with self.database.atomic():
-            Servers.delete().where(Servers.server_id == server_id).execute()
+        Servers.delete().where(Servers.server_id == server_id).execute()
 
     @staticmethod
     def get_server_data_by_id(server_id):

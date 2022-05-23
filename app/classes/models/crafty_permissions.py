@@ -1,5 +1,4 @@
 import logging
-import typing
 from enum import Enum
 from peewee import (
     ForeignKeyField,
@@ -46,37 +45,26 @@ class PermissionsCrafty:
     # **********************************************************************************
     @staticmethod
     def get_permissions_list():
-        permissions_list: typing.List[EnumPermissionsCrafty] = []
-        for member in EnumPermissionsCrafty.__members__.items():
-            permissions_list.append(member[1])
-        return permissions_list
+        return list(EnumPermissionsCrafty.__members__.values())
 
     @staticmethod
     def get_permissions(permissions_mask):
-        permissions_list: typing.List[EnumPermissionsCrafty] = []
-        for member in EnumPermissionsCrafty.__members__.items():
-            if PermissionsCrafty.has_permission(permissions_mask, member[1]):
-                permissions_list.append(member[1])
-        return permissions_list
+        return [
+            permission
+            for permission in EnumPermissionsCrafty.__members__.values()
+            if PermissionsCrafty.has_permission(permissions_mask, permission)
+        ]
 
     @staticmethod
-    def has_permission(
-        permission_mask: typing.Mapping[int, str],
-        permission_tested: EnumPermissionsCrafty,
-    ):
-        result = False
-        if permission_mask[permission_tested.value] == "1":
-            result = True
-        return result
+    def has_permission(permission_mask, permission_tested: EnumPermissionsCrafty):
+        return permission_mask[permission_tested.value] == "1"
 
     @staticmethod
     def set_permission(
         permission_mask, permission_tested: EnumPermissionsCrafty, value
     ):
-        lst = list(permission_mask)
-        lst[permission_tested.value] = str(value)
-        permission_mask = "".join(lst)
-        return permission_mask
+        index = permission_tested.value
+        return permission_mask[:index] + str(value) + permission_mask[index + 1 :]
 
     @staticmethod
     def get_permission(permission_mask, permission_tested: EnumPermissionsCrafty):
@@ -84,19 +72,14 @@ class PermissionsCrafty:
 
     @staticmethod
     def get_crafty_permissions_mask(user_id):
-        permissions_mask = ""
+        # TODO: only get the permissions of the UserCrafty
         user_crafty = PermissionsCrafty.get_user_crafty(user_id)
         permissions_mask = user_crafty.permissions
         return permissions_mask
 
     @staticmethod
     def get_all_permission_quantity_list():
-        quantity_list = {
-            EnumPermissionsCrafty.SERVER_CREATION.name: -1,
-            EnumPermissionsCrafty.USER_CONFIG.name: -1,
-            EnumPermissionsCrafty.ROLES_CONFIG.name: -1,
-        }
-        return quantity_list
+        return {name: -1 for name in EnumPermissionsCrafty.__members__.keys()}
 
     @staticmethod
     def get_permission_quantity_list(user_id):
@@ -114,7 +97,7 @@ class PermissionsCrafty:
     @staticmethod
     def get_user_crafty(user_id):
         try:
-            user_crafty = UserCrafty.select().where(UserCrafty.user_id == user_id).get()
+            user_crafty = UserCrafty.get(UserCrafty.user_id == user_id)
         except DoesNotExist:
             user_crafty = UserCrafty.insert(
                 {
@@ -146,23 +129,17 @@ class PermissionsCrafty:
         limit_user_creation,
         limit_role_creation,
     ):
-        try:
-            user_crafty = UserCrafty.select().where(UserCrafty.user_id == user_id).get()
-            user_crafty.permissions = permissions_mask
-            user_crafty.limit_server_creation = limit_server_creation
-            user_crafty.limit_user_creation = limit_user_creation
-            user_crafty.limit_role_creation = limit_role_creation
-            UserCrafty.save(user_crafty)
-        except:
-            UserCrafty.insert(
-                {
-                    UserCrafty.user_id: user_id,
-                    UserCrafty.permissions: permissions_mask,
-                    UserCrafty.limit_server_creation: limit_server_creation,
-                    UserCrafty.limit_user_creation: limit_user_creation,
-                    UserCrafty.limit_role_creation: limit_role_creation,
-                }
-            ).execute()
+        # http://docs.peewee-orm.com/en/latest/peewee/querying.html#upsert
+
+        UserCrafty.replace(
+            {
+                UserCrafty.user_id: user_id,
+                UserCrafty.permissions: permissions_mask,
+                UserCrafty.limit_server_creation: limit_server_creation,
+                UserCrafty.limit_user_creation: limit_user_creation,
+                UserCrafty.limit_role_creation: limit_role_creation,
+            }
+        ).execute()
 
     @staticmethod
     def get_created_quantity_list(user_id):
@@ -191,19 +168,15 @@ class PermissionsCrafty:
         )
 
     @staticmethod
-    def add_server_creation(user_id):
+    def add_server_creation(user_id: int):
         """Increase the "Server Creation" counter for this user
 
         Args:
             user_id (int): The modifiable user's ID
-
-        Returns:
-            int: The new count of servers created by this user
         """
-        user_crafty = PermissionsCrafty.get_user_crafty(user_id)
-        user_crafty.created_server += 1
-        UserCrafty.save(user_crafty)
-        return user_crafty.created_server
+        UserCrafty.update(created_server=UserCrafty.created_server + 1).where(
+            UserCrafty.user_id == user_id
+        ).execute()
 
     @staticmethod
     def add_user_creation(user_id):
@@ -226,8 +199,10 @@ class PermissionsCrafty:
             return PermissionsCrafty.get_permissions_list()
         else:
             if user["superuser"]:
+                # User is superuser but API key isn't
                 user_permissions_mask = "111"
             else:
+                # Not superuser
                 user_permissions_mask = PermissionsCrafty.get_crafty_permissions_mask(
                     user["user_id"]
                 )
