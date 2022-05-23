@@ -647,8 +647,8 @@ class ApiServersIndexHandler(BaseApiHandler):
             return self.finish_json(400, {"status": "error", "error": "NOT_AUTHORIZED"})
 
         try:
-            data = orjson.loads(self.request.body)  # pylint: disable=no-member
-        except orjson.decoder.JSONDecodeError as e:  # pylint: disable=no-member
+            data = orjson.loads(self.request.body)
+        except orjson.decoder.JSONDecodeError as e:
             return self.finish_json(
                 400, {"status": "error", "error": "INVALID_JSON", "error_data": str(e)}
             )
