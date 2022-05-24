@@ -1,8 +1,13 @@
 import json
 import logging
+import typing as t
 
 from jsonschema import ValidationError, validate
-from app.classes.models.crafty_permissions import EnumPermissionsCrafty
+from app.classes.controllers.users_controller import UsersController
+from app.classes.models.crafty_permissions import (
+    EnumPermissionsCrafty,
+    PermissionsCrafty,
+)
 from app.classes.models.roles import HelperRoles
 from app.classes.models.users import HelperUsers
 from app.classes.web.base_api_handler import BaseApiHandler
@@ -219,9 +224,64 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
                     400, {"status": "error", "error": "INVALID_ROLES_MODIFY"}
                 )
 
-        # TODO: make this more efficient
-        # TODO: add permissions and roles because I forgot
+        if data.get("password", None) is not None and str(
+            user["user_id"] == str(user_id)
+        ):
+            # TODO: edit your own password
+            return self.finish_json(
+                400, {"status": "error", "error": "INVALID_PASSWORD_MODIFY"}
+            )
+
         user_obj = HelperUsers.get_user_model(user_id)
+
+        if "roles" in data:
+            roles: t.Set[str] = set(data.pop("roles"))
+            base_roles: t.Set[str] = set(user_obj.roles)
+            added_roles = roles.difference(base_roles)
+            removed_roles = base_roles.difference(roles)
+            logger.debug(
+                f"updating user {user_id}'s roles: "
+                f"+role:{added_roles} -role:{removed_roles}"
+            )
+
+            for role_id in added_roles:
+                HelperUsers.get_or_create(user_id, role_id)
+
+            if len(removed_roles) != 0:
+                self.controller.users.users_helper.delete_user_roles(
+                    user_id, removed_roles
+                )
+
+        if "permissions" in data:
+            permissions: t.List[UsersController.ApiPermissionDict] = data.pop(
+                "permissions"
+            )
+            permissions_mask = "0" * len(EnumPermissionsCrafty)
+            limit_server_creation = 0
+            limit_user_creation = 0
+            limit_role_creation = 0
+
+            for permission in permissions:
+                self.controller.crafty_perms.set_permission(
+                    permissions_mask,
+                    EnumPermissionsCrafty.__members__[permission["name"]],
+                    "1" if permission["enabled"] else "0",
+                )
+
+            PermissionsCrafty.add_or_update_user(
+                user_id,
+                permissions_mask,
+                limit_server_creation,
+                limit_user_creation,
+                limit_role_creation,
+            )
+
+        # TODO: make this more efficient
+        if len(data) != 0:
+            for key in data:
+                # If we don't validate the input there could be security issues
+                setattr(user_obj, key, data[key])
+            user_obj.save()
 
         self.controller.management.add_to_audit_log(
             user["user_id"],
@@ -232,10 +292,5 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
             server_id=0,
             source_ip=self.get_remote_ip(),
         )
-
-        for key in data:
-            # If we don't validate the input there could be security issues
-            setattr(user_obj, key, data[key])
-        user_obj.save()
 
         return self.finish_json(200, {"status": "ok"})
