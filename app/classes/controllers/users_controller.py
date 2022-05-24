@@ -11,6 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 class UsersController:
+    class ApiPermissionDict(t.TypedDict):
+        name: str
+        quantity: int
+        enabled: bool
+
     def __init__(self, helper, users_helper, authentication):
         self.helper = helper
         self.users_helper = users_helper
