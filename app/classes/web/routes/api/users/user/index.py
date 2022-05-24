@@ -280,7 +280,10 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
         if len(data) != 0:
             for key in data:
                 # If we don't validate the input there could be security issues
-                setattr(user_obj, key, data[key])
+                value = data[key]
+                if key == "password":
+                    value = self.helper.encode_pass(value)
+                setattr(user_obj, key, value)
             user_obj.save()
 
         self.controller.management.add_to_audit_log(
