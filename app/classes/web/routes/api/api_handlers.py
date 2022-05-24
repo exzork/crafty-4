@@ -62,13 +62,18 @@ def api_handlers(handler_args):
             handler_args,
         ),
         (
-            r"/api/v2/users/([0-9]+)/pfp/?",
-            ApiUsersUserPfpHandler,
+            r"/api/v2/users/([0-9]+)/permissions/?",
+            ApiUsersUserPermissionsHandler,
             handler_args,
         ),
         (
             r"/api/v2/users/(@me)/permissions/?",
             ApiUsersUserPermissionsHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/users/([0-9]+)/pfp/?",
+            ApiUsersUserPfpHandler,
             handler_args,
         ),
         (
