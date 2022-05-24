@@ -186,9 +186,9 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
                 )
 
         if "superuser" in data:
-            if str(user["user_id"]) == str(user_id):
-                # Checks if user is trying to change super user status of self.
-                # We don't want that.
+            if str(user["user_id"]) == str(user_id) and not superuser:
+                # Checks if user is trying to change super user status
+                # of self without superuser. We don't want that.
                 return self.finish_json(
                     400, {"status": "error", "error": "INVALID_SUPERUSER_MODIFY"}
                 )
@@ -197,9 +197,9 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
                 data.pop("superuser")
 
         if "permissions" in data:
-            if str(user["user_id"]) == str(user_id):
-                # Checks if user is trying to change permissions of self.
-                # We don't want that.
+            if str(user["user_id"]) == str(user_id) and not superuser:
+                # Checks if user is trying to change permissions
+                # of self without superuser. We don't want that.
                 return self.finish_json(
                     400, {"status": "error", "error": "INVALID_PERMISSIONS_MODIFY"}
                 )
@@ -211,9 +211,9 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
                 )
 
         if "roles" in data:
-            if str(user["user_id"]) == str(user_id):
-                # Checks if user is trying to change roles of self.
-                # We don't want that.
+            if str(user["user_id"]) == str(user_id) and not superuser:
+                # Checks if user is trying to change roles of
+                # self without superuser. We don't want that.
                 return self.finish_json(
                     400, {"status": "error", "error": "INVALID_ROLES_MODIFY"}
                 )
