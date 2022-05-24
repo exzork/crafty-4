@@ -175,7 +175,7 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
                 },
             )
 
-        if data.get("username", None) is not None:
+        if "username" in data:
             if data["username"].lower() in ["system", ""]:
                 return self.finish_json(
                     400, {"status": "error", "error": "INVALID_USERNAME"}
@@ -185,7 +185,7 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
                     400, {"status": "error", "error": "USER_EXISTS"}
                 )
 
-        if data.get("superuser", None) is not None:
+        if "superuser" in data:
             if str(user["user_id"]) == str(user_id):
                 # Checks if user is trying to change super user status of self.
                 # We don't want that.
@@ -196,7 +196,7 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
                 # The user is not superuser so they can't change the superuser status
                 data.pop("superuser")
 
-        if data.get("permissions", None) is not None:
+        if "permissions" in data:
             if str(user["user_id"]) == str(user_id):
                 # Checks if user is trying to change permissions of self.
                 # We don't want that.
@@ -210,7 +210,7 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
                     400, {"status": "error", "error": "INVALID_PERMISSIONS_MODIFY"}
                 )
 
-        if data.get("roles", None) is not None:
+        if "roles" in data:
             if str(user["user_id"]) == str(user_id):
                 # Checks if user is trying to change roles of self.
                 # We don't want that.
@@ -224,9 +224,7 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
                     400, {"status": "error", "error": "INVALID_ROLES_MODIFY"}
                 )
 
-        if data.get("password", None) is not None and str(
-            user["user_id"] == str(user_id)
-        ):
+        if "password" in data and str(user["user_id"] == str(user_id)):
             # TODO: edit your own password
             return self.finish_json(
                 400, {"status": "error", "error": "INVALID_PASSWORD_MODIFY"}
