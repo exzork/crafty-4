@@ -66,11 +66,11 @@ class ServerStats(Model):
 #                                    Servers_Stats Methods
 # **********************************************************************************
 class HelperServerStats:
-    def __init__(self, database):
+    def __init__(self, database, server_id):
         self.database = database
+        self.server_id = server_id
 
-    @staticmethod
-    def init_database(server_id):
+    def init_database(self, server_id):
         try:
             server = HelperServers.get_server_data_by_id(server_id)
             db_folder = os.path.join(f"{server['path']}", "db_stats")
@@ -102,10 +102,9 @@ class HelperServerStats:
                 f"Error try to look for the db_stats files for server : {ex}"
             )
 
-    @staticmethod
-    def select_database(server_id):
+    def select_database(self):
         try:
-            server = HelperServers.get_server_data_by_id(server_id)
+            server = HelperServers.get_server_data_by_id(self.server_id)
             db_file = os.path.join(
                 f"{server['path']}",
                 "db_stats",
@@ -120,13 +119,12 @@ class HelperServerStats:
                 f"Error try to look for the db_stats files for server : {ex}"
             )
 
-    @staticmethod
-    def get_all_servers_stats():
+    def get_all_servers_stats(self):
         servers = HelperServers.get_all_defined_servers()
         server_data = []
         try:
             for s in servers:
-                HelperServerStats.select_database(s.get("server_id"))
+                # self.select_database(s.get("server_id"))
                 latest = (
                     ServerStats.select()
                     .where(ServerStats.server_id == s.get("server_id"))
@@ -146,10 +144,9 @@ class HelperServerStats:
             )
         return server_data
 
-    @staticmethod
-    def insert_server_stats(server):
+    def insert_server_stats(self, server):
         server_id = server.get("id", 0)
-        HelperServerStats.select_database(server_id)
+        # self.select_database(server_id)
 
         if server_id == 0:
             logger.warning("Stats saving failed with error: Server unknown (id = 0)")
@@ -175,174 +172,158 @@ class HelperServerStats:
             }
         ).execute()
 
-    @staticmethod
-    def remove_old_stats(server_id, last_week):
-        HelperServerStats.select_database(server_id)
+    def remove_old_stats(self, last_week):
+        # self.select_database(self.server_id)
         ServerStats.delete().where(ServerStats.created < last_week).execute()
 
-    @staticmethod
-    def get_latest_server_stats(server_id):
-        HelperServerStats.select_database(server_id)
+    def get_latest_server_stats(self):
+        # self.select_database(self.server_id)
         return (
             ServerStats.select()
-            .where(ServerStats.server_id == server_id)
+            .where(ServerStats.server_id == self.server_id)
             .order_by(ServerStats.created.desc())
             .limit(1)
         )
 
-    @staticmethod
-    def get_server_stats_by_id(server_id):
-        HelperServerStats.select_database(server_id)
+    def get_server_stats_by_id(self):
+        # self.select_database(self.server_id)
         stats = (
             ServerStats.select()
-            .where(ServerStats.server_id == server_id)
+            .where(ServerStats.server_id == self.server_id)
             .order_by(ServerStats.created.desc())
             .limit(1)
         )
         return DatabaseShortcuts.return_rows(stats)[0]
 
-    @staticmethod
-    def server_id_exists(server_id):
-        HelperServerStats.select_database(server_id)
-        if not HelperServers.get_server_data_by_id(server_id):
+    def server_id_exists(self):
+        # self.select_database(self.server_id)
+        if not HelperServers.get_server_data_by_id(self.server_id):
             return False
         return True
 
-    @staticmethod
-    def sever_crashed(server_id):
-        HelperServerStats.select_database(server_id)
+    def sever_crashed(self):
+        # self.select_database(self.server_id)
         ServerStats.update(crashed=True).where(
-            ServerStats.server_id == server_id
+            ServerStats.server_id == self.server_id
         ).execute()
 
-    @staticmethod
-    def set_download(server_id):
-        HelperServerStats.select_database(server_id)
+    def set_download(self):
+        # self.select_database(self.server_id)
         ServerStats.update(downloading=True).where(
-            ServerStats.server_id == server_id
+            ServerStats.server_id == self.server_id
         ).execute()
 
-    @staticmethod
-    def finish_download(server_id):
-        HelperServerStats.select_database(server_id)
+    def finish_download(self):
+        # self.select_database(self.server_id)
         ServerStats.update(downloading=False).where(
-            ServerStats.server_id == server_id
+            ServerStats.server_id == self.server_id
         ).execute()
 
-    @staticmethod
-    def get_download_status(server_id):
-        HelperServerStats.select_database(server_id)
+    def get_download_status(self):
+        # self.select_database(self.server_id)
         download_status = (
-            ServerStats.select().where(ServerStats.server_id == server_id).get()
+            ServerStats.select().where(ServerStats.server_id == self.server_id).get()
         )
         return download_status.downloading
 
-    @staticmethod
-    def server_crash_reset(server_id):
-        if server_id is None:
+    def server_crash_reset(self):
+        if self.server_id is None:
             return
 
-        HelperServerStats.select_database(server_id)
+        # self.select_database(self.server_id)
         ServerStats.update(crashed=False).where(
-            ServerStats.server_id == server_id
+            ServerStats.server_id == self.server_id
         ).execute()
 
-    @staticmethod
-    def is_crashed(server_id):
-        HelperServerStats.select_database(server_id)
-        svr = ServerStats.select().where(ServerStats.server_id == server_id).get()
+    def is_crashed(self):
+        # self.select_database(self.server_id)
+        svr = ServerStats.select().where(ServerStats.server_id == self.server_id).get()
         # pylint: disable=singleton-comparison
         if svr.crashed == True:
             return True
         else:
             return False
 
-    @staticmethod
-    def set_update(server_id, value):
-        if server_id is None:
+    def set_update(self, value):
+        if self.server_id is None:
             return
 
-        HelperServerStats.select_database(server_id)
+        # self.select_database(self.server_id)
         try:
             # Checks if server even exists
-            ServerStats.select().where(ServerStats.server_id == server_id)
+            ServerStats.select().where(ServerStats.server_id == self.server_id)
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
         ServerStats.update(updating=value).where(
-            ServerStats.server_id == server_id
+            ServerStats.server_id == self.server_id
         ).execute()
 
-    @staticmethod
-    def get_update_status(server_id):
-        HelperServerStats.select_database(server_id)
+    def get_update_status(self):
+        # self.select_database(self.server_id)
         update_status = (
-            ServerStats.select().where(ServerStats.server_id == server_id).get()
+            ServerStats.select().where(ServerStats.server_id == self.server_id).get()
         )
         return update_status.updating
 
-    @staticmethod
-    def set_first_run(server_id):
-        HelperServerStats.select_database(server_id)
+    def set_first_run(self):
+        # self.select_database(self.server_id)
         # Sets first run to false
         try:
             # Checks if server even exists
-            ServerStats.select().where(ServerStats.server_id == server_id)
+            ServerStats.select().where(ServerStats.server_id == self.server_id)
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
             return
         ServerStats.update(first_run=False).where(
-            ServerStats.server_id == server_id
+            ServerStats.server_id == self.server_id
         ).execute()
 
-    @staticmethod
-    def get_first_run(server_id):
-        HelperServerStats.select_database(server_id)
-        first_run = ServerStats.select().where(ServerStats.server_id == server_id).get()
+    def get_first_run(self):
+        # self.select_database(self.server_id)
+        first_run = (
+            ServerStats.select().where(ServerStats.server_id == self.server_id).get()
+        )
         return first_run.first_run
 
-    @staticmethod
-    def get_ttl_without_player(server_id):
-        HelperServerStats.select_database(server_id)
+    def get_ttl_without_player(self):
+        # self.select_database(self.server_id)
         last_stat = (
             ServerStats.select()
-            .where(ServerStats.server_id == server_id)
+            .where(ServerStats.server_id == self.server_id)
             .order_by(ServerStats.created.desc())
             .first()
         )
         last_stat_with_player = (
             ServerStats.select()
-            .where(ServerStats.server_id == server_id)
+            .where(ServerStats.server_id == self.server_id)
             .where(ServerStats.online > 0)
             .order_by(ServerStats.created.desc())
             .first()
         )
         return last_stat.created - last_stat_with_player.created
 
-    @staticmethod
-    def can_stop_no_players(server_id, time_limit):
-        HelperServerStats.select_database(server_id)
+    def can_stop_no_players(self, time_limit):
+        # self.select_database(self.server_id)
         can = False
-        ttl_no_players = HelperServerStats.get_ttl_without_player(server_id)
+        ttl_no_players = self.get_ttl_without_player()
         if (time_limit == -1) or (ttl_no_players > time_limit):
             can = True
         return can
 
-    @staticmethod
-    def set_waiting_start(server_id, value):
-        HelperServerStats.select_database(server_id)
+    def set_waiting_start(self, value):
+        # self.select_database(self.server_id)
         try:
             # Checks if server even exists
-            ServerStats.select().where(ServerStats.server_id == server_id)
+            ServerStats.select().where(ServerStats.server_id == self.server_id)
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
         ServerStats.update(waiting_start=value).where(
-            ServerStats.server_id == server_id
+            ServerStats.server_id == self.server_id
         ).execute()
 
-    @staticmethod
-    def get_waiting_start(server_id):
-        HelperServerStats.select_database(server_id)
+    def get_waiting_start(self):
+        # self.select_database(self.server_id)
         waiting_start = (
-            ServerStats.select().where(ServerStats.server_id == server_id).get()
+            ServerStats.select().where(ServerStats.server_id == self.server_id).get()
         )
         return waiting_start.waiting_start
