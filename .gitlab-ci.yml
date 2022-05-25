@@ -5,6 +5,7 @@
 ---
 stages:
   - lint
+  - test
   - prod-deployment
   - dev-deployment
 
@@ -16,7 +17,7 @@ yamllint:
   stage: lint
   image: registry.gitlab.com/pipeline-components/yamllint:latest
   tags:
-    - "docker"
+    - docker
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS"
@@ -28,7 +29,7 @@ jsonlint:
   stage: lint
   image: registry.gitlab.com/pipeline-components/jsonlint:latest
   tags:
-    - "docker"
+    - docker
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS"
@@ -42,7 +43,7 @@ black:
   stage: lint
   image: registry.gitlab.com/pipeline-components/black:latest
   tags:
-    - "docker"
+    - docker
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS"
@@ -54,7 +55,7 @@ pylint:
   stage: lint
   image: registry.gitlab.com/pipeline-components/pylint:latest
   tags:
-    - "docker"
+    - docker
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS"
@@ -84,7 +85,7 @@ docker-build-dev:
     - name: docker:dind
   stage: dev-deployment
   tags:
-    - "docker_priv"
+    - docker_priv
   rules:
     - if: $CI_COMMIT_BRANCH == 'dev'
   environment:
@@ -139,7 +140,7 @@ docker-build-prod:
     - name: docker:dind
   stage: prod-deployment
   tags:
-    - "docker_priv"
+    - docker_priv
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   environment:
@@ -269,3 +270,31 @@ win-prod-build:
       - .\crafty_commander.exe
     exclude:
       - app\classes\**\*
+
+sast:
+  variables:
+    SAST_EXCLUDED_PATHS: spec, test, tests, tmp, migrations, vendors
+    SAST_BANDIT_EXCLUDED_PATHS: "'*/migrations/*, */vendors/*'"
+    SAST_EXCLUDED_ANALYZERS: semgrep
+  stage: test
+  tags:
+    - docker
+
+secret_detection:
+  variables:
+    SECRET_DETECTION_EXCLUDED_PATHS: migrations, vendors
+  tags:
+    - docker
+
+gemnasium-dependency_scanning:
+  tags:
+    - docker
+
+gemnasium-python-dependency_scanning:
+  tags:
+    - docker
+
+include:
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
