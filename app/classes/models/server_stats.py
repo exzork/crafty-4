@@ -3,7 +3,6 @@ import logging
 import datetime
 import typing as t
 
-from peewee import DoesNotExist
 from playhouse.shortcuts import model_to_dict
 
 from app.classes.models.servers import Servers, HelperServers
@@ -21,6 +20,7 @@ try:
         BooleanField,
         IntegerField,
         FloatField,
+        DoesNotExist,
     )
 
 except ModuleNotFoundError as e:
