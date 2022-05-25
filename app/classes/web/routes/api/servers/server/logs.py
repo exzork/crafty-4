@@ -8,6 +8,8 @@ from app.classes.web.base_api_handler import BaseApiHandler
 
 logger = logging.getLogger(__name__)
 
+ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+
 
 class ApiServersServerLogsHandler(BaseApiHandler):
     def get(self, server_id: str):
@@ -56,9 +58,7 @@ class ApiServersServerLogsHandler(BaseApiHandler):
         for line in raw_lines:
             try:
                 if not disable_ansi_strip:
-                    line = re.sub(
-                        "(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)|(> )", "", line
-                    )
+                    line = ansi_escape.sub("", line)
                     line = re.sub("[A-z]{2}\b\b", "", line)
                     line = html.escape(line)
 
