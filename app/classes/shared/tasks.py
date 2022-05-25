@@ -121,8 +121,6 @@ class TasksManager:
 
                 elif command == "update_executable":
                     svr.jar_update()
-                else:
-                    svr.send_command(command)
                 HelpersManagement.mark_command_complete(cmd.command_id)
 
             time.sleep(1)
