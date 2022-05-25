@@ -12,7 +12,6 @@ from app.classes.models.server_permissions import (
     EnumPermissionsServer,
 )
 from app.classes.shared.helpers import Helpers
-from app.classes.shared.main_models import DatabaseShortcuts
 
 logger = logging.getLogger(__name__)
 

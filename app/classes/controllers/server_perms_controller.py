@@ -8,7 +8,6 @@ from app.classes.models.users import HelperUsers, ApiKeys
 from app.classes.models.roles import HelperRoles
 from app.classes.models.servers import HelperServers
 from app.classes.models.server_stats import HelperServerStats
-from app.classes.shared.main_models import DatabaseShortcuts
 
 logger = logging.getLogger(__name__)
 
