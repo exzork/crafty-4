@@ -19,5 +19,12 @@ class BaseApiHandler(BaseHandler):
     delete = _unimplemented_method  # type: Callable[..., Optional[Awaitable[None]]]
     patch = _unimplemented_method  # type: Callable[..., Optional[Awaitable[None]]]
     put = _unimplemented_method  # type: Callable[..., Optional[Awaitable[None]]]
-    options = _unimplemented_method  # type: Callable[..., Optional[Awaitable[None]]]
     # }}}
+
+    def options(self, *_, **__):
+        """
+        Fix CORS
+        """
+        # no body
+        self.set_status(204)
+        self.finish()
