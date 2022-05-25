@@ -1444,12 +1444,12 @@ class Server:
 
     def record_server_stats(self):
 
-        server = self.get_servers_stats()
-        HelperServerStats.insert_server_stats(server)
+        server_stats = self.get_servers_stats()
+        HelperServerStats.insert_server_stats(server_stats)
 
         # delete old data
         max_age = self.helper.get_setting("history_max_age")
         now = datetime.datetime.now()
         minimum_to_exist = now - datetime.timedelta(days=max_age)
 
-        HelperServerStats.remove_old_stats(server.get("id", 0), minimum_to_exist)
+        HelperServerStats.remove_old_stats(server_stats.get("id", 0), minimum_to_exist)
