@@ -176,9 +176,9 @@ class HelperServerStats:
         ).execute()
 
     @staticmethod
-    def remove_old_stats(server_id, last_week):
+    def remove_old_stats(server_id, minimum_to_exist):
         HelperServerStats.select_database(server_id)
-        ServerStats.delete().where(ServerStats.created < last_week).execute()
+        ServerStats.delete().where(ServerStats.created < minimum_to_exist).execute()
 
     @staticmethod
     def get_latest_server_stats(server_id):
