@@ -89,4 +89,4 @@ class HelperRoles:
 
     @staticmethod
     def role_id_exists(role_id) -> bool:
-        return Roles.select().where(Roles.role_id == role_id).count() != 0
+        return Roles.select().where(Roles.role_id == role_id).exists()

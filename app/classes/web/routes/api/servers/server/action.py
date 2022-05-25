@@ -43,7 +43,7 @@ class ApiServersServerActionHandler(BaseApiHandler):
 
     def _clone_server(self, server_id, user_id):
         def is_name_used(name):
-            return Servers.select().where(Servers.server_name == name).count() != 0
+            return Servers.select().where(Servers.server_name == name).exists()
 
         server_data = self.controller.servers.get_server_data_by_id(server_id)
         server_uuid = server_data.get("server_uuid")

@@ -275,7 +275,7 @@ class HelperUsers:
 
     @staticmethod
     def user_id_exists(user_id):
-        return Users.select().where(Users.user_id == user_id).count() != 0
+        return Users.select().where(Users.user_id == user_id).exists()
 
     # **********************************************************************************
     #                                   User_Roles Methods
