@@ -258,6 +258,6 @@ class Stats:
         # delete old data
         max_age = self.helper.get_setting("history_max_age")
         now = datetime.datetime.now()
-        minimum_to_exist = now.day - max_age
+        minimum_to_exist = now - datetime.timedelta(days=max_age)
 
         HostStats.delete().where(HostStats.time < minimum_to_exist).execute()
