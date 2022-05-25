@@ -45,6 +45,9 @@ class ApiServersServerLogsHandler(BaseApiHandler):
                 self.helper.get_os_understandable_path(server_data["log_path"]),
                 log_lines,
             )
+
+            # Remove newline characters from the end of the lines
+            raw_lines = [line.rstrip("\r\n") for line in raw_lines]
         else:
             raw_lines = ServerOutBuf.lines.get(server_id, [])
 
