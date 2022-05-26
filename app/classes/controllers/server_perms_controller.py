@@ -1,4 +1,5 @@
 import logging
+from app.classes.controllers.servers_controller import ServersController
 
 from app.classes.models.server_permissions import (
     PermissionsServers,
@@ -8,7 +9,9 @@ from app.classes.models.users import HelperUsers, ApiKeys
 from app.classes.models.roles import HelperRoles
 from app.classes.models.servers import HelperServers
 from app.classes.models.server_stats import HelperServerStats
+
 from app.classes.shared.main_models import DatabaseShortcuts
+from app.classes.shared.server import Server
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +110,10 @@ class ServerPermsController:
             )
 
         for server in authorized_servers:
-            latest = HelperServerStats.get_latest_server_stats(server.get("server_id"))
+            srv: Server = ServersController().get_server_instance_by_id(
+                server.get("server_id")
+            )
+            latest = srv.stats_helper.get_latest_server_stats()
             server_data.append(
                 {
                     "server_data": server,

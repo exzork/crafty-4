@@ -84,7 +84,7 @@ class TasksManager:
             commands = HelpersManagement.get_unactioned_commands()
             for cmd in commands:
                 try:
-                    svr = self.controller.get_server_obj(cmd.server_id)
+                    svr = self.controller.servers.get_server_obj(cmd.server_id)
                 except:
                     logger.error(
                         "Server value requested does not exist! "
@@ -516,10 +516,10 @@ class TasksManager:
         )
 
         # one for now,
-        self.controller.stats.record_stats()
+        self.controller.servers.stats.record_stats()
         # one for later
         self.scheduler.add_job(
-            self.controller.stats.record_stats,
+            self.controller.servers.stats.record_stats,
             "interval",
             seconds=stats_update_frequency,
             id="stats",

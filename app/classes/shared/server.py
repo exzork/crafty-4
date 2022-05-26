@@ -17,7 +17,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.classes.minecraft.stats import Stats
 from app.classes.minecraft.mc_ping import ping, ping_bedrock
-from app.classes.models.servers import HelperServers
+from app.classes.models.servers import HelperServers, Servers
 from app.classes.models.server_stats import HelperServerStats
 from app.classes.models.management import HelpersManagement
 from app.classes.models.users import HelperUsers
@@ -93,7 +93,10 @@ class ServerOutBuf:
 #                               Minecraft Server Class
 # **********************************************************************************
 class Server:
-    def __init__(self, helper, management_helper, stats):
+    server_object: Servers
+    stats_helper: HelperServerStats
+
+    def __init__(self, server_id, helper, management_helper, stats):
         self.helper = helper
         self.management_helper = management_helper
         # holders for our process
@@ -105,7 +108,7 @@ class Server:
         self.server_thread = None
         self.settings = None
         self.updating = False
-        self.server_id = None
+        self.server_id = server_id
         self.jar_update_url = None
         self.name = None
         self.is_crashed = False
@@ -121,8 +124,8 @@ class Server:
         )
         self.is_backingup = False
         # Reset crash and update at initialization
-        self.stats_helper.server_crash_reset(self.server_id)
-        self.stats_helper.set_update(self.server_id, False)
+        self.stats_helper.server_crash_reset()
+        self.stats_helper.set_update(False)
 
     # **********************************************************************************
     #                               Minecraft Server Management
@@ -167,7 +170,7 @@ class Server:
         Console.info(f"Starting server ID: {self.server_id} - {self.name}")
         logger.info(f"Starting server ID: {self.server_id} - {self.name}")
         # Sets waiting start to false since we're attempting to start the server.
-        self.stats_helper.set_waiting_start(self.server_id, False)
+        self.stats_helper.set_waiting_start(False)
         self.run_threaded_server(None)
 
         # remove the scheduled job since it's ran
@@ -234,7 +237,7 @@ class Server:
         else:
             user_lang = HelperUsers.get_user_lang_by_id(user_id)
 
-        if self.stats_helper.get_download_status(self.server_id):
+        if self.stats_helper.get_download_status():
             if user_id:
                 self.helper.websocket_helper.broadcast_user(
                     user_id,
@@ -407,7 +410,7 @@ class Server:
         ).start()
 
         self.is_crashed = False
-        self.stats_helper.server_crash_reset(self.server_id)
+        self.stats_helper.server_crash_reset()
 
         self.start_time = str(datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
 
@@ -415,7 +418,7 @@ class Server:
             logger.info(f"Server {self.name} running with PID {self.process.pid}")
             Console.info(f"Server {self.name} running with PID {self.process.pid}")
             self.is_crashed = False
-            self.stats_helper.server_crash_reset(self.server_id)
+            self.stats_helper.server_crash_reset()
             self.record_server_stats()
             check_internet_thread = threading.Thread(
                 target=self.check_internet_thread,
@@ -428,11 +431,9 @@ class Server:
             )
             check_internet_thread.start()
             # Checks if this is the servers first run.
-            if self.stats_helper.get_first_run(self.server_id):
-                self.stats_helper.set_first_run(self.server_id)
-                loc_server_port = self.stats_helper.get_server_stats_by_id(
-                    self.server_id
-                )["server_port"]
+            if self.stats_helper.get_first_run():
+                self.stats_helper.set_first_run()
+                loc_server_port = self.stats_helper.get_server_stats()["server_port"]
                 # Sends port reminder message.
                 self.helper.websocket_helper.broadcast_user(
                     user_id,
@@ -712,7 +713,7 @@ class Server:
             self.server_scheduler.remove_job("c_" + str(self.server_id))
             return
 
-        self.stats_helper.sever_crashed(self.server_id)
+        self.stats_helper.sever_crashed()
         # if we haven't tried to restart more 3 or more times
         if self.restart_count <= 3:
 
@@ -736,7 +737,7 @@ class Server:
 
             self.restart_count = 0
             self.is_crashed = True
-            self.stats_helper.sever_crashed(self.server_id)
+            self.stats_helper.sever_crashed()
 
             # cancel the watcher task
             self.server_scheduler.remove_job("c_" + str(self.server_id))
@@ -966,7 +967,7 @@ class Server:
             return []
 
     def jar_update(self):
-        self.stats_helper.set_update(self.server_id, True)
+        self.stats_helper.set_update(True)
         update_thread = threading.Thread(
             target=self.a_jar_update, daemon=True, name=f"exe_update_{self.name}"
         )
@@ -974,7 +975,7 @@ class Server:
 
     def check_update(self):
 
-        if self.stats_helper.get_server_stats_by_id(self.server_id)["updating"]:
+        if self.stats_helper.get_server_stats()["updating"]:
             return True
         else:
             return False
@@ -1047,11 +1048,11 @@ class Server:
             self.settings["executable_update_url"], current_executable
         )
 
-        while self.stats_helper.get_server_stats_by_id(self.server_id)["updating"]:
+        while self.stats_helper.get_server_stats()["updating"]:
             if downloaded and not self.is_backingup:
                 logger.info("Executable updated successfully. Starting Server")
 
-                self.stats_helper.set_update(self.server_id, False)
+                self.stats_helper.set_update(False)
                 if len(self.helper.websocket_helper.clients) > 0:
                     # There are clients
                     self.check_update()
@@ -1454,4 +1455,4 @@ class Server:
         now = datetime.datetime.now()
         last_week = now.day - max_age
 
-        self.stats_helper.remove_old_stats(server.get("id", 0), last_week)
+        self.stats_helper.remove_old_stats(last_week)

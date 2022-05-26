@@ -2,6 +2,12 @@ import os
 import logging
 import datetime
 
+import typing as t
+
+from peewee import DoesNotExist
+from playhouse.shortcuts import model_to_dict
+
+
 from app.classes.models.servers import Servers, HelperServers
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.main_models import DatabaseShortcuts
@@ -27,7 +33,7 @@ except ModuleNotFoundError as e:
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
-database_stats_proxy = DatabaseProxy()
+# database_stats_proxy = DatabaseProxy()
 
 
 # **********************************************************************************
@@ -59,16 +65,19 @@ class ServerStats(Model):
 
     class Meta:
         table_name = "server_stats"
-        database = database_stats_proxy
+        # database = database_stats_proxy
 
 
 # **********************************************************************************
 #                                    Servers_Stats Methods
 # **********************************************************************************
 class HelperServerStats:
-    def __init__(self, database, server_id):
-        self.database = database
-        self.server_id = server_id
+    server_id: int
+    database = None
+
+    def __init__(self, server_id):
+        self.server_id = int(server_id)
+        self.init_database(self.server_id)
 
     def init_database(self, server_id):
         try:
@@ -78,7 +87,7 @@ class HelperServerStats:
                 db_folder,
                 "crafty_server_stats.sqlite",
             )
-            database = SqliteDatabase(
+            self.database = SqliteDatabase(
                 db_file, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
             )
             if not os.path.exists(db_file):
@@ -93,10 +102,10 @@ class HelperServerStats:
                 f"{helper_stats.migration_dir}", "stats"
             )
             helper_stats.db_path = db_file
-            database_stats_proxy.initialize(database)
-            migration_manager = MigrationManager(database, helper_stats)
+            # database_stats_proxy.initialize(self.database)
+            migration_manager = MigrationManager(self.database, helper_stats)
             migration_manager.up()  # Automatically runs migrations
-            database_stats_proxy.initialize(database)
+            # database_stats_proxy.initialize(self.database)
         except Exception as ex:
             logger.warning(
                 f"Error try to look for the db_stats files for server : {ex}"
@@ -110,10 +119,10 @@ class HelperServerStats:
                 "db_stats",
                 "crafty_server_stats.sqlite",
             )
-            database = SqliteDatabase(
+            self.database = SqliteDatabase(
                 db_file, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
             )
-            database_stats_proxy.initialize(database)
+            # database_stats_proxy.initialize(self.database)
         except Exception as ex:
             logger.warning(
                 f"Error try to look for the db_stats files for server : {ex}"
@@ -131,6 +140,7 @@ class HelperServerStats:
                     .order_by(ServerStats.created.desc())
                     .limit(1)
                 )
+                latest._database = self.database
                 server_data.append(
                     {
                         "server_data": s,
@@ -170,30 +180,37 @@ class HelperServerStats:
                 ServerStats.desc: server.get("desc", False),
                 ServerStats.version: server.get("version", False),
             }
-        ).execute()
+        ).execute(self.database)
 
     def remove_old_stats(self, last_week):
         # self.select_database(self.server_id)
-        ServerStats.delete().where(ServerStats.created < last_week).execute()
+        ServerStats.delete().where(ServerStats.created < last_week).execute(
+            self.database
+        )
 
     def get_latest_server_stats(self):
-        # self.select_database(self.server_id)
-        return (
+        latest = (
             ServerStats.select()
             .where(ServerStats.server_id == self.server_id)
             .order_by(ServerStats.created.desc())
             .limit(1)
+            .get(self.database)
         )
+        try:
+            return model_to_dict(latest)
+        except IndexError:
+            return {}
 
-    def get_server_stats_by_id(self):
+    def get_server_stats(self):
         # self.select_database(self.server_id)
         stats = (
             ServerStats.select()
             .where(ServerStats.server_id == self.server_id)
             .order_by(ServerStats.created.desc())
             .limit(1)
+            .get(self.database)
         )
-        return DatabaseShortcuts.return_rows(stats)[0]
+        return model_to_dict(stats)
 
     def server_id_exists(self):
         # self.select_database(self.server_id)
@@ -205,24 +222,26 @@ class HelperServerStats:
         # self.select_database(self.server_id)
         ServerStats.update(crashed=True).where(
             ServerStats.server_id == self.server_id
-        ).execute()
+        ).execute(self.database)
 
     def set_download(self):
         # self.select_database(self.server_id)
         ServerStats.update(downloading=True).where(
             ServerStats.server_id == self.server_id
-        ).execute()
+        ).execute(self.database)
 
     def finish_download(self):
         # self.select_database(self.server_id)
         ServerStats.update(downloading=False).where(
             ServerStats.server_id == self.server_id
-        ).execute()
+        ).execute(self.database)
 
     def get_download_status(self):
         # self.select_database(self.server_id)
         download_status = (
-            ServerStats.select().where(ServerStats.server_id == self.server_id).get()
+            ServerStats.select()
+            .where(ServerStats.server_id == self.server_id)
+            .get(self.database)
         )
         return download_status.downloading
 
@@ -233,11 +252,15 @@ class HelperServerStats:
         # self.select_database(self.server_id)
         ServerStats.update(crashed=False).where(
             ServerStats.server_id == self.server_id
-        ).execute()
+        ).execute(self.database)
 
     def is_crashed(self):
         # self.select_database(self.server_id)
-        svr = ServerStats.select().where(ServerStats.server_id == self.server_id).get()
+        svr: ServerStats = (
+            ServerStats.select()
+            .where(ServerStats.server_id == self.server_id)
+            .get(self.database)
+        )
         # pylint: disable=singleton-comparison
         if svr.crashed == True:
             return True
@@ -251,17 +274,21 @@ class HelperServerStats:
         # self.select_database(self.server_id)
         try:
             # Checks if server even exists
-            ServerStats.select().where(ServerStats.server_id == self.server_id)
+            ServerStats.select().where(ServerStats.server_id == self.server_id).execute(
+                self.database
+            )
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
         ServerStats.update(updating=value).where(
             ServerStats.server_id == self.server_id
-        ).execute()
+        ).execute(self.database)
 
     def get_update_status(self):
         # self.select_database(self.server_id)
         update_status = (
-            ServerStats.select().where(ServerStats.server_id == self.server_id).get()
+            ServerStats.select()
+            .where(ServerStats.server_id == self.server_id)
+            .get(self.database)
         )
         return update_status.updating
 
@@ -270,18 +297,22 @@ class HelperServerStats:
         # Sets first run to false
         try:
             # Checks if server even exists
-            ServerStats.select().where(ServerStats.server_id == self.server_id)
+            ServerStats.select().where(ServerStats.server_id == self.server_id).execute(
+                self.database
+            )
         except Exception as ex:
             logger.error(f"Database entry not found! {ex}")
             return
         ServerStats.update(first_run=False).where(
             ServerStats.server_id == self.server_id
-        ).execute()
+        ).execute(self.database)
 
     def get_first_run(self):
         # self.select_database(self.server_id)
         first_run = (
-            ServerStats.select().where(ServerStats.server_id == self.server_id).get()
+            ServerStats.select()
+            .where(ServerStats.server_id == self.server_id)
+            .get(self.database)
         )
         return first_run.first_run
 
@@ -291,14 +322,14 @@ class HelperServerStats:
             ServerStats.select()
             .where(ServerStats.server_id == self.server_id)
             .order_by(ServerStats.created.desc())
-            .first()
+            .first(self.database)
         )
         last_stat_with_player = (
             ServerStats.select()
             .where(ServerStats.server_id == self.server_id)
             .where(ServerStats.online > 0)
             .order_by(ServerStats.created.desc())
-            .first()
+            .first(self.database)
         )
         return last_stat.created - last_stat_with_player.created
 
@@ -319,11 +350,13 @@ class HelperServerStats:
             logger.error(f"Database entry not found! {ex}")
         ServerStats.update(waiting_start=value).where(
             ServerStats.server_id == self.server_id
-        ).execute()
+        ).execute(self.database)
 
     def get_waiting_start(self):
         # self.select_database(self.server_id)
         waiting_start = (
-            ServerStats.select().where(ServerStats.server_id == self.server_id).get()
+            ServerStats.select()
+            .where(ServerStats.server_id == self.server_id)
+            .get(self.database)
         )
         return waiting_start.waiting_start

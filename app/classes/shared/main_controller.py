@@ -26,11 +26,8 @@ from app.classes.models.servers import HelperServers
 from app.classes.shared.authentication import Authentication
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
-from app.classes.shared.server import Server
 from app.classes.shared.file_helpers import FileHelpers
-from app.classes.minecraft.server_props import ServerProps
 from app.classes.minecraft.serverjars import ServerJars
-from app.classes.minecraft.stats import Stats
 
 logger = logging.getLogger(__name__)
 
@@ -44,106 +41,19 @@ class Controller:
         self.servers_helper = HelperServers(database)
         self.management_helper = HelpersManagement(database, self.helper)
         self.authentication = Authentication(self.helper)
-        self.servers_list = []
-        self.stats = Stats(self.helper, self)
         self.crafty_perms = CraftyPermsController()
         self.management = ManagementController(self.management_helper)
         self.roles = RolesController(self.users_helper, self.roles_helper)
         self.server_perms = ServerPermsController()
-        self.servers = ServersController(self.servers_helper)
+        self.servers = ServersController(
+            self.helper, self.servers_helper, self.management_helper
+        )
         self.users = UsersController(
             self.helper, self.users_helper, self.authentication
         )
         tz = get_localzone()
         self.support_scheduler = BackgroundScheduler(timezone=str(tz))
         self.support_scheduler.start()
-
-    def check_server_loaded(self, server_id_to_check: int):
-
-        logger.info(f"Checking to see if we already registered {server_id_to_check}")
-
-        for server in self.servers_list:
-            known_server = server.get("server_id")
-            if known_server is None:
-                return False
-
-            if known_server == server_id_to_check:
-                logger.info(
-                    f"skipping initialization of server {server_id_to_check} "
-                    f"because it is already loaded"
-                )
-                return True
-
-        return False
-
-    def init_all_servers(self):
-
-        servers = self.servers.get_all_defined_servers()
-
-        for server in servers:
-            server_id = server.get("server_id")
-
-            # if we have already initialized this server, let's skip it.
-            if self.check_server_loaded(server_id):
-                continue
-
-            # if this server path no longer exists - let's warn and bomb out
-            if not Helpers.check_path_exists(
-                Helpers.get_os_understandable_path(server["path"])
-            ):
-                logger.warning(
-                    f"Unable to find server "
-                    f"{server['server_name']} at path {server['path']}. "
-                    f"Skipping this server"
-                )
-
-                Console.warning(
-                    f"Unable to find server "
-                    f"{server['server_name']} at path {server['path']}. "
-                    f"Skipping this server"
-                )
-                continue
-
-            settings_file = os.path.join(
-                Helpers.get_os_understandable_path(server["path"]), "server.properties"
-            )
-
-            # if the properties file isn't there, let's warn
-            if not Helpers.check_file_exists(settings_file):
-                logger.error(f"Unable to find {settings_file}. Skipping this server.")
-                Console.error(f"Unable to find {settings_file}. Skipping this server.")
-                continue
-
-            settings = ServerProps(settings_file)
-
-            temp_server_dict = {
-                "server_id": server.get("server_id"),
-                "server_data_obj": server,
-                "server_obj": Server(self.helper, self.management_helper, self.stats),
-                "server_settings": settings.props,
-            }
-
-            # setup the server, do the auto start and all that jazz
-            temp_server_dict["server_obj"].do_server_setup(server)
-
-            # add this temp object to the list of init servers
-            self.servers_list.append(temp_server_dict)
-
-            if server["auto_start"]:
-                self.servers.set_waiting_start(server["server_id"], True)
-
-            self.refresh_server_settings(server["server_id"])
-
-            Console.info(
-                f"Loaded Server: ID {server['server_id']}"
-                f" | Name: {server['server_name']}"
-                f" | Autostart: {server['auto_start']}"
-                f" | Delay: {server['auto_start_delay']}"
-            )
-
-    def refresh_server_settings(self, server_id: int):
-        server_obj = self.get_server_obj(server_id)
-        server_obj.reload_server_settings()
 
     @staticmethod
     def check_system_user():
@@ -243,24 +153,6 @@ class Controller:
             False,
         )
 
-    def get_server_settings(self, server_id):
-        for server in self.servers_list:
-            if int(server["server_id"]) == int(server_id):
-                return server["server_settings"]
-
-        logger.warning(f"Unable to find server object for server id {server_id}")
-        return False
-
-    def crash_detection(self, server_obj):
-        svr = self.get_server_obj(server_obj.server_id)
-        # start or stop crash detection depending upon user preference
-        # The below functions check to see if the server is running.
-        # They only execute if it's running.
-        if server_obj.crash_detection == 1:
-            svr.start_crash_detection()
-        else:
-            svr.stop_crash_detection()
-
     def log_status(self, source_path, dest_path, exec_user):
         results = Helpers.calc_percent(source_path, dest_path)
         self.log_stats = results
@@ -275,81 +167,6 @@ class Controller:
             return self.log_stats
         except:
             return {"percent": 0, "total_files": 0}
-
-    def get_server_obj(self, server_id: t.Union[str, int]) -> Server:
-        for server in self.servers_list:
-            if str(server["server_id"]) == str(server_id):
-                return server["server_obj"]
-
-        logger.warning(f"Unable to find server object for server id {server_id}")
-        raise Exception(f"Unable to find server object for server id {server_id}")
-
-    def get_server_obj_optional(
-        self, server_id: t.Union[str, int]
-    ) -> t.Optional[Server]:
-        for server in self.servers_list:
-            if str(server["server_id"]) == str(server_id):
-                return server["server_obj"]
-
-        logger.warning(f"Unable to find server object for server id {server_id}")
-        return None
-
-    def get_server_data(self, server_id: str):
-        for server in self.servers_list:
-            if str(server["server_id"]) == str(server_id):
-                return server["server_data_obj"]
-
-        logger.warning(f"Unable to find server object for server id {server_id}")
-        return False
-
-    @staticmethod
-    def list_defined_servers():
-        servers = HelperServers.get_all_defined_servers()
-        return servers
-
-    @staticmethod
-    def get_all_server_ids() -> t.List[int]:
-        return HelperServers.get_all_server_ids()
-
-    def list_running_servers(self):
-        running_servers = []
-
-        # for each server
-        for servers in self.servers_list:
-
-            # is the server running?
-            srv_obj = servers["server_obj"]
-            running = srv_obj.check_running()
-            # if so, let's add a dictionary to the list of running servers
-            if running:
-                running_servers.append({"id": srv_obj.server_id, "name": srv_obj.name})
-
-        return running_servers
-
-    def stop_all_servers(self):
-        servers = self.list_running_servers()
-        logger.info(f"Found {len(servers)} running server(s)")
-        Console.info(f"Found {len(servers)} running server(s)")
-
-        logger.info("Stopping All Servers")
-        Console.info("Stopping All Servers")
-
-        for server in servers:
-            logger.info(f"Stopping Server ID {server['id']} - {server['name']}")
-            Console.info(f"Stopping Server ID {server['id']} - {server['name']}")
-
-            self.stop_server(server["id"])
-
-            # let's wait 2 seconds to let everything flush out
-            time.sleep(2)
-
-        logger.info("All Servers Stopped")
-        Console.info("All Servers Stopped")
-
-    def stop_server(self, server_id):
-        # issue the stop command
-        svr_obj = self.get_server_obj(server_id)
-        svr_obj.stop_threaded_server()
 
     def create_api_server(self, data: dict):
         server_fs_uuid = Helpers.create_uuid()
@@ -981,13 +798,13 @@ class Controller:
                 return False
 
         # let's re-init all servers
-        self.init_all_servers()
+        self.servers.init_all_servers()
 
         return new_id
 
     def remove_server(self, server_id, files):
         counter = 0
-        for server in self.servers_list:
+        for server in self.servers.servers_list:
 
             # if this is the droid... im mean server we are looking for...
             if str(server["server_id"]) == str(server_id):
@@ -1035,7 +852,7 @@ class Controller:
                 self.servers.remove_server(server_id)
 
                 # remove the server from servers list
-                self.servers_list.pop(counter)
+                self.servers.servers_list.pop(counter)
 
             counter += 1
 

@@ -688,7 +688,7 @@ class ApiServersIndexHandler(BaseApiHandler):
         # Increase the server creation counter
         self.controller.crafty_perms.add_server_creation(user["user_id"])
 
-        self.controller.stats.record_stats()
+        self.controller.servers.stats.record_stats()
 
         self.controller.management.add_to_audit_log(
             user["user_id"],

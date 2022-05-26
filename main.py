@@ -151,8 +151,8 @@ if __name__ == "__main__":
     # init servers
     logger.info("Initializing all servers defined")
     Console.info("Initializing all servers defined")
-    controller.init_all_servers()
-    servers = controller.list_defined_servers()
+    controller.servers.init_all_servers()
+    servers = controller.servers.list_defined_servers()
 
     def tasks_starter():
         # start stats logging

@@ -127,7 +127,7 @@ class NodeStats(ApiHandler):
             return
 
         # Get node stats
-        node_stats = self.controller.stats.get_node_stats()
+        node_stats = self.controller.servers.stats.get_node_stats()
         self.return_response(200, {"code": node_stats["node_stats"]})
 
 
@@ -161,7 +161,7 @@ class SendCommand(ApiHandler):
         command = self.get_argument("command", default=None, strip=True)
         server_id = self.get_argument("id")
         if command:
-            server = self.controller.get_server_obj(server_id)
+            server = self.controller.servers.get_server_obj(server_id)
             if server.check_running:
                 server.send_command(command)
                 self.return_response(200, {"run": True})
@@ -198,7 +198,7 @@ class ServerBackup(ApiHandler):
             self.access_denied(user)
             return
 
-        server = self.controller.get_server_obj(server_id)
+        server = self.controller.servers.get_server_obj(server_id)
 
         server.backup_server()
 
@@ -232,7 +232,7 @@ class StartServer(ApiHandler):
             self.access_denied("unknown")
             return
 
-        server = self.controller.get_server_obj(server_id)
+        server = self.controller.servers.get_server_obj(server_id)
 
         if not server.check_running():
             self.controller.management.send_command(
@@ -270,7 +270,7 @@ class StopServer(ApiHandler):
             self.access_denied(user)
             return
 
-        server = self.controller.get_server_obj(server_id)
+        server = self.controller.servers.get_server_obj(server_id)
 
         if server.check_running():
             self.controller.management.send_command(
