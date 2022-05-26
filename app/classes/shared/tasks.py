@@ -8,10 +8,12 @@ from tzlocal import get_localzone
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from app.classes.controllers.users_controller import UsersController
 
 from app.classes.models.management import HelpersManagement
 from app.classes.models.users import HelperUsers
 from app.classes.shared.console import Console
+from app.classes.shared.helpers import Helpers
 from app.classes.shared.main_controller import Controller
 from app.classes.web.tornado_handler import Webserver
 
@@ -36,14 +38,14 @@ class TasksManager:
     controller: Controller
 
     def __init__(self, helper, controller):
-        self.helper = helper
-        self.controller = controller
-        self.tornado = Webserver(helper, controller, self)
+        self.helper: Helpers = helper
+        self.controller: Controller = controller
+        self.tornado: Webserver = Webserver(helper, controller, self)
 
         self.tz = get_localzone()
         self.scheduler = BackgroundScheduler(timezone=str(self.tz))
 
-        self.users_controller = self.controller.users
+        self.users_controller: UsersController = self.controller.users
 
         self.webserver_thread = threading.Thread(
             target=self.tornado.run_tornado, daemon=True, name="tornado_thread"
@@ -130,7 +132,7 @@ class TasksManager:
     def _main_graceful_exit(self):
         try:
             os.remove(self.helper.session_file)
-            self.controller.stop_all_servers()
+            self.controller.servers.stop_all_servers()
         except:
             logger.info("Caught error during shutdown", exc_info=True)
 
