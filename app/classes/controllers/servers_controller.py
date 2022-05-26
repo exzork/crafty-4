@@ -34,7 +34,7 @@ class ServersController(metaclass=Singleton):
     servers_list: Server
 
     def __init__(self, helper, servers_helper, management_helper):
-        self.helper: Helper = helper
+        self.helper: Helpers = helper
         self.servers_helper: HelperServers = servers_helper
         self.management_helper = management_helper
         self.servers_list = []

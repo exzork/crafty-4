@@ -94,6 +94,9 @@ class ServerOutBuf:
 # **********************************************************************************
 class Server:
     server_object: Servers
+    helper: Helpers
+    management_helper: HelpersManagement
+    stats: Stats
     stats_helper: HelperServerStats
 
     def __init__(self, server_id, helper, management_helper, stats):
