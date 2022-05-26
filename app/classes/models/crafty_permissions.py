@@ -1,4 +1,5 @@
 import logging
+import typing as t
 from enum import Enum
 from peewee import (
     ForeignKeyField,
@@ -99,7 +100,7 @@ class PermissionsCrafty:
         try:
             user_crafty = UserCrafty.get(UserCrafty.user_id == user_id)
         except DoesNotExist:
-            user_crafty = UserCrafty.insert(
+            UserCrafty.insert(
                 {
                     UserCrafty.user_id: user_id,
                     UserCrafty.permissions: "000",
@@ -113,6 +114,13 @@ class PermissionsCrafty:
             ).execute()
             user_crafty = PermissionsCrafty.get_user_crafty(user_id)
         return user_crafty
+
+    @staticmethod
+    def get_user_crafty_optional(user_id) -> t.Optional[UserCrafty]:
+        try:
+            return UserCrafty.get(UserCrafty.user_id == user_id)
+        except DoesNotExist:
+            return None
 
     @staticmethod
     def add_user_crafty(user_id, uc_permissions):

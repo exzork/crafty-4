@@ -1,6 +1,9 @@
 import os
 import logging
 import datetime
+import typing as t
+
+from playhouse.shortcuts import model_to_dict
 
 import typing as t
 
@@ -10,14 +13,12 @@ from playhouse.shortcuts import model_to_dict
 
 from app.classes.models.servers import Servers, HelperServers
 from app.classes.shared.helpers import Helpers
-from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.shared.migration import MigrationManager
 
 try:
     from peewee import (
         SqliteDatabase,
         Model,
-        DatabaseProxy,
         ForeignKeyField,
         CharField,
         AutoField,
@@ -25,6 +26,7 @@ try:
         BooleanField,
         IntegerField,
         FloatField,
+        DoesNotExist,
     )
 
 except ModuleNotFoundError as e:
@@ -33,8 +35,6 @@ except ModuleNotFoundError as e:
 logger = logging.getLogger(__name__)
 peewee_logger = logging.getLogger("peewee")
 peewee_logger.setLevel(logging.INFO)
-# database_stats_proxy = DatabaseProxy()
-
 
 # **********************************************************************************
 #                                   Servers Stats Class
@@ -65,7 +65,6 @@ class ServerStats(Model):
 
     class Meta:
         table_name = "server_stats"
-        # database = database_stats_proxy
 
 
 # **********************************************************************************
@@ -102,14 +101,13 @@ class HelperServerStats:
                 f"{helper_stats.migration_dir}", "stats"
             )
             helper_stats.db_path = db_file
-            # database_stats_proxy.initialize(self.database)
             migration_manager = MigrationManager(self.database, helper_stats)
             migration_manager.up()  # Automatically runs migrations
-            # database_stats_proxy.initialize(self.database)
         except Exception as ex:
             logger.warning(
                 f"Error try to look for the db_stats files for server : {ex}"
             )
+            return None
 
     def select_database(self):
         try:
@@ -122,29 +120,28 @@ class HelperServerStats:
             self.database = SqliteDatabase(
                 db_file, pragmas={"journal_mode": "wal", "cache_size": -1024 * 10}
             )
-            # database_stats_proxy.initialize(self.database)
         except Exception as ex:
             logger.warning(
                 f"Error try to look for the db_stats files for server : {ex}"
             )
+            return None
 
     def get_all_servers_stats(self):
         servers = HelperServers.get_all_defined_servers()
         server_data = []
         try:
-            for s in servers:
-                # self.select_database(s.get("server_id"))
+            for server in servers:
                 latest = (
                     ServerStats.select()
-                    .where(ServerStats.server_id == s.get("server_id"))
+                    .where(ServerStats.server_id == server.get("server_id"))
                     .order_by(ServerStats.created.desc())
                     .limit(1)
                 )
                 latest._database = self.database
                 server_data.append(
                     {
-                        "server_data": s,
-                        "stats": DatabaseShortcuts.return_rows(latest)[0],
+                        "server_data": server,
+                        "stats": stats,
                         "user_command_permission": True,
                     }
                 )
@@ -156,7 +153,6 @@ class HelperServerStats:
 
     def insert_server_stats(self, server):
         server_id = server.get("id", 0)
-        # self.select_database(server_id)
 
         if server_id == 0:
             logger.warning("Stats saving failed with error: Server unknown (id = 0)")
@@ -172,7 +168,7 @@ class HelperServerStats:
                 ServerStats.mem_percent: server.get("mem_percent", 0),
                 ServerStats.world_name: server.get("world_name", ""),
                 ServerStats.world_size: server.get("world_size", ""),
-                ServerStats.server_port: server.get("server_port", ""),
+                ServerStats.server_port: server.get("server_port", 0),
                 ServerStats.int_ping_results: server.get("int_ping_results", False),
                 ServerStats.online: server.get("online", False),
                 ServerStats.max: server.get("max", False),
@@ -202,13 +198,12 @@ class HelperServerStats:
             return {}
 
     def get_server_stats(self):
-        # self.select_database(self.server_id)
         stats = (
             ServerStats.select()
             .where(ServerStats.server_id == self.server_id)
             .order_by(ServerStats.created.desc())
             .limit(1)
-            .get(self.database)
+            .first(self.database)
         )
         return model_to_dict(stats)
 
@@ -261,11 +256,7 @@ class HelperServerStats:
             .where(ServerStats.server_id == self.server_id)
             .get(self.database)
         )
-        # pylint: disable=singleton-comparison
-        if svr.crashed == True:
-            return True
-        else:
-            return False
+        return svr.crashed
 
     def set_update(self, value):
         if self.server_id is None:
@@ -277,8 +268,9 @@ class HelperServerStats:
             ServerStats.select().where(ServerStats.server_id == self.server_id).execute(
                 self.database
             )
-        except Exception as ex:
+        except DoesNotExist as ex:
             logger.error(f"Database entry not found! {ex}")
+            return
         ServerStats.update(updating=value).where(
             ServerStats.server_id == self.server_id
         ).execute(self.database)
@@ -334,26 +326,24 @@ class HelperServerStats:
         return last_stat.created - last_stat_with_player.created
 
     def can_stop_no_players(self, time_limit):
-        # self.select_database(self.server_id)
-        can = False
         ttl_no_players = self.get_ttl_without_player()
-        if (time_limit == -1) or (ttl_no_players > time_limit):
-            can = True
-        return can
+        return (time_limit == -1) or (ttl_no_players > time_limit)
 
     def set_waiting_start(self, value):
         # self.select_database(self.server_id)
         try:
             # Checks if server even exists
-            ServerStats.select().where(ServerStats.server_id == self.server_id)
-        except Exception as ex:
+            ServerStats.select().where(ServerStats.server_id == self.server_id).execute(
+                self.database
+            )
+        except DoesNotExist as ex:
             logger.error(f"Database entry not found! {ex}")
+            return
         ServerStats.update(waiting_start=value).where(
             ServerStats.server_id == self.server_id
         ).execute(self.database)
 
     def get_waiting_start(self):
-        # self.select_database(self.server_id)
         waiting_start = (
             ServerStats.select()
             .where(ServerStats.server_id == self.server_id)

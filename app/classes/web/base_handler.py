@@ -238,4 +238,4 @@ class BaseHandler(tornado.web.RequestHandler):
     def finish_json(self, status: int, data: t.Dict[str, t.Any]):
         self.set_status(status)
         self.set_header("Content-Type", "application/json")
-        self.finish(orjson.dumps(data))  # pylint: disable=no-member
+        self.finish(orjson.dumps(data))

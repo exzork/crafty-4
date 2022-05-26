@@ -328,7 +328,7 @@ class ServersController(metaclass=Singleton):
             server_data.append(
                 {
                     "server_data": server,
-                    "stats": DatabaseShortcuts.return_rows(latest)[0],
+                    "stats": latest,
                     "user_command_permission": user_command_permission,
                 }
             )

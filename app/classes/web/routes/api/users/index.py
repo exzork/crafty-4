@@ -99,7 +99,7 @@ class ApiUsersIndexHandler(BaseApiHandler):
         email = data.get("email", "default@example.com")
         enabled = data.get("enabled", True)
         lang = data.get("lang", self.helper.get_setting("language"))
-        superuser = data.get("superuser", False)
+        new_superuser = data.get("superuser", False)
         permissions = data.get("permissions", None)
         roles = data.get("roles", None)
         hints = data.get("hints", True)
@@ -134,13 +134,24 @@ class ApiUsersIndexHandler(BaseApiHandler):
                 )
             permissions_mask = "".join(permissions_mask)
 
+        if new_superuser and not superuser:
+            return self.finish_json(
+                400, {"status": "error", "error": "INVALID_SUPERUSER_CREATE"}
+            )
+
+        if len(roles) != 0 and not superuser:
+            # HACK: This should check if the user has the roles or something
+            return self.finish_json(
+                400, {"status": "error", "error": "INVALID_ROLES_CREATE"}
+            )
+
         # TODO: do this in the most efficient way
         user_id = self.controller.users.add_user(
             username,
             password,
             email,
             enabled,
-            superuser,
+            new_superuser,
         )
         self.controller.users.update_user(
             user_id,

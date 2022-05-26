@@ -17,24 +17,6 @@ new_server_schema = {
         "monitoring_type",
         "create_type",
     ],
-    "examples": [
-        {
-            "name": "My Server",
-            "monitoring_type": "minecraft_java",
-            "minecraft_java_monitoring_data": {"host": "127.0.0.1", "port": 25565},
-            "create_type": "minecraft_java",
-            "minecraft_java_create_data": {
-                "create_type": "download_jar",
-                "download_jar_create_data": {
-                    "type": "Paper",
-                    "version": "1.18.2",
-                    "mem_min": 1,
-                    "mem_max": 2,
-                    "server_properties_port": 25565,
-                },
-            },
-        }
-    ],
     "properties": {
         "name": {
             "title": "Name",
@@ -665,8 +647,8 @@ class ApiServersIndexHandler(BaseApiHandler):
             return self.finish_json(400, {"status": "error", "error": "NOT_AUTHORIZED"})
 
         try:
-            data = orjson.loads(self.request.body)  # pylint: disable=no-member
-        except orjson.decoder.JSONDecodeError as e:  # pylint: disable=no-member
+            data = orjson.loads(self.request.body)
+        except orjson.decoder.JSONDecodeError as e:
             return self.finish_json(
                 400, {"status": "error", "error": "INVALID_JSON", "error_data": str(e)}
             )
