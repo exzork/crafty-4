@@ -34,25 +34,33 @@ logger = logging.getLogger(__name__)
 
 class Controller:
     def __init__(self, database, helper):
-        self.helper = helper
-        self.server_jars = ServerJars(helper)
-        self.users_helper = HelperUsers(database, self.helper)
-        self.roles_helper = HelperRoles(database)
-        self.servers_helper = HelperServers(database)
-        self.management_helper = HelpersManagement(database, self.helper)
-        self.authentication = Authentication(self.helper)
-        self.crafty_perms = CraftyPermsController()
-        self.management = ManagementController(self.management_helper)
-        self.roles = RolesController(self.users_helper, self.roles_helper)
-        self.server_perms = ServerPermsController()
-        self.servers = ServersController(
+        self.helper: Helpers = helper
+        self.server_jars: ServerJars = ServerJars(helper)
+        self.users_helper: HelperUsers = HelperUsers(database, self.helper)
+        self.roles_helper: HelperRoles = HelperRoles(database)
+        self.servers_helper: HelperServers = HelperServers(database)
+        self.management_helper: HelpersManagement = HelpersManagement(
+            database, self.helper
+        )
+        self.authentication: Authentication = Authentication(self.helper)
+        self.crafty_perms: CraftyPermsController = CraftyPermsController()
+        self.management: ManagementController = ManagementController(
+            self.management_helper
+        )
+        self.roles: RolesController = RolesController(
+            self.users_helper, self.roles_helper
+        )
+        self.server_perms: ServerPermsController = ServerPermsController()
+        self.servers: ServersController = ServersController(
             self.helper, self.servers_helper, self.management_helper
         )
-        self.users = UsersController(
+        self.users: UsersController = UsersController(
             self.helper, self.users_helper, self.authentication
         )
         tz = get_localzone()
-        self.support_scheduler = BackgroundScheduler(timezone=str(tz))
+        self.support_scheduler: BackgroundScheduler = BackgroundScheduler(
+            timezone=str(tz)
+        )
         self.support_scheduler.start()
 
     @staticmethod

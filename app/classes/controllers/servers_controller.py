@@ -103,12 +103,12 @@ class ServersController(metaclass=Singleton):
     @staticmethod
     def set_download(server_id):
         srv: Server = ServersController().get_server_instance_by_id(server_id)
-        return srv.stats_helper.set_download(server_id)
+        return srv.stats_helper.set_download()
 
     @staticmethod
     def finish_download(server_id):
         srv: Server = ServersController().get_server_instance_by_id(server_id)
-        return srv.stats_helper.finish_download(server_id)
+        return srv.stats_helper.finish_download()
 
     @staticmethod
     def get_download_status(server_id):
