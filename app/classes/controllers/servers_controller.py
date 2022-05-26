@@ -10,6 +10,7 @@ from typing_extensions import Self
 
 from app.classes.controllers.roles_controller import RolesController
 
+from app.classes.shared.singleton import Singleton
 from app.classes.shared.server import Server
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
@@ -25,7 +26,6 @@ from app.classes.models.server_permissions import (
     PermissionsServers,
     EnumPermissionsServer,
 )
-from app.classes.shared.singleton import Singleton
 
 logger = logging.getLogger(__name__)
 
@@ -244,7 +244,12 @@ class ServersController(metaclass=Singleton):
                 user.role_id
             )
             for role in role_servers:
-                server_data.append(HelperServers.get_server_data_by_id(role.server_id))
+                # server_data.append(HelperServers.get_server_data_by_id(role.server_id))
+                server_data.append(
+                    ServersController().get_server_instance_by_id(
+                        role.server_id.server_id
+                    )
+                )
 
         return server_data
 
@@ -294,7 +299,7 @@ class ServersController(metaclass=Singleton):
             srv: Server = server
             latest = srv.stats_helper.get_latest_server_stats()
             key_permissions = PermissionsServers.get_api_key_permissions_list(
-                api_key, server.get("server_id")
+                api_key, server.server_id
             )
             if EnumPermissionsServer.COMMANDS in key_permissions:
                 user_command_permission = True
@@ -302,7 +307,7 @@ class ServersController(metaclass=Singleton):
                 user_command_permission = False
             server_data.append(
                 {
-                    "server_data": server,
+                    "server_data": DatabaseShortcuts.get_data_obj(server.server_object),
                     "stats": latest,
                     "user_command_permission": user_command_permission,
                 }
@@ -319,7 +324,7 @@ class ServersController(metaclass=Singleton):
             latest = srv.stats_helper.get_latest_server_stats()
             # TODO
             user_permissions = PermissionsServers.get_user_id_permissions_list(
-                user_id, server.get("server_id")
+                user_id, server.server_id
             )
             if EnumPermissionsServer.COMMANDS in user_permissions:
                 user_command_permission = True
@@ -327,7 +332,7 @@ class ServersController(metaclass=Singleton):
                 user_command_permission = False
             server_data.append(
                 {
-                    "server_data": server,
+                    "server_data": DatabaseShortcuts.get_data_obj(server.server_object),
                     "stats": latest,
                     "user_command_permission": user_command_permission,
                 }

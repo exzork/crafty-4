@@ -22,6 +22,7 @@ from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.models.management import HelpersManagement
 from app.classes.shared.helpers import Helpers
+from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.web.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
@@ -254,15 +255,19 @@ class PanelHandler(BaseHandler):
 
         for server_id in user_order[:]:
             for server in defined_servers[:]:
-                if str(server["server_id"]) == str(server_id):
-                    page_servers.append(server)
+                if str(server.server_id) == str(server_id):
+                    page_servers.append(
+                        DatabaseShortcuts.get_data_obj(server.server_object)
+                    )
                     user_order.remove(server_id)
                     defined_servers.remove(server)
 
         for server in defined_servers:
-            server_ids.append(str(server["server_id"]))
+            server_ids.append(str(server.server_id))
             if server not in page_servers:
-                page_servers.append(server)
+                page_servers.append(
+                    DatabaseShortcuts.get_data_obj(server.server_object)
+                )
         for server_id in user_order[:]:
             # remove IDs in list that user no longer has access to
             if str(server_id) not in server_ids:

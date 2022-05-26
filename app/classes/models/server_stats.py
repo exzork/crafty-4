@@ -3,16 +3,13 @@ import logging
 import datetime
 import typing as t
 
-from playhouse.shortcuts import model_to_dict
-
 import typing as t
 
 from peewee import DoesNotExist
-from playhouse.shortcuts import model_to_dict
-
 
 from app.classes.models.servers import Servers, HelperServers
 from app.classes.shared.helpers import Helpers
+from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.shared.migration import MigrationManager
 
 try:
@@ -193,7 +190,7 @@ class HelperServerStats:
             .get(self.database)
         )
         try:
-            return model_to_dict(latest)
+            return DatabaseShortcuts.get_data_obj(latest)
         except IndexError:
             return {}
 
@@ -205,7 +202,7 @@ class HelperServerStats:
             .limit(1)
             .first(self.database)
         )
-        return model_to_dict(stats)
+        return DatabaseShortcuts.get_data_obj(stats)
 
     def server_id_exists(self):
         # self.select_database(self.server_id)
