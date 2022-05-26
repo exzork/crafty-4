@@ -176,7 +176,8 @@ class ServersController:
         authorized_servers = ServersController.get_authorized_servers(user_id)
 
         for server in authorized_servers:
-            latest = HelperServerStats.get_latest_server_stats(server.get("server_id"))
+            latest = HelperServerStats.get_server_stats_by_id(server.get("server_id"))
+
             # TODO
             user_permissions = PermissionsServers.get_user_id_permissions_list(
                 user_id, server.get("server_id")
@@ -188,7 +189,7 @@ class ServersController:
             server_data.append(
                 {
                     "server_data": server,
-                    "stats": DatabaseShortcuts.return_rows(latest)[0],
+                    "stats": latest,
                     "user_command_permission": user_command_permission,
                 }
             )
