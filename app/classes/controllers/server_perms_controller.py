@@ -117,7 +117,7 @@ class ServerPermsController:
             server_data.append(
                 {
                     "server_data": server,
-                    "stats": DatabaseShortcuts.return_rows(latest)[0],
+                    "stats": latest,
                 }
             )
         return server_data
