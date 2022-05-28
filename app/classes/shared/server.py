@@ -1,3 +1,4 @@
+from contextlib import redirect_stderr
 import os
 import re
 import time
@@ -8,8 +9,6 @@ import logging.config
 import subprocess
 import html
 import tempfile
-import psutil
-from psutil import NoSuchProcess
 
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
@@ -25,6 +24,11 @@ from app.classes.models.server_permissions import PermissionsServers
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.file_helpers import FileHelpers
+from app.classes.shared.null_writer import NullWriter
+
+with redirect_stderr(NullWriter()):
+    import psutil
+    from psutil import NoSuchProcess
 
 logger = logging.getLogger(__name__)
 

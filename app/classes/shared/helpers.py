@@ -16,14 +16,17 @@ import pathlib
 import ctypes
 from datetime import datetime
 from socket import gethostname
-from contextlib import suppress
-import psutil
+from contextlib import redirect_stderr, suppress
 
+from app.classes.shared.null_writer import NullWriter
 from app.classes.shared.console import Console
 from app.classes.shared.installer import installer
 from app.classes.shared.file_helpers import FileHelpers
 from app.classes.shared.translation import Translation
 from app.classes.web.websocket_helper import WebSocketHelper
+
+with redirect_stderr(NullWriter()):
+    import psutil
 
 logger = logging.getLogger(__name__)
 
