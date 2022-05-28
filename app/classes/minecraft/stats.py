@@ -63,7 +63,7 @@ class Stats:
                 psutil.boot_time(), datetime.timezone.utc
             )
         except Exception as e:
-            logger.debug("error while getting boot time", exc=e)
+            logger.debug(f"error while getting boot time due to {e}")
             # unix epoch with no timezone data
             return datetime.datetime.fromtimestamp(0, datetime.timezone.utc)
 
@@ -72,7 +72,7 @@ class Stats:
         try:
             return psutil.cpu_percent(interval=0.5) / psutil.cpu_count()
         except Exception as e:
-            logger.debug("error while getting cpu percentage", exc=e)
+            logger.debug(f"error while getting cpu percentage due to {e}")
             return -1
 
     def __init__(self, helper, controller):
@@ -100,7 +100,7 @@ class Stats:
                 "disk_data": Stats._try_all_disk_usage(),
             }
         except Exception as e:
-            logger.debug("error while getting host stats", exc=e)
+            logger.debug(f"error while getting host stats due to {e}")
             node_stats: NodeStatsDict = {
                 "boot_time": str(
                     datetime.datetime.fromtimestamp(0, datetime.timezone.utc)
@@ -128,7 +128,7 @@ class Stats:
         try:
             return Stats._get_process_stats(process)
         except Exception as e:
-            logger.debug("error while getting process stats", exc=e)
+            logger.debug(f"error while getting process stats due to {e}")
             return {"cpu_usage": -1, "memory_usage": -1, "mem_percentage": -1}
 
     @staticmethod
@@ -175,7 +175,7 @@ class Stats:
         try:
             return Stats._all_disk_usage()
         except Exception as e:
-            logger.debug("error while getting disk data", exc=e)
+            logger.debug(f"error while getting disk data due to {e}")
             return []
 
     # Source: https://github.com/giampaolo/psutil/blob/master/scripts/disk_usage.py
