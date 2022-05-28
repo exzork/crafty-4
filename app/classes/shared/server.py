@@ -1201,7 +1201,7 @@ class Server:
         server_path = server["path"]
 
         # process stats
-        p_stats = Stats._get_process_stats(self.process)
+        p_stats = Stats._try_get_process_stats(self.process)
 
         # TODO: search server properties file for possible override of 127.0.0.1
         internal_ip = server["server_ip"]
@@ -1334,7 +1334,7 @@ class Server:
         server_path = server_dt["path"]
 
         # process stats
-        p_stats = Stats._get_process_stats(self.process)
+        p_stats = Stats._try_get_process_stats(self.process)
 
         # TODO: search server properties file for possible override of 127.0.0.1
         # internal_ip =   server['server_ip']

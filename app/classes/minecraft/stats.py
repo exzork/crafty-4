@@ -56,36 +56,80 @@ class Stats:
     helper: Helpers
     controller: Controller
 
+    @staticmethod
+    def try_get_boot_time():
+        try:
+            return datetime.datetime.fromtimestamp(
+                psutil.boot_time(), datetime.timezone.utc
+            )
+        except Exception as e:
+            logger.debug("error while getting boot time", exc=e)
+            # unix epoch with no timezone data
+            return datetime.datetime.fromtimestamp(0, datetime.timezone.utc)
+
+    @staticmethod
+    def try_get_cpu_usage():
+        try:
+            return psutil.cpu_percent(interval=0.5) / psutil.cpu_count()
+        except Exception as e:
+            logger.debug("error while getting cpu percentage", exc=e)
+            return -1
+
     def __init__(self, helper, controller):
         self.helper = helper
         self.controller = controller
 
     def get_node_stats(self) -> NodeStatsReturnDict:
-        boot_time = datetime.datetime.fromtimestamp(psutil.boot_time())
         try:
             cpu_freq = psutil.cpu_freq()
         except NotImplementedError:
             cpu_freq = psutil._common.scpufreq(current=0, min=0, max=0)
         memory = psutil.virtual_memory()
-        node_stats: NodeStatsDict = {
-            "boot_time": str(boot_time),
-            "cpu_usage": psutil.cpu_percent(interval=0.5) / psutil.cpu_count(),
-            "cpu_count": psutil.cpu_count(),
-            "cpu_cur_freq": round(cpu_freq[0], 2),
-            "cpu_max_freq": cpu_freq[2],
-            "mem_percent": memory.percent,
-            "mem_usage_raw": memory.used,
-            "mem_usage": Helpers.human_readable_file_size(memory.used),
-            "mem_total_raw": memory.total,
-            "mem_total": Helpers.human_readable_file_size(memory.total),
-            "disk_data": self._all_disk_usage(),
-        }
+        try:
+            node_stats: NodeStatsDict = {
+                "boot_time": str(Stats.try_get_boot_time()),
+                "cpu_usage": Stats.try_get_cpu_usage(),
+                "cpu_count": psutil.cpu_count(),
+                "cpu_cur_freq": round(cpu_freq[0], 2),
+                "cpu_max_freq": cpu_freq[2],
+                "mem_percent": memory.percent,
+                "mem_usage_raw": memory.used,
+                "mem_usage": Helpers.human_readable_file_size(memory.used),
+                "mem_total_raw": memory.total,
+                "mem_total": Helpers.human_readable_file_size(memory.total),
+                "disk_data": Stats._try_all_disk_usage(),
+            }
+        except Exception as e:
+            logger.debug("error while getting host stats", exc=e)
+            node_stats: NodeStatsDict = {
+                "boot_time": str(
+                    datetime.datetime.fromtimestamp(0, datetime.timezone.utc)
+                ),
+                "cpu_usage": -1,
+                "cpu_count": -1,
+                "cpu_cur_freq": -1,
+                "cpu_max_freq": -1,
+                "mem_percent": -1,
+                "mem_usage_raw": -1,
+                "mem_usage": "",
+                "mem_total_raw": -1,
+                "mem_total": "",
+                "disk_data": [],
+            }
         # server_stats = self.get_servers_stats()
         # data['servers'] = server_stats
 
         return {
             "node_stats": node_stats,
         }
+
+    @staticmethod
+    def _try_get_process_stats(process):
+        try:
+            return Stats._get_process_stats(process)
+        except Exception as e:
+            logger.debug("error while getting process stats", exc=e)
+            return {"cpu_usage": -1, "memory_usage": -1, "mem_percentage": -1}
 
     @staticmethod
     def _get_process_stats(process):
@@ -125,6 +169,14 @@ class Stats:
                 "memory_usage": 0,
             }
             return process_stats
+
+    @staticmethod
+    def _try_all_disk_usage():
+        try:
+            return Stats._all_disk_usage()
+        except Exception as e:
+            logger.debug("error while getting disk data", exc=e)
+            return []
 
     # Source: https://github.com/giampaolo/psutil/blob/master/scripts/disk_usage.py
     @staticmethod
