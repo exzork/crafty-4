@@ -92,7 +92,7 @@ class ServerOutBuf:
 # **********************************************************************************
 #                               Minecraft Server Class
 # **********************************************************************************
-class Server:
+class ServerInstance:
     server_object: Servers
     helper: Helpers
     management_helper: HelpersManagement

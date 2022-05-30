@@ -7,7 +7,7 @@ import typing as t
 from app.classes.controllers.roles_controller import RolesController
 
 from app.classes.shared.singleton import Singleton
-from app.classes.shared.server import Server
+from app.classes.shared.server import ServerInstance
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.main_models import DatabaseShortcuts
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 class ServersController(metaclass=Singleton):
-    servers_list: Server
+    servers_list: ServerInstance
 
     def __init__(self, helper, servers_helper, management_helper):
         self.helper: Helpers = helper
@@ -97,17 +97,17 @@ class ServersController(metaclass=Singleton):
 
     @staticmethod
     def set_download(server_id):
-        srv: Server = ServersController().get_server_instance_by_id(server_id)
+        srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.set_download()
 
     @staticmethod
     def finish_download(server_id):
-        srv: Server = ServersController().get_server_instance_by_id(server_id)
+        srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.finish_download()
 
     @staticmethod
     def get_download_status(server_id):
-        server: Server = ServersController().get_server_instance_by_id(server_id)
+        server = ServersController().get_server_instance_by_id(server_id)
         return server.stats_helper.get_download_status()
 
     def remove_server(self, server_id):
@@ -128,7 +128,7 @@ class ServersController(metaclass=Singleton):
     #                                     Servers Methods
     # **********************************************************************************
 
-    def get_server_instance_by_id(self, server_id: t.Union[str, int]) -> Server:
+    def get_server_instance_by_id(self, server_id: t.Union[str, int]) -> ServerInstance:
         for server in self.servers_list:
             if int(server["server_id"]) == int(server_id):
                 return server["server_obj"]
@@ -179,7 +179,7 @@ class ServersController(metaclass=Singleton):
             temp_server_dict = {
                 "server_id": server.get("server_id"),
                 "server_data_obj": server,
-                "server_obj": Server(
+                "server_obj": ServerInstance(
                     server.get("server_id"),
                     self.helper,
                     self.management_helper,
@@ -267,7 +267,7 @@ class ServersController(metaclass=Singleton):
         server_data = []
         try:
             for server in self.servers_list:
-                srv: Server = ServersController().get_server_instance_by_id(
+                srv = ServersController().get_server_instance_by_id(
                     server.get("server_id")
                 )
                 latest = srv.stats_helper.get_latest_server_stats()
@@ -292,7 +292,7 @@ class ServersController(metaclass=Singleton):
         )
 
         for server in authorized_servers:
-            srv: Server = server
+            srv: ServerInstance = server
             latest = srv.stats_helper.get_latest_server_stats()
             key_permissions = PermissionsServers.get_api_key_permissions_list(
                 api_key, server.server_id
@@ -316,7 +316,7 @@ class ServersController(metaclass=Singleton):
         authorized_servers = ServersController.get_authorized_servers(user_id)
 
         for server in authorized_servers:
-            srv: Server = server
+            srv: ServerInstance = server
             latest = srv.stats_helper.get_latest_server_stats()
             # TODO
             user_permissions = PermissionsServers.get_user_id_permissions_list(
@@ -360,7 +360,7 @@ class ServersController(metaclass=Singleton):
 
     def get_server_obj_optional(
         self, server_id: t.Union[str, int]
-    ) -> t.Optional[Server]:
+    ) -> t.Optional[ServerInstance]:
         for server in self.servers_list:
             if str(server["server_id"]) == str(server_id):
                 return server["server_obj"]
@@ -394,7 +394,7 @@ class ServersController(metaclass=Singleton):
         # for each server
         for server in self.servers_list:
             # is the server running?
-            srv_obj: Server = server["server_obj"]
+            srv_obj: ServerInstance = server["server_obj"]
             running = srv_obj.check_running()
             # if so, let's add a dictionary to the list of running servers
             if running:
@@ -432,12 +432,12 @@ class ServersController(metaclass=Singleton):
     # **********************************************************************************
     @staticmethod
     def get_server_stats_by_id(server_id):
-        srv: Server = ServersController().get_server_instance_by_id(server_id)
+        srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.get_latest_server_stats()
 
     @staticmethod
     def server_id_exists(server_id):
-        srv: Server = ServersController().get_server_instance_by_id(server_id)
+        srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.server_id_exists()
 
     @staticmethod
@@ -457,7 +457,7 @@ class ServersController(metaclass=Singleton):
 
     @staticmethod
     def is_crashed(server_id):
-        srv: Server = ServersController().get_server_instance_by_id(server_id)
+        srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.is_crashed()
 
     @staticmethod
@@ -469,32 +469,32 @@ class ServersController(metaclass=Singleton):
 
     @staticmethod
     def set_update(server_id, value):
-        srv: Server = ServersController().get_server_instance_by_id(server_id)
+        srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.set_update(value)
 
     @staticmethod
     def get_ttl_without_player(server_id):
-        srv: Server = ServersController().get_server_instance_by_id(server_id)
+        srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.get_ttl_without_player()
 
     @staticmethod
     def can_stop_no_players(server_id, time_limit):
-        srv: Server = ServersController().get_server_instance_by_id(server_id)
+        srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.can_stop_no_players(time_limit)
 
     @staticmethod
     def set_waiting_start(server_id, value):
-        srv: Server = ServersController().get_server_instance_by_id(server_id)
+        srv = ServersController().get_server_instance_by_id(server_id)
         srv.stats_helper.set_waiting_start(value)
 
     @staticmethod
     def get_waiting_start(server_id):
-        srv: Server = ServersController().get_server_instance_by_id(server_id)
+        srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.get_waiting_start()
 
     @staticmethod
     def get_update_status(server_id):
-        srv: Server = ServersController().get_server_instance_by_id(server_id)
+        srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.get_update_status()
 
     # **********************************************************************************
@@ -502,7 +502,7 @@ class ServersController(metaclass=Singleton):
     # **********************************************************************************
     @staticmethod
     def get_banned_players(server_id):
-        srv: Server = ServersController().get_server_instance_by_id(server_id)
+        srv = ServersController().get_server_instance_by_id(server_id)
         stats = srv.stats_helper.get_server_stats()
         server_path = stats["server_id"]["path"]
         path = os.path.join(server_path, "banned-players.json")
