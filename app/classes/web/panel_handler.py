@@ -41,7 +41,7 @@ class PanelHandler(BaseHandler):
 
     def get_role_servers(self) -> t.List[RolesController.RoleServerJsonType]:
         servers = []
-        for server in self.controller.servers.list_defined_servers():
+        for server in self.controller.servers.get_all_defined_servers():
             argument = self.get_argument(f"server_{server['server_id']}_access", "0")
             if argument == "0":
                 continue
@@ -269,6 +269,7 @@ class PanelHandler(BaseHandler):
                 page_servers.append(
                     DatabaseShortcuts.get_data_obj(server.server_object)
                 )
+
         for server_id in user_order[:]:
             # remove IDs in list that user no longer has access to
             if str(server_id) not in server_ids:
@@ -801,7 +802,7 @@ class PanelHandler(BaseHandler):
 
             page_data["roles_all"] = self.controller.roles.get_all_roles()
             page_data["servers"] = []
-            page_data["servers_all"] = self.controller.servers.list_defined_servers()
+            page_data["servers_all"] = self.controller.servers.get_all_defined_servers()
             page_data["role-servers"] = []
             page_data[
                 "permissions_all"
@@ -979,7 +980,7 @@ class PanelHandler(BaseHandler):
             page_data["servers"] = set()
             page_data["role-servers"] = page_role_servers
             page_data["roles_all"] = self.controller.roles.get_all_roles()
-            page_data["servers_all"] = self.controller.servers.list_defined_servers()
+            page_data["servers_all"] = self.controller.servers.get_all_defined_servers()
             page_data["superuser"] = superuser
             page_data[
                 "permissions_all"
@@ -1107,7 +1108,7 @@ class PanelHandler(BaseHandler):
                 )
                 return
 
-            page_data["servers_all"] = self.controller.servers.list_defined_servers()
+            page_data["servers_all"] = self.controller.servers.get_all_defined_servers()
             page_data[
                 "permissions_all"
             ] = self.controller.server_perms.list_defined_permissions()
@@ -1119,7 +1120,7 @@ class PanelHandler(BaseHandler):
             page_data["new_role"] = False
             role_id = self.get_argument("id", None)
             page_data["role"] = self.controller.roles.get_role_with_servers(role_id)
-            page_data["servers_all"] = self.controller.servers.list_defined_servers()
+            page_data["servers_all"] = self.controller.servers.get_all_defined_servers()
             page_data[
                 "permissions_all"
             ] = self.controller.server_perms.list_defined_permissions()

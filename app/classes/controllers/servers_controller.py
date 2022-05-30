@@ -225,7 +225,7 @@ class ServersController(metaclass=Singleton):
         return False
 
     def refresh_server_settings(self, server_id: int):
-        server_obj: Server = self.get_server_data_by_id(server_id)
+        server_obj = self.get_server_instance_by_id(server_id)
         server_obj.reload_server_settings()
 
     @staticmethod
@@ -287,7 +287,7 @@ class ServersController(metaclass=Singleton):
     @staticmethod
     def get_authorized_servers_stats_api_key(api_key: ApiKeys):
         server_data = []
-        authorized_servers = ServersController.get_authorized_servers(
+        authorized_servers = ServersController().get_authorized_servers(
             api_key.user_id  # TODO: API key authorized servers?
         )
 
@@ -376,10 +376,13 @@ class ServersController(metaclass=Singleton):
         logger.warning(f"Unable to find server object for server id {server_id}")
         return False
 
-    @staticmethod
-    def list_defined_servers():
-        servers = HelperServers.get_all_defined_servers()
-        return servers
+    def list_defined_servers(self):
+        defined_servers = []
+        for server in self.servers_list:
+            defined_servers.append(
+                self.get_server_instance_by_id(server.get("server_id"))
+            )
+        return defined_servers
 
     @staticmethod
     def get_all_server_ids() -> t.List[int]:

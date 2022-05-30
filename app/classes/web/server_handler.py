@@ -10,6 +10,7 @@ import requests
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.file_helpers import FileHelpers
+from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.web.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,14 @@ class ServerHandler(BaseHandler):
                 role = self.controller.roles.get_role(r)
                 exec_user_role.add(role["role_name"])
                 list_roles.append(self.controller.roles.get_role(role["role_id"]))
+
+        page_servers = []
+        for server in defined_servers:
+            if server not in page_servers:
+                page_servers.append(
+                    DatabaseShortcuts.get_data_obj(server.server_object)
+                )
+        defined_servers = page_servers
 
         template = "public/404.html"
 

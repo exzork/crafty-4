@@ -123,17 +123,11 @@ class HelperServerStats:
         server_data = []
         try:
             for server in servers:
-                latest = (
-                    ServerStats.select()
-                    .where(ServerStats.server_id == server.get("server_id"))
-                    .order_by(ServerStats.created.desc())
-                    .limit(1)
-                )
-                latest._database = self.database
+                latest = self.get_latest_server_stats()
                 server_data.append(
                     {
                         "server_data": server,
-                        "stats": DatabaseShortcuts.get_data_obj(latest),
+                        "stats": latest,
                         "user_command_permission": True,
                     }
                 )

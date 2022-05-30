@@ -180,7 +180,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
             exec_user_role = set()
             if superuser:
-                authorized_servers = self.controller.servers.list_defined_servers()
+                authorized_servers = self.controller.servers.get_all_defined_servers()
                 exec_user_role.add("Super User")
                 exec_user_crafty_permissions = (
                     self.controller.crafty_perms.list_defined_crafty_permissions()

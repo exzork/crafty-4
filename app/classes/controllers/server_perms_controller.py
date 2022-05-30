@@ -107,9 +107,7 @@ class ServerPermsController:
             )
 
         for server in authorized_servers:
-            srv: Server = ServersController().get_server_instance_by_id(
-                server.get("server_id")
-            )
+            srv = ServersController().get_server_instance_by_id(server.get("server_id"))
             latest = srv.stats_helper.get_latest_server_stats()
             server_data.append(
                 {
