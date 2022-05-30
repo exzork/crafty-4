@@ -630,6 +630,7 @@ class Server:
         # send it
         self.process.stdin.write(f"{command}\n".encode("utf-8"))
         self.process.stdin.flush()
+        return True
 
     def crash_detected(self, name):
 
