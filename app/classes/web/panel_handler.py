@@ -18,11 +18,13 @@ from tzlocal import get_localzone
 from croniter import croniter
 from app.classes.controllers.roles_controller import RolesController
 
+from app.classes.models.servers import Servers
 from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.models.management import HelpersManagement
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.main_models import DatabaseShortcuts
+from app.classes.shared.server import Server
 from app.classes.web.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
@@ -1318,7 +1320,7 @@ class PanelHandler(BaseHandler):
             if server_id is None:
                 return
 
-            server_obj = self.controller.servers.get_server_obj(server_id)
+            server_obj: Servers = self.controller.servers.get_server_obj(server_id)
             stale_executable = server_obj.executable
             # Compares old jar name to page data being passed.
             # If they are different we replace the executable name in the
@@ -1356,7 +1358,7 @@ class PanelHandler(BaseHandler):
             server_obj.crash_detection = crash_detection
             server_obj.logs_delete_after = logs_delete_after
             self.controller.servers.update_server(server_obj)
-            self.controller.crash_detection(server_obj)
+            self.controller.servers.crash_detection(server_obj)
 
             self.controller.servers.refresh_server_settings(server_id)
 

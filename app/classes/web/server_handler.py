@@ -240,7 +240,7 @@ class ServerHandler(BaseHandler):
                         server_port,
                     )
 
-                    self.controller.init_all_servers()
+                    self.controller.servers.init_all_servers()
 
                     return
 

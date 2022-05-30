@@ -198,7 +198,7 @@ class ServersController(metaclass=Singleton):
             self.servers_list.append(temp_server_dict)
 
             if server["auto_start"]:
-                self.servers.set_waiting_start(server["server_id"], True)
+                self.set_waiting_start(server["server_id"], True)
 
             self.refresh_server_settings(server["server_id"])
 

@@ -394,7 +394,7 @@ class AjaxHandler(BaseHandler):
                         server_data["server_port"],
                     )
                     new_server_id = new_server
-                    new_server = self.controller.get_server_data(new_server)
+                    new_server = self.controller.servers.get_server_data(new_server)
                     self.controller.rename_backup_dir(
                         server_id, new_server_id, new_server["server_uuid"]
                     )
@@ -412,7 +412,7 @@ class AjaxHandler(BaseHandler):
                         server_data["server_port"],
                     )
                     new_server_id = new_server
-                    new_server = self.controller.get_server_data(new_server)
+                    new_server = self.controller.servers.get_server_data(new_server)
                     self.controller.rename_backup_dir(
                         server_id, new_server_id, new_server["server_uuid"]
                     )
@@ -522,7 +522,7 @@ class AjaxHandler(BaseHandler):
                 f"{self.controller.servers.get_server_friendly_name(server_id)}"
             )
 
-            server_data = self.controller.get_server_data(server_id)
+            server_data = self.controller.servers.get_server_data(server_id)
             server_name = server_data["server_name"]
 
             self.controller.management.add_to_audit_log(
@@ -546,7 +546,7 @@ class AjaxHandler(BaseHandler):
                 f"{self.controller.servers.get_server_friendly_name(server_id)}"
             )
 
-            server_data = self.controller.get_server_data(server_id)
+            server_data = self.controller.servers.get_server_data(server_id)
             server_name = server_data["server_name"]
 
             self.controller.management.add_to_audit_log(

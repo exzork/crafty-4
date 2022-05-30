@@ -821,7 +821,7 @@ class Controller:
 
             # if this is the droid... im mean server we are looking for...
             if str(server["server_id"]) == str(server_id):
-                server_data = self.get_server_data(server_id)
+                server_data = self.servers.get_server_data(server_id)
                 server_name = server_data["server_name"]
 
                 logger.info(f"Deleting Server: ID {server_id} | Name: {server_name} ")

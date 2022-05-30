@@ -90,7 +90,7 @@ class ApiServersServerActionHandler(BaseApiHandler):
             server_data.get("server_port"),
         )
 
-        self.controller.init_all_servers()
+        self.controller.servers.init_all_servers()
 
         self.finish_json(
             200,
