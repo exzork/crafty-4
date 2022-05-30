@@ -241,7 +241,6 @@ class ServersController(metaclass=Singleton):
                 user.role_id
             )
             for role in role_servers:
-                # server_data.append(HelperServers.get_server_data_by_id(role.server_id))
                 server_data.append(
                     ServersController().get_server_instance_by_id(
                         role.server_id.server_id
