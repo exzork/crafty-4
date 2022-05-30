@@ -497,7 +497,7 @@ class PanelHandler(BaseHandler):
                 "schedules",
             ]
 
-            server = self.controller.servers.get_server_obj(server_id)
+            server = self.controller.servers.get_server_instance_by_id(server_id)
             # server_data isn't needed since the server_stats also pulls server data
             page_data["server_data"] = self.controller.servers.get_server_data_by_id(
                 server_id
@@ -645,10 +645,14 @@ class PanelHandler(BaseHandler):
                 page_data[
                     "exclusions"
                 ] = self.controller.management.get_excluded_backup_dirs(server_id)
-                page_data["backing_up"] = self.controller.servers.get_server_obj(
+                page_data[
+                    "backing_up"
+                ] = self.controller.servers.get_server_instance_by_id(
                     server_id
                 ).is_backingup
-                page_data["backup_stats"] = self.controller.servers.get_server_obj(
+                page_data[
+                    "backup_stats"
+                ] = self.controller.servers.get_server_instance_by_id(
                     server_id
                 ).send_backup_status()
                 # makes it so relative path is the only thing shown

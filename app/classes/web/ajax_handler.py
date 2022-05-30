@@ -286,7 +286,7 @@ class AjaxHandler(BaseHandler):
                 logger.warning("Server ID not found in send_command ajax call")
                 Console.warning("Server ID not found in send_command ajax call")
 
-            srv_obj = self.controller.servers.get_server_obj(server_id)
+            srv_obj = self.controller.servers.get_server_instance_by_id(server_id)
 
             if command == srv_obj.settings["stop_command"]:
                 logger.info(
@@ -334,7 +334,7 @@ class AjaxHandler(BaseHandler):
                 logger.error("Server ID is none. Canceling backup!")
                 return
 
-            server = self.controller.servers.get_server_obj(server_id)
+            server = self.controller.servers.get_server_instance_by_id(server_id)
             self.controller.management.add_to_audit_log_raw(
                 self.controller.users.get_user_by_id(exec_user["user_id"])["username"],
                 exec_user["user_id"],
@@ -356,7 +356,7 @@ class AjaxHandler(BaseHandler):
                     self.redirect("/panel/error?error=Unauthorized access to Commands")
                     return
             server_id = self.get_argument("id", None)
-            svr = self.controller.servers.get_server_obj(server_id)
+            svr = self.controller.servers.get_server_instance_by_id(server_id)
             try:
                 svr.kill()
                 time.sleep(5)
@@ -369,7 +369,7 @@ class AjaxHandler(BaseHandler):
             return
         elif page == "eula":
             server_id = self.get_argument("id", None)
-            svr = self.controller.servers.get_server_obj(server_id)
+            svr = self.controller.servers.get_server_instance_by_id(server_id)
             svr.agree_eula(exec_user["user_id"])
 
         elif page == "restore_backup":

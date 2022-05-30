@@ -1,12 +1,8 @@
-from gettext import install
-from inspect import _void
 import os
 import logging
-from pydoc import Helper
 import time
 import json
 import typing as t
-from typing_extensions import Self
 
 from app.classes.controllers.roles_controller import RolesController
 
@@ -20,7 +16,6 @@ from app.classes.minecraft.server_props import ServerProps
 from app.classes.minecraft.stats import Stats
 
 from app.classes.models.servers import HelperServers
-from app.classes.models.server_stats import HelperServerStats
 from app.classes.models.users import HelperUsers, ApiKeys
 from app.classes.models.server_permissions import (
     PermissionsServers,
@@ -133,11 +128,13 @@ class ServersController(metaclass=Singleton):
     #                                     Servers Methods
     # **********************************************************************************
 
-    def get_server_instance_by_id(self, server_id):
+    def get_server_instance_by_id(self, server_id: t.Union[str, int]) -> Server:
         for server in self.servers_list:
-            if server["server_id"] == int(server_id):
+            if int(server["server_id"]) == int(server_id):
                 return server["server_obj"]
-        return None
+
+        logger.warning(f"Unable to find server object for server id {server_id}")
+        raise Exception(f"Unable to find server object for server id {server_id}")
 
     def init_all_servers(self):
 
@@ -228,7 +225,7 @@ class ServersController(metaclass=Singleton):
         return False
 
     def refresh_server_settings(self, server_id: int):
-        server_obj = self.get_server_obj(server_id)
+        server_obj: Server = self.get_server_data_by_id(server_id)
         server_obj.reload_server_settings()
 
     @staticmethod
@@ -362,14 +359,6 @@ class ServersController(metaclass=Singleton):
         else:
             svr.stop_crash_detection()
 
-    def get_server_obj(self, server_id: t.Union[str, int]) -> Server:
-        for server in self.servers_list:
-            if str(server["server_id"]) == str(server_id):
-                return server["server_obj"]
-
-        logger.warning(f"Unable to find server object for server id {server_id}")
-        raise Exception(f"Unable to find server object for server id {server_id}")
-
     def get_server_obj_optional(
         self, server_id: t.Union[str, int]
     ) -> t.Optional[Server]:
@@ -401,10 +390,9 @@ class ServersController(metaclass=Singleton):
         running_servers = []
 
         # for each server
-        for servers in self.servers_list:
-
+        for server in self.servers_list:
             # is the server running?
-            srv_obj = servers["server_obj"]
+            srv_obj: Server = server["server_obj"]
             running = srv_obj.check_running()
             # if so, let's add a dictionary to the list of running servers
             if running:
@@ -434,7 +422,7 @@ class ServersController(metaclass=Singleton):
 
     def stop_server(self, server_id):
         # issue the stop command
-        svr_obj = self.get_server_obj(server_id)
+        svr_obj = self.get_server_instance_by_id(server_id)
         svr_obj.stop_threaded_server()
 
     # **********************************************************************************

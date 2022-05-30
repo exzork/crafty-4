@@ -86,7 +86,9 @@ class TasksManager:
             commands = HelpersManagement.get_unactioned_commands()
             for cmd in commands:
                 try:
-                    svr = self.controller.servers.get_server_obj(cmd.server_id)
+                    svr = self.controller.servers.get_server_instance_by_id(
+                        cmd.server_id
+                    )
                 except:
                     logger.error(
                         "Server value requested does not exist! "

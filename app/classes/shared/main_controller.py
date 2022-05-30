@@ -5,7 +5,6 @@ import shutil
 import time
 import logging
 import tempfile
-import typing as t
 from peewee import DoesNotExist
 
 # TZLocal is set as a hidden import on win pipeline
@@ -832,7 +831,7 @@ class Controller:
                 running = srv_obj.check_running()
 
                 if running:
-                    self.stop_server(server_id)
+                    self.servers.stop_server(server_id)
                 if files:
                     try:
                         FileHelpers.del_dirs(

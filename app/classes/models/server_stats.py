@@ -1,11 +1,6 @@
 import os
 import logging
 import datetime
-import typing as t
-
-import typing as t
-
-from peewee import DoesNotExist
 
 from app.classes.models.servers import Servers, HelperServers
 from app.classes.shared.helpers import Helpers
@@ -138,7 +133,7 @@ class HelperServerStats:
                 server_data.append(
                     {
                         "server_data": server,
-                        "stats": stats,
+                        "stats": DatabaseShortcuts.get_data_obj(latest),
                         "user_command_permission": True,
                     }
                 )
