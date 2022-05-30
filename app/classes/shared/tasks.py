@@ -87,7 +87,7 @@ class TasksManager:
             for cmd in commands:
                 try:
                     svr = self.controller.servers.get_server_instance_by_id(
-                        cmd.server_id
+                        cmd.server_id.server_id
                     )
                 except:
                     logger.error(
