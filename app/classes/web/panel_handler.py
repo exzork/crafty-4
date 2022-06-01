@@ -738,8 +738,8 @@ class PanelHandler(BaseHandler):
                 )
                 servers = []
                 for server in user_servers:
-                    if server["server_name"] not in servers:
-                        servers.append(server["server_name"])
+                    if server.name not in servers:
+                        servers.append(server.name)
                 new_item = {user.user_id: servers}
                 auth_servers.update(new_item)
                 data = {user.user_id: user_roles_list}
@@ -974,7 +974,7 @@ class PanelHandler(BaseHandler):
             role_servers = self.controller.servers.get_authorized_servers(user_id)
             page_role_servers = []
             for server in role_servers:
-                page_role_servers.append(server["server_id"])
+                page_role_servers.append(server.server_id)
             page_data["new_user"] = False
             page_data["user"] = self.controller.users.get_user_by_id(user_id)
             page_data["servers"] = set()
