@@ -914,7 +914,6 @@ class Server:
                 )
             self.is_backingup = False
         finally:
-            print(temp_dir)
             FileHelpers.del_dirs(temp_dir)
 
     def backup_status(self, source_path, dest_path):
