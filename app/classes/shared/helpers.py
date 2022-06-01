@@ -692,7 +692,6 @@ class Helpers:
             pass
         except PermissionError as e:
             logger.critical(f"Check generated exception due to permssion error: {e}")
-            pass
 
     def create_self_signed_cert(self, cert_dir=None):
 
