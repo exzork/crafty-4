@@ -176,6 +176,7 @@ class ServersController:
 
         for server in authorized_servers:
             latest = HelperServerStats.get_server_stats_by_id(server.get("server_id"))
+
             # TODO
             user_permissions = PermissionsServers.get_user_id_permissions_list(
                 user_id, server.get("server_id")

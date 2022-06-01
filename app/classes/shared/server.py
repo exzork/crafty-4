@@ -713,6 +713,7 @@ class Server:
             )
             # cancel the watcher task
             self.server_scheduler.remove_job("c_" + str(self.server_id))
+            self.server_scheduler.remove_job("stats_" + str(self.server_id))
             return
 
         HelperServerStats.sever_crashed(self.server_id)
@@ -1142,6 +1143,7 @@ class Server:
                 "desc": raw_ping_result.get("desc"),
                 "version": raw_ping_result.get("version"),
                 "icon": raw_ping_result.get("icon"),
+                "crashed": self.is_crashed,
             }
         )
         if len(self.helper.websocket_helper.clients) > 0:
@@ -1166,6 +1168,7 @@ class Server:
                     "desc": raw_ping_result.get("desc"),
                     "version": raw_ping_result.get("version"),
                     "icon": raw_ping_result.get("icon"),
+                    "crashed": self.is_crashed,
                 },
             )
         total_players += int(raw_ping_result.get("online"))
