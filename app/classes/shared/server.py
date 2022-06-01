@@ -877,7 +877,6 @@ class Server:
                 os.remove(Helpers.get_os_understandable_path(oldfile_path))
 
             self.is_backingup = False
-            FileHelpers.del_dirs(temp_dir)
             logger.info(f"Backup of server: {self.name} completed")
             self.server_scheduler.remove_job("backup_" + str(self.server_id))
             results = {"percent": 100, "total_files": 0, "current_file": 0}
@@ -900,7 +899,6 @@ class Server:
                     ).format(self.name),
                 )
             time.sleep(3)
-            return
         except:
             logger.exception(
                 f"Failed to create backup of server {self.name} (ID {self.server_id})"
@@ -915,7 +913,8 @@ class Server:
                     results,
                 )
             self.is_backingup = False
-            return
+        finally:
+            FileHelpers.del_dirs(temp_dir)
 
     def backup_status(self, source_path, dest_path):
         results = Helpers.calc_percent(source_path, dest_path)
