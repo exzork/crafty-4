@@ -1,6 +1,5 @@
 import logging
 
-from peewee import DoesNotExist
 from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.web.base_api_handler import BaseApiHandler
 
@@ -27,9 +26,9 @@ class ApiServersServerStdinHandler(BaseApiHandler):
             # if the user doesn't have Commands permission, return an error
             return self.finish_json(400, {"status": "error", "error": "NOT_AUTHORIZED"})
 
-        try:
-            svr = self.controller.get_server_obj(server_id)
-        except DoesNotExist:
+        svr = self.controller.get_server_obj_optional(server_id)
+        if svr is None:
+            # It's in auth_data[0] but not as a Server object
             logger.critical(
                 "Something has gone VERY wrong! "
                 "Crafty can't access the server object. "
