@@ -916,7 +916,6 @@ class Server:
         finally:
             print(temp_dir)
             FileHelpers.del_dirs(temp_dir)
-        return
 
     def backup_status(self, source_path, dest_path):
         results = Helpers.calc_percent(source_path, dest_path)
