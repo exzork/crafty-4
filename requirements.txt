@@ -1,6 +1,6 @@
 
 apscheduler==3.8.1
-argon2-cffi==20.1
+argon2-cffi==21.3
 bleach==4.1
 cached_property==1.5.2
 colorama==0.4
@@ -9,7 +9,7 @@ cryptography==3.4.8
 libgravatar==1.0.0
 peewee==3.13
 pexpect==4.8
-psutil==5.7
+psutil==5.9
 pyOpenSSL==19.1.0
 pyjwt==2.3
 PyYAML==5.4

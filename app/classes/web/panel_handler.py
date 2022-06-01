@@ -18,10 +18,12 @@ from tzlocal import get_localzone
 from croniter import croniter
 from app.classes.controllers.roles_controller import RolesController
 
+from app.classes.models.servers import Servers
 from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.models.management import HelpersManagement
 from app.classes.shared.helpers import Helpers
+from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.web.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
@@ -39,7 +41,7 @@ class PanelHandler(BaseHandler):
 
     def get_role_servers(self) -> t.List[RolesController.RoleServerJsonType]:
         servers = []
-        for server in self.controller.list_defined_servers():
+        for server in self.controller.servers.get_all_defined_servers():
             argument = self.get_argument(f"server_{server['server_id']}_access", "0")
             if argument == "0":
                 continue
@@ -190,7 +192,7 @@ class PanelHandler(BaseHandler):
         total_players = 0
         for server in page_data["servers"]:
             total_players += len(
-                self.controller.stats.get_server_players(
+                self.controller.servers.stats.get_server_players(
                     server["server_data"]["server_id"]
                 )
             )
@@ -222,7 +224,7 @@ class PanelHandler(BaseHandler):
             superuser = superuser and api_key.superuser
 
         if superuser:  # TODO: Figure out a better solution
-            defined_servers = self.controller.list_defined_servers()
+            defined_servers = self.controller.servers.list_defined_servers()
             exec_user_role = {"Super User"}
             exec_user_crafty_permissions = (
                 self.controller.crafty_perms.list_defined_crafty_permissions()
@@ -254,15 +256,20 @@ class PanelHandler(BaseHandler):
 
         for server_id in user_order[:]:
             for server in defined_servers[:]:
-                if str(server["server_id"]) == str(server_id):
-                    page_servers.append(server)
+                if str(server.server_id) == str(server_id):
+                    page_servers.append(
+                        DatabaseShortcuts.get_data_obj(server.server_object)
+                    )
                     user_order.remove(server_id)
                     defined_servers.remove(server)
 
         for server in defined_servers:
-            server_ids.append(str(server["server_id"]))
+            server_ids.append(str(server.server_id))
             if server not in page_servers:
-                page_servers.append(server)
+                page_servers.append(
+                    DatabaseShortcuts.get_data_obj(server.server_object)
+                )
+
         for server_id in user_order[:]:
             # remove IDs in list that user no longer has access to
             if str(server_id) not in server_ids:
@@ -284,10 +291,10 @@ class PanelHandler(BaseHandler):
             },
             "server_stats": {
                 "total": len(defined_servers),
-                "running": len(self.controller.list_running_servers()),
+                "running": len(self.controller.servers.list_running_servers()),
                 "stopped": (
-                    len(self.controller.list_defined_servers())
-                    - len(self.controller.list_running_servers())
+                    len(self.controller.servers.list_defined_servers())
+                    - len(self.controller.servers.list_running_servers())
                 ),
             },
             "menu_servers": defined_servers,
@@ -397,7 +404,7 @@ class PanelHandler(BaseHandler):
                         "servers"
                     ] = self.controller.servers.get_all_servers_stats()
                 except IndexError:
-                    self.controller.stats.record_stats()
+                    self.controller.servers.stats.record_stats()
                     page_data[
                         "servers"
                     ] = self.controller.servers.get_all_servers_stats()
@@ -407,7 +414,7 @@ class PanelHandler(BaseHandler):
                         exec_user["user_id"]
                     )
                 except IndexError:
-                    self.controller.stats.record_stats()
+                    self.controller.servers.stats.record_stats()
                     user_auth = self.controller.servers.get_authorized_servers_stats(
                         exec_user["user_id"]
                     )
@@ -490,7 +497,7 @@ class PanelHandler(BaseHandler):
                 "schedules",
             ]
 
-            server = self.controller.get_server_obj(server_id)
+            server = self.controller.servers.get_server_instance_by_id(server_id)
             # server_data isn't needed since the server_stats also pulls server data
             page_data["server_data"] = self.controller.servers.get_server_data_by_id(
                 server_id
@@ -508,9 +515,9 @@ class PanelHandler(BaseHandler):
             except Exception as e:
                 logger.error(f"Failed to get server waiting to start: {e}")
                 page_data["waiting_start"] = False
-            page_data["get_players"] = lambda: self.controller.stats.get_server_players(
-                server_id
-            )
+            page_data[
+                "get_players"
+            ] = lambda: self.controller.servers.stats.get_server_players(server_id)
             page_data["active_link"] = subpage
             page_data["permissions"] = {
                 "Commands": EnumPermissionsServer.COMMANDS,
@@ -638,10 +645,14 @@ class PanelHandler(BaseHandler):
                 page_data[
                     "exclusions"
                 ] = self.controller.management.get_excluded_backup_dirs(server_id)
-                page_data["backing_up"] = self.controller.get_server_obj(
+                page_data[
+                    "backing_up"
+                ] = self.controller.servers.get_server_instance_by_id(
                     server_id
                 ).is_backingup
-                page_data["backup_stats"] = self.controller.get_server_obj(
+                page_data[
+                    "backup_stats"
+                ] = self.controller.servers.get_server_instance_by_id(
                     server_id
                 ).send_backup_status()
                 # makes it so relative path is the only thing shown
@@ -651,7 +662,7 @@ class PanelHandler(BaseHandler):
                     else:
                         exclusions.append(file.replace(server_info["path"] + "/", ""))
                 page_data["exclusions"] = exclusions
-                self.controller.refresh_server_settings(server_id)
+                self.controller.servers.refresh_server_settings(server_id)
                 try:
                     page_data["backup_list"] = server.list_backups()
                 except:
@@ -727,8 +738,8 @@ class PanelHandler(BaseHandler):
                 )
                 servers = []
                 for server in user_servers:
-                    if server["server_name"] not in servers:
-                        servers.append(server["server_name"])
+                    if server.name not in servers:
+                        servers.append(server.name)
                 new_item = {user.user_id: servers}
                 auth_servers.update(new_item)
                 data = {user.user_id: user_roles_list}
@@ -791,7 +802,7 @@ class PanelHandler(BaseHandler):
 
             page_data["roles_all"] = self.controller.roles.get_all_roles()
             page_data["servers"] = []
-            page_data["servers_all"] = self.controller.list_defined_servers()
+            page_data["servers_all"] = self.controller.servers.get_all_defined_servers()
             page_data["role-servers"] = []
             page_data[
                 "permissions_all"
@@ -825,9 +836,9 @@ class PanelHandler(BaseHandler):
             page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                 server_id
             )
-            page_data["get_players"] = lambda: self.controller.stats.get_server_players(
-                server_id
-            )
+            page_data[
+                "get_players"
+            ] = lambda: self.controller.servers.stats.get_server_players(server_id)
             page_data["active_link"] = "schedules"
             page_data["permissions"] = {
                 "Commands": EnumPermissionsServer.COMMANDS,
@@ -889,9 +900,9 @@ class PanelHandler(BaseHandler):
             if sch_id is None:
                 self.redirect("/panel/error?error=Invalid Schedule ID")
             schedule = self.controller.management.get_scheduled_task_model(sch_id)
-            page_data["get_players"] = lambda: self.controller.stats.get_server_players(
-                server_id
-            )
+            page_data[
+                "get_players"
+            ] = lambda: self.controller.servers.stats.get_server_players(server_id)
             page_data["active_link"] = "schedules"
             page_data["permissions"] = {
                 "Commands": EnumPermissionsServer.COMMANDS,
@@ -963,13 +974,13 @@ class PanelHandler(BaseHandler):
             role_servers = self.controller.servers.get_authorized_servers(user_id)
             page_role_servers = []
             for server in role_servers:
-                page_role_servers.append(server["server_id"])
+                page_role_servers.append(server.server_id)
             page_data["new_user"] = False
             page_data["user"] = self.controller.users.get_user_by_id(user_id)
             page_data["servers"] = set()
             page_data["role-servers"] = page_role_servers
             page_data["roles_all"] = self.controller.roles.get_all_roles()
-            page_data["servers_all"] = self.controller.list_defined_servers()
+            page_data["servers_all"] = self.controller.servers.get_all_defined_servers()
             page_data["superuser"] = superuser
             page_data[
                 "permissions_all"
@@ -1097,7 +1108,7 @@ class PanelHandler(BaseHandler):
                 )
                 return
 
-            page_data["servers_all"] = self.controller.list_defined_servers()
+            page_data["servers_all"] = self.controller.servers.get_all_defined_servers()
             page_data[
                 "permissions_all"
             ] = self.controller.server_perms.list_defined_permissions()
@@ -1109,7 +1120,7 @@ class PanelHandler(BaseHandler):
             page_data["new_role"] = False
             role_id = self.get_argument("id", None)
             page_data["role"] = self.controller.roles.get_role_with_servers(role_id)
-            page_data["servers_all"] = self.controller.list_defined_servers()
+            page_data["servers_all"] = self.controller.servers.get_all_defined_servers()
             page_data[
                 "permissions_all"
             ] = self.controller.server_perms.list_defined_permissions()
@@ -1256,7 +1267,7 @@ class PanelHandler(BaseHandler):
             "Players": EnumPermissionsServer.PLAYERS,
         }
         if superuser:
-            # defined_servers = self.controller.list_defined_servers()
+            # defined_servers = self.controller.servers.list_defined_servers()
             exec_user_role = {"Super User"}
             exec_user_crafty_permissions = (
                 self.controller.crafty_perms.list_defined_crafty_permissions()
@@ -1313,7 +1324,7 @@ class PanelHandler(BaseHandler):
             if server_id is None:
                 return
 
-            server_obj = self.controller.servers.get_server_obj(server_id)
+            server_obj: Servers = self.controller.servers.get_server_obj(server_id)
             stale_executable = server_obj.executable
             # Compares old jar name to page data being passed.
             # If they are different we replace the executable name in the
@@ -1351,9 +1362,9 @@ class PanelHandler(BaseHandler):
             server_obj.crash_detection = crash_detection
             server_obj.logs_delete_after = logs_delete_after
             self.controller.servers.update_server(server_obj)
-            self.controller.crash_detection(server_obj)
+            self.controller.servers.crash_detection(server_obj)
 
-            self.controller.refresh_server_settings(server_id)
+            self.controller.servers.refresh_server_settings(server_id)
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],

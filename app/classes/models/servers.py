@@ -16,7 +16,7 @@ from app.classes.models.base_model import BaseModel
 logger = logging.getLogger(__name__)
 
 # **********************************************************************************
-#                                   Servers Class
+#                                   Servers Model
 # **********************************************************************************
 class Servers(BaseModel):
     server_id = AutoField()

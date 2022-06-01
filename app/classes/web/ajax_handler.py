@@ -286,7 +286,7 @@ class AjaxHandler(BaseHandler):
                 logger.warning("Server ID not found in send_command ajax call")
                 Console.warning("Server ID not found in send_command ajax call")
 
-            srv_obj = self.controller.get_server_obj(server_id)
+            srv_obj = self.controller.servers.get_server_instance_by_id(server_id)
 
             if command == srv_obj.settings["stop_command"]:
                 logger.info(
@@ -334,7 +334,7 @@ class AjaxHandler(BaseHandler):
                 logger.error("Server ID is none. Canceling backup!")
                 return
 
-            server = self.controller.get_server_obj(server_id)
+            server = self.controller.servers.get_server_instance_by_id(server_id)
             self.controller.management.add_to_audit_log_raw(
                 self.controller.users.get_user_by_id(exec_user["user_id"])["username"],
                 exec_user["user_id"],
@@ -356,7 +356,7 @@ class AjaxHandler(BaseHandler):
                     self.redirect("/panel/error?error=Unauthorized access to Commands")
                     return
             server_id = self.get_argument("id", None)
-            svr = self.controller.get_server_obj(server_id)
+            svr = self.controller.servers.get_server_instance_by_id(server_id)
             try:
                 svr.kill()
                 time.sleep(5)
@@ -369,7 +369,7 @@ class AjaxHandler(BaseHandler):
             return
         elif page == "eula":
             server_id = self.get_argument("id", None)
-            svr = self.controller.get_server_obj(server_id)
+            svr = self.controller.servers.get_server_instance_by_id(server_id)
             svr.agree_eula(exec_user["user_id"])
 
         elif page == "restore_backup":
@@ -394,7 +394,7 @@ class AjaxHandler(BaseHandler):
                         server_data["server_port"],
                     )
                     new_server_id = new_server
-                    new_server = self.controller.get_server_data(new_server)
+                    new_server = self.controller.servers.get_server_data(new_server)
                     self.controller.rename_backup_dir(
                         server_id, new_server_id, new_server["server_uuid"]
                     )
@@ -412,7 +412,7 @@ class AjaxHandler(BaseHandler):
                         server_data["server_port"],
                     )
                     new_server_id = new_server
-                    new_server = self.controller.get_server_data(new_server)
+                    new_server = self.controller.servers.get_server_data(new_server)
                     self.controller.rename_backup_dir(
                         server_id, new_server_id, new_server["server_uuid"]
                     )
@@ -522,7 +522,7 @@ class AjaxHandler(BaseHandler):
                 f"{self.controller.servers.get_server_friendly_name(server_id)}"
             )
 
-            server_data = self.controller.get_server_data(server_id)
+            server_data = self.controller.servers.get_server_data(server_id)
             server_name = server_data["server_name"]
 
             self.controller.management.add_to_audit_log(
@@ -546,7 +546,7 @@ class AjaxHandler(BaseHandler):
                 f"{self.controller.servers.get_server_friendly_name(server_id)}"
             )
 
-            server_data = self.controller.get_server_data(server_id)
+            server_data = self.controller.servers.get_server_data(server_id)
             server_name = server_data["server_name"]
 
             self.controller.management.add_to_audit_log(

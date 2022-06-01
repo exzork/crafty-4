@@ -5,8 +5,12 @@ import threading
 import logging
 import getpass
 from app.classes.shared.console import Console
-
 from app.classes.shared.import3 import Import3
+
+from app.classes.shared.helpers import Helpers
+from app.classes.shared.tasks import TasksManager
+from app.classes.shared.migration import MigrationManager
+from app.classes.shared.main_controller import Controller
 
 logger = logging.getLogger(__name__)
 
@@ -14,10 +18,10 @@ logger = logging.getLogger(__name__)
 class MainPrompt(cmd.Cmd):
     def __init__(self, helper, tasks_manager, migration_manager, main_controller):
         super().__init__()
-        self.helper = helper
-        self.tasks_manager = tasks_manager
-        self.migration_manager = migration_manager
-        self.controller = main_controller
+        self.helper: Helpers = helper
+        self.tasks_manager: TasksManager = tasks_manager
+        self.migration_manager: MigrationManager = migration_manager
+        self.controller: Controller = main_controller
 
         # overrides the default Prompt
         self.prompt = f"Crafty Controller v{self.helper.get_version_string()} > "

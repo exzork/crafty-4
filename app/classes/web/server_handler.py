@@ -10,6 +10,7 @@ import requests
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.file_helpers import FileHelpers
+from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.web.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ class ServerHandler(BaseHandler):
             superuser = superuser and api_key.superuser
 
         if superuser:
-            defined_servers = self.controller.list_defined_servers()
+            defined_servers = self.controller.servers.list_defined_servers()
             exec_user_role = {"Super User"}
             exec_user_crafty_permissions = (
                 self.controller.crafty_perms.list_defined_crafty_permissions()
@@ -52,6 +53,14 @@ class ServerHandler(BaseHandler):
                 exec_user_role.add(role["role_name"])
                 list_roles.append(self.controller.roles.get_role(role["role_id"]))
 
+        page_servers = []
+        for server in defined_servers:
+            if server not in page_servers:
+                page_servers.append(
+                    DatabaseShortcuts.get_data_obj(server.server_object)
+                )
+        defined_servers = page_servers
+
         template = "public/404.html"
 
         page_data = {
@@ -66,11 +75,11 @@ class ServerHandler(BaseHandler):
                 "Roles_Config": EnumPermissionsCrafty.ROLES_CONFIG,
             },
             "server_stats": {
-                "total": len(self.controller.list_defined_servers()),
-                "running": len(self.controller.list_running_servers()),
+                "total": len(self.controller.servers.list_defined_servers()),
+                "running": len(self.controller.servers.list_running_servers()),
                 "stopped": (
-                    len(self.controller.list_defined_servers())
-                    - len(self.controller.list_running_servers())
+                    len(self.controller.servers.list_defined_servers())
+                    - len(self.controller.servers.list_running_servers())
                 ),
             },
             "hosts_data": self.controller.management.get_latest_hosts_stats(),
@@ -240,7 +249,7 @@ class ServerHandler(BaseHandler):
                         server_port,
                     )
 
-                    self.controller.init_all_servers()
+                    self.controller.servers.init_all_servers()
 
                     return
 
@@ -370,7 +379,7 @@ class ServerHandler(BaseHandler):
                         new_server_id, role_id, "11111111"
                     )
 
-            self.controller.stats.record_stats()
+            self.controller.servers.stats.record_stats()
             self.redirect("/panel/dashboard")
 
         if page == "bedrock_step1":
@@ -487,7 +496,7 @@ class ServerHandler(BaseHandler):
                         new_server_id, role_id, "11111111"
                     )
 
-            self.controller.stats.record_stats()
+            self.controller.servers.stats.record_stats()
             self.redirect("/panel/dashboard")
 
         try:

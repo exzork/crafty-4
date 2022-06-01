@@ -58,3 +58,7 @@ class DatabaseShortcuts:
     def return_db_rows(model):
         data = [model_to_dict(row) for row in model]
         return data
+
+    @staticmethod
+    def get_data_obj(obj):
+        return model_to_dict(obj)

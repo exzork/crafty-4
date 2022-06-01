@@ -1,6 +1,6 @@
 import logging
-from app.classes.models.server_stats import HelperServerStats
 from app.classes.web.base_api_handler import BaseApiHandler
+from app.classes.controllers.servers_controller import ServersController
 
 
 logger = logging.getLogger(__name__)
@@ -16,10 +16,13 @@ class ApiServersServerStatsHandler(BaseApiHandler):
             # if the user doesn't have access to the server, return an error
             return self.finish_json(400, {"status": "error", "error": "NOT_AUTHORIZED"})
 
+        srv = ServersController().get_server_instance_by_id(server_id)
+        latest = srv.stats_helper.get_latest_server_stats()
+
         self.finish_json(
             200,
             {
                 "status": "ok",
-                "data": HelperServerStats.get_server_stats_by_id(server_id),
+                "data": latest,
             },
         )
