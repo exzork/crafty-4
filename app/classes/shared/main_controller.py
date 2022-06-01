@@ -148,6 +148,14 @@ class Controller:
         self.users.stop_prepare(exec_user["user_id"])
         self.support_scheduler.remove_job("logs_" + str(exec_user["user_id"]))
 
+        FileHelpers.del_dirs(temp_dir)
+
+    def del_support_file(self, temp_zip_storage):
+        try:
+            FileHelpers.del_file(temp_zip_storage)
+        except FileNotFoundError:
+            logger.info("No temp file found. Assuming it's already been cleaned up")
+
     def add_system_user(self):
         self.users_helper.add_user(
             "system",
