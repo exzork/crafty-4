@@ -1,3 +1,4 @@
+from contextlib import redirect_stderr
 import os
 import re
 import time
@@ -8,8 +9,6 @@ import logging.config
 import subprocess
 import html
 import tempfile
-import psutil
-from psutil import NoSuchProcess
 
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
@@ -25,6 +24,11 @@ from app.classes.models.server_permissions import PermissionsServers
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.file_helpers import FileHelpers
+from app.classes.shared.null_writer import NullWriter
+
+with redirect_stderr(NullWriter()):
+    import psutil
+    from psutil import NoSuchProcess
 
 logger = logging.getLogger(__name__)
 
@@ -626,6 +630,7 @@ class Server:
         # send it
         self.process.stdin.write(f"{command}\n".encode("utf-8"))
         self.process.stdin.flush()
+        return True
 
     def crash_detected(self, name):
 
@@ -1199,7 +1204,7 @@ class Server:
         server_path = server["path"]
 
         # process stats
-        p_stats = Stats._get_process_stats(self.process)
+        p_stats = Stats._try_get_process_stats(self.process)
 
         # TODO: search server properties file for possible override of 127.0.0.1
         internal_ip = server["server_ip"]
@@ -1332,7 +1337,7 @@ class Server:
         server_path = server_dt["path"]
 
         # process stats
-        p_stats = Stats._get_process_stats(self.process)
+        p_stats = Stats._try_get_process_stats(self.process)
 
         # TODO: search server properties file for possible override of 127.0.0.1
         # internal_ip =   server['server_ip']
@@ -1446,12 +1451,12 @@ class Server:
 
     def record_server_stats(self):
 
-        server = self.get_servers_stats()
-        HelperServerStats.insert_server_stats(server)
+        server_stats = self.get_servers_stats()
+        HelperServerStats.insert_server_stats(server_stats)
 
         # delete old data
         max_age = self.helper.get_setting("history_max_age")
         now = datetime.datetime.now()
-        last_week = now.day - max_age
+        minimum_to_exist = now - datetime.timedelta(days=max_age)
 
-        HelperServerStats.remove_old_stats(server.get("id", 0), last_week)
+        HelperServerStats.remove_old_stats(server_stats.get("id", 0), minimum_to_exist)

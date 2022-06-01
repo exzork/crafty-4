@@ -350,7 +350,7 @@ class HelpersManagement:
         compress: bool = False,
     ):
         logger.debug(f"Updating server {server_id} backup config with {locals()}")
-        if Backups.select().where(Backups.server_id == server_id).count() != 0:
+        if Backups.select().where(Backups.server_id == server_id).exists():
             new_row = False
             conf = {}
         else:

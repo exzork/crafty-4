@@ -8,7 +8,6 @@ from app.classes.models.users import HelperUsers, ApiKeys
 from app.classes.models.roles import HelperRoles
 from app.classes.models.servers import HelperServers
 from app.classes.models.server_stats import HelperServerStats
-from app.classes.shared.main_models import DatabaseShortcuts
 
 logger = logging.getLogger(__name__)
 
@@ -107,11 +106,11 @@ class ServerPermsController:
             )
 
         for server in authorized_servers:
-            latest = HelperServerStats.get_latest_server_stats(server.get("server_id"))
+            latest = HelperServerStats.get_server_stats_by_id(server.get("server_id"))
             server_data.append(
                 {
                     "server_data": server,
-                    "stats": DatabaseShortcuts.return_rows(latest)[0],
+                    "stats": latest,
                 }
             )
         return server_data

@@ -1,15 +1,19 @@
 from __future__ import annotations
+from contextlib import redirect_stderr
 import json
 import logging
 import datetime
 import base64
 import typing as t
-import psutil
 
+from app.classes.shared.null_writer import NullWriter
 from app.classes.minecraft.mc_ping import ping
 from app.classes.models.management import HostStats
 from app.classes.models.servers import HelperServers
 from app.classes.shared.helpers import Helpers
+
+with redirect_stderr(NullWriter()):
+    import psutil
 
 if t.TYPE_CHECKING:
     from app.classes.shared.main_controller import Controller
@@ -52,36 +56,80 @@ class Stats:
     helper: Helpers
     controller: Controller
 
+    @staticmethod
+    def try_get_boot_time():
+        try:
+            return datetime.datetime.fromtimestamp(
+                psutil.boot_time(), datetime.timezone.utc
+            )
+        except Exception as e:
+            logger.debug(f"error while getting boot time due to {e}")
+            # unix epoch with no timezone data
+            return datetime.datetime.fromtimestamp(0, datetime.timezone.utc)
+
+    @staticmethod
+    def try_get_cpu_usage():
+        try:
+            return psutil.cpu_percent(interval=0.5) / psutil.cpu_count()
+        except Exception as e:
+            logger.debug(f"error while getting cpu percentage due to {e}")
+            return -1
+
     def __init__(self, helper, controller):
         self.helper = helper
         self.controller = controller
 
     def get_node_stats(self) -> NodeStatsReturnDict:
-        boot_time = datetime.datetime.fromtimestamp(psutil.boot_time())
         try:
             cpu_freq = psutil.cpu_freq()
         except NotImplementedError:
             cpu_freq = psutil._common.scpufreq(current=0, min=0, max=0)
         memory = psutil.virtual_memory()
-        node_stats: NodeStatsDict = {
-            "boot_time": str(boot_time),
-            "cpu_usage": psutil.cpu_percent(interval=0.5) / psutil.cpu_count(),
-            "cpu_count": psutil.cpu_count(),
-            "cpu_cur_freq": round(cpu_freq[0], 2),
-            "cpu_max_freq": cpu_freq[2],
-            "mem_percent": memory.percent,
-            "mem_usage_raw": memory.used,
-            "mem_usage": Helpers.human_readable_file_size(memory.used),
-            "mem_total_raw": memory.total,
-            "mem_total": Helpers.human_readable_file_size(memory.total),
-            "disk_data": self._all_disk_usage(),
-        }
+        try:
+            node_stats: NodeStatsDict = {
+                "boot_time": str(Stats.try_get_boot_time()),
+                "cpu_usage": Stats.try_get_cpu_usage(),
+                "cpu_count": psutil.cpu_count(),
+                "cpu_cur_freq": round(cpu_freq[0], 2),
+                "cpu_max_freq": cpu_freq[2],
+                "mem_percent": memory.percent,
+                "mem_usage_raw": memory.used,
+                "mem_usage": Helpers.human_readable_file_size(memory.used),
+                "mem_total_raw": memory.total,
+                "mem_total": Helpers.human_readable_file_size(memory.total),
+                "disk_data": Stats._try_all_disk_usage(),
+            }
+        except Exception as e:
+            logger.debug(f"error while getting host stats due to {e}")
+            node_stats: NodeStatsDict = {
+                "boot_time": str(
+                    datetime.datetime.fromtimestamp(0, datetime.timezone.utc)
+                ),
+                "cpu_usage": -1,
+                "cpu_count": -1,
+                "cpu_cur_freq": -1,
+                "cpu_max_freq": -1,
+                "mem_percent": -1,
+                "mem_usage_raw": -1,
+                "mem_usage": "",
+                "mem_total_raw": -1,
+                "mem_total": "",
+                "disk_data": [],
+            }
         # server_stats = self.get_servers_stats()
         # data['servers'] = server_stats
 
         return {
             "node_stats": node_stats,
         }
+
+    @staticmethod
+    def _try_get_process_stats(process):
+        try:
+            return Stats._get_process_stats(process)
+        except Exception as e:
+            logger.debug(f"error while getting process stats due to {e}")
+            return {"cpu_usage": -1, "memory_usage": -1, "mem_percentage": -1}
 
     @staticmethod
     def _get_process_stats(process):
@@ -121,6 +169,14 @@ class Stats:
                 "memory_usage": 0,
             }
             return process_stats
+
+    @staticmethod
+    def _try_all_disk_usage():
+        try:
+            return Stats._all_disk_usage()
+        except Exception as e:
+            logger.debug(f"error while getting disk data due to {e}")
+            return []
 
     # Source: https://github.com/giampaolo/psutil/blob/master/scripts/disk_usage.py
     @staticmethod
@@ -258,6 +314,6 @@ class Stats:
         # delete old data
         max_age = self.helper.get_setting("history_max_age")
         now = datetime.datetime.now()
-        last_week = now.day - max_age
+        minimum_to_exist = now - datetime.timedelta(days=max_age)
 
-        HostStats.delete().where(HostStats.time < last_week).execute()
+        HostStats.delete().where(HostStats.time < minimum_to_exist).execute()

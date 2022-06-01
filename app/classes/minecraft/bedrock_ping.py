@@ -1,7 +1,12 @@
+from contextlib import redirect_stderr
 import os
 import socket
 import time
-import psutil
+
+from app.classes.shared.null_writer import NullWriter
+
+with redirect_stderr(NullWriter()):
+    import psutil
 
 
 class BedrockPing:

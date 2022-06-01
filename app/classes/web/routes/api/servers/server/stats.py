@@ -1,5 +1,4 @@
 import logging
-from playhouse.shortcuts import model_to_dict
 from app.classes.models.server_stats import HelperServerStats
 from app.classes.web.base_api_handler import BaseApiHandler
 
@@ -21,8 +20,6 @@ class ApiServersServerStatsHandler(BaseApiHandler):
             200,
             {
                 "status": "ok",
-                "data": model_to_dict(
-                    HelperServerStats.get_latest_server_stats(server_id)[0]
-                ),
+                "data": HelperServerStats.get_server_stats_by_id(server_id),
             },
         )

@@ -12,7 +12,6 @@ from app.classes.models.server_permissions import (
     EnumPermissionsServer,
 )
 from app.classes.shared.helpers import Helpers
-from app.classes.shared.main_models import DatabaseShortcuts
 
 logger = logging.getLogger(__name__)
 
@@ -153,7 +152,7 @@ class ServersController:
         )
 
         for server in authorized_servers:
-            latest = HelperServerStats.get_latest_server_stats(server.get("server_id"))
+            latest = HelperServerStats.get_server_stats_by_id(server.get("server_id"))
             key_permissions = PermissionsServers.get_api_key_permissions_list(
                 api_key, server.get("server_id")
             )
@@ -164,7 +163,7 @@ class ServersController:
             server_data.append(
                 {
                     "server_data": server,
-                    "stats": DatabaseShortcuts.return_rows(latest)[0],
+                    "stats": latest,
                     "user_command_permission": user_command_permission,
                 }
             )

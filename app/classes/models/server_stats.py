@@ -143,8 +143,8 @@ class HelperServerStats:
         return server_data
 
     @staticmethod
-    def insert_server_stats(server):
-        server_id = server.get("id", 0)
+    def insert_server_stats(server_stats):
+        server_id = server_stats.get("id", 0)
         database = HelperServerStats.select_database(server_id)
 
         if server_id == 0:
@@ -153,28 +153,32 @@ class HelperServerStats:
 
         ServerStats.insert(
             {
-                ServerStats.server_id: server.get("id", 0),
-                ServerStats.started: server.get("started", ""),
-                ServerStats.running: server.get("running", False),
-                ServerStats.cpu: server.get("cpu", 0),
-                ServerStats.mem: server.get("mem", 0),
-                ServerStats.mem_percent: server.get("mem_percent", 0),
-                ServerStats.world_name: server.get("world_name", ""),
-                ServerStats.world_size: server.get("world_size", ""),
-                ServerStats.server_port: server.get("server_port", 0),
-                ServerStats.int_ping_results: server.get("int_ping_results", False),
-                ServerStats.online: server.get("online", False),
-                ServerStats.max: server.get("max", False),
-                ServerStats.players: server.get("players", False),
-                ServerStats.desc: server.get("desc", False),
-                ServerStats.version: server.get("version", False),
+                ServerStats.server_id: server_stats.get("id", 0),
+                ServerStats.started: server_stats.get("started", ""),
+                ServerStats.running: server_stats.get("running", False),
+                ServerStats.cpu: server_stats.get("cpu", 0),
+                ServerStats.mem: server_stats.get("mem", 0),
+                ServerStats.mem_percent: server_stats.get("mem_percent", 0),
+                ServerStats.world_name: server_stats.get("world_name", ""),
+                ServerStats.world_size: server_stats.get("world_size", ""),
+                ServerStats.server_port: server_stats.get("server_port", 0),
+                ServerStats.int_ping_results: server_stats.get(
+                    "int_ping_results", False
+                ),
+                ServerStats.online: server_stats.get("online", False),
+                ServerStats.max: server_stats.get("max", False),
+                ServerStats.players: server_stats.get("players", False),
+                ServerStats.desc: server_stats.get("desc", False),
+                ServerStats.version: server_stats.get("version", False),
             }
         ).execute(database)
 
     @staticmethod
-    def remove_old_stats(server_id, last_week):
+    def remove_old_stats(server_id, minimum_to_exist):
         database = HelperServerStats.select_database(server_id)
-        ServerStats.delete().where(ServerStats.created < last_week).execute(database)
+        ServerStats.delete().where(ServerStats.created < minimum_to_exist).execute(
+            database
+        )
 
     @staticmethod
     def get_latest_server_stats(server_id):
