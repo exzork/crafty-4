@@ -123,3 +123,9 @@ class MainPrompt(cmd.Cmd):
 
     def help_import3(self):
         Console.help("Import users and servers from Crafty 3")
+
+    def help_set_passwd(self):
+        Console.help("Set a user's password. Example: set_passwd admin")
+
+    def help_threads(self):
+        Console.help("Get all of the Python threads used by Crafty")

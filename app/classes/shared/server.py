@@ -1,3 +1,4 @@
+from contextlib import redirect_stderr
 import os
 import re
 import time
@@ -8,8 +9,6 @@ import logging.config
 import subprocess
 import html
 import tempfile
-import psutil
-from psutil import NoSuchProcess
 
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
@@ -25,6 +24,11 @@ from app.classes.models.server_permissions import PermissionsServers
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.file_helpers import FileHelpers
+from app.classes.shared.null_writer import NullWriter
+
+with redirect_stderr(NullWriter()):
+    import psutil
+    from psutil import NoSuchProcess
 
 logger = logging.getLogger(__name__)
 
@@ -632,6 +636,7 @@ class ServerInstance:
         # send it
         self.process.stdin.write(f"{command}\n".encode("utf-8"))
         self.process.stdin.flush()
+        return True
 
     def crash_detected(self, name):
 
@@ -883,7 +888,6 @@ class ServerInstance:
                 os.remove(Helpers.get_os_understandable_path(oldfile_path))
 
             self.is_backingup = False
-            FileHelpers.del_dirs(temp_dir)
             logger.info(f"Backup of server: {self.name} completed")
             self.server_scheduler.remove_job("backup_" + str(self.server_id))
             results = {"percent": 100, "total_files": 0, "current_file": 0}
@@ -906,7 +910,6 @@ class ServerInstance:
                     ).format(self.name),
                 )
             time.sleep(3)
-            return
         except:
             logger.exception(
                 f"Failed to create backup of server {self.name} (ID {self.server_id})"
@@ -921,7 +924,8 @@ class ServerInstance:
                     results,
                 )
             self.is_backingup = False
-            return
+        finally:
+            FileHelpers.del_dirs(temp_dir)
 
     def backup_status(self, source_path, dest_path):
         results = Helpers.calc_percent(source_path, dest_path)
@@ -1206,7 +1210,7 @@ class ServerInstance:
         server_path = server["path"]
 
         # process stats
-        p_stats = Stats._get_process_stats(self.process)
+        p_stats = Stats._try_get_process_stats(self.process)
 
         # TODO: search server properties file for possible override of 127.0.0.1
         internal_ip = server["server_ip"]
@@ -1339,7 +1343,7 @@ class ServerInstance:
         server_path = server_dt["path"]
 
         # process stats
-        p_stats = Stats._get_process_stats(self.process)
+        p_stats = Stats._try_get_process_stats(self.process)
 
         # TODO: search server properties file for possible override of 127.0.0.1
         # internal_ip =   server['server_ip']
@@ -1453,12 +1457,12 @@ class ServerInstance:
 
     def record_server_stats(self):
 
-        server = self.get_servers_stats()
-        self.stats_helper.insert_server_stats(server)
+        server_stats = self.get_servers_stats()
+        self.stats_helper.insert_server_stats(server_stats)
 
         # delete old data
         max_age = self.helper.get_setting("history_max_age")
         now = datetime.datetime.now()
-        last_week = now.day - max_age
+        minimum_to_exist = now - datetime.timedelta(days=max_age)
 
-        self.stats_helper.remove_old_stats(last_week)
+        self.stats_helper.remove_old_stats(minimum_to_exist)

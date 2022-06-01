@@ -16,14 +16,17 @@ import pathlib
 import ctypes
 from datetime import datetime
 from socket import gethostname
-from contextlib import suppress
-import psutil
+from contextlib import redirect_stderr, suppress
 
+from app.classes.shared.null_writer import NullWriter
 from app.classes.shared.console import Console
 from app.classes.shared.installer import installer
 from app.classes.shared.file_helpers import FileHelpers
 from app.classes.shared.translation import Translation
 from app.classes.web.websocket_helper import WebSocketHelper
+
+with redirect_stderr(NullWriter()):
+    import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +197,6 @@ class Helpers:
         return cmd_out
 
     def get_setting(self, key, default_return=False):
-
         try:
             with open(self.settings_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -202,10 +204,8 @@ class Helpers:
             if key in data.keys():
                 return data.get(key)
 
-            else:
-                logger.error(f"Config File Error: setting {key} does not exist")
-                Console.error(f"Config File Error: setting {key} does not exist")
-                return default_return
+            logger.error(f'Config File Error: Setting "{key}" does not exist')
+            Console.error(f'Config File Error: Setting "{key}" does not exist')
 
         except Exception as e:
             logger.critical(
@@ -217,22 +217,19 @@ class Helpers:
 
         return default_return
 
-    def set_setting(self, key, new_value, default_return=False):
-
+    def set_setting(self, key, new_value):
         try:
             with open(self.settings_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
             if key in data.keys():
                 data[key] = new_value
+                with open(self.settings_file, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2)
+                return True
 
-            else:
-                logger.error(f"Config File Error: setting {key} does not exist")
-                Console.error(f"Config File Error: setting {key} does not exist")
-                return default_return
-
-            with open(self.settings_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2)
+            logger.error(f'Config File Error: Setting "{key}" does not exist')
+            Console.error(f'Config File Error: Setting "{key}" does not exist')
 
         except Exception as e:
             logger.critical(
@@ -241,6 +238,7 @@ class Helpers:
             Console.critical(
                 f"Config File Error: Unable to read {self.settings_file} due to {e}"
             )
+        return False
 
     @staticmethod
     def get_local_ip():
@@ -690,6 +688,8 @@ class Helpers:
         # directory already exists - non-blocking error
         except FileExistsError:
             pass
+        except PermissionError as e:
+            logger.critical(f"Check generated exception due to permssion error: {e}")
 
     def create_self_signed_cert(self, cert_dir=None):
 

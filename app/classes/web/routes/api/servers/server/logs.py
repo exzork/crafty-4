@@ -8,6 +8,8 @@ from app.classes.web.base_api_handler import BaseApiHandler
 
 logger = logging.getLogger(__name__)
 
+ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+
 
 class ApiServersServerLogsHandler(BaseApiHandler):
     def get(self, server_id: str):
@@ -45,6 +47,9 @@ class ApiServersServerLogsHandler(BaseApiHandler):
                 self.helper.get_os_understandable_path(server_data["log_path"]),
                 log_lines,
             )
+
+            # Remove newline characters from the end of the lines
+            raw_lines = [line.rstrip("\r\n") for line in raw_lines]
         else:
             raw_lines = ServerOutBuf.lines.get(server_id, [])
 
@@ -53,9 +58,7 @@ class ApiServersServerLogsHandler(BaseApiHandler):
         for line in raw_lines:
             try:
                 if not disable_ansi_strip:
-                    line = re.sub(
-                        "(\033\\[(0;)?[0-9]*[A-z]?(;[0-9])?m?)|(> )", "", line
-                    )
+                    line = ansi_escape.sub("", line)
                     line = re.sub("[A-z]{2}\b\b", "", line)
                     line = html.escape(line)
 
