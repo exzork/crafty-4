@@ -1107,8 +1107,14 @@ class PanelHandler(BaseHandler):
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
                 return
-
-            page_data["servers_all"] = self.controller.servers.get_all_defined_servers()
+            if exec_user["superuser"]:
+                page_data[
+                    "servers_all"
+                ] = self.controller.servers.get_all_defined_servers()
+            else:
+                page_data[
+                    "servers_all"
+                ] = self.controller.servers.get_authorized_servers(exec_user["user_id"])
             page_data[
                 "permissions_all"
             ] = self.controller.server_perms.list_defined_permissions()
@@ -1120,7 +1126,14 @@ class PanelHandler(BaseHandler):
             page_data["new_role"] = False
             role_id = self.get_argument("id", None)
             page_data["role"] = self.controller.roles.get_role_with_servers(role_id)
-            page_data["servers_all"] = self.controller.servers.get_all_defined_servers()
+            if exec_user["superuser"]:
+                page_data[
+                    "servers_all"
+                ] = self.controller.servers.get_all_defined_servers()
+            else:
+                page_data[
+                    "servers_all"
+                ] = self.controller.servers.get_authorized_servers(exec_user["user_id"])
             page_data[
                 "permissions_all"
             ] = self.controller.server_perms.list_defined_permissions()

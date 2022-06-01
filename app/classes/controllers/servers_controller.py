@@ -349,7 +349,7 @@ class ServersController(metaclass=Singleton):
         return False
 
     def crash_detection(self, server_obj):
-        svr = self.get_server_obj(server_obj.server_id)
+        svr = self.get_server_instance_by_id(server_obj.server_id)
         # start or stop crash detection depending upon user preference
         # The below functions check to see if the server is running.
         # They only execute if it's running.
