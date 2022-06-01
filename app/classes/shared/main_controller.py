@@ -233,7 +233,7 @@ class Controller:
 
         FileHelpers.del_dirs(temp_dir)
 
-    def del_support_file(temp_zip_storage):
+    def del_support_file(self, temp_zip_storage):
         try:
             FileHelpers.del_file(temp_zip_storage)
         except FileNotFoundError:
