@@ -398,6 +398,10 @@ class AjaxHandler(BaseHandler):
                     self.controller.rename_backup_dir(
                         server_id, new_server_id, new_server["server_uuid"]
                     )
+                    try:
+                        self.tasks_manager.remove_all_server_tasks(server_id)
+                    except:
+                        logger.info("No active tasks found for server")
                     self.controller.remove_server(server_id, True)
                     self.redirect("/panel/dashboard")
 
@@ -416,6 +420,10 @@ class AjaxHandler(BaseHandler):
                     self.controller.rename_backup_dir(
                         server_id, new_server_id, new_server["server_uuid"]
                     )
+                    try:
+                        self.tasks_manager.remove_all_server_tasks(server_id)
+                    except:
+                        logger.info("No active tasks found for server")
                     self.controller.remove_server(server_id, True)
                     self.redirect("/panel/dashboard")
 
