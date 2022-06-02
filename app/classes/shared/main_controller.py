@@ -18,6 +18,7 @@ from app.classes.controllers.roles_controller import RolesController
 from app.classes.controllers.server_perms_controller import ServerPermsController
 from app.classes.controllers.servers_controller import ServersController
 from app.classes.models.server_permissions import EnumPermissionsServer
+from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.models.users import HelperUsers
 from app.classes.models.roles import HelperRoles
 from app.classes.models.management import HelpersManagement
@@ -88,11 +89,24 @@ class Controller:
         server_path = os.path.join(full_temp, "server")
         os.mkdir(server_path)
         if exec_user["superuser"]:
-            auth_servers = self.servers.get_all_defined_servers()
+            defined_servers = self.servers.list_defined_servers()
+            user_servers = []
+            for server in defined_servers:
+                if server not in user_servers:
+                    user_servers.append(
+                        DatabaseShortcuts.get_data_obj(server.server_object)
+                    )
+            auth_servers = user_servers
         else:
-            user_servers = self.servers.get_authorized_servers(
+            defined_servers = self.servers.get_authorized_servers(
                 int(exec_user["user_id"])
             )
+            user_servers = []
+            for server in defined_servers:
+                if server not in user_servers:
+                    user_servers.append(
+                        DatabaseShortcuts.get_data_obj(server.server_object)
+                    )
             auth_servers = []
             for server in user_servers:
                 if (

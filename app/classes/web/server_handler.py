@@ -236,7 +236,7 @@ class ServerHandler(BaseHandler):
                     server_port = server_data.get("server_port")
                     server_type = server_data.get("type")
 
-                    self.controller.servers.create_server(
+                    new_server_id = self.controller.servers.create_server(
                         new_server_name,
                         new_server_uuid,
                         new_server_path,
@@ -248,6 +248,22 @@ class ServerHandler(BaseHandler):
                         server_type,
                         server_port,
                     )
+                    if not exec_user["superuser"]:
+                        new_server_uuid = self.controller.servers.get_server_data_by_id(
+                            new_server_id
+                        ).get("server_uuid")
+                        role_id = self.controller.roles.add_role(
+                            f"Creator of Server with uuid={new_server_uuid}"
+                        )
+                        self.controller.server_perms.add_role_server(
+                            new_server_id, role_id, "11111111"
+                        )
+                        self.controller.users.add_role_to_user(
+                            exec_user["user_id"], role_id
+                        )
+                        self.controller.crafty_perms.add_server_creation(
+                            exec_user["user_id"]
+                        )
 
                     self.controller.servers.init_all_servers()
 
