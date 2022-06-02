@@ -5,6 +5,7 @@ import re
 from app.classes.controllers.crafty_perms_controller import EnumPermissionsCrafty
 from app.classes.controllers.server_perms_controller import EnumPermissionsServer
 from app.classes.web.base_handler import BaseHandler
+from app.classes.models.management import DatabaseShortcuts
 
 logger = logging.getLogger(__name__)
 bearer_pattern = re.compile(r"^Bearer", flags=re.IGNORECASE)
@@ -427,6 +428,13 @@ class ListServers(ApiHandler):
             servers = self.controller.servers.get_authorized_servers(
                 user_obj["user_id"]
             )
+            page_servers = []
+            for server in servers:
+                if server not in page_servers:
+                    page_servers.append(
+                        DatabaseShortcuts.get_data_obj(server.server_object)
+                    )
+            servers = page_servers
             servers = [str(i) for i in servers]
 
         self.return_response(
