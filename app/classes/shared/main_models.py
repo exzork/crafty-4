@@ -18,7 +18,7 @@ class DatabaseBuilder:
         Console.info("Fresh Install Detected - Creating Default Settings")
         default_data = self.helper.find_default_password()
         # Reset this value if the DB has been dumped
-        self.helper.set_setting("apikey_secret", "")
+        self.helper.set_setting("apikey_secret", "random")
 
         username = default_data.get("username", "admin")
         password = default_data.get("password", "crafty")
