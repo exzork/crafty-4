@@ -55,7 +55,11 @@
                     box-shadow: 0 12px 16px 0 hsla(0, 0%, 0%, 0.4);
                   }
                 </style>
+                {% if data['query'] %}
+                <form action="/public/login?{{ data['query'] }}" method="post">
+                {% else %}
                 <form action="/public/login" method="post">
+                {% end %}
                   {% raw xsrf_form_html() %}
                   <div class="form-group">
                     <label class="label">{{ translate('login', 'username', data['lang']) }}</label>

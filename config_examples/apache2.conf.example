@@ -1,0 +1,44 @@
+#Base config made by Justman10000 and Zedifus (https://gitlab.com/Zedifus)
+#Adapted for WSS by pretzelDewey https://gitlab.com/amcmanu3
+#For this config you need to add the following mods
+#mod_ssl
+#mod_rewrite
+#mod_http_upgrade
+#mod_wss
+
+<VirtualHost _default_:80>
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+    RewriteEngine on
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+</VirtualHost>
+
+<VirtualHost _default_:443>
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+    ProxyPreserveHost On
+    SSLProxyEngine On
+	    SSLProxyVerify none 
+	    SSLProxyCheckPeerCN off
+	    SSLProxyCheckPeerName off
+	    SSLProxyCheckPeerExpire off
+
+#This is important for web sockets which are required by crafty to run!
+
+    RewriteEngine on
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteCond %{HTTP:Connection} upgrade [NC]
+    RewriteRule .* "wss://127.0.0.1:8443%{REQUEST_URI}" [P]
+
+    SSLCertificateFile /var/opt/minecraft/crafty4/app/config/web/certs/commander.cert.pem
+
+    SSLCertificateKeyFile /var/opt/minecraft/crafty4/app/config/web/certs/commander.key.pem
+
+    ProxyPass / https://127.0.0.1:8443/
+    ProxyPassReverse / https://127.0.0.1:8443/
+    ProxyRequests off
+</VirtualHost>

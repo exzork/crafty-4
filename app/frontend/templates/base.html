@@ -21,10 +21,10 @@
 
   <!-- endinject -->
 
-  <!-- Plugin css for this page -->
-  <link rel="stylesheet" href="/static/assets/vendors/jvectormap/jquery-jvectormap.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <!-- End Plugin css for this page -->
+<!-- Plugin css for this page-->
+<link rel="stylesheet" href="/static/assets/vendors/jvectormap/jquery-jvectormap.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<!-- End Plugin css for this page-->
 
   <!-- Layout styles -->
   <link rel="stylesheet" href="/static/assets/css/dark/style.css">
@@ -52,12 +52,13 @@
       </div>
       <div class="navbar-menu-wrapper d-flex align-items-center">
         <style>
-        body:not(.sidebar-icon-only) .navbar-toggler .mdi-chevron-double-right {
+          body:not(.sidebar-icon-only) .navbar-toggler .mdi-chevron-double-right {
             display: none;
-        }
-        body.sidebar-icon-only .navbar-toggler .mdi-chevron-double-left {
+          }
+
+          body.sidebar-icon-only .navbar-toggler .mdi-chevron-double-left {
             display: none;
-        }
+          }
         </style>
         <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
           <span class="mdi mdi-chevron-double-left"></span>
@@ -157,7 +158,8 @@
   <script src="/static/assets/js/shared/off-canvas.js"></script>
   <script src="/static/assets/js/shared/hoverable-collapse.js"></script>
   <script src="/static/assets/js/shared/misc.js"></script>
-  <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.22/fh-3.1.7/r-2.2.6/sc-2.0.3/sp-1.2.2/datatables.min.js"></script>
+  <script type="text/javascript"
+    src="https://cdn.datatables.net/v/bs4/dt-1.10.22/fh-3.1.7/r-2.2.6/sc-2.0.3/sp-1.2.2/datatables.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
   <script type="text/javascript" src="/static/assets/js/motd.js"></script>
 
@@ -214,9 +216,12 @@
       };
       wsInternal.onerror = function (errorEvent) {
         console.error('WebSocket Error', errorEvent);
+        warn('WebSockets are required for Crafty to work. This websocket connection has been closed. Are you using a reverse proxy?', 'https://wiki.craftycontrol.com/en/4/docs/Reverse%20Proxy%20Examples')
+
       };
       wsInternal.onclose = function (closeEvent) {
         console.log('Closed WebSocket', closeEvent);
+        warn('WebSockets are required for Crafty to work. This websocket connection has been closed. Are you using a reverse proxy?', 'https://wiki.craftycontrol.com/en/4/docs/Reverse%20Proxy%20Examples')
       };
 
 
@@ -260,6 +265,17 @@
             location.reload();
           }
         })
+      });
+    }
+    if (webSocket) {
+      webSocket.on('support_status_update', function (logs) {
+        if (logs.percent >= 100) {
+          document.getElementById('logs_progress_bar').innerHTML = '100%';
+          document.getElementById('logs_progress_bar').style.width = '100%';
+        } else {
+          document.getElementById('logs_progress_bar').innerHTML = logs.percent + '%';
+          document.getElementById('logs_progress_bar').style.width = logs.percent + '%';
+        }
       });
     }
     if (webSocket) {
@@ -325,7 +341,7 @@
     }
 
     function eulaAgree(server_id, command) {
-    //< !--this getCookie function is in base.html-- >
+      //< !--this getCookie function is in base.html-- >
       var token = getCookie("_xsrf");
 
       $.ajax({
@@ -341,7 +357,7 @@
     }
 
 
-    function warn(message) {
+    function warn(message, link = null) {
       var closeEl = document.createElement('span');
       var strongEL = document.createElement('strong');
       var msgEl = document.createElement('div');
@@ -367,6 +383,16 @@
 
       parentEl.appendChild(closeEl);
       parentEl.appendChild(msgEl);
+      if (link) {
+        let linkEl = document.createElement('a')
+        linkEl.href = link;
+        linkEl.innerHTML = "See our documentation for details.";
+        linkEl.style.color = 'white';
+        linkEl.style.textDecoration = 'underline';
+        linkEl.target = "_blank";
+
+        parentEl.appendChild(linkEl);
+      }
 
       document.querySelector('.warnings').appendChild(parentEl);
     }

@@ -10,6 +10,7 @@ __pycache__/
 
 .env
 .venv
+default.env
 env/
 venv/
 ENV/
@@ -17,8 +18,10 @@ env.bak/
 venv.bak/
 
 .idea/
-servers/
-backups/
+/servers/
+/backups/
+/docker/servers/
+/docker/backups/
 session.lock
 .header
 default.json

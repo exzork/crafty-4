@@ -4,11 +4,11 @@ from app.classes.web.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
 
+
 class DefaultHandler(BaseHandler):
 
     # Override prepare() instead of get() to cover all possible HTTP methods.
-    # pylint: disable=arguments-differ
-    def prepare(self, page=None):
+    def prepare(self, page=None):  # pylint: disable=arguments-differ
         if page is not None:
             self.set_status(404)
             self.render(
@@ -18,5 +18,5 @@ class DefaultHandler(BaseHandler):
         else:
             self.redirect(
                 "/public/login",
-                #translate=self.translator.translate,
+                # translate=self.translator.translate,
             )

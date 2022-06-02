@@ -6,6 +6,7 @@ docker-compose.yml
 
 # git & gitlab related
 .git/
+.gitlab/
 .gitignore
 .gitlab-ci.yml
 
