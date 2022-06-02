@@ -21,6 +21,7 @@ from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.models.users import HelperUsers
 from app.classes.models.roles import HelperRoles
 from app.classes.models.management import HelpersManagement
+from app.classes.shared.tasks import TasksManager
 from app.classes.models.servers import HelperServers
 from app.classes.shared.authentication import Authentication
 from app.classes.shared.console import Console
@@ -38,6 +39,7 @@ class Controller:
         self.users_helper: HelperUsers = HelperUsers(database, self.helper)
         self.roles_helper: HelperRoles = HelperRoles(database)
         self.servers_helper: HelperServers = HelperServers(database)
+        self.tasks_manager: TasksManager = TasksManager()
         self.management_helper: HelpersManagement = HelpersManagement(
             database, self.helper
         )
@@ -864,6 +866,10 @@ class Controller:
                         )
 
                 # Cleanup scheduled tasks
+                try:
+                    self.tasks_manager.remove_all_server_tasks(server_id)
+                except:
+                    logger.info(f"Could not find active jobs for server {server_id}")
                 try:
                     HelpersManagement.delete_scheduled_task_by_server(server_id)
                 except DoesNotExist:
