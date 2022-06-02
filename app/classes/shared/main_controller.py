@@ -89,7 +89,14 @@ class Controller:
         server_path = os.path.join(full_temp, "server")
         os.mkdir(server_path)
         if exec_user["superuser"]:
-            auth_servers = self.servers.list_defined_servers()
+            defined_servers = self.servers.list_defined_servers()
+            user_servers = []
+            for server in defined_servers:
+                if server not in user_servers:
+                    user_servers.append(
+                        DatabaseShortcuts.get_data_obj(server.server_object)
+                    )
+            auth_servers = user_servers
         else:
             defined_servers = self.servers.get_authorized_servers(
                 int(exec_user["user_id"])
