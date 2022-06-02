@@ -1108,13 +1108,18 @@ class PanelHandler(BaseHandler):
                 )
                 return
             if exec_user["superuser"]:
-                page_data[
-                    "servers_all"
-                ] = self.controller.servers.get_all_defined_servers()
+                defined_servers = self.controller.servers.list_defined_servers()
             else:
-                page_data[
-                    "servers_all"
-                ] = self.controller.servers.get_authorized_servers(exec_user["user_id"])
+                defined_servers = self.controller.servers.get_authorized_servers(
+                    exec_user["user_id"]
+                )
+            page_servers = []
+            for server in defined_servers:
+                if server not in page_servers:
+                    page_servers.append(
+                        DatabaseShortcuts.get_data_obj(server.server_object)
+                    )
+            page_data["servers_all"] = page_servers
             page_data[
                 "permissions_all"
             ] = self.controller.server_perms.list_defined_permissions()
@@ -1127,13 +1132,18 @@ class PanelHandler(BaseHandler):
             role_id = self.get_argument("id", None)
             page_data["role"] = self.controller.roles.get_role_with_servers(role_id)
             if exec_user["superuser"]:
-                page_data[
-                    "servers_all"
-                ] = self.controller.servers.get_all_defined_servers()
+                defined_servers = self.controller.servers.list_defined_servers()
             else:
-                page_data[
-                    "servers_all"
-                ] = self.controller.servers.get_authorized_servers(exec_user["user_id"])
+                defined_servers = self.controller.servers.get_authorized_servers(
+                    exec_user["user_id"]
+                )
+            page_servers = []
+            for server in defined_servers:
+                if server not in page_servers:
+                    page_servers.append(
+                        DatabaseShortcuts.get_data_obj(server.server_object)
+                    )
+            page_data["servers_all"] = page_servers
             page_data[
                 "permissions_all"
             ] = self.controller.server_perms.list_defined_permissions()
