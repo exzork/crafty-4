@@ -522,13 +522,16 @@
       event.target.parentElement.children[1].classList.remove("d-none");
       document.getElementById("overlay").classList.remove("d-none");
     }
+
     function hide(event) {
       var items = document.getElementsByClassName('menu');
-      for (let i = 0; i < items.length; i++) {
-        items[i].classList.add("d-none");
-      }
+      items.forEach(item => {
+        item.classList.add("d-none");
+      })
+
       document.getElementById("overlay").classList.add("d-none");
     }
+
     $(document).ready(function () {
       console.log('ready');
       var forms = $('form.server-wizard');
@@ -672,24 +675,8 @@
 
   </script>
   <script type="text/javascript">
-    //<![CDATA[
-    // array of possible countries in the same order as they appear in the country selection list
-
-    function decodeHtmlCharCodes(str) {
-      return str.replace("&quot;", "\"");
-    }
-
-    function convertHtmlJsonToJavacriptArray(str) {
-      var result = []
-      str = decodeHtmlCharCodes(str)
-      for (var i in str)
-        result.push([i, str[i]]);
-      return result
-    }
-
     var text = '{% raw data["js_server_types"] %}';
     var serverTypesLists = JSON.parse(text);
-    //convertHtmlJsonToJavacriptArray('{{ data["js_server_types"] }}')
     /* CountryChange() is called from the onchange event of a select element.
     * param selectObj - the select object which fired the on change event.
     */
@@ -709,10 +696,10 @@
       }
       var newOption;
       // create new options ordered by ascending
-      for (var i = 0; i < (cList.length); i++) {
+      cList.forEach(type => {
         newOption = document.createElement("option");
-        newOption.value = which + "|" + cList[i];  // assumes option string and value are the same
-        newOption.text = cList[i];
+        newOption.value = which + "|" + type;  // assumes option string and value are the same
+        newOption.text = type;
         // add the new option
         try {
           cSelect.add(newOption);  // this will fail in DOM browsers but is needed for IE
@@ -720,8 +707,7 @@
         catch (e) {
           cSelect.appendChild(newOption);
         }
-      }
+      })
     }
- //]]>
   </script>
   {% end %}

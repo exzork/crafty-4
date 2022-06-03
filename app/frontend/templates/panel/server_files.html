@@ -450,9 +450,7 @@
       var ctxmenuName = e.target.getAttribute('data-name');
 
       document.getElementById('context-title').innerHTML = ctxmenuName;
-      console.log(ctxmenuName);
       if (!ctxmenuPath) {
-        console.log({ 'event.target': e.target, ctxmenuPath });
         return;
       }
       $('#renameItem').show();
@@ -466,7 +464,6 @@
       var isFile = e.target.classList.contains('tree-file');
       $('#deleteFile').toggle(isFile);
       $('#downloadFile').toggle(isFile);
-      console.log({ 'event.target': e.target, isDir, isFile });
 
       if (e.target.classList.contains('root-dir')) {
         $('#createFile').show();
@@ -479,7 +476,6 @@
       }
       if (e.target.textContent.endsWith('.zip')) {
         $('#unzip').show();
-        console.log(e.target.textContent)
       } else {
         $('#unzip').hide();
       }
@@ -502,7 +498,6 @@
       }
       document.getElementById("files-tree-nav").style.top = clientY + 'px';
       document.getElementById("files-tree-nav").style.left = clientX + 'px';
-      console.log(window.innerHeight)
       timer = null;
     };
   }
@@ -585,7 +580,6 @@
         console.log("got response:");
         document.getElementById("save_status").innerHTML = '<i class="fal fa-file-check"></i>';
         document.getElementById('save_status').style.color = '#2fb689';
-        console.log(data);
       },
     });
   }
@@ -602,7 +596,6 @@
       },
       success: function (data) {
         console.log("got response:");
-        console.log(data);
         callback();
       },
     });
@@ -620,7 +613,6 @@
       },
       success: function (data) {
         console.log("got response:");
-        console.log(data);
         callback();
       },
     });
@@ -638,7 +630,6 @@
       },
       success: function (data) {
         console.log("got response:");
-        console.log(data);
         callback();
       },
     });
@@ -656,7 +647,6 @@
       },
       success: function (data) {
         console.log("got response:");
-        console.log(data);
         callback();
       },
     });
@@ -673,13 +663,13 @@
       },
       success: function (data) {
         console.log("got response:");
-        console.log(data);
         callback();
       },
     });
   }
 
   function unZip(path, callback) {
+    console.log('path: ', path)
     var token = getCookie("_xsrf")
     $.ajax({
       type: "POST",
@@ -731,7 +721,6 @@
 
   function uploadFilesE(event) {
     path = event.target.parentElement.getAttribute('data-path');
-    console.log("PATH: " + path);
     $(function () {
       var uploadHtml = "<div>" +
         '<form id="upload_file"  enctype="multipart/form-data">' + "<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
@@ -765,14 +754,15 @@
                 message: waitMessage,
                 closeButton: false
               });
+
               let nFiles = files.files.length;
-              for (i = 0; i < files.files.length; i++) {
+              for (i = 0; i < nFiles; i++) {
                 if (!doUpload) {
                   doUpload = true;
                   hideUploadBox();
                   break;
                 }
-                console.log(files.files[i].name);
+
                 const progressHtml = `
                 <div style="width: 100%; min-width: 100%;">
                   ${files.files[i].name}:
@@ -788,8 +778,8 @@
                 </div><br>
                 `;
                 $('#upload-progress-bar-parent').append(progressHtml);
-                console.log(files.files.length)
-                sendFile(files.files[i], path, serverId, files.files.length - i - 1, (progress) => {
+
+                sendFile(files.files[i], path, serverId, nFiles - i - 1, (progress) => {
                   $(`#upload-progress-bar-${i + 1}`).attr('aria-valuenow', progress)
                   $(`#upload-progress-bar-${i + 1}`).css('width', progress + '%')
                 });
@@ -804,16 +794,17 @@
       var fileList = document.getElementById("files");
       fileList.addEventListener("change", function (e) {
         var list = "";
-        for (var i = 0; i < this.files.length; i++) {
-          list += "<li class='col-xs-12 file-list'>" + this.files[i].name + "</li>"
-        }
+        let files = Array.from(this.files)
+        files.forEach(file => {
+          list += "<li class='col-xs-12 file-list'>" + file.name + "</li>"
+        })
 
         document.getElementById("fileList").innerHTML = list;
       }, false);
     });
   }
-  function getTreeView(event) {
 
+  function getTreeView(event) {
     const path = $('#root_dir').data('path');;
 
     $.ajax({
@@ -822,7 +813,6 @@
       dataType: 'text',
       success: function (data) {
         console.log("got response:");
-        console.log(data);
 
         dataArr = data.split('\n');
         serverDir = dataArr.shift(); // Remove & return first element (server directory)
@@ -899,10 +889,9 @@
   }
 
   function setTreeViewContext() {
-    var treeItems = document.getElementsByClassName('tree-ctx-item');
+    var treeItems = Array.from(document.getElementsByClassName('tree-ctx-item'));
 
-    for (var i = 0; i < treeItems.length; i++) {
-      var treeItem = treeItems[i];
+    treeItems.forEach(item => {
       if ([
         'iPad Simulator',
         'iPhone Simulator',
@@ -913,10 +902,10 @@
       ].includes(navigator.platform)
         // iPad on iOS 13 detection
         || (navigator.userAgent.includes("Mac") && "ontouchend" in document)) {
-        treeItem.addEventListener("touchstart", touchstart, false);
-        treeItem.addEventListener("touchend", touchend, false);
+        item.addEventListener("touchstart", touchstart, false);
+        item.addEventListener("touchend", touchend, false);
       }
-      treeItem.addEventListener('contextmenu', function contextListener(event) {
+      item.addEventListener('contextmenu', function contextListener(event) {
         event.preventDefault();
         var ctxmenuPath = event.target.getAttribute('data-path');
         var ctxmenuName = event.target.getAttribute('data-name');
@@ -933,12 +922,10 @@
         $('#upload').toggle(isDir);
 
         document.getElementById('context-title').innerHTML = ctxmenuName;
-        console.log(ctxmenuName);
 
         var isFile = event.target.classList.contains('tree-file');
         $('#deleteFile').toggle(isFile);
         $('#downloadFile').toggle(isFile);
-        console.log({ 'event.target': event.target, isDir, isFile });
 
         if (event.target.classList.contains('root-dir')) {
           $('#createFile').show();
@@ -951,15 +938,12 @@
         }
         if (event.target.textContent.endsWith('.zip')) {
           $('#unzip').show();
-          console.log(event.target.textContent)
         } else {
           $('#unzip').hide();
         }
 
         var clientX = event.clientX;
         var clientY = event.clientY;
-
-
 
         document.getElementById('files-tree-nav-content')
           .setAttribute('data-path', ctxmenuPath);
@@ -974,10 +958,8 @@
         }
         document.getElementById("files-tree-nav").style.top = clientY + 'px';
         document.getElementById("files-tree-nav").style.left = clientX + 'px';
-        console.log(domRect)
-        console.log(window.innerHeight)
       })
-    }
+    })
   }
 
   document.addEventListener('click', function (e) {
@@ -1049,6 +1031,7 @@
   }
   function unzipFilesE(event) {
     path = event.target.parentElement.getAttribute('data-path');
+    console.log(path)
     unZip(path)
   }
 
@@ -1117,10 +1100,10 @@
     editor.setKeyboardHandler(handlerName);
 
     var nodes = target.parentNode.querySelectorAll("[data-handler-name]");
-    for (var i = 0; i < nodes.length; i++) {
-      nodes[i].classList.remove('btn-primary');
-      nodes[i].classList.add('btn-secondary');
-    }
+    nodes.forEach(node => {
+      node.classList.remove('btn-primary');
+      node.classList.add('btn-secondary');
+    })
 
     target.classList.remove('btn-secondary');
     target.classList.add('btn-primary');

@@ -133,7 +133,7 @@
                         <button class="btn btn-primary mr-2" id="root_files_button" type="button">{{ translate('serverWizard', 'clickRoot', data['lang']) }}</button>
                       </div>
                     </div>
-                    
+
 
                     <div class="col-sm-12">
                       <div class="form-group">
@@ -367,7 +367,7 @@ function hide(event) {
           }catch{
             document.getElementById('files-tree').innerHTML = text;
           }
-          
+
 
           document.getElementsByClassName('files-tree-title')[0].setAttribute('data-path', serverDir);
           document.getElementsByClassName('files-tree-title')[0].setAttribute('data-name', 'Files');
@@ -382,7 +382,7 @@ function hide(event) {
           document.getElementById(path+"span").classList.toggle("tree-caret-down");
           document.getElementById(path+"span").classList.toggle("tree-caret");
       }
-    
+
 
     function getDirView(event) {
         path = event.target.parentElement.getAttribute('data-path');
@@ -417,7 +417,7 @@ function hide(event) {
           }
 
           var toggler = document.getElementById(path);
-  
+
             if (toggler.classList.contains('files-tree-title')){
             document.getElementById(path+"span").addEventListener("click", function caretListener() {
               document.getElementById(path+"ul").classList.toggle("d-block");
@@ -442,27 +442,10 @@ function hide(event) {
           document.getElementById('main-tree-input').setAttribute('value', data.path)
           getTreeView(data.path);
           show_file_tree();
-  
+
       }, 5000);
       });
     }
 
 </script>
-<script type="text/javascript">
-  //<![CDATA[
-  // array of possible countries in the same order as they appear in the country selection list
-
-  function decodeHtmlCharCodes(str) {
-    return str.replace("&quot;", "\"");
-  }
-
-  function convertHtmlJsonToJavacriptArray(str) {
-    var result = []
-    str = decodeHtmlCharCodes(str)
-    for(var i in str)
-      result.push([i, str [i]]);
-    return result
-  }
- //]]>
- </script>
 {% end %}
