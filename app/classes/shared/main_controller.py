@@ -682,7 +682,7 @@ class Controller:
         )
         if os.name != "nt":
             if Helpers.check_file_exists(full_jar_path):
-                os.chmod(full_jar_path, 0o2775)
+                os.chmod(full_jar_path, 0o2760)
         return new_id
 
     def import_bedrock_zip_server(
@@ -751,7 +751,7 @@ class Controller:
         )
         if os.name != "nt":
             if Helpers.check_file_exists(full_jar_path):
-                os.chmod(full_jar_path, 0o2775)
+                os.chmod(full_jar_path, 0o2760)
 
         return new_id
 
