@@ -8,7 +8,7 @@ import uuid
 import string
 import base64
 import socket
-import random
+import secrets
 import logging
 import html
 import zipfile
@@ -722,8 +722,8 @@ class Helpers:
         # create a self-signed cert
         cert = crypto.X509()
         cert.get_subject().C = "US"
-        cert.get_subject().ST = "Georgia"
-        cert.get_subject().L = "Atlanta"
+        cert.get_subject().ST = "Michigan"
+        cert.get_subject().L = "Kent County"
         cert.get_subject().O = "Crafty Controller"
         cert.get_subject().OU = "Server Ops"
         cert.get_subject().CN = gethostname()
@@ -743,7 +743,7 @@ class Helpers:
             b"basicConstraints", True, b"CA:false"
         )
         cert.add_extensions([subject_alt_names_ext, basic_constraints_ext])
-        cert.set_serial_number(random.randint(1, 255))
+        cert.set_serial_number(secrets.randbelow(254) + 1)
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(365 * 24 * 60 * 60)
         cert.set_issuer(cert.get_subject())
@@ -766,7 +766,7 @@ class Helpers:
         random_generator() = G8sjO2
         random_generator(3, abcdef) = adf
         """
-        return "".join(random.choice(chars) for x in range(size))
+        return "".join(secrets.choice(chars) for x in range(size))
 
     @staticmethod
     def is_os_windows():

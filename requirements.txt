@@ -11,7 +11,7 @@ peewee==3.13
 pexpect==4.8
 psutil==5.9
 pyOpenSSL==19.1.0
-pyjwt==2.3
+pyjwt==2.4.0
 PyYAML==5.4
 requests==2.26
 termcolor==1.1
