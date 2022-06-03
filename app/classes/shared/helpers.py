@@ -440,9 +440,7 @@ class Helpers:
                 full_root_path = temp_dir
 
                 for item in os.listdir(full_root_path):
-                    print(item)
                     if os.path.isdir(os.path.join(full_root_path, item)):
-                        print("dir")
                         try:
                             FileHelpers.move_dir(
                                 os.path.join(full_root_path, item),
@@ -459,7 +457,7 @@ class Helpers:
                         except Exception as ex:
                             logger.error(f"ERROR IN ZIP IMPORT: {ex}")
             except Exception as ex:
-                print(ex)
+                Console.error(ex)
         else:
             return "false"
         return
