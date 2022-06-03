@@ -765,14 +765,15 @@
                 message: waitMessage,
                 closeButton: false
               });
+
               let nFiles = files.files.length;
-              for (i = 0; i < files.files.length; i++) {
+              for (i = 0; i < nFiles; i++) {
                 if (!doUpload) {
                   doUpload = true;
                   hideUploadBox();
                   break;
                 }
-                console.log(files.files[i].name);
+
                 const progressHtml = `
                 <div style="width: 100%; min-width: 100%;">
                   ${files.files[i].name}:
@@ -788,8 +789,8 @@
                 </div><br>
                 `;
                 $('#upload-progress-bar-parent').append(progressHtml);
-                console.log(files.files.length)
-                sendFile(files.files[i], path, serverId, files.files.length - i - 1, (progress) => {
+
+                sendFile(files.files[i], path, serverId, nFiles - i - 1, (progress) => {
                   $(`#upload-progress-bar-${i + 1}`).attr('aria-valuenow', progress)
                   $(`#upload-progress-bar-${i + 1}`).css('width', progress + '%')
                 });
@@ -804,16 +805,16 @@
       var fileList = document.getElementById("files");
       fileList.addEventListener("change", function (e) {
         var list = "";
-        for (var i = 0; i < this.files.length; i++) {
-          list += "<li class='col-xs-12 file-list'>" + this.files[i].name + "</li>"
-        }
+        this.files.forEach(file => {
+          list += "<li class='col-xs-12 file-list'>" + file.name + "</li>"
+        })
 
         document.getElementById("fileList").innerHTML = list;
       }, false);
     });
   }
-  function getTreeView(event) {
 
+  function getTreeView(event) {
     const path = $('#root_dir').data('path');;
 
     $.ajax({
@@ -901,8 +902,7 @@
   function setTreeViewContext() {
     var treeItems = document.getElementsByClassName('tree-ctx-item');
 
-    for (var i = 0; i < treeItems.length; i++) {
-      var treeItem = treeItems[i];
+    treeItems.forEach(item => {
       if ([
         'iPad Simulator',
         'iPhone Simulator',
@@ -913,10 +913,10 @@
       ].includes(navigator.platform)
         // iPad on iOS 13 detection
         || (navigator.userAgent.includes("Mac") && "ontouchend" in document)) {
-        treeItem.addEventListener("touchstart", touchstart, false);
-        treeItem.addEventListener("touchend", touchend, false);
+        item.addEventListener("touchstart", touchstart, false);
+        item.addEventListener("touchend", touchend, false);
       }
-      treeItem.addEventListener('contextmenu', function contextListener(event) {
+      item.addEventListener('contextmenu', function contextListener(event) {
         event.preventDefault();
         var ctxmenuPath = event.target.getAttribute('data-path');
         var ctxmenuName = event.target.getAttribute('data-name');
@@ -959,8 +959,6 @@
         var clientX = event.clientX;
         var clientY = event.clientY;
 
-
-
         document.getElementById('files-tree-nav-content')
           .setAttribute('data-path', ctxmenuPath);
         document.getElementById('files-tree-nav-content')
@@ -977,7 +975,7 @@
         console.log(domRect)
         console.log(window.innerHeight)
       })
-    }
+    })
   }
 
   document.addEventListener('click', function (e) {
@@ -1117,10 +1115,10 @@
     editor.setKeyboardHandler(handlerName);
 
     var nodes = target.parentNode.querySelectorAll("[data-handler-name]");
-    for (var i = 0; i < nodes.length; i++) {
-      nodes[i].classList.remove('btn-primary');
-      nodes[i].classList.add('btn-secondary');
-    }
+    nodes.forEach(node => {
+      node.classList.remove('btn-primary');
+      node.classList.add('btn-secondary');
+    })
 
     target.classList.remove('btn-secondary');
     target.classList.add('btn-primary');
