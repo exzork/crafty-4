@@ -1115,6 +1115,7 @@ class ServerInstance:
                         + ". Check log file for details.",
                     )
                 logger.error("Executable download failed.")
+                self.stats_helper.set_update(False)
 
     # **********************************************************************************
     #                               Minecraft Servers Statistics

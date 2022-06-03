@@ -601,17 +601,19 @@
 
         server_players.setAttribute('data-players', server.online);
         server_players.setAttribute('data-max', server.max);
-        let servers = document.getElementsByClassName("server-player-totals");
+        let servers = Array.from(document.getElementsByClassName("server-player-totals"));
         let all_total_players = 0;
         let all_total_max_players = 0;
-        for (let i = 0; i < servers.length; i++) {
+
+        servers.forEach(server => {
           try {
-            all_total_players += parseInt(servers[i].getAttribute('data-players'));
-            all_total_max_players += parseInt(servers[i].getAttribute('data-max'));
+            all_total_players += parseInt(server.getAttribute('data-players'));
+            all_total_max_players += parseInt(server.getAttribute('data-max'));
           } catch {
             console.log("Player totals are not of type int");
           }
-        }
+        })
+
         total_players.innerHTML = all_total_players;
         document.getElementById('max_players').innerHTML = all_total_max_players;
         document.getElementById('sync').innerHTML = '';
