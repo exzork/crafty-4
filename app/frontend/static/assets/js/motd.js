@@ -86,10 +86,9 @@ function parseStyle(string) {
     return final;
 }
 function clearObfuscators() {
-    var i = obfuscators.length;
-    for (; i--;) {
-        clearInterval(obfuscators[i]);
-    }
+    obfuscators.slice().reverse().forEach(item => {
+        clearInterval(item);
+    });
     obfuscators = [];
 }
 function initParser(input, output) {
