@@ -7,10 +7,11 @@ import argparse
 import logging.config
 import signal
 import peewee
+
 from app.classes.shared.import3 import Import3
-from app.classes.models.users import HelperUsers
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
+from app.classes.models.users import HelperUsers
 
 console = Console()
 helper = Helpers()
