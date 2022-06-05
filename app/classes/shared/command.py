@@ -16,12 +16,15 @@ logger = logging.getLogger(__name__)
 
 
 class MainPrompt(cmd.Cmd):
-    def __init__(self, helper, tasks_manager, migration_manager, main_controller):
+    def __init__(
+        self, helper, tasks_manager, migration_manager, main_controller, import3
+    ):
         super().__init__()
         self.helper: Helpers = helper
         self.tasks_manager: TasksManager = tasks_manager
         self.migration_manager: MigrationManager = migration_manager
         self.controller: Controller = main_controller
+        self.import3: Import3 = import3
 
         # overrides the default Prompt
         self.prompt = f"Crafty Controller v{self.helper.get_version_string()} > "
@@ -101,7 +104,7 @@ class MainPrompt(cmd.Cmd):
         self.stdout.flush()
 
     def do_import3(self, _line):
-        Import3.start_import()
+        self.import3.start_import()
 
     def universal_exit(self):
         logger.info("Stopping all server daemons / threads")

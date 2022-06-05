@@ -182,7 +182,7 @@ class PublicHandler(BaseHandler):
                 # self.clear_cookie("user")
                 # self.clear_cookie("user_data")
                 self.clear_cookie("token")
-                error_msg = "Inncorrect username or password. Please try again."
+                error_msg = "Incorrect username or password. Please try again."
                 # log this failed login attempt
                 self.controller.management.add_to_audit_log(
                     user_data.user_id, "Tried to log in", 0, self.get_remote_ip()
