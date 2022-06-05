@@ -7,6 +7,7 @@ import argparse
 import logging.config
 import signal
 import peewee
+from app.classes.shared.import3 import Import3
 from app.classes.models.users import HelperUsers
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
@@ -133,6 +134,7 @@ if __name__ == "__main__":
 
     # now the tables are created, we can load the tasks_manager and server controller
     controller = Controller(database, helper)
+    import3 = Import3(helper, controller)
     tasks_manager = TasksManager(helper, controller)
     tasks_manager.start_webserver()
 
@@ -194,7 +196,9 @@ if __name__ == "__main__":
         controller.clear_unexecuted_commands()
         controller.clear_support_status()
 
-    crafty_prompt = MainPrompt(helper, tasks_manager, migration_manager, controller)
+    crafty_prompt = MainPrompt(
+        helper, tasks_manager, migration_manager, controller, import3
+    )
 
     controller_setup_thread = Thread(target=controller_setup, name="controller_setup")
 
