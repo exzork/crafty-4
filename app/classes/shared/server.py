@@ -858,10 +858,20 @@ class ServerInstance:
                 if os.path.isdir(excluded_dir):
                     # If it is a directory,
                     # recursively delete the entire directory from the backup
-                    FileHelpers.del_dirs(excluded_dir)
+                    try:
+                        FileHelpers.del_dirs(excluded_dir)
+                    except FileNotFoundError:
+                        Console.error(
+                            f"Excluded dir {excluded_dir} not found. Moving on..."
+                        )
                 else:
                     # If not, just remove the file
-                    os.remove(excluded_dir)
+                    try:
+                        os.remove(excluded_dir)
+                    except:
+                        Console.error(
+                            f"Excluded dir {excluded_dir} not found. Moving on..."
+                        )
             if conf["compress"]:
                 logger.debug(
                     "Found compress backup to be true. Calling compressed archive"
