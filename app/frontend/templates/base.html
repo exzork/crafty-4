@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="/static/assets/vendors/typicons/typicons.css">
   <link rel="stylesheet" href="/static/assets/vendors/fontawesome5/css/all.css">
   <link rel="stylesheet" type="text/css"
-    href="https://cdn.datatables.net/v/bs4/dt-1.10.22/fh-3.1.7/r-2.2.6/sc-2.0.3/sp-1.2.2/datatables.min.css" />
+        href="https://cdn.datatables.net/v/bs4/dt-1.10.22/fh-3.1.7/r-2.2.6/sc-2.0.3/sp-1.2.2/datatables.min.css" />
   <link rel="stylesheet" href="/static/assets/vendors/css/vendor.bundle.base.css">
   <link rel="stylesheet" href="/static/assets/css/crafty.css">
 
@@ -67,7 +67,7 @@
         {% include notify.html %}
 
         <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button"
-          data-toggle="offcanvas">
+                data-toggle="offcanvas">
           <span class="mdi mdi-menu"></span>
         </button>
       </div>
@@ -158,7 +158,7 @@
   <script src="/static/assets/js/shared/hoverable-collapse.js"></script>
   <script src="/static/assets/js/shared/misc.js"></script>
   <script type="text/javascript"
-    src="https://cdn.datatables.net/v/bs4/dt-1.10.22/fh-3.1.7/r-2.2.6/sc-2.0.3/sp-1.2.2/datatables.min.js"></script>
+          src="https://cdn.datatables.net/v/bs4/dt-1.10.22/fh-3.1.7/r-2.2.6/sc-2.0.3/sp-1.2.2/datatables.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
   <script type="text/javascript" src="/static/assets/js/motd.js"></script>
 
@@ -315,8 +315,8 @@
           x.remove()
         }
         bootbox.confirm({
-          title: '{% raw translate("error", "eulaTitle", data['lang']) %}',
-          message: '{% raw translate("error", "eulaMsg", data['lang']) %} <br><br><a href="https://account.mojang.com/documents/minecraft_eula" target="_blank">EULA</a><br><br>{% raw translate("error", "eulaAgree", data['lang']) %}',
+          title: "{% raw translate('error', 'eulaTitle', data['lang']) %}",
+          message: "{% raw translate('error', 'eulaMsg', data['lang']) %} <br><br><a href='https://account.mojang.com/documents/minecraft_eula' target='_blank'>EULA</a><br><br>{% raw translate('error', 'eulaAgree', data['lang']) %}",
           buttons: {
             confirm: {
               label: 'Yes',
