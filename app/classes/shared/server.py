@@ -1,6 +1,7 @@
 from contextlib import redirect_stderr
 import os
 import re
+import shutil
 import time
 import datetime
 import base64
@@ -842,7 +843,10 @@ class ServerInstance:
                 args=[temp_dir + "/", backup_filename + ".zip"],
             )
             # pylint: disable=unexpected-keyword-arg
-            FileHelpers.copy_dir(self.server_path, temp_dir, dirs_exist_ok=True)
+            try:
+                FileHelpers.copy_dir(self.server_path, temp_dir, dirs_exist_ok=True)
+            except shutil.Error as e:
+                logger.error(f"Failed to fully complete backup due to shutil error {e}")
             excluded_dirs = HelpersManagement.get_excluded_backup_dirs(self.server_id)
             server_dir = Helpers.get_os_understandable_path(self.settings["path"])
 

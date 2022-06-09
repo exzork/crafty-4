@@ -179,7 +179,7 @@ class Webserver:
             xsrf_cookies=True,
             autoreload=False,
             log_function=self.log_function,
-            login_url="/login",
+            login_url="/public/login",
             default_handler_class=PublicHandler,
             static_handler_class=CustomStaticHandler,
             serve_traceback=debug_errors,
@@ -205,7 +205,7 @@ class Webserver:
             autoreload=False,
             log_function=self.log_function,
             default_handler_class=HTTPHandler,
-            login_url="/login",
+            login_url="/public/login",
             serve_traceback=debug_errors,
         )
 

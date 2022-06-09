@@ -43,11 +43,11 @@ class ApiJsonSchemaHandler(BaseApiHandler):
                 {"status": "ok", "data": create_role_schema},
             )
         elif schema_name == "server_patch":
-            self.finish_json(200, server_patch_schema)
+            self.finish_json(200, {"status": "ok", "data": server_patch_schema})
         elif schema_name == "new_server":
             self.finish_json(
                 200,
-                new_server_schema,
+                {"status": "ok", "data": new_server_schema},
             )
         elif schema_name == "user_patch":
             self.finish_json(
