@@ -32,18 +32,15 @@ class PublicHandler(BaseHandler):
 
         error = bleach.clean(self.get_argument("error", "Invalid Login!"))
         error_msg = bleach.clean(self.get_argument("error_msg", ""))
-        try:
-            page_data = {
-                "version": self.helper.get_version_string(),
-                "error": error,
-                "lang": self.helper.get_setting("language"),
-                "lang_page": self.helper.get_lang_page(
-                    self.helper.get_setting("language")
-                ),
-                "query": "",
-            }
-        except:
-            self.redirect("/public/login.html")
+
+        page_data = {
+            "version": self.helper.get_version_string(),
+            "error": error,
+            "lang": self.helper.get_setting("language"),
+            "lang_page": self.helper.get_lang_page(self.helper.get_setting("language")),
+            "query": "",
+        }
+
         if self.request.query:
             page_data["query"] = self.request.query
 

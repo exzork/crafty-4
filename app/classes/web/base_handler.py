@@ -17,6 +17,22 @@ bearer_pattern = re.compile(r"^Bearer ", flags=re.IGNORECASE)
 
 
 class BaseHandler(tornado.web.RequestHandler):
+    nobleach = {bool, type(None)}
+    redactables = ("pass", "api")
+
+    helper: Helpers
+    controller: Controller
+    translator: Translation
+
+    # noinspection PyAttributeOutsideInit
+    def initialize(
+        self, helper=None, controller=None, tasks_manager=None, translator=None
+    ):
+        self.helper = helper
+        self.controller = controller
+        self.tasks_manager = tasks_manager
+        self.translator = translator
+
     def set_default_headers(self) -> None:
         """
         Fix CORS
@@ -37,22 +53,6 @@ class BaseHandler(tornado.web.RequestHandler):
         # no body
         self.set_status(204)
         self.finish()
-
-    nobleach = {bool, type(None)}
-    redactables = ("pass", "api")
-
-    helper: Helpers
-    controller: Controller
-    translator: Translation
-
-    # noinspection PyAttributeOutsideInit
-    def initialize(
-        self, helper=None, controller=None, tasks_manager=None, translator=None
-    ):
-        self.helper = helper
-        self.controller = controller
-        self.tasks_manager = tasks_manager
-        self.translator = translator
 
     def get_remote_ip(self):
         remote_ip = (
