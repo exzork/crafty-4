@@ -593,9 +593,14 @@ class ServerInstance:
         self.cleanup_server_object()
         server_users = PermissionsServers.get_server_user_list(self.server_id)
 
-        # remove the stats polling job since server is stopped
-        self.server_scheduler.remove_job("stats_" + str(self.server_id))
-
+        try:
+            # remove the stats polling job since server is stopped
+            self.server_scheduler.remove_job("stats_" + str(self.server_id))
+        except JobLookupError as e:
+            logger.error(
+                f"Could not remove job with id stats_{self.server_id} due"
+                + f" to error: {e}"
+            )
         self.record_server_stats()
 
         for user in server_users:
