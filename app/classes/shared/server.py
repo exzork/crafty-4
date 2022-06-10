@@ -691,8 +691,10 @@ class ServerInstance:
         try:
             self.server_scheduler.remove_job("stats_" + str(self.server_id))
         except JobLookupError as e:
-            logger.error(f"Could not remove job with id stats_{self.server_id} due"+ 
-                         f" to error: {e}")
+            logger.error(
+                f"Could not remove job with id stats_{self.server_id} due"
+                + f" to error: {e}"
+            )
         self.process.kill()
 
     def get_start_time(self):
