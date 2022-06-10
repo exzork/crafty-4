@@ -1,3 +1,4 @@
+---
 # YAML Linting [https://yamllint.readthedocs.io/en/latest/]
 yamllint:
   stage: lint
