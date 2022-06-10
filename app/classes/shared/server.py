@@ -14,6 +14,7 @@ import tempfile
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.jobstores.base import JobLookupError
 
 from app.classes.minecraft.stats import Stats
 from app.classes.minecraft.mc_ping import ping, ping_bedrock
@@ -592,9 +593,14 @@ class ServerInstance:
         self.cleanup_server_object()
         server_users = PermissionsServers.get_server_user_list(self.server_id)
 
-        # remove the stats polling job since server is stopped
-        self.server_scheduler.remove_job("stats_" + str(self.server_id))
-
+        try:
+            # remove the stats polling job since server is stopped
+            self.server_scheduler.remove_job("stats_" + str(self.server_id))
+        except JobLookupError as e:
+            logger.error(
+                f"Could not remove job with id stats_{self.server_id} due"
+                + f" to error: {e}"
+            )
         self.record_server_stats()
 
         for user in server_users:
@@ -687,7 +693,13 @@ class ServerInstance:
             proc.kill()
         # kill the main process we are after
         logger.info("Sending SIGKILL to parent")
-        self.server_scheduler.remove_job("stats_" + str(self.server_id))
+        try:
+            self.server_scheduler.remove_job("stats_" + str(self.server_id))
+        except JobLookupError as e:
+            logger.error(
+                f"Could not remove job with id stats_{self.server_id} due"
+                + f" to error: {e}"
+            )
         self.process.kill()
 
     def get_start_time(self):
