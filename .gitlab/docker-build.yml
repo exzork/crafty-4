@@ -1,0 +1,111 @@
+# yamllint disable rule:line-length
+---
+docker-build-dev:
+  image: docker:latest
+  services:
+    - name: docker:dind
+  stage: dev-deployment
+  tags:
+    - docker_priv
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'dev'
+  environment:
+    name: development
+  before_script:
+    - |
+      apk --no-cache add jq
+      MAJOR=$(cat app/config/version.json | jq '.major' )
+      MINOR=$(cat app/config/version.json | jq '.minor' )
+      SUB=$(cat app/config/version.json | jq '.sub' )
+      META=$(cat app/config/version.json | jq -r '.meta' )
+    - |
+      apk --no-cache add curl
+      latest_tag=$(curl -s https://api.github.com/repos/docker/buildx/releases/latest | sed -Ene '/^ *"tag_name": *"(v.+)",$/s//\1/p')
+      echo "Using buildx version $latest_tag"
+      curl -sSLo docker-buildx "https://github.com/docker/buildx/releases/download/$latest_tag/buildx-$latest_tag.linux-amd64"
+      chmod a+x docker-buildx
+      mkdir -p ~/.docker/cli-plugins
+      mv docker-buildx ~/.docker/cli-plugins/docker-buildx
+      docker version
+    - docker run --rm --privileged aptman/qus -- -r
+    - docker run --rm --privileged aptman/qus -s -- -p aarch64 x86_64
+    - echo $CI_BUILD_TOKEN | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - |
+      tag=":$CI_COMMIT_REF_SLUG"
+      VERSION="${MAJOR}.${MINOR}.${SUB}-${META}"
+    - |
+      echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
+      echo "Crafty Version: $VERSION"
+    - docker context create tls-environment
+    - docker buildx create --name zedBuilder --use tls-environment
+    - docker buildx build
+      --cache-from type=registry,ref="$CI_REGISTRY_IMAGE${tag}"
+      --build-arg BUILDKIT_INLINE_CACHE=1
+      --build-arg "BUILD_DATE=$(date +"%Y-%m-%dT%H:%M:%SZ")"
+      --build-arg "BUILD_REF=${CI_COMMIT_SHA}"
+      --build-arg "CRAFTY_VER=${VERSION}"
+      --tag "$CI_REGISTRY_IMAGE${tag}"
+      --platform linux/arm64/v8,linux/amd64
+      --push .
+  after_script:
+    - |
+      docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
+      docker context rm tls-environment || true
+      echo "Please review multi-arch manifests are present:"
+      docker buildx imagetools inspect "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+
+docker-build-prod:
+  image: docker:latest
+  services:
+    - name: docker:dind
+  stage: prod-deployment
+  tags:
+    - docker_priv
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  environment:
+    name: production
+  before_script:
+    - |
+      apk --no-cache add jq
+      MAJOR=$(cat app/config/version.json | jq '.major' )
+      MINOR=$(cat app/config/version.json | jq '.minor' )
+      SUB=$(cat app/config/version.json | jq '.sub' )
+      META=$(cat app/config/version.json | jq -r '.meta' )
+    - |
+      apk --no-cache add curl
+      latest_tag=$(curl -s https://api.github.com/repos/docker/buildx/releases/latest | sed -Ene '/^ *"tag_name": *"(v.+)",$/s//\1/p')
+      echo "Using buildx version $latest_tag"
+      curl -sSLo docker-buildx "https://github.com/docker/buildx/releases/download/$latest_tag/buildx-$latest_tag.linux-amd64"
+      chmod a+x docker-buildx
+      mkdir -p ~/.docker/cli-plugins
+      mv docker-buildx ~/.docker/cli-plugins/docker-buildx
+      docker version
+    - docker run --rm --privileged aptman/qus -- -r
+    - docker run --rm --privileged aptman/qus -s -- -p aarch64 x86_64
+    - echo $CI_BUILD_TOKEN | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - |
+      tag=""
+      VERSION="${MAJOR}.${MINOR}.${SUB}-${META}"
+    - |
+      echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
+      echo "Crafty Version: $VERSION"
+    - docker context create tls-environment
+    - docker buildx create --name zedBuilder --use tls-environment
+    - docker buildx build
+      --cache-from type=registry,ref="$CI_REGISTRY_IMAGE${tag}"
+      --build-arg BUILDKIT_INLINE_CACHE=1
+      --build-arg "BUILD_DATE=$(date +"%Y-%m-%dT%H:%M:%SZ")"
+      --build-arg "BUILD_REF=${CI_COMMIT_SHA}"
+      --build-arg "CRAFTY_VER=${VERSION}"
+      --tag "$CI_REGISTRY_IMAGE${tag}"
+      --platform linux/arm64/v8,linux/amd64
+      --push .
+  after_script:
+    - |
+      docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
+      docker context rm tls-environment || true
+      echo "Please review multi-arch manifests are present:"
+      docker buildx imagetools inspect "$CI_REGISTRY_IMAGE${tag}"

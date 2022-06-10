@@ -1,0 +1,83 @@
+# yamllint disable rule:line-length
+---
+win-dev-build:
+  stage: dev-deployment
+  tags:
+    - win64
+  cache:
+    paths:
+      - .venv/
+  rules:
+    - if: "$CI_COMMIT_BRANCH == 'dev'"
+  environment:
+    name: development
+  script:
+    - |
+      $ErrorActionPreference = "Stop"
+      py -m venv .venv
+      .venv\Scripts\activate.ps1
+      pip install pyinstaller
+      pip install -r requirements.txt
+    - pyinstaller -F main.py
+      --distpath .
+      --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
+      --name "crafty_commander"
+      --paths .venv\Lib\site-packages
+      --hidden-import cryptography
+      --hidden-import cffi
+      --hidden-import apscheduler
+      --collect-all tzlocal
+      --collect-all tzdata
+      --collect-all pytz
+      --collect-all six
+
+  # Download latest:
+  # | https://gitlab.com/crafty-controller/crafty-4/-/jobs/artifacts/dev/download?job=win-dev-build
+  artifacts:
+    name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - app\
+      - .\crafty_commander.exe
+    exclude:
+      - app\classes\**\*
+
+win-prod-build:
+  stage: prod-deployment
+  tags:
+    - win64
+  cache:
+    paths:
+      - .venv/
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+  environment:
+    name: production
+  script:
+    - |
+      $ErrorActionPreference = "Stop"
+      py -m venv .venv
+      .venv\Scripts\activate.ps1
+      pip install pyinstaller
+      pip install -r requirements.txt
+    - pyinstaller -F main.py
+      --distpath .
+      --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico
+      --name "crafty_commander"
+      --paths .venv\Lib\site-packages
+      --hidden-import cryptography
+      --hidden-import cffi
+      --hidden-import apscheduler
+      --collect-all tzlocal
+      --collect-all tzdata
+      --collect-all pytz
+      --collect-all six
+
+  # Download latest:
+  # | https://gitlab.com/crafty-controller/crafty-4/-/jobs/artifacts/master/download?job=win-prod-build
+  artifacts:
+    name: "crafty-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - app\
+      - .\crafty_commander.exe
+    exclude:
+      - app\classes\**\*
