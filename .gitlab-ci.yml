@@ -1,7 +1,6 @@
 # Crafty Controller 4.0 - Lint & Build Pipes
 # [Maintainer: Zedifus(https://gitlab.com/Zedifus)]
 ###################################################
-# yamllint disable rule:line-length
 ---
 stages:
   - lint
