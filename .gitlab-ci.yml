@@ -18,22 +18,10 @@ sast:
     SAST_BANDIT_EXCLUDED_PATHS: "'*/migrations/*, */vendors/*'"
     SAST_EXCLUDED_ANALYZERS: semgrep
   stage: test
-  tags:
-    - docker
 
 secret_detection:
   variables:
     SECRET_DETECTION_EXCLUDED_PATHS: migrations, vendors
-  tags:
-    - docker
-
-gemnasium-dependency_scanning:
-  tags:
-    - docker
-
-gemnasium-python-dependency_scanning:
-  tags:
-    - docker
 
 include:
   - local: .gitlab/lint.yml
