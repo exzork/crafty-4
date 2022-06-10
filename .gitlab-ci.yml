@@ -12,6 +12,14 @@ variables:
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: "/certs"
 
+include:
+  - local: .gitlab/lint.yml
+  - local: .gitlab/docker-build.yml
+  - local: .gitlab/windows-build.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+
 sast:
   variables:
     SAST_EXCLUDED_PATHS: spec, test, tests, tmp, migrations, vendors
@@ -22,11 +30,3 @@ sast:
 secret_detection:
   variables:
     SECRET_DETECTION_EXCLUDED_PATHS: migrations, vendors
-
-include:
-  - local: .gitlab/lint.yml
-  - local: .gitlab/docker-build.yml
-  - local: .gitlab/windows-build.yml
-  - template: Security/Dependency-Scanning.gitlab-ci.yml
-  - template: Security/SAST.gitlab-ci.yml
-  - template: Security/Secret-Detection.gitlab-ci.yml
