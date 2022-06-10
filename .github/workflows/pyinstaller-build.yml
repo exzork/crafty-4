@@ -1,0 +1,72 @@
+# yamllint disable rule:line-length
+---
+name: Build pyinstaller apps
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - master
+      - dev
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Packages
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            TARGET: macos
+            CMD_BUILD: |
+              pyinstaller -F main.py --name "crafty4" \
+                --distpath . \
+                --hidden-import cryptography \
+                --hidden-import cffi \
+                --hidden-import apscheduler \
+                --collect-all tzlocal \
+                --collect-all tzdata \
+                --collect-all pytz \
+                --collect-all six
+                chmod +x crafty4
+                tar --exclude='./app/classes/' -cvzf crafty4.tar.gz crafty4 app/
+            OUT_FILE_NAME: crafty4.tar.gz
+
+          - os: windows-latest
+            TARGET: windows
+            CMD_BUILD: |
+              pyinstaller -F main.py --name "crafty4" `
+                --distpath . `
+                --icon app\frontend\static\assets\images\Crafty_4-0_Logo_square.ico `
+                --hidden-import cryptography `
+                --hidden-import cffi `
+                --hidden-import apscheduler `
+                --collect-all tzlocal `
+                --collect-all tzdata `
+                --collect-all pytz `
+                --collect-all six
+            OUT_FILE_NAME: |
+              crafty4.exe
+              app/
+              !app/classes/**/*
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+          cache: "pip"
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install -r requirements.txt
+      - name: Build with pyinstaller for ${{matrix.TARGET}}
+        run: ${{matrix.CMD_BUILD}}
+
+      - name: "Upload Artifact"
+        uses: actions/upload-artifact@v3
+        with:
+          name: crafty4-${{matrix.TARGET}}
+          path: ${{ matrix.OUT_FILE_NAME}}
