@@ -273,7 +273,9 @@ class ServersController(metaclass=Singleton):
                 latest = srv.stats_helper.get_latest_server_stats()
                 server_data.append(
                     {
-                        "server_data": server["server_data_obj"],
+                        "server_data": ServersController.get_server_data_by_id(
+                            server.get("server_id")
+                        ),
                         "stats": latest,
                         "user_command_permission": True,
                     }
@@ -328,7 +330,9 @@ class ServersController(metaclass=Singleton):
                 user_command_permission = False
             server_data.append(
                 {
-                    "server_data": DatabaseShortcuts.get_data_obj(server.server_object),
+                    "server_data": ServersController.get_server_data_by_id(
+                        server.server_id
+                    ),
                     "stats": latest,
                     "user_command_permission": user_command_permission,
                 }
