@@ -7,7 +7,6 @@ import json
 import logging
 import threading
 import bleach
-from app.classes.controllers.servers_controller import ServersController
 import libgravatar
 import requests
 import tornado.web
@@ -18,6 +17,7 @@ from tornado import iostream
 from tzlocal import get_localzone
 from croniter import croniter
 from app.classes.controllers.roles_controller import RolesController
+from app.classes.controllers.servers_controller import ServersController
 
 from app.classes.models.servers import Servers
 from app.classes.models.server_permissions import EnumPermissionsServer
