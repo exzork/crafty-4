@@ -7,6 +7,7 @@ import json
 import logging
 import threading
 import bleach
+from app.classes.controllers.servers_controller import ServersController
 import libgravatar
 import requests
 import tornado.web
@@ -258,7 +259,7 @@ class PanelHandler(BaseHandler):
             for server in defined_servers[:]:
                 if str(server.server_id) == str(server_id):
                     page_servers.append(
-                        DatabaseShortcuts.get_data_obj(server.server_object)
+                        ServersController.get_server_data_by_id(server.server_id)
                     )
                     user_order.remove(server_id)
                     defined_servers.remove(server)
@@ -267,7 +268,7 @@ class PanelHandler(BaseHandler):
             server_ids.append(str(server.server_id))
             if server not in page_servers:
                 page_servers.append(
-                    DatabaseShortcuts.get_data_obj(server.server_object)
+                    ServersController.get_server_data_by_id(server.server_id)
                 )
 
         for server_id in user_order[:]:
