@@ -23,7 +23,7 @@ if [ $(id -u) -eq 0 ]; then
 
     # If we find files in import directory, we need to ensure all dirs are owned by the root group,
     # This fixes bind mounts that may have incorrect perms.
-    if [ ! "$(ls -A --ignore=.gitkeep ./import)" ]; then
+    if [ "$(ls -A --ignore=.gitkeep ./import)" ]; then
         echo "Wrapper | 📋 Files present in import, checking/fixing permissions..."
         echo "Wrapper | ⏳ Please be paitent for larger servers..."
         find . ! -group root -exec chgrp root {} \;
