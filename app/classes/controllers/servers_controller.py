@@ -239,7 +239,7 @@ class ServersController(metaclass=Singleton):
 
     @staticmethod
     def get_authorized_servers(user_id):
-        server_data: ServerInstance.List[t.Dict[str, t.Any]] = []
+        server_data: t.List[t.Dict[str, t.Any]] = []
         user_roles = HelperUsers.user_role_query(user_id)
         for user in user_roles:
             role_servers = PermissionsServers.get_role_servers_from_role_id(
