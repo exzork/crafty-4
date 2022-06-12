@@ -17,7 +17,6 @@ from tornado import iostream
 from tzlocal import get_localzone
 from croniter import croniter
 from app.classes.controllers.roles_controller import RolesController
-from app.classes.controllers.servers_controller import ServersController
 
 from app.classes.models.servers import Servers
 from app.classes.models.server_permissions import EnumPermissionsServer
@@ -259,7 +258,7 @@ class PanelHandler(BaseHandler):
             for server in defined_servers[:]:
                 if str(server.server_id) == str(server_id):
                     page_servers.append(
-                        ServersController.get_server_data_by_id(server.server_id)
+                        DatabaseShortcuts.get_data_obj(server.server_object)
                     )
                     user_order.remove(server_id)
                     defined_servers.remove(server)
@@ -268,7 +267,7 @@ class PanelHandler(BaseHandler):
             server_ids.append(str(server.server_id))
             if server not in page_servers:
                 page_servers.append(
-                    ServersController.get_server_data_by_id(server.server_id)
+                    DatabaseShortcuts.get_data_obj(server.server_object)
                 )
 
         for server_id in user_order[:]:
