@@ -23,7 +23,28 @@
 
   </div>
   <!-- Page Title Header Ends-->
+  {% if data['first_log'] %}
+  <script>
+    $(document).ready(function() {
+      bootbox.alert({
+            backdrop: true,
+            title: 'Your Feedback Is Appreciated...',
+            message: '<p>We will only request this information from the admin user once... 😊</p>'
+              +'<p><strong>All data collected is completely anonymous</strong> and is only used to improve Crafty 4.0 and allow us to more accurately report the number of Crafty 4 users.</p><iframe width="640px" height="480px"'
+            +'src="https://forms.office.com/Pages/ResponsePage.aspx?id=LwLajNkpXU2CKc95G1oO3MN0Hu3oEUNLr-EtLx31TS5UNUNVQlFNVUVYMEc'
+            +'1V1BKS0FQUUlERUtWQy4u&embed=true" frameborder="0" marginwidth="0" marginheight="0" style="border: none; max-width:100%;'
+            +' max-height:100vh" allowfullscreen webkitallowfullscreen mozallowfullscreen msallowfullscreen> </iframe>',
+            buttons: {
+              ok: {
+            label: 'Skip Survey/Done',
+            className: 'btn-secondary'
+        },
+            },
+      });
+    });
 
+  </script>
+  {% end %}
   <div class="row">
     <div class="col-md-12 grid-margin">
       <div class="card">

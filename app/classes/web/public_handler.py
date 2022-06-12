@@ -158,7 +158,8 @@ class PublicHandler(BaseHandler):
                 logger.info(
                     f"User: {user_data} Logged in from IP: {self.get_remote_ip()}"
                 )
-
+                if not user_data.last_ip and user_data.username == "admin":
+                    self.controller.first_login = True
                 # record this login
                 user_data.last_ip = self.get_remote_ip()
                 user_data.last_login = Helpers.get_time_as_string()
