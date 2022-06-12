@@ -93,7 +93,9 @@ class ServersController(metaclass=Singleton):
 
     @staticmethod
     def update_server(server_obj):
-        return HelperServers.update_server(server_obj)
+        ret = HelperServers.update_server(server_obj)
+        ServersController().refresh_server_settings(server_obj.server_id)
+        return ret
 
     @staticmethod
     def set_download(server_id):
