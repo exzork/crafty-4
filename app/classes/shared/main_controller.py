@@ -61,6 +61,7 @@ class Controller:
         self.support_scheduler: BackgroundScheduler = BackgroundScheduler(
             timezone=str(tz)
         )
+        self.first_login = False
         self.support_scheduler.start()
 
     @staticmethod
