@@ -398,8 +398,8 @@ class PanelHandler(BaseHandler):
             template = "panel/contribute.html"
 
         elif page == "dashboard":
-            page_data['first_log'] = self.controller.first_login
-            if self.controller.first_login and exec_user['username'] == 'admin':
+            page_data["first_log"] = self.controller.first_login
+            if self.controller.first_login and exec_user["username"] == "admin":
                 self.controller.first_login = False
             if superuser:  # TODO: Figure out a better solution
                 try:
