@@ -1,5 +1,4 @@
 from contextlib import redirect_stderr
-from http import server
 import os
 import re
 import shutil
