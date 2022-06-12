@@ -220,7 +220,7 @@
       };
       wsInternal.onclose = function (closeEvent) {
         console.log('Closed WebSocket', closeEvent);
-        warn('WebSockets are required for Crafty to work. This websocket connection has been closed. Are you using a reverse proxy?', 'https://wiki.craftycontrol.com/en/4/docs/Reverse%20Proxy%20Examples')
+        setTimeout(sendWssError, 7000);
       };
 
 
@@ -337,6 +337,10 @@
           }
         })
       });
+    }
+
+    function sendWssError(){
+        warn('WebSockets are required for Crafty to work. This websocket connection has been closed. Are you using a reverse proxy?', 'https://wiki.craftycontrol.com/en/4/docs/Reverse%20Proxy%20Examples')
     }
 
     function eulaAgree(server_id, command) {
