@@ -1,4 +1,5 @@
 from contextlib import redirect_stderr
+from http import server
 import os
 import re
 import shutil
@@ -139,6 +140,13 @@ class ServerInstance:
     # **********************************************************************************
     #                               Minecraft Server Management
     # **********************************************************************************
+    def update_server_instance(self):
+        server_data: Servers = HelperServers.get_server_obj(self.server_id)
+        self.server_path = server_data.path
+        self.jar_update_url = server_data.executable_update_url
+        self.name = server_data.server_name
+        self.server_object = server_data
+
     def reload_server_settings(self):
         server_data = HelperServers.get_server_data_by_id(self.server_id)
         self.settings = server_data

@@ -94,7 +94,10 @@ class ServersController(metaclass=Singleton):
     @staticmethod
     def update_server(server_obj):
         ret = HelperServers.update_server(server_obj)
-        ServersController().refresh_server_settings(server_obj.server_id)
+        server_instance: ServerInstance = ServersController().get_server_instance_by_id(
+            server_obj.server_id
+        )
+        server_instance.update_server_instance()
         return ret
 
     @staticmethod
@@ -236,7 +239,7 @@ class ServersController(metaclass=Singleton):
 
     @staticmethod
     def get_authorized_servers(user_id):
-        server_data: t.List[t.Dict[str, t.Any]] = []
+        server_data: ServerInstance.List[ServerInstance.Dict[str, t.Any]] = []
         user_roles = HelperUsers.user_role_query(user_id)
         for user in user_roles:
             role_servers = PermissionsServers.get_role_servers_from_role_id(
@@ -269,14 +272,14 @@ class ServersController(metaclass=Singleton):
         server_data = []
         try:
             for server in self.servers_list:
-                srv = ServersController().get_server_instance_by_id(
+                srv: ServerInstance = ServersController().get_server_instance_by_id(
                     server.get("server_id")
                 )
                 latest = srv.stats_helper.get_latest_server_stats()
                 server_data.append(
                     {
-                        "server_data": ServersController.get_server_data_by_id(
-                            server.get("server_id")
+                        "server_data": DatabaseShortcuts.get_data_obj(
+                            srv.server_object
                         ),
                         "stats": latest,
                         "user_command_permission": True,
@@ -332,9 +335,7 @@ class ServersController(metaclass=Singleton):
                 user_command_permission = False
             server_data.append(
                 {
-                    "server_data": ServersController.get_server_data_by_id(
-                        server.server_id
-                    ),
+                    "server_data": DatabaseShortcuts.get_data_obj(srv.server_object),
                     "stats": latest,
                     "user_command_permission": user_command_permission,
                 }
