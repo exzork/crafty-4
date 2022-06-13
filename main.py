@@ -171,6 +171,7 @@ if __name__ == "__main__":
     tasks_starter_thread = Thread(target=tasks_starter, name="tasks_starter")
 
     def internet_check():
+        print()
         logger.info("Checking Internet. This may take a minute.")
         Console.info("Checking Internet. This may take a minute.")
 
