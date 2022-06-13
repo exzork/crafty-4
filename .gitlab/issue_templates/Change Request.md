@@ -7,7 +7,7 @@
 ## How does this currently work?
 
 ## What is the desired way of working?
-*After the change, what should the process/operation be?
+*After the change, what should the process/operation be?*
 
 ## Priority/Severity
 - [ ] High (This will bring a huge increase in performance/productivity/usability)
