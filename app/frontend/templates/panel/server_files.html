@@ -278,6 +278,17 @@
   let editor = ace.edit('editor');
   editor.setTheme('ace/theme/dracula');
   editor.session.setUseSoftTabs(true);
+  editor.commands.addCommand({
+    name: 'saveFile',
+    bindKey: {
+      win: 'Ctrl-S',
+      mac: 'Command-S',
+      sender: 'editor|cli'
+    },
+    exec: function(env, args, request) {
+      save()
+    }
+  });
 
   // mouseup = css resize end
   document.addEventListener("mouseup", function (e) {
@@ -532,15 +543,6 @@
     document.getElementById('save_status').innerHTML = '<i class="fal fa-file-xmark"></i>';
     document.getElementById('save_status').style.color = 'gray';
 
-  });
-
-  $('#editor').bind('keydown', function (event) {
-    file_loaded = true;
-    if (event.ctrlKey && event.key === 's') {
-      event.preventDefault();
-      save();
-    }
-    //console.log(event.keyCode);
   });
 
 
@@ -1108,7 +1110,13 @@
   function setKeyboard(target) {
     var handlerName = target.getAttribute('data-handler-name');
     if (handlerName == 'null') handlerName = null;
-    editor.setKeyboardHandler(handlerName);
+    editor.setKeyboardHandler(handlerName, () => {
+      if (handlerName == 'ace/keyboard/vim') {
+        require("ace/keyboard/vim").Vim.defineEx('write', 'w', function() {
+          save();
+        });
+      }
+    });
 
     var nodes = target.parentNode.querySelectorAll("[data-handler-name]");
     nodes.forEach(node => {
