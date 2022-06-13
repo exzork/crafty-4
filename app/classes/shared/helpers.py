@@ -1,3 +1,4 @@
+import contextlib
 import os
 import re
 import sys
@@ -491,9 +492,10 @@ class Helpers:
 
         # del any old session.lock file as this is a new session
         try:
-            os.remove(session_log_file)
+            with contextlib.suppress(FileNotFoundError):
+                os.remove(session_log_file)
         except Exception as e:
-            logger.error(f"Deleting Session.lock failed with error: {e}")
+            Console.error(f"Deleting logs/session.log failed with error: {e}")
 
     @staticmethod
     def get_time_as_string():
