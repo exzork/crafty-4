@@ -495,7 +495,7 @@ class Helpers:
             with contextlib.suppress(FileNotFoundError):
                 os.remove(session_log_file)
         except Exception as e:
-            Console.error(f"Deleting Session.lock failed with error: {e}")
+            Console.error(f"Deleting logs/session.log failed with error: {e}")
 
     @staticmethod
     def get_time_as_string():
