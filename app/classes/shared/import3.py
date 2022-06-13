@@ -38,14 +38,14 @@ class Import3:
         # If there is only one user to import json needs to call the data differently
         if isinstance(json_data, list):
             for user in json_data:
-                if not str(user["username"]).lower() == "admin":
+                if str(user["username"]).lower() != "admin":
                     HelperUsers.add_rawpass_user(user["username"], user["password"])
                     Console.info(f"Imported user {user['username']} from Crafty 3")
                     logger.info(f"Imported user {user['username']} from Crafty 3")
                 else:
                     logger.info("Cannot create duplicate Admin account...skipping.")
         else:
-            if not str(json_data["username"]).lower() == "admin":
+            if str(json_data["username"]).lower() != "admin":
                 HelperUsers.add_rawpass_user(
                     json_data["username"], json_data["password"]
                 )
