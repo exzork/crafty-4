@@ -171,6 +171,7 @@ if __name__ == "__main__":
     tasks_starter_thread = Thread(target=tasks_starter, name="tasks_starter")
 
     def internet_check():
+        print()
         logger.info("Checking Internet. This may take a minute.")
         Console.info("Checking Internet. This may take a minute.")
 
@@ -223,6 +224,7 @@ if __name__ == "__main__":
         controller_setup_thread.join()
 
         Console.info("Crafty has fully started and is now ready for use!")
+        crafty_prompt.prompt = f"Crafty Controller v{helper.get_version_string()} > "
 
         if not args.daemon:
             # Put the prompt under the cursor

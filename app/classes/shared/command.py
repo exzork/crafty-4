@@ -27,7 +27,7 @@ class MainPrompt(cmd.Cmd):
         self.import3: Import3 = import3
 
         # overrides the default Prompt
-        self.prompt = f"Crafty Controller v{self.helper.get_version_string()} > "
+        self.prompt = ""
 
     def emptyline(self):
         pass
