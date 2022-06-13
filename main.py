@@ -223,12 +223,10 @@ if __name__ == "__main__":
         controller_setup_thread.join()
 
         Console.info("Crafty has fully started and is now ready for use!")
+        crafty_prompt.prompt = f"Crafty Controller v{helper.get_version_string()} > "
 
         if not args.daemon:
             # Put the prompt under the cursor
-            crafty_prompt.prompt = (
-                f"Crafty Controller v{helper.get_version_string()} > "
-            )
             crafty_prompt.print_prompt()
 
     Thread(target=setup_starter, name="setup_starter").start()
