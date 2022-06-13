@@ -13,6 +13,7 @@ import tempfile
 
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
+from tzlocal.utils import ZoneInfoNotFoundError
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.base import JobLookupError
 
@@ -125,7 +126,11 @@ class ServerInstance:
         self.stats = stats
         self.server_object = HelperServers.get_server_obj(self.server_id)
         self.stats_helper = HelperServerStats(self.server_id)
-        tz = get_localzone()
+        try:
+            tz = get_localzone()
+        except ZoneInfoNotFoundError:
+            logger.error("Could not capture time zone from system. Falling back to Europe/London")
+            tz = "Europe/London"
         self.server_scheduler = BackgroundScheduler(timezone=str(tz))
         self.server_scheduler.start()
         self.backup_thread = threading.Thread(
