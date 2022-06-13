@@ -19,7 +19,7 @@ class WebSocketHelper:
 
     def send_message(
         self, client, event_type: str, data
-    ):  # pylint: disable=no-self-use
+    ):
         if client.check_auth():
             message = str(json.dumps({"event": event_type, "data": data}))
             client.write_message_helper(message)

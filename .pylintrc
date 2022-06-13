@@ -78,9 +78,7 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=C0330,
-        C0326,
-        abstract-method,
+disable=abstract-method,
         attribute-defined-outside-init,
         bad-inline-option,
         bare-except,
@@ -102,7 +100,6 @@ disable=C0330,
         no-else-break,
         no-else-continue,
         no-else-return,
-        no-self-use,
         no-value-for-parameter,
         not-an-iterable,
         protected-access,
