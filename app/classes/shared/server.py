@@ -541,9 +541,12 @@ class ServerInstance:
                 f"Server {self.name} has crash detection enabled "
                 "- starting watcher task"
             )
-            self.server_scheduler.add_job(
-                self.detect_crash, "interval", seconds=30, id=f"c_{self.server_id}"
-            )
+            try:
+                self.server_scheduler.add_job(
+                    self.detect_crash, "interval", seconds=30, id=f"c_{self.server_id}"
+                )
+            except:
+                logger.info(f"Job with id c_{self.server_id} already running...")
 
     def stop_threaded_server(self):
         self.stop_server()
