@@ -4,14 +4,16 @@ import logging
 import threading
 import asyncio
 import datetime
+
 from tzlocal import get_localzone
+from tzlocal.utils import ZoneInfoNotFoundError
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from app.classes.controllers.users_controller import UsersController
 
 from app.classes.models.management import HelpersManagement
 from app.classes.models.users import HelperUsers
+from app.classes.controllers.users_controller import UsersController
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.main_controller import Controller
@@ -41,8 +43,13 @@ class TasksManager:
         self.helper: Helpers = helper
         self.controller: Controller = controller
         self.tornado: Webserver = Webserver(helper, controller, self)
-
-        self.tz = get_localzone()
+        try:
+            self.tz = get_localzone()
+        except ZoneInfoNotFoundError:
+            logger.error(
+                "Could not capture time zone from system. Falling back to Europe/London"
+            )
+            self.tz = "Europe/London"
         self.scheduler = BackgroundScheduler(timezone=str(self.tz))
 
         self.users_controller: UsersController = self.controller.users

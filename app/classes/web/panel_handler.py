@@ -15,13 +15,14 @@ from tornado import iostream
 
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
+from tzlocal.utils import ZoneInfoNotFoundError
 from croniter import croniter
-from app.classes.controllers.roles_controller import RolesController
 
 from app.classes.models.servers import Servers
 from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.models.management import HelpersManagement
+from app.classes.controllers.roles_controller import RolesController
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.web.base_handler import BaseHandler
@@ -276,10 +277,18 @@ class PanelHandler(BaseHandler):
                 user_order.remove(server_id)
         defined_servers = page_servers
 
+        try:
+            tz = get_localzone()
+        except ZoneInfoNotFoundError:
+            logger.error(
+                "Could not capture time zone from system. Falling back to Europe/London"
+            )
+            tz = "Europe/London"
+
         page_data: t.Dict[str, t.Any] = {
             # todo: make this actually pull and compare version data
             "update_available": False,
-            "serverTZ": get_localzone(),
+            "serverTZ": tz,
             "version_data": self.helper.get_version_string(),
             "user_data": exec_user,
             "user_role": exec_user_role,
