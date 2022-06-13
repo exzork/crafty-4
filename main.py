@@ -226,6 +226,9 @@ if __name__ == "__main__":
 
         if not args.daemon:
             # Put the prompt under the cursor
+            crafty_prompt.prompt = (
+                f"Crafty Controller v{helper.get_version_string()} > "
+            )
             crafty_prompt.print_prompt()
 
     Thread(target=setup_starter, name="setup_starter").start()
