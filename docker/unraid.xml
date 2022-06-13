@@ -19,7 +19,7 @@ For migration from 3.x please refer to the documentation: https://wiki.craftycon
   <Category>GameServers: Other:</Category>
   <WebUI>https://[IP]:[PORT:8443]/</WebUI>
   <TemplateURL>https://gitlab.com/crafty-controller/crafty-4/-/raw/master/docker/unraid.xml</TemplateURL>
-  <Icon>https://gitlab.com/crafty-controller/crafty-4/-/blob/master/app/frontend/static/assets/images/Crafty_4-0_Logo_square.ico</Icon>
+  <Icon>https://gitlab.com/crafty-controller/crafty-4/-/raw/master/app/frontend/static/assets/images/Crafty_4-0_Logo_square.ico</Icon>
   <ExtraParams/>
   <PostArgs/>
   <CPUset/>
