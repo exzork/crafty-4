@@ -38,18 +38,28 @@ class Import3:
         # If there is only one user to import json needs to call the data differently
         if isinstance(json_data, list):
             for user in json_data:
-                HelperUsers.add_rawpass_user(user["username"], user["password"])
-                Console.info(f"Imported user {user['username']} from Crafty 3")
-                logger.info(f"Imported user {user['username']} from Crafty 3")
+                if str(user["username"]).lower() != "admin":
+                    HelperUsers.add_rawpass_user(user["username"], user["password"])
+                    Console.info(f"Imported user {user['username']} from Crafty 3")
+                    logger.info(f"Imported user {user['username']} from Crafty 3")
+                else:
+                    logger.info("Cannot create duplicate Admin account...skipping.")
         else:
-            Console.info(
-                "There is only one user detected. "
-                "Cannot create duplicate Admin account."
-            )
-            logger.info(
-                "There is only one user detected. "
-                "Cannot create duplicate Admin account."
-            )
+            if str(json_data["username"]).lower() != "admin":
+                HelperUsers.add_rawpass_user(
+                    json_data["username"], json_data["password"]
+                )
+                Console.info(f"Imported user {json_data['username']} from Crafty 3")
+                logger.info(f"Imported user {json_data['username']} from Crafty 3")
+            else:
+                Console.info(
+                    "There is only one user detected. "
+                    "Cannot create duplicate Admin account."
+                )
+                logger.info(
+                    "There is only one user detected. "
+                    "Cannot create duplicate Admin account."
+                )
 
     def import_servers(self, json_data, controller):
         # If there is only one server to import json needs to call the data differently

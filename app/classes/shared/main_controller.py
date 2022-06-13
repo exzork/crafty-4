@@ -9,20 +9,21 @@ from peewee import DoesNotExist
 
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
+from tzlocal.utils import ZoneInfoNotFoundError
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from app.classes.controllers.crafty_perms_controller import CraftyPermsController
-from app.classes.controllers.management_controller import ManagementController
-from app.classes.controllers.users_controller import UsersController
-from app.classes.controllers.roles_controller import RolesController
-from app.classes.controllers.server_perms_controller import ServerPermsController
-from app.classes.controllers.servers_controller import ServersController
 from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.models.users import HelperUsers
 from app.classes.models.roles import HelperRoles
 from app.classes.models.management import HelpersManagement
 from app.classes.models.servers import HelperServers
+from app.classes.controllers.crafty_perms_controller import CraftyPermsController
+from app.classes.controllers.management_controller import ManagementController
+from app.classes.controllers.users_controller import UsersController
+from app.classes.controllers.roles_controller import RolesController
+from app.classes.controllers.server_perms_controller import ServerPermsController
+from app.classes.controllers.servers_controller import ServersController
 from app.classes.shared.authentication import Authentication
 from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
@@ -57,7 +58,13 @@ class Controller:
         self.users: UsersController = UsersController(
             self.helper, self.users_helper, self.authentication
         )
-        tz = get_localzone()
+        try:
+            tz = get_localzone()
+        except ZoneInfoNotFoundError:
+            logger.error(
+                "Could not capture time zone from system. Falling back to Europe/London"
+            )
+            tz = "Europe/London"
         self.support_scheduler: BackgroundScheduler = BackgroundScheduler(
             timezone=str(tz)
         )
