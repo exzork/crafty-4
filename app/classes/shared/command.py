@@ -60,14 +60,16 @@ class MainPrompt(cmd.Cmd):
     def do_set_passwd(self, line):
 
         try:
-            username = str(line).lower()
+            username = line
             # If no user is found it returns None
             user_id = self.controller.users.get_id_by_name(username)
             if not username:
                 Console.error("You must enter a username. Ex: `set_passwd admin'")
                 return False
             if not user_id:
-                Console.error(f"No user found by the name of {username}")
+                Console.error(
+                    f"No user found by the name of {username} this is case sensitive"
+                )
                 return False
         except:
             Console.error(f"User: {line} Not Found")
