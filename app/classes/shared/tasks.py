@@ -46,7 +46,9 @@ class TasksManager:
         try:
             self.tz = get_localzone()
         except ZoneInfoNotFoundError:
-            logger.error("Could not capture time zone from system. Falling back to Europe/London")
+            logger.error(
+                "Could not capture time zone from system. Falling back to Europe/London"
+            )
             self.tz = "Europe/London"
         self.scheduler = BackgroundScheduler(timezone=str(self.tz))
 
