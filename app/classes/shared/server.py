@@ -129,7 +129,9 @@ class ServerInstance:
         try:
             tz = get_localzone()
         except ZoneInfoNotFoundError:
-            logger.error("Could not capture time zone from system. Falling back to Europe/London")
+            logger.error(
+                "Could not capture time zone from system. Falling back to Europe/London"
+            )
             tz = "Europe/London"
         self.server_scheduler = BackgroundScheduler(timezone=str(tz))
         self.server_scheduler.start()
