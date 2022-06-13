@@ -203,8 +203,8 @@ class HelperUsers:
     @staticmethod
     def add_rawpass_user(
         username: str,
-        password: str = None,
-        email: t.Optional[str] = None,
+        password: str = "",
+        email: t.Optional[str] = "default@example.com",
         enabled: bool = True,
         superuser: bool = False,
     ) -> str:
