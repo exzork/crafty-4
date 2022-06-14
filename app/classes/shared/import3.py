@@ -39,7 +39,9 @@ class Import3:
         if isinstance(json_data, list):
             for user in json_data:
                 if str(user["username"]).lower() != "admin":
-                    HelperUsers.add_rawpass_user(user["username"], user["password"])
+                    HelperUsers.add_rawpass_user(
+                        str(user["username"]).lower(), user["password"]
+                    )
                     Console.info(f"Imported user {user['username']} from Crafty 3")
                     logger.info(f"Imported user {user['username']} from Crafty 3")
                 else:
@@ -47,7 +49,7 @@ class Import3:
         else:
             if str(json_data["username"]).lower() != "admin":
                 HelperUsers.add_rawpass_user(
-                    json_data["username"], json_data["password"]
+                    str(json_data["username"]).lower(), json_data["password"]
                 )
                 Console.info(f"Imported user {json_data['username']} from Crafty 3")
                 logger.info(f"Imported user {json_data['username']} from Crafty 3")
