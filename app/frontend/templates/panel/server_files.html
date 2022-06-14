@@ -386,8 +386,7 @@
     },
   ];
 
-  var filePath = '';
-  let file_loaded = false;
+  let filePath = '', serverFileContent = '';
 
   function clickOnFile(event) {
     filePath = event.target.getAttribute('data-path');
@@ -408,7 +407,7 @@
           $('#fileError').toggle(false)   // hide
           setFileName(event.target.innerText);
           editor.session.setValue(json.content);
-          file_loaded = false;
+          serverFileContent = json.content;
         }
       },
     });
@@ -523,27 +522,14 @@
       timer = null;
     };
   }
-  editor.on('change', function (event) {
-    if (!event.ctrlKey && !event.shiftKey) {
-      if (file_loaded) {
-        document.getElementById('save_status').innerHTML = '<i class="fal fa-file"></i>';
-        document.getElementById('save_status').style.color = 'gray';
-      } else {
-        document.getElementById('save_status').innerHTML = '<i class="fal fa-file-check"></i>';
-        document.getElementById('save_status').style.color = '#2fb689';
-      }
-    }
-  });
-  editor.on('undo', function (event) {
-    document.getElementById('save_status').innerHTML = '<i class="fal fa-file-xmark"></i>';
-    document.getElementById('save_status').style.color = 'gray';
-
-  });
-  editor.on('redo', function (event) {
-    document.getElementById('save_status').innerHTML = '<i class="fal fa-file-xmark"></i>';
-    document.getElementById('save_status').style.color = 'gray';
-
-  });
+  /**
+    * @param {boolean} saved
+  */
+  const setSaveStatus = (saved) => {
+    document.getElementById('save_status').innerHTML = `<i class="fal ${saved ? "fa-file-check" : "fa-file"}"></i>`;
+    document.getElementById('save_status').style.color = saved ? '#2fb689' : 'gray';
+  }
+  ['change', 'undo', 'redo'].forEach(event => editor.on(event, (event) => setSaveStatus(serverFileContent === editor.session.getValue())))
 
 
   setFileName();
@@ -589,11 +575,10 @@
         file_contents: text,
         file_path: filePath
       },
-      success: function (data) {
-        console.log("got response:");
-        document.getElementById("save_status").innerHTML = '<i class="fal fa-file-check"></i>';
-        document.getElementById('save_status').style.color = '#2fb689';
-      },
+      success: (data) => {
+        serverFileContent = text;
+        setSaveStatus(true)
+      }
     });
   }
 
