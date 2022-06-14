@@ -148,9 +148,8 @@ class HelperUsers:
             # I know it should apply it without setting it but I'm just making sure
             user = HelperUsers.add_user_roles(user)
             return user
-        else:
-            # logger.debug("user: ({}) {}".format(user_id, {}))
-            return {}
+        # logger.debug("user: ({}) {}".format(user_id, {}))
+        return {}
 
     @staticmethod
     def get_user_columns(

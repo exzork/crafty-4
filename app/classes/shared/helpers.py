@@ -94,10 +94,7 @@ class Helpers:
         if Helpers.check_file_exists(file):
             file_time = os.path.getmtime(file)
             # Check against 24 hours
-            if (time.time() - file_time) / 3600 > 24 * days:
-                return True
-            else:
-                return False
+            return (time.time() - file_time) / 3600 > 24 * days
         logger.error(f"{file} does not exist")
         return True
 
@@ -126,10 +123,7 @@ class Helpers:
 
         a_socket.close()
 
-        if result_of_check == 0:
-            return True
-        else:
-            return False
+        return result_of_check == 0
 
     @staticmethod
     def check_server_conn(server_port):
@@ -141,10 +135,7 @@ class Helpers:
         result_of_check = a_socket.connect_ex(location)
         a_socket.close()
 
-        if result_of_check == 0:
-            return True
-        else:
-            return False
+        return result_of_check == 0
 
     @staticmethod
     def cmdparse(cmd_in):
@@ -164,10 +155,9 @@ class Helpers:
                 # Continue the loop.
                 if char == " ":
                     continue
-                else:
-                    cmd_index += 1
-                    cmd_out.append("")
-                    new_param = False
+                cmd_index += 1
+                cmd_out.append("")
+                new_param = False
             if esc:  # if we encountered an escape character on the last loop,
                 # append this char regardless of what it is
                 if char not in Helpers.allowed_quotes:
@@ -349,8 +339,7 @@ class Helpers:
         common_path = pathlib.Path(os.path.commonpath([base, fileabs]))
         if base == common_path:
             return fileabs
-        else:
-            raise ValueError("Path traversal detected")
+        raise ValueError("Path traversal detected")
 
     @staticmethod
     def tail_file(file_name, number_lines=20):
@@ -406,15 +395,8 @@ class Helpers:
     @staticmethod
     def check_root():
         if Helpers.is_os_windows():
-            if ctypes.windll.shell32.IsUserAnAdmin() == 1:
-                return True
-            else:
-                return False
-        else:
-            if os.geteuid() == 0:
-                return True
-            else:
-                return False
+            return ctypes.windll.shell32.IsUserAnAdmin() == 1
+        return os.geteuid() == 0
 
     @staticmethod
     def unzip_file(zip_path):
@@ -531,8 +513,7 @@ class Helpers:
         if os.path.exists(path) and os.path.isfile(path):
             logger.debug(f"Found path: {path}")
             return True
-        else:
-            return False
+        return False
 
     @staticmethod
     def human_readable_file_size(num: int, suffix="B"):
@@ -553,8 +534,7 @@ class Helpers:
         if os.path.exists(path):
             logger.debug(f"Found path: {path}")
             return True
-        else:
-            return False
+        return False
 
     @staticmethod
     def get_file_contents(path: str, lines=100):
@@ -770,10 +750,7 @@ class Helpers:
 
     @staticmethod
     def is_os_windows():
-        if os.name == "nt":
-            return True
-        else:
-            return False
+        return os.name == "nt"
 
     @staticmethod
     def wtol_path(w_path):
@@ -948,8 +925,7 @@ class Helpers:
                 # extracts archive to temp directory
                 zip_ref.extractall(temp_dir)
             return temp_dir
-        else:
-            return False
+        return False
 
     @staticmethod
     def in_path(parent_path, child_path):

@@ -55,8 +55,7 @@ class FileHandler(BaseHandler):
 
             if not self.check_server_id(server_id, "get_file"):
                 return
-            else:
-                server_id = bleach.clean(server_id)
+            server_id = bleach.clean(server_id)
 
             if not Helpers.in_path(
                 Helpers.get_os_understandable_path(
@@ -93,8 +92,7 @@ class FileHandler(BaseHandler):
 
             if not self.check_server_id(server_id, "get_tree"):
                 return
-            else:
-                server_id = bleach.clean(server_id)
+            server_id = bleach.clean(server_id)
 
             if Helpers.validate_traversal(
                 self.controller.servers.get_server_data_by_id(server_id)["path"], path
@@ -115,8 +113,7 @@ class FileHandler(BaseHandler):
 
             if not self.check_server_id(server_id, "get_tree"):
                 return
-            else:
-                server_id = bleach.clean(server_id)
+            server_id = bleach.clean(server_id)
 
             if Helpers.validate_traversal(
                 self.controller.servers.get_server_data_by_id(server_id)["path"], path
@@ -164,8 +161,7 @@ class FileHandler(BaseHandler):
 
             if not self.check_server_id(server_id, "create_file"):
                 return
-            else:
-                server_id = bleach.clean(server_id)
+            server_id = bleach.clean(server_id)
 
             if not Helpers.in_path(
                 Helpers.get_os_understandable_path(
@@ -198,8 +194,7 @@ class FileHandler(BaseHandler):
 
             if not self.check_server_id(server_id, "create_dir"):
                 return
-            else:
-                server_id = bleach.clean(server_id)
+            server_id = bleach.clean(server_id)
 
             if not Helpers.in_path(
                 Helpers.get_os_understandable_path(
@@ -264,8 +259,7 @@ class FileHandler(BaseHandler):
 
             if not self.check_server_id(server_id, "del_file"):
                 return
-            else:
-                server_id = bleach.clean(server_id)
+            server_id = bleach.clean(server_id)
 
             server_info = self.controller.servers.get_server_data_by_id(server_id)
             if not (
@@ -299,8 +293,7 @@ class FileHandler(BaseHandler):
 
             if not self.check_server_id(server_id, "del_dir"):
                 return
-            else:
-                server_id = bleach.clean(server_id)
+            server_id = bleach.clean(server_id)
 
             server_info = self.controller.servers.get_server_data_by_id(server_id)
             if not Helpers.in_path(
@@ -353,8 +346,7 @@ class FileHandler(BaseHandler):
 
             if not self.check_server_id(server_id, "save_file"):
                 return
-            else:
-                server_id = bleach.clean(server_id)
+            server_id = bleach.clean(server_id)
 
             if not Helpers.in_path(
                 Helpers.get_os_understandable_path(
@@ -388,8 +380,7 @@ class FileHandler(BaseHandler):
 
             if not self.check_server_id(server_id, "rename_file"):
                 return
-            else:
-                server_id = bleach.clean(server_id)
+            server_id = bleach.clean(server_id)
 
             if item_path is None or new_item_name is None:
                 logger.warning("Invalid path(s) in rename_file file ajax call")
@@ -464,8 +455,7 @@ class FileHandler(BaseHandler):
 
             if not self.check_server_id(server_id, "rename_file"):
                 return
-            else:
-                server_id = bleach.clean(server_id)
+            server_id = bleach.clean(server_id)
 
             if item_path is None or new_item_name is None:
                 logger.warning("Invalid path(s) in rename_file file ajax call")
@@ -514,16 +504,15 @@ class FileHandler(BaseHandler):
                 f"Server ID not defined in {page_name} file ajax call ({server_id})"
             )
             return
-        else:
-            server_id = bleach.clean(server_id)
+        server_id = bleach.clean(server_id)
 
-            # does this server id exist?
-            if not self.controller.servers.server_id_exists(server_id):
-                logger.warning(
-                    f"Server ID not found in {page_name} file ajax call ({server_id})"
-                )
-                Console.warning(
-                    f"Server ID not found in {page_name} file ajax call ({server_id})"
-                )
-                return
+        # does this server id exist?
+        if not self.controller.servers.server_id_exists(server_id):
+            logger.warning(
+                f"Server ID not found in {page_name} file ajax call ({server_id})"
+            )
+            Console.warning(
+                f"Server ID not found in {page_name} file ajax call ({server_id})"
+            )
+            return
         return True

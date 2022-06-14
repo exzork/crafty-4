@@ -31,10 +31,10 @@ class Translation:
             if isinstance(translated_word, dict):
                 # JSON objects
                 return json.dumps(translated_word)
-            elif isinstance(translated_word, str):
+            if isinstance(translated_word, str):
                 # Basic strings
                 return translated_word
-            elif hasattr(translated_word, "__iter__"):
+            if hasattr(translated_word, "__iter__"):
                 # Multiline strings
                 return "\n".join(translated_word)
         return "Error while getting translation"

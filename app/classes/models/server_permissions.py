@@ -265,24 +265,23 @@ class PermissionsServers:
         user = HelperUsers.get_user(key.user_id)
         if user["superuser"] and key.superuser:
             return PermissionsServers.get_permissions_list()
-        else:
-            roles_list = HelperUsers.get_user_roles_id(user["user_id"])
-            role_server = (
-                RoleServers.select()
-                .where(RoleServers.role_id.in_(roles_list))
-                .where(RoleServers.server_id == server_id)
-                .execute()
-            )
-            try:
-                user_permissions_mask = role_server[0].permissions
-            except:
-                if user["superuser"]:
-                    user_permissions_mask = "11111111"
-                else:
-                    user_permissions_mask = "00000000"
-            key_permissions_mask = key.server_permissions
-            permissions_mask = PermissionHelper.combine_masks(
-                user_permissions_mask, key_permissions_mask
-            )
-            permissions_list = PermissionsServers.get_permissions(permissions_mask)
-            return permissions_list
+        roles_list = HelperUsers.get_user_roles_id(user["user_id"])
+        role_server = (
+            RoleServers.select()
+            .where(RoleServers.role_id.in_(roles_list))
+            .where(RoleServers.server_id == server_id)
+            .execute()
+        )
+        try:
+            user_permissions_mask = role_server[0].permissions
+        except:
+            if user["superuser"]:
+                user_permissions_mask = "11111111"
+            else:
+                user_permissions_mask = "00000000"
+        key_permissions_mask = key.server_permissions
+        permissions_mask = PermissionHelper.combine_masks(
+            user_permissions_mask, key_permissions_mask
+        )
+        permissions_list = PermissionsServers.get_permissions(permissions_mask)
+        return permissions_list
