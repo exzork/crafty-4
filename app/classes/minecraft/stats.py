@@ -134,10 +134,8 @@ class Stats:
     @staticmethod
     def _get_process_stats(process):
         if process is None:
-            process_stats = {"cpu_usage": 0, "memory_usage": 0, "mem_percentage": 0}
-            return process_stats
-        else:
-            process_pid = process.pid
+            return {"cpu_usage": 0, "memory_usage": 0, "mem_percentage": 0}
+        process_pid = process.pid
         try:
             p = psutil.Process(process_pid)
             dummy = p.cpu_percent()
@@ -162,13 +160,7 @@ class Stats:
             logger.error(
                 f"Unable to get process details for pid: {process_pid} Error: {e}"
             )
-
-            # Dummy Data
-            process_stats = {
-                "cpu_usage": 0,
-                "memory_usage": 0,
-            }
-            return process_stats
+            return {"cpu_usage": 0, "memory_usage": 0, "mem_percentage": 0}
 
     @staticmethod
     def _try_all_disk_usage():

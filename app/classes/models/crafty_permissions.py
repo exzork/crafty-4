@@ -213,18 +213,17 @@ class PermissionsCrafty:
         user = HelperUsers.get_user(key.user_id)
         if user["superuser"] and key.superuser:
             return PermissionsCrafty.get_permissions_list()
+        if user["superuser"]:
+            # User is superuser but API key isn't
+            user_permissions_mask = "111"
         else:
-            if user["superuser"]:
-                # User is superuser but API key isn't
-                user_permissions_mask = "111"
-            else:
-                # Not superuser
-                user_permissions_mask = PermissionsCrafty.get_crafty_permissions_mask(
-                    user["user_id"]
-                )
-            key_permissions_mask: str = key.crafty_permissions
-            permissions_mask = PermissionHelper.combine_masks(
-                user_permissions_mask, key_permissions_mask
+            # Not superuser
+            user_permissions_mask = PermissionsCrafty.get_crafty_permissions_mask(
+                user["user_id"]
             )
-            permissions_list = PermissionsCrafty.get_permissions(permissions_mask)
-            return permissions_list
+        key_permissions_mask: str = key.crafty_permissions
+        permissions_mask = PermissionHelper.combine_masks(
+            user_permissions_mask, key_permissions_mask
+        )
+        permissions_list = PermissionsCrafty.get_permissions(permissions_mask)
+        return permissions_list

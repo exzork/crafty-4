@@ -40,7 +40,7 @@ class RolesController:
         for key in role_data:
             if key == "role_id":
                 continue
-            elif key == "servers":
+            if key == "servers":
                 added_servers = set(role_data["servers"]).difference(
                     set(base_data["servers"])
                 )
@@ -175,6 +175,5 @@ class RolesController:
             role["servers"] = server_ids
             # logger.debug("role: ({}) {}".format(role_id, role))
             return role
-        else:
-            # logger.debug("role: ({}) {}".format(role_id, {}))
-            return {}
+        # logger.debug("role: ({}) {}".format(role_id, {}))
+        return {}

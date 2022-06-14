@@ -43,8 +43,7 @@ class ServerProps:
         if key in self.props.keys():
             self.props[key] = val
             return True
-        else:
-            return False
+        return False
 
     def save(self):
         # Writes to the new file

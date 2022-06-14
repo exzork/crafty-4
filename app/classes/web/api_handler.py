@@ -74,10 +74,9 @@ class ApiHandler(BaseHandler):
                 logger.info(f"User {user_data['username']} has authenticated to API")
 
                 return True  # This is to set the "authenticated"
-            else:
-                logging.debug("Auth unsuccessful")
-                self.access_denied("unknown", "the user provided an invalid token")
-                return False
+            logging.debug("Auth unsuccessful")
+            self.access_denied("unknown", "the user provided an invalid token")
+            return False
         except Exception as e:
             logger.warning("An error occured while authenticating an API user: %s", e)
             self.finish(
@@ -225,7 +224,7 @@ class StartServer(ApiHandler):
         ):
             self.access_denied("unknown")
             return
-        elif not self.permissions[
+        if not self.permissions[
             "Commands"
         ] in self.controller.server_perms.get_api_key_permissions_list(
             self.controller.users.get_api_key_by_token(self.api_token), server_id

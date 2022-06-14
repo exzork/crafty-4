@@ -409,10 +409,9 @@ class ServerInstance:
                             },
                         )
                     return False
-                else:
-                    logger.error(
-                        f"Server {self.name} failed to start with error code: {ex}"
-                    )
+                logger.error(
+                    f"Server {self.name} failed to start with error code: {ex}"
+                )
                 if user_id:
                     self.helper.websocket_helper.broadcast_user(
                         user_id,
@@ -646,9 +645,8 @@ class ServerInstance:
         poll = self.process.poll()
         if poll is None:
             return True
-        else:
-            self.last_rc = poll
-            return False
+        self.last_rc = poll
+        return False
 
     def send_command(self, command):
         if not self.check_running() and command.lower() != "start":
@@ -685,16 +683,15 @@ class ServerInstance:
             )
             self.run_threaded_server(None)
             return True
-        else:
-            logger.critical(
-                f"The server {name} has crashed, "
-                f"crash detection is disabled and it will not be restarted"
-            )
-            Console.critical(
-                f"The server {name} has crashed, "
-                f"crash detection is disabled and it will not be restarted"
-            )
-            return False
+        logger.critical(
+            f"The server {name} has crashed, "
+            f"crash detection is disabled and it will not be restarted"
+        )
+        Console.critical(
+            f"The server {name} has crashed, "
+            f"crash detection is disabled and it will not be restarted"
+        )
+        return False
 
     def kill(self):
         logger.info(f"Terminating server {self.server_id} and all child processes")
@@ -720,16 +717,10 @@ class ServerInstance:
         self.process.kill()
 
     def get_start_time(self):
-        if self.check_running():
-            return self.start_time
-        else:
-            return False
+        return self.start_time if self.check_running() else False
 
     def get_pid(self):
-        if self.process is not None:
-            return self.process.pid
-        else:
-            return None
+        return self.process.pid if self.process is not None else None
 
     def detect_crash(self):
 
@@ -792,12 +783,6 @@ class ServerInstance:
         f.write("eula=true")
         f.close()
         self.run_threaded_server(user_id)
-
-    def is_backup_running(self):
-        if self.is_backingup:
-            return True
-        else:
-            return False
 
     def backup_server(self):
         if self.settings["backup_path"] == "":
@@ -988,34 +973,32 @@ class ServerInstance:
             return {"percent": 0, "total_files": 0}
 
     def list_backups(self):
-        if self.settings["backup_path"]:
-            if Helpers.check_path_exists(
-                Helpers.get_os_understandable_path(self.settings["backup_path"])
-            ):
-                files = Helpers.get_human_readable_files_sizes(
-                    Helpers.list_dir_by_date(
-                        Helpers.get_os_understandable_path(self.settings["backup_path"])
-                    )
-                )
-                return [
-                    {
-                        "path": os.path.relpath(
-                            f["path"],
-                            start=Helpers.get_os_understandable_path(
-                                self.settings["backup_path"]
-                            ),
-                        ),
-                        "size": f["size"],
-                    }
-                    for f in files
-                ]
-            else:
-                return []
-        else:
+        if not self.settings["backup_path"]:
             logger.info(
                 f"Error putting backup file list for server with ID: {self.server_id}"
             )
             return []
+        if not Helpers.check_path_exists(
+            Helpers.get_os_understandable_path(self.settings["backup_path"])
+        ):
+            return []
+        files = Helpers.get_human_readable_files_sizes(
+            Helpers.list_dir_by_date(
+                Helpers.get_os_understandable_path(self.settings["backup_path"])
+            )
+        )
+        return [
+            {
+                "path": os.path.relpath(
+                    f["path"],
+                    start=Helpers.get_os_understandable_path(
+                        self.settings["backup_path"]
+                    ),
+                ),
+                "size": f["size"],
+            }
+            for f in files
+        ]
 
     def jar_update(self):
         self.stats_helper.set_update(True)
@@ -1025,11 +1008,7 @@ class ServerInstance:
         update_thread.start()
 
     def check_update(self):
-
-        if self.stats_helper.get_server_stats()["updating"]:
-            return True
-        else:
-            return False
+        return self.stats_helper.get_server_stats()["updating"]
 
     def a_jar_update(self):
         was_started = "-1"
