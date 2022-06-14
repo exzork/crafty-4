@@ -1255,7 +1255,6 @@ class PanelHandler(BaseHandler):
                             # same time, the chunks in memory will keep
                             # increasing and will eat up the RAM
                             del chunk
-                self.controller.del_support_file(temp_zip_storage)
                 self.redirect("/panel/dashboard")
             else:
                 self.redirect("/panel/error?error=No path found for support logs")
@@ -1774,7 +1773,7 @@ class PanelHandler(BaseHandler):
             self.redirect(f"/panel/server_detail?id={server_id}&subpage=schedules")
 
         elif page == "edit_user":
-            if bleach.clean(self.get_argument("username", None)) == "system":
+            if bleach.clean(self.get_argument("username", None)).lower() == "system":
                 self.redirect(
                     "/panel/error?error=Unauthorized access: "
                     "system user is not editable"

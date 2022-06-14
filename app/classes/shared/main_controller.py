@@ -82,6 +82,8 @@ class Controller:
         if exec_user["preparing"]:
             return
         self.users.set_prepare(exec_user["user_id"])
+        # Delete previous instace of logs
+        self.del_support_file(exec_user["support_logs"])
         # pausing so on screen notifications can run for user
         time.sleep(7)
         self.helper.websocket_helper.broadcast_user(
@@ -177,6 +179,8 @@ class Controller:
             FileHelpers.del_file(temp_zip_storage)
         except FileNotFoundError:
             logger.info("No temp file found. Assuming it's already been cleaned up")
+        except PermissionError:
+            logger.error("Unable to remove old logs. Permission denied error.")
 
     def add_system_user(self):
         self.users_helper.add_user(
