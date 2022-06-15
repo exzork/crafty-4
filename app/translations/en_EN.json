@@ -305,7 +305,7 @@
         "serverIP": "Server IP",
         "serverIPDesc": "IP Crafty should connect to for stats (Try a real ip instead of 127.0.0.1 if you have issues)",
         "serverLogLocation": "Server Log Location",
-        "serverLogLocationDesc": "Absolute full path to the log file",
+        "serverLogLocationDesc": "Path to the log file",
         "serverName": "Server Name",
         "serverNameDesc": "What you wish to call this server",
         "serverPath": "Server Working Directory",

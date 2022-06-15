@@ -529,8 +529,7 @@ class ServersController(metaclass=Singleton):
     def check_for_old_logs(self):
         servers = HelperServers.get_all_defined_servers()
         for server in servers:
-            logs_path = os.path.split(server["log_path"])[0]
-            latest_log_file = os.path.split(server["log_path"])[1]
+            logs_path, latest_log_file = os.path.split(server["log_path"])
             logs_delete_after = int(server["logs_delete_after"])
             if logs_delete_after == 0:
                 continue

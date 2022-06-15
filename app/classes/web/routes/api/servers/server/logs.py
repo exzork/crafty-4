@@ -1,5 +1,6 @@
 import html
 import logging
+import pathlib
 import re
 from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.shared.server import ServerOutBuf
@@ -44,7 +45,9 @@ class ApiServersServerLogsHandler(BaseApiHandler):
         if read_log_file:
             log_lines = self.helper.get_setting("max_log_lines")
             raw_lines = self.helper.tail_file(
-                self.helper.get_os_understandable_path(server_data["log_path"]),
+                # If the log path is absolute it returns it as is
+                # If it is relative it joins the paths below like normal
+                pathlib.Path(server_data["path"], server_data["log_path"]),
                 log_lines,
             )
 

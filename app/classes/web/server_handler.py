@@ -225,13 +225,11 @@ class ServerHandler(BaseHandler):
 
                     # TODO get old server DB data to individual variables
                     stop_command = server_data.get("stop_command")
-                    new_server_command = str(
-                        server_data.get("execution_command")
-                    ).replace(server_uuid, new_server_uuid)
+                    new_server_command = str(server_data.get("execution_command"))
                     new_executable = server_data.get("executable")
                     new_server_log_file = str(
                         Helpers.get_os_understandable_path(server_data.get("log_path"))
-                    ).replace(server_uuid, new_server_uuid)
+                    )
                     backup_path = os.path.join(self.helper.backup_path, new_server_uuid)
                     server_port = server_data.get("server_port")
                     server_type = server_data.get("type")
