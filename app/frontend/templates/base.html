@@ -163,6 +163,27 @@
   <script type="text/javascript" src="/static/assets/js/motd.js"></script>
 
   <script>
+    /**
+      * Returns a random number between min (inclusive) and max (exclusive)
+      */
+    function getRandomArbitrary(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    /**
+      * Returns a random integer between min (inclusive) and max (inclusive).
+      * The value is no lower than min (or the next integer greater than min
+      * if min isn't an integer) and no greater than max (or the next integer
+      * lower than max if max isn't an integer).
+      * Using Math.round() will give you a non-uniform distribution!
+      */
+    function getRandomInt(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+
     $.extend($.fn.dataTable.defaults, {
       // {{ '\nlanguage:' }} {% raw translate('datatables', 'i18n', data['lang']) %}
       })
@@ -203,6 +224,7 @@
       * @type {number | null} reconnectorId An interval ID for the reconnector.
       */
     let reconnectorId = null;
+    let failedConnectionCounter = 0; // https://stackoverflow.com/a/37038217/15388424
 
     const wsPageQueryParams = 'page_query_params=' + encodeURIComponent(location.search)
     const wsPage = 'page=' + encodeURIComponent(location.pathname)
@@ -220,6 +242,7 @@
         wsInternal.onopen = function () {
           console.log('opened WebSocket connection:', wsInternal)
           wsOpen = true;
+          failedConnectionCounter = 0;
           if (typeof reconnectorId === 'number') {
             document.querySelectorAll('.wssError').forEach(el => el.remove())
             clearInterval(reconnectorId);
@@ -243,13 +266,14 @@
           console.log('Closed WebSocket', closeEvent);
 
           if (typeof reconnectorId !== 'number') {
-            // Discard old websocket and create a new one in 5 seconds
-            wsInternal = null
-            reconnectorId = setInterval(startWebSocket, 5000)
             setTimeout(sendWssError, 7000);
-          } else {
-            wsInternal.close();
           }
+          console.info("Reconnecting with a timeout of", (getRandomArbitrary(0, 2 ** failedConnectionCounter - 1) + 5) * 1000, "milliseconds");
+          // Discard old websocket and create a new one in 5 seconds
+          wsInternal = null
+          reconnectorId = setTimeout(startWebSocket, (getRandomArbitrary(0, 2 ** failedConnectionCounter - 1) + 5) * 1000)
+
+          failedConnectionCounter++;
         };
 
 
