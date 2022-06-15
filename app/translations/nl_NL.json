@@ -450,7 +450,7 @@
         "absoluteZipPath": "Absoluut pad naar de server",
         "addRole": "Server toevoegen aan bestaande rol(len)",
         "autoCreate": "Als er niks is geselecteerd maakt Crafty er Ã©Ã©n.",
-        "bePatient": "Wees geduldig, we' + (importing ? 'importeren' :  'downloaden') + ' de server",
+        "bePatient": "Wees geduldig, we ' + (importing ? 'importeren' :  'downloaden') + ' de server",
         "buildServer": "Maak server!",
         "clickRoot": "Klik hier om je root-map te selecteren",
         "close": "Sluiten",

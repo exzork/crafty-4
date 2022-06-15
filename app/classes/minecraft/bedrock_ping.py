@@ -120,8 +120,7 @@ class BedrockPing:
             ret["server_port_ipv4"] = server_info[10]
             ret["server_port_ipv6"] = server_info[11]
             return ret
-        else:
-            raise ValueError(f"Incorrect packet type ({data[0]} detected")
+        raise ValueError(f"Incorrect packet type ({data[0]} detected")
 
     def ping(self, retries=3):
         rtr = retries

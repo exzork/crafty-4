@@ -104,12 +104,9 @@ def get_code_format(format_name):
 
         if format_name in data.keys():
             return data.get(format_name)
-        else:
-            logger.error(f"Format MOTD Error: format name {format_name} does not exist")
-            Console.error(
-                f"Format MOTD Error: format name {format_name} does not exist"
-            )
-            return ""
+        logger.error(f"Format MOTD Error: format name {format_name} does not exist")
+        Console.error(f"Format MOTD Error: format name {format_name} does not exist")
+        return ""
 
     except Exception as e:
         logger.critical(f"Config File Error: Unable to read {format_file} due to {e}")
@@ -154,10 +151,7 @@ def ping(ip, port):
         sock.sendall(data + b"\x01\x00")  # handshake + status ping
         length = read_var_int()  # full packet length
         if length < 10:
-            if length < 0:
-                return False
-            else:
-                return False
+            return not length < 0
 
         sock.recv(1)  # packet type, 0 for pings
         length = read_var_int()  # string length

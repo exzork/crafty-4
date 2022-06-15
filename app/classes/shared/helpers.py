@@ -1,5 +1,7 @@
+import contextlib
 import os
 import re
+import winreg
 import sys
 import json
 import tempfile
@@ -93,15 +95,49 @@ class Helpers:
         if Helpers.check_file_exists(file):
             file_time = os.path.getmtime(file)
             # Check against 24 hours
-            if (time.time() - file_time) / 3600 > 24 * days:
-                return True
-            else:
-                return False
+            return (time.time() - file_time) / 3600 > 24 * days
         logger.error(f"{file} does not exist")
         return True
 
     def get_servers_root_dir(self):
         return self.servers_dir
+
+    @staticmethod
+    def which_java():
+        # Adapted from LeeKamentsky >>>
+        # https://github.com/LeeKamentsky/python-javabridge/blob/master/javabridge/locate.py
+        jdk_key_paths = (
+            "SOFTWARE\\JavaSoft\\JDK",
+            "SOFTWARE\\JavaSoft\\Java Development Kit",
+        )
+        for jdk_key_path in jdk_key_paths:
+            try:
+                with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, jdk_key_path) as kjdk:
+                    kjdk_values = (
+                        dict(  # pylint: disable=consider-using-dict-comprehension
+                            [
+                                winreg.EnumValue(kjdk, i)[:2]
+                                for i in range(winreg.QueryInfoKey(kjdk)[1])
+                            ]
+                        )
+                    )
+                    current_version = kjdk_values["CurrentVersion"]
+                    kjdk_current = winreg.OpenKey(
+                        winreg.HKEY_LOCAL_MACHINE, jdk_key_path + "\\" + current_version
+                    )
+                    kjdk_current_values = (
+                        dict(  # pylint: disable=consider-using-dict-comprehension
+                            [
+                                winreg.EnumValue(kjdk_current, i)[:2]
+                                for i in range(winreg.QueryInfoKey(kjdk_current)[1])
+                            ]
+                        )
+                    )
+                    return kjdk_current_values["JavaHome"]
+            except WindowsError as e:  # pylint: disable=E0602
+                if e.errno == 2:
+                    continue
+                raise
 
     @staticmethod
     def check_internet():
@@ -125,10 +161,7 @@ class Helpers:
 
         a_socket.close()
 
-        if result_of_check == 0:
-            return True
-        else:
-            return False
+        return result_of_check == 0
 
     @staticmethod
     def check_server_conn(server_port):
@@ -140,10 +173,7 @@ class Helpers:
         result_of_check = a_socket.connect_ex(location)
         a_socket.close()
 
-        if result_of_check == 0:
-            return True
-        else:
-            return False
+        return result_of_check == 0
 
     @staticmethod
     def cmdparse(cmd_in):
@@ -163,10 +193,9 @@ class Helpers:
                 # Continue the loop.
                 if char == " ":
                     continue
-                else:
-                    cmd_index += 1
-                    cmd_out.append("")
-                    new_param = False
+                cmd_index += 1
+                cmd_out.append("")
+                new_param = False
             if esc:  # if we encountered an escape character on the last loop,
                 # append this char regardless of what it is
                 if char not in Helpers.allowed_quotes:
@@ -348,8 +377,7 @@ class Helpers:
         common_path = pathlib.Path(os.path.commonpath([base, fileabs]))
         if base == common_path:
             return fileabs
-        else:
-            raise ValueError("Path traversal detected")
+        raise ValueError("Path traversal detected")
 
     @staticmethod
     def tail_file(file_name, number_lines=20):
@@ -405,15 +433,8 @@ class Helpers:
     @staticmethod
     def check_root():
         if Helpers.is_os_windows():
-            if ctypes.windll.shell32.IsUserAnAdmin() == 1:
-                return True
-            else:
-                return False
-        else:
-            if os.geteuid() == 0:
-                return True
-            else:
-                return False
+            return ctypes.windll.shell32.IsUserAnAdmin() == 1
+        return os.geteuid() == 0
 
     @staticmethod
     def unzip_file(zip_path):
@@ -491,9 +512,10 @@ class Helpers:
 
         # del any old session.lock file as this is a new session
         try:
-            os.remove(session_log_file)
+            with contextlib.suppress(FileNotFoundError):
+                os.remove(session_log_file)
         except Exception as e:
-            logger.error(f"Deleting Session.lock failed with error: {e}")
+            Console.error(f"Deleting logs/session.log failed with error: {e}")
 
     @staticmethod
     def get_time_as_string():
@@ -529,8 +551,7 @@ class Helpers:
         if os.path.exists(path) and os.path.isfile(path):
             logger.debug(f"Found path: {path}")
             return True
-        else:
-            return False
+        return False
 
     @staticmethod
     def human_readable_file_size(num: int, suffix="B"):
@@ -551,8 +572,7 @@ class Helpers:
         if os.path.exists(path):
             logger.debug(f"Found path: {path}")
             return True
-        else:
-            return False
+        return False
 
     @staticmethod
     def get_file_contents(path: str, lines=100):
@@ -768,10 +788,7 @@ class Helpers:
 
     @staticmethod
     def is_os_windows():
-        if os.name == "nt":
-            return True
-        else:
-            return False
+        return os.name == "nt"
 
     @staticmethod
     def wtol_path(w_path):
@@ -946,8 +963,7 @@ class Helpers:
                 # extracts archive to temp directory
                 zip_ref.extractall(temp_dir)
             return temp_dir
-        else:
-            return False
+        return False
 
     @staticmethod
     def in_path(parent_path, child_path):

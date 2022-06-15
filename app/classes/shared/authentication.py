@@ -62,8 +62,7 @@ class Authentication:
         if int(user.get("valid_tokens_from").timestamp()) < iat:
             # Success!
             return key, data, user
-        else:
-            return None
+        return None
 
     def check_err(
         self,

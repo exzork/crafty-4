@@ -88,13 +88,11 @@ class BaseHandler(tornado.web.RequestHandler):
             if r in name:
                 logger.debug(f"Auto-bleaching {name}: [**REDACTED**]")
                 break
-            else:
-                logger.debug(f"Auto-bleaching {name}: {text}")
+            logger.debug(f"Auto-bleaching {name}: {text}")
         if type(text) in self.nobleach:
             logger.debug("Auto-bleaching - bypass type")
             return text
-        else:
-            return bleach.clean(text)
+        return bleach.clean(text)
 
     def get_argument(
         self,
@@ -216,10 +214,9 @@ class BaseHandler(tornado.web.RequestHandler):
                     superuser,
                     user,
                 )
-            else:
-                logging.debug("Auth unsuccessful")
-                self.access_denied(None, "the user provided an invalid token")
-                return None
+            logging.debug("Auth unsuccessful")
+            self.access_denied(None, "the user provided an invalid token")
+            return None
         except Exception as auth_exception:
             logger.debug(
                 "An error occured while authenticating an API user:",

@@ -158,34 +158,31 @@ class PanelHandler(BaseHandler):
         if server_id is None:
             self.redirect("/panel/error?error=Invalid Server ID")
             return None
-        else:
-            # Does this server exist?
-            if not self.controller.servers.server_id_exists(server_id):
+        # Does this server exist?
+        if not self.controller.servers.server_id_exists(server_id):
+            self.redirect("/panel/error?error=Invalid Server ID")
+            return None
+
+        # Does the user have permission?
+        if superuser:  # TODO: Figure out a better solution
+            return server_id
+        if api_key is not None:
+            if not self.controller.servers.server_id_authorized_api_key(
+                server_id, api_key
+            ):
+                logger.debug(
+                    f"API key {api_key.name} (id: {api_key.token_id}) "
+                    f"does not have permission"
+                )
                 self.redirect("/panel/error?error=Invalid Server ID")
                 return None
-
-            # Does the user have permission?
-            if not superuser:  # TODO: Figure out a better solution
-                if api_key is not None:
-                    if not self.controller.servers.server_id_authorized_api_key(
-                        server_id, api_key
-                    ):
-                        logger.debug(
-                            f"API key {api_key.name} (id: {api_key.token_id}) "
-                            f"does not have permission"
-                        )
-                        self.redirect("/panel/error?error=Invalid Server ID")
-                        return None
-                else:
-                    if not self.controller.servers.server_id_authorized(
-                        server_id, exec_user["user_id"]
-                    ):
-                        logger.debug(
-                            f'User {exec_user["user_id"]} does not have permission'
-                        )
-                        self.redirect("/panel/error?error=Invalid Server ID")
-                        return None
-        return server_id
+        else:
+            if not self.controller.servers.server_id_authorized(
+                server_id, exec_user["user_id"]
+            ):
+                logger.debug(f'User {exec_user["user_id"]} does not have permission')
+                self.redirect("/panel/error?error=Invalid Server ID")
+                return None
 
     # Server fetching, spawned asynchronously
     # TODO: Make the related front-end elements update with AJAX
@@ -1026,7 +1023,7 @@ class PanelHandler(BaseHandler):
             if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
-            elif EnumPermissionsCrafty.USER_CONFIG not in exec_user_crafty_permissions:
+            if EnumPermissionsCrafty.USER_CONFIG not in exec_user_crafty_permissions:
                 if str(user_id) != str(exec_user["user_id"]):
                     self.redirect(
                         "/panel/error?error=Unauthorized access: not a user editor"
@@ -1074,23 +1071,22 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return
 
-            elif str(exec_user["user_id"]) == str(user_id):
+            if str(exec_user["user_id"]) == str(user_id):
                 self.redirect(
                     "/panel/error?error=Unauthorized access: you cannot delete yourself"
                 )
                 return
-            elif user_id is None:
+            if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
-            else:
-                # does this user id exist?
-                target_user = self.controller.users.get_user_by_id(user_id)
-                if not target_user:
-                    self.redirect("/panel/error?error=Invalid User ID")
-                    return
-                elif target_user["superuser"]:
-                    self.redirect("/panel/error?error=Cannot remove a superuser")
-                    return
+            # does this user id exist?
+            target_user = self.controller.users.get_user_by_id(user_id)
+            if not target_user:
+                self.redirect("/panel/error?error=Invalid User ID")
+                return
+            if target_user["superuser"]:
+                self.redirect("/panel/error?error=Cannot remove a superuser")
+                return
 
             self.controller.users.remove_user(user_id)
 
@@ -1170,7 +1166,7 @@ class PanelHandler(BaseHandler):
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
                 return
-            elif role_id is None:
+            if role_id is None:
                 self.redirect("/panel/error?error=Invalid Role ID")
                 return
 
@@ -1182,15 +1178,14 @@ class PanelHandler(BaseHandler):
             if not superuser:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return
-            elif role_id is None:
+            if role_id is None:
                 self.redirect("/panel/error?error=Invalid Role ID")
                 return
-            else:
-                # does this user id exist?
-                target_role = self.controller.roles.get_role(role_id)
-                if not target_role:
-                    self.redirect("/panel/error?error=Invalid Role ID")
-                    return
+            # does this user id exist?
+            target_role = self.controller.roles.get_role(role_id)
+            if not target_role:
+                self.redirect("/panel/error?error=Invalid Role ID")
+                return
 
             self.controller.roles.remove_role(role_id)
 
@@ -1808,6 +1803,12 @@ class PanelHandler(BaseHandler):
             else:
                 superuser = False
             if not exec_user["superuser"]:
+                if username is None or username == "":
+                    self.redirect("/panel/error?error=Invalid username")
+                    return
+                if user_id is None:
+                    self.redirect("/panel/error?error=Invalid User ID")
+                    return
                 if (
                     EnumPermissionsCrafty.USER_CONFIG
                     not in exec_user_crafty_permissions
@@ -1835,17 +1836,10 @@ class PanelHandler(BaseHandler):
                     )
                     self.redirect("/panel/panel_config")
                     return
-                elif username is None or username == "":
-                    self.redirect("/panel/error?error=Invalid username")
-                    return
-                elif user_id is None:
+                # does this user id exist?
+                if not self.controller.users.user_id_exists(user_id):
                     self.redirect("/panel/error?error=Invalid User ID")
                     return
-                else:
-                    # does this user id exist?
-                    if not self.controller.users.user_id_exists(user_id):
-                        self.redirect("/panel/error?error=Invalid User ID")
-                        return
             else:
                 if password0 != password1:
                     self.redirect("/panel/error?error=Passwords must match")
@@ -1892,14 +1886,13 @@ class PanelHandler(BaseHandler):
             if name is None or name == "":
                 self.redirect("/panel/error?error=Invalid API key name")
                 return
-            elif user_id is None:
+            if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
-            else:
-                # does this user id exist?
-                if not self.controller.users.user_id_exists(user_id):
-                    self.redirect("/panel/error?error=Invalid User ID")
-                    return
+            # does this user id exist?
+            if not self.controller.users.user_id_exists(user_id):
+                self.redirect("/panel/error?error=Invalid User ID")
+                return
 
             crafty_permissions_mask = self.get_perms()
             server_permissions_mask = self.get_perms_server()
@@ -1928,12 +1921,11 @@ class PanelHandler(BaseHandler):
             if key_id is None:
                 self.redirect("/panel/error?error=Invalid Key ID")
                 return
-            else:
-                key = self.controller.users.get_user_api_key(key_id)
-                # does this user id exist?
-                if key is None:
-                    self.redirect("/panel/error?error=Invalid Key ID")
-                    return
+            key = self.controller.users.get_user_api_key(key_id)
+            # does this user id exist?
+            if key is None:
+                self.redirect("/panel/error?error=Invalid Key ID")
+                return
 
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
@@ -1951,14 +1943,14 @@ class PanelHandler(BaseHandler):
             self.finish()
 
         elif page == "add_user":
-            if bleach.clean(self.get_argument("username", None)).lower() == "system":
+            username = bleach.clean(self.get_argument("username", None))
+            if username.lower() == "system":
                 self.redirect(
                     "/panel/error?error=Unauthorized access: "
                     "username system is reserved for the Crafty system."
                     " Please choose a different username."
                 )
                 return
-            username = bleach.clean(self.get_argument("username", None))
             password0 = bleach.clean(self.get_argument("password0", None))
             password1 = bleach.clean(self.get_argument("password1", None))
             email = bleach.clean(self.get_argument("email", "default@example.com"))
@@ -1991,14 +1983,13 @@ class PanelHandler(BaseHandler):
                     "/panel/error?error=Unauthorized access: quantity limit reached"
                 )
                 return
-            elif username is None or username == "":
+            if username is None or username == "":
                 self.redirect("/panel/error?error=Invalid username")
                 return
-            else:
-                # does this user id exist?
-                if self.controller.users.get_id_by_name(username) is not None:
-                    self.redirect("/panel/error?error=User exists")
-                    return
+            # does this user id exist?
+            if self.controller.users.get_id_by_name(username) is not None:
+                self.redirect("/panel/error?error=User exists")
+                return
 
             if password0 != password1:
                 self.redirect("/panel/error?error=Passwords must match")
@@ -2047,17 +2038,16 @@ class PanelHandler(BaseHandler):
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
                 return
-            elif role_name is None or role_name == "":
+            if role_name is None or role_name == "":
                 self.redirect("/panel/error?error=Invalid username")
                 return
-            elif role_id is None:
+            if role_id is None:
                 self.redirect("/panel/error?error=Invalid Role ID")
                 return
-            else:
-                # does this user id exist?
-                if not self.controller.roles.role_id_exists(role_id):
-                    self.redirect("/panel/error?error=Invalid Role ID")
-                    return
+            # does this user id exist?
+            if not self.controller.roles.role_id_exists(role_id):
+                self.redirect("/panel/error?error=Invalid Role ID")
+                return
 
             servers = self.get_role_servers()
 
@@ -2079,7 +2069,7 @@ class PanelHandler(BaseHandler):
                     "/panel/error?error=Unauthorized access: not a role editor"
                 )
                 return
-            elif (
+            if (
                 not self.controller.crafty_perms.can_add_role(exec_user["user_id"])
                 and not exec_user["superuser"]
             ):
@@ -2087,14 +2077,13 @@ class PanelHandler(BaseHandler):
                     "/panel/error?error=Unauthorized access: quantity limit reached"
                 )
                 return
-            elif role_name is None or role_name == "":
+            if role_name is None or role_name == "":
                 self.redirect("/panel/error?error=Invalid role name")
                 return
-            else:
-                # does this user id exist?
-                if self.controller.roles.get_roleid_by_name(role_name) is not None:
-                    self.redirect("/panel/error?error=Role exists")
-                    return
+            # does this user id exist?
+            if self.controller.roles.get_roleid_by_name(role_name) is not None:
+                self.redirect("/panel/error?error=Role exists")
+                return
 
             servers = self.get_role_servers()
 
@@ -2145,17 +2134,14 @@ class PanelHandler(BaseHandler):
             if not superuser:
                 self.redirect("/panel/error?error=Unauthorized access: not superuser")
                 return
-            elif (
-                key_id is None or self.controller.users.get_user_api_key(key_id) is None
-            ):
+            if key_id is None or self.controller.users.get_user_api_key(key_id) is None:
                 self.redirect("/panel/error?error=Invalid Key ID")
                 return
-            else:
-                # does this user id exist?
-                target_key = self.controller.users.get_user_api_key(key_id)
-                if not target_key:
-                    self.redirect("/panel/error?error=Invalid Key ID")
-                    return
+            # does this user id exist?
+            target_key = self.controller.users.get_user_api_key(key_id)
+            if not target_key:
+                self.redirect("/panel/error?error=Invalid Key ID")
+                return
 
             self.controller.users.delete_user_api_key(key_id)
 

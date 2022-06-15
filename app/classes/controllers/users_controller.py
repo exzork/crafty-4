@@ -140,7 +140,7 @@ class UsersController:
         for key in user_data:
             if key == "user_id":
                 continue
-            elif key == "roles":
+            if key == "roles":
                 added_roles = set(user_data["roles"]).difference(
                     set(base_data["roles"])
                 )
