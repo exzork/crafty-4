@@ -113,21 +113,25 @@ class Helpers:
         for jdk_key_path in jdk_key_paths:
             try:
                 with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, jdk_key_path) as kjdk:
-                    kjdk_values = dict(
-                        [
-                            winreg.EnumValue(kjdk, i)[:2]
-                            for i in range(winreg.QueryInfoKey(kjdk)[1])
-                        ]
+                    kjdk_values = (
+                        dict(  # pylint: disable=consider-using-dict-comprehension
+                            [
+                                winreg.EnumValue(kjdk, i)[:2]
+                                for i in range(winreg.QueryInfoKey(kjdk)[1])
+                            ]
+                        )
                     )
                     current_version = kjdk_values["CurrentVersion"]
                     kjdk_current = winreg.OpenKey(
                         winreg.HKEY_LOCAL_MACHINE, jdk_key_path + "\\" + current_version
                     )
-                    kjdk_current_values = dict(
-                        [
-                            winreg.EnumValue(kjdk_current, i)[:2]
-                            for i in range(winreg.QueryInfoKey(kjdk_current)[1])
-                        ]
+                    kjdk_current_values = (
+                        dict(  # pylint: disable=consider-using-dict-comprehension
+                            [
+                                winreg.EnumValue(kjdk_current, i)[:2]
+                                for i in range(winreg.QueryInfoKey(kjdk_current)[1])
+                            ]
+                        )
                     )
                     return kjdk_current_values["JavaHome"]
             except WindowsError as e:  # pylint: disable=E0602
