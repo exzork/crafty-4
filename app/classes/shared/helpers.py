@@ -130,7 +130,7 @@ class Helpers:
                         ]
                     )
                     return kjdk_current_values["JavaHome"]
-            except WindowsError as e:
+            except WindowsError as e:  # pylint: disable=E0602
                 if e.errno == 2:
                     continue
                 raise
