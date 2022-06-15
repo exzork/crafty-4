@@ -234,6 +234,21 @@ class ServerInstance:
             self.settings["executable"]
         )
         self.server_command = Helpers.cmdparse(self.settings["execution_command"])
+        if self.helper.is_os_windows() and self.server_command[0] == "java":
+            logger.info(
+                "Detected nebulous java in start command. Replacing with full java path."
+            )
+            which_java_raw = self.helper.which_java()
+            java_path = which_java_raw + "\\bin\\java"
+            if not str(which_java_raw) == str(self.helper.get_servers_root_dir) or str(
+                self.helper.get_servers_root_dir
+            ) in str(which_java_raw):
+                self.server_command[0] = java_path
+            else:
+                logger.critcal(
+                    "Possible attack detected. User attempted to exec java binary from server directory."
+                )
+                return
         self.server_path = Helpers.get_os_understandable_path(self.settings["path"])
 
         # let's do some quick checking to make sure things actually exists
