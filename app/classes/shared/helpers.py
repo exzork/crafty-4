@@ -133,8 +133,7 @@ class Helpers:
             except WindowsError as e:
                 if e.errno == 2:
                     continue
-                else:
-                    raise
+                raise
 
     @staticmethod
     def check_internet():
