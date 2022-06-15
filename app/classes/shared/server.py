@@ -241,7 +241,7 @@ class ServerInstance:
             )
             which_java_raw = self.helper.which_java()
             java_path = which_java_raw + "\\bin\\java"
-            if not str(which_java_raw) == str(self.helper.get_servers_root_dir) or str(
+            if str(which_java_raw) != str(self.helper.get_servers_root_dir) or str(
                 self.helper.get_servers_root_dir
             ) in str(which_java_raw):
                 self.server_command[0] = java_path

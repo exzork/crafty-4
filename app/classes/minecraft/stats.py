@@ -212,7 +212,7 @@ class Stats:
 
         return level_total_size
 
-    def get_server_players(self, server_id):
+    def get_server_players(self, server_id):  # pylint: disable=no-self-use
 
         server = HelperServers.get_server_data_by_id(server_id)
 
