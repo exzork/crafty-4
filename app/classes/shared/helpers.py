@@ -104,7 +104,8 @@ class Helpers:
 
     @staticmethod
     def which_java():
-        # Adapted from LeeKamentsky's https://github.com/LeeKamentsky/python-javabridge/blob/master/javabridge/locate.py
+        # Adapted from LeeKamentsky >>>
+        # https://github.com/LeeKamentsky/python-javabridge/blob/master/javabridge/locate.py
         jdk_key_paths = (
             "SOFTWARE\\JavaSoft\\JDK",
             "SOFTWARE\\JavaSoft\\Java Development Kit",
