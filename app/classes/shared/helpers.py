@@ -1,7 +1,6 @@
 import contextlib
 import os
 import re
-import winreg
 import sys
 import json
 import tempfile
@@ -29,6 +28,12 @@ from app.classes.web.websocket_helper import WebSocketHelper
 
 with redirect_stderr(NullWriter()):
     import psutil
+
+# winreg is only a package on windows-python. We will only import
+# this on windows systems to avoid a module not found error
+# this is only needed for windows java path shenanigans
+if os.name == "nt":
+    import winreg
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +139,7 @@ class Helpers:
                         )
                     )
                     return kjdk_current_values["JavaHome"]
-            except WindowsError as e:  # pylint: disable=E0602
+            except OSError as e:
                 if e.errno == 2:
                     continue
                 raise
