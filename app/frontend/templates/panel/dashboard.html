@@ -835,7 +835,8 @@
       "ordering": false, // false to disable sorting (or any other option)
       "paging": false
     });
-    document.getElementById('first').setAttribute('draggable', false);
+    const first = document.querySelector('#first')
+    first !== null && first.setAttribute('draggable', false);
     $('.dataTables_length').addClass('bs-select');
   });
   /* Search Bar End */
