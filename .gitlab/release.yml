@@ -14,5 +14,5 @@ release:
     assets:
       links:
         - name: Windows Package
-          url: "https://gitlab.com/some/repo/-/jobs/$(cat CI_JOB_ID.txt)/artifacts/download"
+          url: "https://gitlab.com/some/repo/-/jobs/`cat CI_JOB_ID.txt`/artifacts/download"
           link_type: package
