@@ -163,8 +163,29 @@
   <script type="text/javascript" src="/static/assets/js/motd.js"></script>
 
   <script>
+    /**
+      * Returns a random number between min (inclusive) and max (exclusive)
+      */
+    function getRandomArbitrary(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    /**
+      * Returns a random integer between min (inclusive) and max (inclusive).
+      * The value is no lower than min (or the next integer greater than min
+      * if min isn't an integer) and no greater than max (or the next integer
+      * lower than max if max isn't an integer).
+      * Using Math.round() will give you a non-uniform distribution!
+      */
+    function getRandomInt(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+
     $.extend($.fn.dataTable.defaults, {
-      language: {% raw translate('datatables', 'i18n', data['lang']) %}
+      // {{ '\nlanguage:' }} {% raw translate('datatables', 'i18n', data['lang']) %}
       })
 
     //used to get cookies from browser - this is part of tornados xsrf protection - it's for extra security
@@ -192,60 +213,93 @@
       });
     });
 
+    let usingWebSockets = false;
+    let webSocket = null;
     // {% if request.protocol == 'https' %}
-    let usingWebSockets = true;
+    usingWebSockets = true;
 
     let listenEvents = [];
+    let wsOpen = false;
+    /**
+      * @type {number | null} reconnectorId An interval ID for the reconnector.
+      */
+    let reconnectorId = null;
+    let failedConnectionCounter = 0; // https://stackoverflow.com/a/37038217/15388424
 
-    try {
-      pageQueryParams = 'page_query_params=' + encodeURIComponent(location.search)
-      page = 'page=' + encodeURIComponent(location.pathname)
-      var wsInternal = new WebSocket('wss://' + location.host + '/ws?' + page + '&' + pageQueryParams);
-      wsInternal.onopen = function () {
-        console.log('opened WebSocket connection:', wsInternal)
-      };
-      wsInternal.onmessage = function (rawMessage) {
-        var message = JSON.parse(rawMessage.data);
+    const wsPageQueryParams = 'page_query_params=' + encodeURIComponent(location.search)
+    const wsPage = 'page=' + encodeURIComponent(location.pathname)
 
-        console.log('got message: ', message)
+    const sendWssError = () => wsOpen || warn(
+      'WebSockets are required for Crafty to work. This websocket connection has been closed. Are you using a reverse proxy?',
+      'https://wiki.craftycontrol.com/en/4/docs/Reverse%20Proxy%20Examples',
+      'wssError'
+    )
 
-        listenEvents
-          .filter(listenedEvent => listenedEvent.event == message.event)
-          .forEach(listenedEvent => listenedEvent.callback(message.data))
-      };
-      wsInternal.onerror = function (errorEvent) {
-        console.error('WebSocket Error', errorEvent);
-        warn('WebSockets are required for Crafty to work. This websocket connection has been closed. Are you using a reverse proxy?', 'https://wiki.craftycontrol.com/en/4/docs/Reverse%20Proxy%20Examples')
-
-      };
-      wsInternal.onclose = function (closeEvent) {
-        console.log('Closed WebSocket', closeEvent);
-        setTimeout(sendWssError, 7000);
-      };
-
-
-      webSocket = {
-        on: function (event, callback) {
-          console.log('registered ' + event + ' event');
-          listenEvents.push({ event: event, callback: callback })
-        },
-        emit: function (event, data) {
-          var message = {
-            event: event,
-            data: data
+    function startWebSocket() {
+      console.log('%c[Crafty Controller] %cConnecting the WebSocket', 'font-weight: 900; color: #800080;', 'font-weight: 900; color: #eee;');
+      try {
+        var wsInternal = new WebSocket('wss://' + location.host + '/ws?' + wsPage + '&' + wsPageQueryParams);
+        wsInternal.onopen = function () {
+          console.log('opened WebSocket connection:', wsInternal)
+          wsOpen = true;
+          failedConnectionCounter = 0;
+          if (typeof reconnectorId === 'number') {
+            document.querySelectorAll('.wssError').forEach(el => el.remove())
+            clearInterval(reconnectorId);
+            reconnectorId = null;
           }
+        };
+        wsInternal.onmessage = function (rawMessage) {
+          var message = JSON.parse(rawMessage.data);
 
-          wsInternal.send(JSON.stringify(message));
+          console.log('got message: ', message)
+
+          listenEvents
+            .filter(listenedEvent => listenedEvent.event == message.event)
+            .forEach(listenedEvent => listenedEvent.callback(message.data))
+        };
+        wsInternal.onerror = function (errorEvent) {
+          console.error('WebSocket Error', errorEvent);
+        };
+        wsInternal.onclose = function (closeEvent) {
+          wsOpen = false;
+          console.log('Closed WebSocket', closeEvent);
+
+          if (typeof reconnectorId !== 'number') {
+            setTimeout(sendWssError, 7000);
+          }
+          console.info("Reconnecting with a timeout of", (getRandomArbitrary(0, 2 ** failedConnectionCounter - 1) + 5) * 1000, "milliseconds");
+          // Discard old websocket and create a new one in 5 seconds
+          wsInternal = null
+          reconnectorId = setTimeout(startWebSocket, (getRandomArbitrary(0, 2 ** failedConnectionCounter - 1) + 5) * 1000)
+
+          failedConnectionCounter++;
+        };
+
+
+        webSocket = {
+          on: function (event, callback) {
+            console.log('registered ' + event + ' event');
+            listenEvents.push({ event: event, callback: callback })
+          },
+          emit: function (event, data) {
+            var message = {
+              event: event,
+              data: data
+            }
+
+            wsInternal.send(JSON.stringify(message));
+          }
         }
+      } catch (error) {
+        console.error('Error while making websocket helpers', error);
+        usingWebSockets = false;
       }
-    } catch (error) {
-      console.error('Error while making websocket helpers', error);
-      usingWebSockets = false;
     }
+
+    startWebSocket();
     // {% else %}
-    let usingWebSockets = false;
     warn('WebSockets are not supported in Crafty if not using the https protocol')
-    var webSocket;
     // {% end%}
 
     if (webSocket) {
@@ -265,8 +319,6 @@
           }
         })
       });
-    }
-    if (webSocket) {
       webSocket.on('support_status_update', function (logs) {
         if (logs.percent >= 100) {
           document.getElementById('logs_progress_bar').innerHTML = '100%';
@@ -276,8 +328,6 @@
           document.getElementById('logs_progress_bar').style.width = logs.percent + '%';
         }
       });
-    }
-    if (webSocket) {
       webSocket.on('send_logs_bootbox', function (server_id) {
         var x = document.querySelector('.bootbox');
         if (x) {
@@ -302,9 +352,6 @@
           }
         });
       });
-    }
-
-    if (webSocket) {
       webSocket.on('send_eula_bootbox', function (server_id) {
         var x = document.querySelector('.bootbox');
         if (x) {
@@ -339,10 +386,6 @@
       });
     }
 
-    function sendWssError(){
-        warn('WebSockets are required for Crafty to work. This websocket connection has been closed. Are you using a reverse proxy?', 'https://wiki.craftycontrol.com/en/4/docs/Reverse%20Proxy%20Examples')
-    }
-
     function eulaAgree(server_id, command) {
       //< !--this getCookie function is in base.html-- >
       var token = getCookie("_xsrf");
@@ -360,7 +403,7 @@
     }
 
 
-    function warn(message, link = null) {
+    function warn(message, link = null, className = null) {
       var closeEl = document.createElement('span');
       var strongEL = document.createElement('strong');
       var msgEl = document.createElement('div');
@@ -395,6 +438,10 @@
         linkEl.target = "_blank";
 
         parentEl.appendChild(linkEl);
+      }
+
+      if (className) {
+        parentEl.classList.add(className);
       }
 
       document.querySelector('.warnings').appendChild(parentEl);

@@ -338,7 +338,7 @@ class CreateUser(ApiHandler):
             self.access_denied(user)
             return
 
-        new_username = self.get_argument("username")
+        new_username = self.get_argument("username").lower()
         new_pass = self.get_argument("password")
 
         if new_username:
