@@ -95,6 +95,7 @@ class ApiUsersIndexHandler(BaseApiHandler):
             )
 
         username = data["username"]
+        username = str(username).lower()
         password = data["password"]
         email = data.get("email", "default@example.com")
         enabled = data.get("enabled", True)
