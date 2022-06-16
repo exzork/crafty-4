@@ -1223,8 +1223,6 @@ class PanelHandler(BaseHandler):
 
         elif page == "download_support_package":
             temp_zip_storage = exec_user["support_logs"]
-            # We'll reset the support path for this user now.
-            self.controller.users.set_support_path(exec_user["user_id"], "")
 
             self.set_header("Content-Type", "application/octet-stream")
             self.set_header(
