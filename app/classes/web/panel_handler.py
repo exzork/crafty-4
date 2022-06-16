@@ -1774,7 +1774,7 @@ class PanelHandler(BaseHandler):
                     "system user is not editable"
                 )
             user_id = bleach.clean(self.get_argument("id", None))
-            username = bleach.clean(self.get_argument("username", None))
+            username = bleach.clean(self.get_argument("username", None).lower())
             password0 = bleach.clean(self.get_argument("password0", None))
             password1 = bleach.clean(self.get_argument("password1", None))
             email = bleach.clean(self.get_argument("email", "default@example.com"))
@@ -1943,7 +1943,7 @@ class PanelHandler(BaseHandler):
             self.finish()
 
         elif page == "add_user":
-            username = bleach.clean(self.get_argument("username", None))
+            username = bleach.clean(self.get_argument("username", None).lower())
             if username.lower() == "system":
                 self.redirect(
                     "/panel/error?error=Unauthorized access: "
