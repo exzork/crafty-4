@@ -49,12 +49,10 @@ win-prod-build:
     paths:
       - .venv/
   rules:
-    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
     - if: $CI_COMMIT_TAG
   environment:
     name: production
   script:
-    - echo "${CI_JOB_ID}" > CI_JOB_ID.txt
     - |
       $ErrorActionPreference = "Stop"
       py -m venv .venv
@@ -73,6 +71,8 @@ win-prod-build:
       --collect-all tzdata
       --collect-all pytz
       --collect-all six
+  after_script:
+    - echo "JOB_ID=$CI_JOB_ID" >> job.env
 
   # Download latest:
   # | https://gitlab.com/crafty-controller/crafty-4/-/jobs/artifacts/master/download?job=win-prod-build
@@ -81,7 +81,8 @@ win-prod-build:
     paths:
       - app\
       - .\crafty_commander.exe
-      - CI_JOB_ID.txt
     expire_in: never
     exclude:
       - app\classes\**\*
+    reports:
+      dotenv: job.env
