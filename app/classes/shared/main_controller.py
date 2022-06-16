@@ -82,8 +82,16 @@ class Controller:
         if exec_user["preparing"]:
             return
         self.users.set_prepare(exec_user["user_id"])
-        # Delete previous instace of logs
-        self.del_support_file(exec_user["support_logs"])
+        logger.info("Checking for previous support logs.")
+        if exec_user["support_logs"] != "":
+            logger.info(
+                f"Found previous support log request at {exec_user['support_logs']}"
+            )
+            if self.helper.validate_traversal(
+                tempfile.gettempdir(), exec_user["support_logs"]
+            ):
+                logger.debug("No transversal detected. Going for the delete.")
+                self.del_support_file(exec_user["support_logs"])
         # pausing so on screen notifications can run for user
         time.sleep(7)
         self.helper.websocket_helper.broadcast_user(
@@ -177,6 +185,9 @@ class Controller:
     def del_support_file(self, temp_zip_storage):
         try:
             FileHelpers.del_file(temp_zip_storage)
+            logger.info(
+                f"Old support logs successfully deleted from {temp_zip_storage}"
+            )
         except FileNotFoundError:
             logger.info("No temp file found. Assuming it's already been cleaned up")
         except PermissionError:
