@@ -1,5 +1,6 @@
 import os
 import html
+import pathlib
 import re
 import logging
 import time
@@ -62,7 +63,9 @@ class AjaxHandler(BaseHandler):
             if full_log:
                 log_lines = self.helper.get_setting("max_log_lines")
                 data = Helpers.tail_file(
-                    Helpers.get_os_understandable_path(server_data["log_path"]),
+                    # If the log path is absolute it returns it as is
+                    # If it is relative it joins the paths below like normal
+                    pathlib.Path(server_data["path"], server_data["log_path"]),
                     log_lines,
                 )
             else:

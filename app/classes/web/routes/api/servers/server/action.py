@@ -70,12 +70,10 @@ class ApiServersServerActionHandler(BaseApiHandler):
         FileHelpers.copy_dir(server_data.get("path"), new_server_path)
 
         # TODO get old server DB data to individual variables
-        new_server_command = str(server_data.get("execution_command")).replace(
-            server_uuid, new_server_uuid
-        )
+        new_server_command = str(server_data.get("execution_command"))
         new_server_log_file = str(
             self.helper.get_os_understandable_path(server_data.get("log_path"))
-        ).replace(server_uuid, new_server_uuid)
+        )
 
         new_server_id = self.controller.servers.create_server(
             new_server_name,

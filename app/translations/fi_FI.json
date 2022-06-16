@@ -328,7 +328,7 @@
         "serverIP": "Palvelimen IP-osoite",
         "serverIPDesc": "IP-osoite, johon Craftyn tulisi muodostaa yhteys tilastojen saamiseen (Kokeile todellista ip:tä \"127.0.0.1\" sijaan, jos sinulla on ongelmia)",
         "serverLogLocation": "Palvelimen lokin sijainti",
-        "serverLogLocationDesc": "Absoluuttinen polku lokitiedostoon",
+        "serverLogLocationDesc": "Polku lokitiedostoon",
         "serverName": "Palvelimen nimi",
         "serverNameDesc": "Miksi haluat kutsua tätä palvelinta",
         "serverPath": "Palvelimen työkansio",

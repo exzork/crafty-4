@@ -280,9 +280,7 @@ class Controller:
                 return str(int(gibs * 1024))
 
             def _wrap_jar_if_windows():
-                return (
-                    f'"{full_jar_path}"' if Helpers.is_os_windows() else full_jar_path
-                )
+                return f'"{server_file}"' if Helpers.is_os_windows() else server_file
 
             server_command = (
                 f"java -Xms{_gibs_to_mibs(min_mem)}M "
@@ -339,8 +337,7 @@ class Controller:
             stop_command = "stop"
 
         log_location = data.get("log_location", "")
-        if log_location == "":
-            # TODO: different default log locations for server creation types
+        if log_location == "" and data["create_type"] == "minecraft_java":
             log_location = "./logs/latest.log"
 
         if data["monitoring_type"] == "minecraft_java":
@@ -404,7 +401,6 @@ class Controller:
             backup_path.replace(" ", "^ ")
 
         server_file = f"{server}-{version}.jar"
-        full_jar_path = os.path.join(server_dir, server_file)
 
         # make the dir - perhaps a UUID?
         Helpers.ensure_dir_exists(server_dir)
@@ -433,15 +429,15 @@ class Controller:
             server_command = (
                 f"java -Xms{Helpers.float_to_string(min_mem)}M "
                 f"-Xmx{Helpers.float_to_string(max_mem)}M "
-                f'-jar "{full_jar_path}" nogui'
+                f'-jar "{server_file}" nogui'
             )
         else:
             server_command = (
                 f"java -Xms{Helpers.float_to_string(min_mem)}M "
                 f"-Xmx{Helpers.float_to_string(max_mem)}M "
-                f"-jar {full_jar_path} nogui"
+                f"-jar {server_file} nogui"
             )
-        server_log_file = f"{server_dir}/logs/latest.log"
+        server_log_file = "./logs/latest.log"
         server_stop = "stop"
 
         new_id = self.register_server(
@@ -458,7 +454,9 @@ class Controller:
         )
 
         # download the jar
-        self.server_jars.download_jar(server, version, full_jar_path, new_id)
+        self.server_jars.download_jar(
+            server, version, os.path.join(server_dir, server_file), new_id
+        )
 
         return new_id
 
@@ -534,7 +532,7 @@ class Controller:
                 f"-Xmx{Helpers.float_to_string(max_mem)}M "
                 f"-jar {full_jar_path} nogui"
             )
-        server_log_file = f"{new_server_dir}/logs/latest.log"
+        server_log_file = "./logs/latest.log"
         server_stop = "stop"
 
         new_id = self.register_server(
@@ -614,7 +612,7 @@ class Controller:
                 f"-jar {full_jar_path} nogui"
             )
         logger.debug("command: " + server_command)
-        server_log_file = f"{new_server_dir}/logs/latest.log"
+        server_log_file = "./logs/latest.log"
         server_stop = "stop"
 
         new_id = self.register_server(
@@ -677,7 +675,7 @@ class Controller:
         else:
             server_command = f"./{server_exe}"
         logger.debug("command: " + server_command)
-        server_log_file = "N/A"
+        server_log_file = ""
         server_stop = "stop"
 
         new_id = self.register_server(
@@ -746,7 +744,7 @@ class Controller:
         else:
             server_command = f"./{server_exe}"
         logger.debug("command: " + server_command)
-        server_log_file = "N/A"
+        server_log_file = ""
         server_stop = "stop"
 
         new_id = self.register_server(
