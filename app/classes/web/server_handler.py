@@ -201,7 +201,6 @@ class ServerHandler(BaseHandler):
                     server_data = self.controller.servers.get_server_data_by_id(
                         server_id
                     )
-                    server_uuid = server_data.get("server_uuid")
                     new_server_name = server_data.get("server_name") + " (Copy)"
 
                     name_counter = 1
