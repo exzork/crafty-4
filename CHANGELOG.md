@@ -1,15 +1,9 @@
 # Changelog
 
-## [4.0.3] - TBD
+## [4.0.2-hotfix1] - 2022/06/17
 
-### New features
- TBD
-
-### Bug fixes
-TBD
-
-### Tweaks
-TBD
+### Crit Bug fixes
+Fix blank server_detail page for general users
 
 ## [4.0.2] - 2022/06/16
 
