@@ -795,10 +795,9 @@ class ServerInstance:
         self.server_scheduler.remove_job("c_" + str(self.server_id))
 
     def agree_eula(self, user_id):
-        file = os.path.join(self.server_path, "eula.txt")
-        f = open(file, "w", encoding="utf-8")
-        f.write("eula=true")
-        f.close()
+        eula_file = os.path.join(self.server_path, "eula.txt")
+        with open(eula_file, "w", encoding="utf-8") as f:
+            f.write("eula=true")
         self.run_threaded_server(user_id)
 
     def backup_server(self):

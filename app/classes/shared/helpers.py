@@ -89,7 +89,8 @@ class Helpers:
     @staticmethod
     def check_file_perms(path):
         try:
-            open(path, "r", encoding="utf-8").close()
+            with open(path, "r", encoding="utf-8"):
+                pass
             logger.info(f"{path} is readable")
             return True
         except PermissionError:
@@ -425,7 +426,8 @@ class Helpers:
     def check_writeable(path: str):
         filename = os.path.join(path, "tempfile.txt")
         try:
-            open(filename, "w", encoding="utf-8").close()
+            with open(filename, "w", encoding="utf-8"):
+                pass
             os.remove(filename)
 
             logger.info(f"{filename} is writable")
@@ -510,7 +512,8 @@ class Helpers:
 
         # ensure the log file is there
         try:
-            open(log_file, "a", encoding="utf-8").close()
+            with open(log_file, "a", encoding="utf-8"):
+                pass
         except Exception as e:
             Console.critical(f"Unable to open log file! {e}")
             sys.exit(1)
@@ -774,13 +777,15 @@ class Helpers:
         cert.set_version(2)
         cert.sign(k, "sha256")
 
-        f = open(cert_file, "w", encoding="utf-8")
-        f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode())
-        f.close()
+        with open(cert_file, "w", encoding="utf-8") as cert_file_handle:
+            cert_file_handle.write(
+                crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode()
+            )
 
-        f = open(key_file, "w", encoding="utf-8")
-        f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, k).decode())
-        f.close()
+        with open(key_file, "w", encoding="utf-8") as key_file_handle:
+            key_file_handle.write(
+                crypto.dump_privatekey(crypto.FILETYPE_PEM, k).decode()
+            )
 
     @staticmethod
     def random_string_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -1006,7 +1011,8 @@ class Helpers:
             return False
 
         try:
-            open(jar_path, "wb").write(response.content)
+            with open(jar_path, "wb") as jar_file:
+                jar_file.write(response.content)
         except Exception as e:
             logger.error("Unable to finish executable download. Error: %s", e)
             return False
