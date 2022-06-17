@@ -239,6 +239,7 @@ class ServerInstance:
                 "Detected nebulous java in start command. "
                 "Replacing with full java path."
             )
+            # Checks for Oracle Java. Only Oracle Java's helper will cause a re-exec.
             if "/Oracle/Java/" in str(shutil.which("java")):
                 logger.info(
                     "Oracle Java detected. Changing start command to avoid re-exec."
