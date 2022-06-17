@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.0.2-hotfix1] - 2022/06/17
+
+### Crit Bug fixes
+Fix blank server_detail page for general users ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/358))
+
 ## [4.0.2] - 2022/06/16
 
 ### New features
