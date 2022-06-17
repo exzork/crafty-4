@@ -183,6 +183,7 @@ class PanelHandler(BaseHandler):
                 logger.debug(f'User {exec_user["user_id"]} does not have permission')
                 self.redirect("/panel/error?error=Invalid Server ID")
                 return None
+        return server_id
 
     # Server fetching, spawned asynchronously
     # TODO: Make the related front-end elements update with AJAX
