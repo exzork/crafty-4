@@ -643,7 +643,7 @@ class Helpers:
 
         session_data = {"pid": pid, "started": now.strftime("%d-%m-%Y, %H:%M:%S")}
         with open(self.session_file, "w", encoding="utf-8") as f:
-            json.dump(session_data, f, indent=True)
+            json.dump(session_data, f, indent=4)
 
     # because this is a recursive function, we will return bytes,
     # and set human readable later
