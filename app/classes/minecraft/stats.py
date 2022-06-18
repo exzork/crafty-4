@@ -63,7 +63,9 @@ class Stats:
                 psutil.boot_time(), datetime.timezone.utc
             )
         except Exception as e:
-            logger.debug(f"error while getting boot time due to {e}")
+            logger.debug(
+                "getting boot time failed due to the following error:", exc_info=e
+            )
             # unix epoch with no timezone data
             return datetime.datetime.fromtimestamp(0, datetime.timezone.utc)
 
@@ -72,7 +74,9 @@ class Stats:
         try:
             return psutil.cpu_percent(interval=0.5) / psutil.cpu_count()
         except Exception as e:
-            logger.debug(f"error while getting cpu percentage due to {e}")
+            logger.debug(
+                "getting the cpu usage failed due to the following error:", exc_info=e
+            )
             return -1
 
     def __init__(self, helper, controller):
@@ -100,7 +104,9 @@ class Stats:
                 "disk_data": Stats._try_all_disk_usage(),
             }
         except Exception as e:
-            logger.debug(f"error while getting host stats due to {e}")
+            logger.debug(
+                "getting host stats failed due to the following error:", exc_info=e
+            )
             node_stats: NodeStatsDict = {
                 "boot_time": str(
                     datetime.datetime.fromtimestamp(0, datetime.timezone.utc)
@@ -124,50 +130,50 @@ class Stats:
         }
 
     @staticmethod
-    def _try_get_process_stats(process):
-        try:
-            return Stats._get_process_stats(process)
-        except Exception as e:
-            logger.debug(f"error while getting process stats due to {e}")
-            return {"cpu_usage": -1, "memory_usage": -1, "mem_percentage": -1}
+    def _try_get_process_stats(process, running):
+        if running:
+            try:
+                return Stats._get_process_stats(process)
+            except Exception as e:
+                logger.debug(
+                    f"getting process stats for pid {process.pid} "
+                    "failed due to the following error:",
+                    exc_info=e,
+                )
+                return {"cpu_usage": -1, "memory_usage": -1, "mem_percentage": -1}
+        else:
+            return {"cpu_usage": 0, "memory_usage": 0, "mem_percentage": 0}
 
     @staticmethod
     def _get_process_stats(process):
         if process is None:
-            return {"cpu_usage": 0, "memory_usage": 0, "mem_percentage": 0}
+            return {"cpu_usage": -1, "memory_usage": -1, "mem_percentage": -1}
         process_pid = process.pid
-        try:
-            p = psutil.Process(process_pid)
-            dummy = p.cpu_percent()
+        p = psutil.Process(process_pid)
+        _dummy = p.cpu_percent()
 
-            # call it first so we can be more accurate per the docs
-            # https://giamptest.readthedocs.io/en/latest/#psutil.Process.cpu_percent
+        # call it first so we can be more accurate per the docs
+        # https://giamptest.readthedocs.io/en/latest/#psutil.Process.cpu_percent
 
-            real_cpu = round(p.cpu_percent(interval=0.5) / psutil.cpu_count(), 2)
+        real_cpu = round(p.cpu_percent(interval=0.5) / psutil.cpu_count(), 2)
 
-            # this is a faster way of getting data for a process
-            with p.oneshot():
-                process_stats = {
-                    "cpu_usage": real_cpu,
-                    "memory_usage": Helpers.human_readable_file_size(
-                        p.memory_info()[0]
-                    ),
-                    "mem_percentage": round(p.memory_percent(), 0),
-                }
-            return process_stats
-
-        except Exception as e:
-            logger.error(
-                f"Unable to get process details for pid: {process_pid} Error: {e}"
-            )
-            return {"cpu_usage": 0, "memory_usage": 0, "mem_percentage": 0}
+        # this is a faster way of getting data for a process
+        with p.oneshot():
+            process_stats = {
+                "cpu_usage": real_cpu,
+                "memory_usage": Helpers.human_readable_file_size(p.memory_info()[0]),
+                "mem_percentage": round(p.memory_percent(), 0),
+            }
+        return process_stats
 
     @staticmethod
     def _try_all_disk_usage():
         try:
             return Stats._all_disk_usage()
         except Exception as e:
-            logger.debug(f"error while getting disk data due to {e}")
+            logger.debug(
+                "getting disk stats failed due to the following error:", exc_info=e
+            )
             return []
 
     # Source: https://github.com/giampaolo/psutil/blob/master/scripts/disk_usage.py
@@ -246,14 +252,19 @@ class Stats:
             online_stats = json.loads(ping_obj.players)
 
         except Exception as e:
-            logger.info(f"Unable to read json from ping_obj: {e}")
+            logger.info(
+                "Unable to read json from ping_obj due to the following error:",
+                exc_info=e,
+            )
 
         try:
             server_icon = base64.encodebytes(ping_obj.icon)
             server_icon = server_icon.decode("utf-8")
         except Exception as e:
             server_icon = False
-            logger.info(f"Unable to read the server icon : {e}")
+            logger.info(
+                "Unable to read the server icon due to the following error:", exc_info=e
+            )
 
         ping_data = {
             "online": online_stats.get("online", 0),
@@ -273,7 +284,9 @@ class Stats:
             server_icon = base64.encodebytes(ping_obj["icon"])
         except Exception as e:
             server_icon = False
-            logger.info(f"Unable to read the server icon : {e}")
+            logger.info(
+                "Unable to read the server icon due to the following error:", exc_info=e
+            )
         ping_data = {
             "online": ping_obj["server_player_count"],
             "max": ping_obj["server_player_max"],

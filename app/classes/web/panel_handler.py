@@ -1058,6 +1058,11 @@ class PanelHandler(BaseHandler):
             if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
+            if int(user_id) != exec_user["user_id"] and not exec_user["superuser"]:
+                self.redirect(
+                    "/panel/error?error=You are not authorized to view this page."
+                )
+                return
 
             template = "panel/panel_edit_user_apikeys.html"
 
@@ -1221,6 +1226,9 @@ class PanelHandler(BaseHandler):
 
             self.download_file(name, file)
             self.redirect(f"/panel/server_detail?id={server_id}&subpage=files")
+
+        elif page == "wiki":
+            template = "panel/wiki.html"
 
         elif page == "download_support_package":
             temp_zip_storage = exec_user["support_logs"]
@@ -1893,6 +1901,13 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
 
+            if str(user_id) != str(exec_user["user_id"]) and not exec_user["superuser"]:
+                self.redirect(
+                    "/panel/error?error=You do not have access to change"
+                    + "this user's api key."
+                )
+                return
+
             crafty_permissions_mask = self.get_perms()
             server_permissions_mask = self.get_perms_server()
 
@@ -1924,6 +1939,12 @@ class PanelHandler(BaseHandler):
             # does this user id exist?
             if key is None:
                 self.redirect("/panel/error?error=Invalid Key ID")
+                return
+
+            if key.user_id != exec_user["user_id"]:
+                self.redirect(
+                    "/panel/error?error=You are not authorized to access this key."
+                )
                 return
 
             self.controller.management.add_to_audit_log(
@@ -2142,6 +2163,15 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid Key ID")
                 return
 
+            key_obj = self.controller.users.get_user_api_key(key_id)
+
+            if key_obj.user_id != exec_user["user_id"] and not exec_user["superuser"]:
+                self.redirect(
+                    "/panel/error?error=You do not have access to change"
+                    + "this user's api key."
+                )
+                return
+
             self.controller.users.delete_user_api_key(key_id)
 
             self.controller.management.add_to_audit_log(
@@ -2151,7 +2181,8 @@ class PanelHandler(BaseHandler):
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )
-            self.redirect("/panel/panel_config")
+            self.finish()
+            self.redirect(f"/panel/edit_user_apikeys?id={key_obj.user_id}")
         else:
             self.set_status(404)
             self.render(
