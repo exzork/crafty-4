@@ -1059,10 +1059,6 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
             if int(user_id) != exec_user["user_id"] and not exec_user["superuser"]:
-                print(f"{user_id} {type(user_id)}")
-                print(f"{exec_user['user_id']} {type(exec_user['user_id'])}")
-                print(int(user_id) != exec_user["user_id"])
-                print((int(user_id) != exec_user["user_id"]) or (not exec_user["superuser"]))
                 self.redirect(
                     "/panel/error?error=You are not authorized to view this page."
                 )
