@@ -10,6 +10,10 @@ TBD
 
 ### Tweaks
 TBD
+## [4.0.2-hotfix2] - 2022/06/17
+
+### Crit Bug fixes
+Ammend Java system variable fix to be more specfic since they only affect Oracle. ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/364))
 
 ## [4.0.2-hotfix1] - 2022/06/17
 
