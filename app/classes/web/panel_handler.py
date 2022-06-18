@@ -1926,6 +1926,12 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid Key ID")
                 return
 
+            if key.user_id != exec_user["user_id"]:
+                self.redirect(
+                    "/panel/error?error=You are not authorized to access this key."
+                )
+                return
+
             self.controller.management.add_to_audit_log(
                 exec_user["user_id"],
                 f"Generated a new API token for the key {key.name} "
