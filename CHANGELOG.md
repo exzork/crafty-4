@@ -1,13 +1,13 @@
 # Changelog
 
-## [4.0.3] - TBD
+## [4.0.3] - 2022/06/18
 
 ### New features
- - Add wiki to front end ([Merge Request] (https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/367))
+- Integrate Wiki iframe into panel instead of link ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/367))
 
 ### Bug fixes
-TBD
-
+- Amend Java system variable fix to be more specfic since they only affect Oracle. ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/364))
+- API Token authentication hardening ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/364))
 ### Tweaks
 - Add better error logging for statistic collection ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/359))
 
