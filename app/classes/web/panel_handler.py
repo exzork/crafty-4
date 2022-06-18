@@ -1059,7 +1059,9 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
             if user_id != exec_user["user_id"] or not exec_user["superuser"]:
-                self.redirect("/panel/error?error=Invalid User ID")
+                self.redirect(
+                    "/panel/error?error=You are not authorized to view this page."
+                )
                 return
 
             template = "panel/panel_edit_user_apikeys.html"
