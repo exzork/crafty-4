@@ -9,7 +9,8 @@
 TBD
 
 ### Tweaks
-TBD
+- Use 4 space indentation for the session file.
+- Use with-blocks when opening files to prevent them from being left open
 
 ## [4.0.2] - 2022/06/16
 
