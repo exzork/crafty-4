@@ -1898,7 +1898,7 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
 
-            if user_id != exec_user["user_id"] or not exec_user["superuser"]:
+            if str(user_id) != str(exec_user["user_id"]) and not exec_user["superuser"]:
                 self.redirect(
                     "/panel/error?error=You do not have access to change"
                     + "this user's api key."
@@ -2162,7 +2162,7 @@ class PanelHandler(BaseHandler):
 
             key_obj = self.controller.users.get_user_api_key(key_id)
 
-            if key_obj.user_id != exec_user["user_id"] or not exec_user["superuser"]:
+            if key_obj.user_id != exec_user["user_id"] and not exec_user["superuser"]:
                 self.redirect(
                     "/panel/error?error=You do not have access to change"
                     + "this user's api key."
@@ -2178,7 +2178,8 @@ class PanelHandler(BaseHandler):
                 server_id=0,
                 source_ip=self.get_remote_ip(),
             )
-            self.redirect("/panel/panel_config")
+            self.finish()
+            self.redirect(f"/panel/edit_user_apikeys?id={key_obj.user_id}")
         else:
             self.set_status(404)
             self.render(
