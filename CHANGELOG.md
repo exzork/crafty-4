@@ -3,7 +3,7 @@
 ## [4.0.3] - TBD
 
 ### New features
- TBD
+ - Add wiki to front end
 
 ### Bug fixes
 TBD
