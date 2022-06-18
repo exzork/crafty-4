@@ -1058,6 +1058,9 @@ class PanelHandler(BaseHandler):
             if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
+            if user_id != exec_user["user_id"] or not exec_user["superuser"]:
+                self.redirect("/panel/error?error=Invalid User ID")
+                return
 
             template = "panel/panel_edit_user_apikeys.html"
 
