@@ -130,16 +130,19 @@ class Stats:
         }
 
     @staticmethod
-    def _try_get_process_stats(process):
-        try:
-            return Stats._get_process_stats(process)
-        except Exception as e:
-            logger.debug(
-                f"getting process stats for pid {process.pid} "
-                "failed due to the following error:",
-                exc_info=e,
-            )
-            return {"cpu_usage": -1, "memory_usage": -1, "mem_percentage": -1}
+    def _try_get_process_stats(process, running):
+        if running:
+            try:
+                return Stats._get_process_stats(process)
+            except Exception as e:
+                logger.debug(
+                    f"getting process stats for pid {process.pid} "
+                    "failed due to the following error:",
+                    exc_info=e,
+                )
+                return {"cpu_usage": -1, "memory_usage": -1, "mem_percentage": -1}
+        else:
+            return {"cpu_usage": 0, "memory_usage": 0, "mem_percentage": 0}
 
     @staticmethod
     def _get_process_stats(process):
