@@ -1893,6 +1893,13 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid User ID")
                 return
 
+            if user_id != exec_user["user_id"] or not exec_user["superuser"]:
+                self.redirect(
+                    "/panel/error?error=You do not have access to change"
+                    + "this user's api key."
+                )
+                return
+
             crafty_permissions_mask = self.get_perms()
             server_permissions_mask = self.get_perms_server()
 
@@ -2146,6 +2153,15 @@ class PanelHandler(BaseHandler):
             target_key = self.controller.users.get_user_api_key(key_id)
             if not target_key:
                 self.redirect("/panel/error?error=Invalid Key ID")
+                return
+
+            key_obj = self.controller.users.get_user_api_key(key_id)
+
+            if key_obj.user_id != exec_user["user_id"] or not exec_user["superuser"]:
+                self.redirect(
+                    "/panel/error?error=You do not have access to change"
+                    + "this user's api key."
+                )
                 return
 
             self.controller.users.delete_user_api_key(key_id)
