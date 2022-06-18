@@ -1222,6 +1222,9 @@ class PanelHandler(BaseHandler):
             self.download_file(name, file)
             self.redirect(f"/panel/server_detail?id={server_id}&subpage=files")
 
+        elif page == "wiki":
+            template = "panel/wiki.html"
+
         elif page == "download_support_package":
             temp_zip_storage = exec_user["support_logs"]
 
