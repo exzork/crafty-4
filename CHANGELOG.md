@@ -3,7 +3,7 @@
 ## [4.0.3] - TBD
 
 ### New features
- - Add wiki to front end
+ - Add wiki to front end ([Merge Request] (https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/367))
 
 ### Bug fixes
 TBD
