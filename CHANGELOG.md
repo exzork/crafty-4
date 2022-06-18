@@ -3,7 +3,7 @@
 ## [4.0.3] - 2022/06/18
 
 ### New features
-None
+- Integrate Wiki iframe into panel instead of link ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/367))
 
 ### Bug fixes
 - Amend Java system variable fix to be more specfic since they only affect Oracle. ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/364))
