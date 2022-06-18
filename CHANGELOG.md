@@ -1,24 +1,20 @@
 # Changelog
 
-## [4.0.3] - TBD
+## [4.0.3] - 2022/06/18
 
 ### New features
- TBD
+None
 
 ### Bug fixes
-TBD
+- Amend Java system variable fix to be more specfic since they only affect Oracle. ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/364))
 
 ### Tweaks
-TBD
-## [4.0.2-hotfix2] - 2022/06/17
-
-### Crit Bug fixes
-Ammend Java system variable fix to be more specfic since they only affect Oracle. ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/364))
+- Add better error logging for statistic collection ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/359))
 
 ## [4.0.2-hotfix1] - 2022/06/17
 
 ### Crit Bug fixes
-Fix blank server_detail page for general users ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/358))
+- Fix blank server_detail page for general users ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/358))
 
 ## [4.0.2] - 2022/06/16
 
