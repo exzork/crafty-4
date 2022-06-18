@@ -2,11 +2,11 @@
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Supported Python Versions](https://shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20-blue)](https://www.python.org)
-[![Version(temp-hardcoded)](https://img.shields.io/badge/release-v4.0.2--beta-orange)](https://gitlab.com/crafty-controller/crafty-4/-/releases)
+[![Version(temp-hardcoded)](https://img.shields.io/badge/release-v4.0.3--beta-orange)](https://gitlab.com/crafty-controller/crafty-4/-/releases)
 [![Code Quality(temp-hardcoded)](https://img.shields.io/badge/code%20quality-10-brightgreen)](https://gitlab.com/crafty-controller/crafty-4)
 [![Build Status](https://gitlab.com/crafty-controller/crafty-4/badges/master/pipeline.svg)](https://gitlab.com/crafty-controller/crafty-4/-/commits/master)
 
-# Crafty Controller 4.0.2-beta
+# Crafty Controller 4.0.3-beta
 > Python based Control Panel for your Minecraft Server
 
 ## What is Crafty Controller?
@@ -39,7 +39,7 @@ With `Crafty Controller 4.0` we have focused on building our DevOps Principles, 
 > __**⚠ 🔻WARNING: [WSL/WSL2 | WINDOWS 11 | DOCKER DESKTOP]🔻**__ <br>
  BE ADVISED! Upstream is currently broken for Minecraft running on **Docker under WSL/WSL2, Windows 11 / DOCKER DESKTOP!** <br>
  On '**Stop**' or '**Restart**' of the MC Server, there is a 90% chance the World's Chunks will be shredded irreparably! <br>
- Please only run Docker on Linux, If you are using Windows we have a portable installs found here: [Latest-Stable](https://gitlab.com/crafty-controller/crafty-4/-/jobs/artifacts/master/download?job=win-prod-build), [Latest-Development](https://gitlab.com/crafty-controller/crafty-4/-/jobs/artifacts/dev/download?job=win-dev-build)
+ Please only run Docker on Linux, If you are using Windows we have a portable installs found here: [Latest-Stable](https://gitlab.com/crafty-controller/crafty-4/-/releases), [Latest-Development](https://gitlab.com/crafty-controller/crafty-4/-/jobs/artifacts/dev/download?job=win-dev-build)
 
 ----
 
