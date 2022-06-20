@@ -265,15 +265,24 @@ class Stats:
             logger.info(
                 "Unable to read the server icon due to the following error:", exc_info=e
             )
-
-        ping_data = {
-            "online": online_stats.get("online", 0),
-            "max": online_stats.get("max", 0),
-            "players": online_stats.get("players", 0),
-            "server_description": ping_obj.description,
-            "server_version": ping_obj.version,
-            "server_icon": server_icon,
-        }
+        if ping_obj:
+            ping_data = {
+                "online": online_stats.get("online", 0),
+                "max": online_stats.get("max", 0),
+                "players": online_stats.get("players", 0),
+                "server_description": ping_obj.description,
+                "server_version": ping_obj.version,
+                "server_icon": server_icon,
+            }
+        else:
+            ping_data = {
+                "online": online_stats.get("online", 0),
+                "max": online_stats.get("max", 0),
+                "players": online_stats.get("players", 0),
+                "server_description": "",
+                "server_version": "",
+                "server_icon": server_icon,
+            }
 
         return ping_data
 
