@@ -39,6 +39,16 @@ class AuditLog(BaseModel):
 
 
 # **********************************************************************************
+#                                Crafty Settings Class
+# **********************************************************************************
+class CraftySettings(BaseModel):
+    secret_api_key = CharField(default="")
+
+    class Meta:
+        table_name = "crafty_settings"
+
+
+# **********************************************************************************
 #                                   Host_Stats Class
 # **********************************************************************************
 class HostStats(BaseModel):
@@ -230,6 +240,17 @@ class HelpersManagement:
                 AuditLog.delete().where(AuditLog.audit_id == item.audit_id).execute()
             else:
                 return
+
+    @staticmethod
+    def set_secret_api_key(key):
+        CraftySettings.insert(secret_api_key=key).execute()
+
+    @staticmethod
+    def get_secret_api_key():
+        settings = CraftySettings.select(CraftySettings.secret_api_key).where(
+            CraftySettings.id == 1
+        )
+        return settings[0].secret_api_key
 
     # **********************************************************************************
     #                                  Schedules Methods

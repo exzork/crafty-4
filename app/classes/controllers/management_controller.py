@@ -17,6 +17,14 @@ class ManagementController:
     def get_latest_hosts_stats():
         return HelpersManagement.get_latest_hosts_stats()
 
+    @staticmethod
+    def set_crafty_api_key(key):
+        HelpersManagement.set_secret_api_key(key)
+
+    @staticmethod
+    def get_crafty_api_key():
+        return HelpersManagement.get_secret_api_key()
+
     # **********************************************************************************
     #                                   Commands Methods
     # **********************************************************************************

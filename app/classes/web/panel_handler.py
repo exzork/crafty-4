@@ -1342,6 +1342,8 @@ class PanelHandler(BaseHandler):
                 if Helpers.is_os_windows():
                     log_path.replace(" ", "^ ")
                     log_path = Helpers.wtol_path(log_path)
+                if not self.helper.validate_traversal(server_obj.path, log_path):
+                    log_path = ""
                 executable = self.get_argument("executable", None)
                 execution_command = self.get_argument("execution_command", None)
                 server_ip = self.get_argument("server_ip", None)
@@ -1941,7 +1943,10 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid Key ID")
                 return
 
-            if key.user_id != exec_user["user_id"]:
+            if (
+                str(key.user_id) != str(exec_user["user_id"])
+                and not exec_user["superuser"]
+            ):
                 self.redirect(
                     "/panel/error?error=You are not authorized to access this key."
                 )
