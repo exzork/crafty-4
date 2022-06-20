@@ -128,6 +128,7 @@ class Backups(BaseModel):
     max_backups = IntegerField()
     server_id = ForeignKeyField(Servers, backref="backups_server")
     compress = BooleanField(default=False)
+    shutdown = BooleanField(default=False)
 
     class Meta:
         table_name = "backups"
@@ -351,6 +352,7 @@ class HelpersManagement:
                 "max_backups": row.max_backups,
                 "server_id": row.server_id_id,
                 "compress": row.compress,
+                "shutdown": row.shutdown,
             }
         except IndexError:
             conf = {
@@ -359,6 +361,7 @@ class HelpersManagement:
                 "max_backups": 0,
                 "server_id": server_id,
                 "compress": False,
+                "shutdown": False,
             }
         return conf
 
@@ -369,6 +372,7 @@ class HelpersManagement:
         max_backups: int = None,
         excluded_dirs: list = None,
         compress: bool = False,
+        shutdown: bool = False,
     ):
         logger.debug(f"Updating server {server_id} backup config with {locals()}")
         if Backups.select().where(Backups.server_id == server_id).exists():
@@ -380,6 +384,7 @@ class HelpersManagement:
                 "max_backups": 0,
                 "server_id": server_id,
                 "compress": False,
+                "shutdown": False,
             }
             new_row = True
         if max_backups is not None:
@@ -388,6 +393,7 @@ class HelpersManagement:
             dirs_to_exclude = ",".join(excluded_dirs)
             conf["excluded_dirs"] = dirs_to_exclude
         conf["compress"] = compress
+        conf["shutdown"] = shutdown
         if not new_row:
             with self.database.atomic():
                 if backup_path is not None:

@@ -127,6 +127,7 @@ class ServerInstance:
         self.stats = stats
         self.server_object = HelperServers.get_server_obj(self.server_id)
         self.stats_helper = HelperServerStats(self.server_id)
+        self.last_backup_failed = False
         try:
             tz = get_localzone()
         except ZoneInfoNotFoundError:
@@ -847,6 +848,7 @@ class ServerInstance:
                 "backup_reload",
                 {"percent": 0, "total_files": 0},
             )
+        was_server_running = None
         logger.info(f"Starting server {self.name} (ID {self.server_id}) backup")
         server_users = PermissionsServers.get_server_user_list(self.server_id)
         for user in server_users:
@@ -859,6 +861,15 @@ class ServerInstance:
             )
         time.sleep(3)
         conf = HelpersManagement.get_backup_config(self.server_id)
+        if conf["shutdown"]:
+            logger.info(
+                "Found shutdown preference. Delaying"
+                + "backup start. Shutting down server."
+            )
+            if self.check_running():
+                self.stop_server()
+                was_server_running = True
+
         self.helper.ensure_dir_exists(self.settings["backup_path"])
         try:
             backup_filename = (
@@ -924,7 +935,13 @@ class ServerInstance:
                         HelperUsers.get_user_lang_by_id(user),
                     ).format(self.name),
                 )
+            if was_server_running:
+                logger.info(
+                    "Backup complete. User had shutdown preference. Starting server."
+                )
+                self.start_server(HelperUsers.get_user_id_by_name("system"))
             time.sleep(3)
+            self.last_backup_failed = False
         except:
             logger.exception(
                 f"Failed to create backup of server {self.name} (ID {self.server_id})"
@@ -938,6 +955,12 @@ class ServerInstance:
                     results,
                 )
             self.is_backingup = False
+            if was_server_running:
+                logger.info(
+                    "Backup complete. User had shutdown preference. Starting server."
+                )
+                self.start_server(HelperUsers.get_user_id_by_name("system"))
+            self.last_backup_failed = True
 
     def backup_status(self, source_path, dest_path):
         results = Helpers.calc_percent(source_path, dest_path)
@@ -949,6 +972,9 @@ class ServerInstance:
                 "backup_status",
                 results,
             )
+
+    def last_backup_status(self):
+        return self.last_backup_failed
 
     def send_backup_status(self):
         try:
