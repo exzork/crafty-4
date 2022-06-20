@@ -36,7 +36,7 @@
 
           <div class="row">
             <div class="col-md-6 col-sm-12">
-              <form class="forms-sample" method="post" action="/panel/server_detail">
+              <form class="forms-sample" method="post" id="config_form" action="/panel/server_detail">
                 {% raw xsrf_form_html() %}
                 <input type="hidden" name="id" value="{{ data['server_stats']['server_id']['server_id'] }}">
                 <input type="hidden" name="subpage" value="config">
@@ -77,6 +77,19 @@
                   <input type="text" class="form-control" name="executable" id="executable"
                     value="{{ data['server_stats']['server_id']['executable']  }}"
                     placeholder="{{ translate('serverConfig', 'serverExecutable', data['lang']) }}" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="executable">{{ translate('serverConfig', 'javaVersion', data['lang']) }} <small
+                      class="text-muted ml-1"> - {{ translate('serverConfig', 'javaVersionDesc', data['lang'])
+                      }}</small> </label>
+                      <select class="form-select form-control form-control-lg select-css" id="java_selection"
+                      name="java_selection" form="config_form">
+                      <option value="">None</option>
+                      {% for path in data['java_versions'] %}
+                      <option value="{{path}}">{{path}}</option>
+                      {% end %}
+                    </select>
                 </div>
 
                 <div class="form-group">

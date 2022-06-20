@@ -300,6 +300,8 @@
         "serverCrashDetection": "Server Crash Detection",
         "serverExecutable": "Server Executable",
         "serverExecutableDesc": "The server's executable file",
+        "javaVersion": "Override current Java Version",
+        "javaVersionDesc": "If we've been able to find local java installs. (Windows 'Oracle' only)",
         "serverExecutionCommand": "Server Execution Command",
         "serverExecutionCommandDesc": "What will be launched in a hidden terminal",
         "serverIP": "Server IP",

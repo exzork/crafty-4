@@ -16,6 +16,7 @@ import zipfile
 import pathlib
 import ctypes
 import subprocess
+import itertools
 from datetime import datetime
 from socket import gethostname
 from contextlib import redirect_stderr, suppress
@@ -84,6 +85,46 @@ class Helpers:
 
     @staticmethod
     def find_java_installs():
+        # If we're windows return oracle java versions,
+        # otherwise java vers need to be manual.
+        if os.name == "nt":
+            # Adapted from LeeKamentsky >>>
+            # https://github.com/LeeKamentsky/python-javabridge/blob/master/javabridge/locate.py
+            jdk_key_paths = (
+                "SOFTWARE\\JavaSoft\\JDK",
+                "SOFTWARE\\JavaSoft\\Java Development Kit",
+            )
+            java_paths = []
+            for jdk_key_path in jdk_key_paths:
+                try:
+                    with suppress(OSError), winreg.OpenKey(
+                        winreg.HKEY_LOCAL_MACHINE, jdk_key_path
+                    ) as kjdk:
+                        for i in itertools.count():
+                            version = winreg.EnumKey(kjdk, i)
+                            kjdk_current = winreg.OpenKey(
+                                winreg.HKEY_LOCAL_MACHINE,
+                                jdk_key_path,
+                            )
+                            kjdk_current = winreg.OpenKey(
+                                winreg.HKEY_LOCAL_MACHINE,
+                                jdk_key_path + "\\" + version,
+                            )
+                            kjdk_current_values = dict(  # pylint: disable=consider-using-dict-comprehension
+                                [
+                                    winreg.EnumValue(kjdk_current, i)[:2]
+                                    for i in range(winreg.QueryInfoKey(kjdk_current)[1])
+                                ]
+                            )
+                            java_paths.append(kjdk_current_values["JavaHome"])
+                except OSError as e:
+                    if e.errno == 2:
+                        continue
+                    raise
+            return java_paths
+
+        # If we get here we're linux so we will use 'update-alternatives'
+        # (If distro does not have update-alternatives then manual input.)
         try:
             paths = subprocess.check_output(
                 ["/usr/bin/update-alternatives", "--list", "java"], encoding="utf8"

@@ -9,6 +9,7 @@ import threading
 import bleach
 import libgravatar
 import requests
+import shlex
 import tornado.web
 import tornado.escape
 from tornado import iostream
@@ -627,6 +628,7 @@ class PanelHandler(BaseHandler):
                             "/panel/error?error=Unauthorized access Server Config"
                         )
                         return
+                page_data["java_versions"] = Helpers.find_java_installs()
 
             if subpage == "files":
                 if (
@@ -1361,9 +1363,12 @@ class PanelHandler(BaseHandler):
             server_id = self.check_server_id()
             if server_id is None:
                 return
-            execution_list = execution_command.split(" ")
+            execution_list = shlex.split(execution_command)
             if java_selection:
-                execution_list[0] = java_selection
+                if self.helper.is_os_windows():
+                    execution_list[0] = '"' + java_selection + '/bin/java"'
+                else:
+                    execution_list[0] = '"' + java_selection + '"'
                 execution_command = ""
                 for item in execution_list:
                     execution_command += item + " "
