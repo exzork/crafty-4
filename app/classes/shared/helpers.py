@@ -15,6 +15,7 @@ import html
 import zipfile
 import pathlib
 import ctypes
+import subprocess
 from datetime import datetime
 from socket import gethostname
 from contextlib import redirect_stderr, suppress
@@ -80,6 +81,20 @@ class Helpers:
         logger.critical(f"Import Error: Unable to load {ex.name} module", exc_info=True)
         print(f"Import Error: Unable to load {ex.name} module")
         installer.do_install()
+
+    @staticmethod
+    def find_java_installs():
+        try:
+            paths = subprocess.check_output(
+                ["/usr/bin/update-alternatives", "--list", "java"], encoding="utf8"
+            )
+
+            if re.match("^(/[^/ ]*)+/?$", paths):
+                return paths.split("\n")
+
+        except Exception as e:
+            print("Java Detect Error: ", e)
+            logger.error(f"Java Detect Error: {e}")
 
     @staticmethod
     def float_to_string(gbs: float):

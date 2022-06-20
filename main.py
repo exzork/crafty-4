@@ -224,6 +224,7 @@ if __name__ == "__main__":
         controller_setup_thread.join()
 
         Console.info("Crafty has fully started and is now ready for use!")
+        console.debug(helper.find_java_installs())
         crafty_prompt.prompt = f"Crafty Controller v{helper.get_version_string()} > "
 
         if not args.daemon:
