@@ -9,6 +9,7 @@ None
 ### Tweaks
 Spelling mistake fixed in German lang file ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/370))
 - Fixing Display on server wizard when used on small screens
+- Rework server list on dashboard display for use on small screens
 <br><br>
 
 ## --- [4.0.3] - 2022/06/18

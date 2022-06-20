@@ -9,7 +9,7 @@
 }
 
 
-.sidebar > .nav > .nav-item:not(.nav-profile) > .nav-link:before {
+.sidebar>.nav>.nav-item:not(.nav-profile)>.nav-link:before {
     content: none;
     position: absolute;
     left: 30px;
@@ -21,7 +21,7 @@
     display: block;
 }
 
-.sidebar > .nav > .nav-item:not(.nav-profile) > .nav-link:before {
+.sidebar>.nav>.nav-item:not(.nav-profile)>.nav-link:before {
     content: none;
     position: absolute;
     left: 30px;
@@ -33,43 +33,48 @@
     display: block;
 }
 
-.sidebar > .nav .nav-item .nav-link, .collapsed{
+.sidebar>.nav .nav-item .nav-link,
+.collapsed {
     padding: 15px 30px;
 }
 
-.mc-log-time{
-    color:#19d895;
+.mc-log-time {
+    color: #19d895;
 }
 
-.mc-log-info{
-    color:#8862e0;
+.mc-log-info {
+    color: #8862e0;
 }
 
-.mc-log-warn{
-    color:#ffaf00;
+.mc-log-warn {
+    color: #ffaf00;
 }
 
-.mc-log-error{
-    color:#af463f;
+.mc-log-error {
+    color: #af463f;
 }
 
-.mc-log-fatal{
-    color:#da0f00;
+.mc-log-fatal {
+    color: #da0f00;
 }
 
-.mc-log-keyword{
-    color:#2196f3;
+.mc-log-keyword {
+    color: #2196f3;
 }
 
 .scrollable-element {
-  scrollbar-color: red yellow;
+    scrollbar-color: red yellow;
 }
+
 .term-nav-item {
     padding: 1%;
 }
 
 /* Fix body scrollbar color */
-body { background-color: var(--dark) !important; /* Firefox */ }
+body {
+    background-color: var(--dark) !important;
+    /* Firefox */
+}
 
 /* Webkit */
 /* Didn't really work out
@@ -81,11 +86,20 @@ body { background-color: var(--dark) !important; /* Firefox */ }
 ::-webkit-scrollbar-track { background-color: #202538; }
 ::-webkit-scrollbar-corner { background-color: #202538; }*/
 
-.actions_serverlist > a > i {
-  cursor: pointer;
+.actions_serverlist>a>i {
+    cursor: pointer;
 }
+
+.actions_serveritem {
+    cursor: pointer;
+}
+
 .corner {
     position: absolute;
     margin-top: 0;
     margin-left: 0;
+}
+
+.accordion .card {
+    margin-bottom: 0px;
 }
