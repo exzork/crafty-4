@@ -1355,11 +1355,18 @@ class PanelHandler(BaseHandler):
             auto_start = int(float(self.get_argument("auto_start", "0")))
             crash_detection = int(float(self.get_argument("crash_detection", "0")))
             logs_delete_after = int(float(self.get_argument("logs_delete_after", "0")))
+            java_selection = self.get_argument("java_selection", None)
             # subpage = self.get_argument('subpage', None)
 
             server_id = self.check_server_id()
             if server_id is None:
                 return
+            execution_list = execution_command.split(" ")
+            if java_selection:
+                execution_list[0] = java_selection
+                execution_command = ""
+                for item in execution_list:
+                    execution_command += item + " "
 
             server_obj: Servers = self.controller.servers.get_server_obj(server_id)
             stale_executable = server_obj.executable
