@@ -220,7 +220,7 @@ class FileHandler(BaseHandler):
             path = Helpers.get_os_understandable_path(self.get_argument("path", None))
             if Helpers.is_os_windows():
                 path = Helpers.wtol_path(path)
-            Helpers.unzip_file(path)
+            FileHelpers.unzip_file(path)
             self.redirect(f"/panel/server_detail?id={server_id}&subpage=files")
             return
 

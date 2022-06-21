@@ -271,7 +271,8 @@
         "save": "Save",
         "size": "Size",
         "storageLocation": "Storage Location",
-        "storageLocationDesc": "Where do you want to store backups?"
+        "storageLocationDesc": "Where do you want to store backups?",
+        "shutdown": "Shutdown server for duration of backup"
     },
     "serverConfig": {
         "bePatientDelete": "Please be patient while we remove your server from the Crafty panel. This screen will close in a few moments.",
@@ -300,6 +301,9 @@
         "serverCrashDetection": "Server Crash Detection",
         "serverExecutable": "Server Executable",
         "serverExecutableDesc": "The server's executable file",
+        "javaVersion": "Override current Java Version",
+        "javaVersionDesc": "If you're going to override java. Make sure your current java path in 'execution command' is wrapped in quotes (default 'java' variable excluded)",
+        "javaNoChange": "Do Not Override",
         "serverExecutionCommand": "Server Execution Command",
         "serverExecutionCommandDesc": "What will be launched in a hidden terminal",
         "serverIP": "Server IP",
@@ -368,6 +372,7 @@
         "noscript": "The file manager does not work without JavaScript",
         "rename": "Rename",
         "renameItemQuestion": "What should the new name be?",
+        "size": "Toggle Editor Size",
         "save": "Save",
         "stayHere": "DO NOT LEAVE THIS PAGE!",
         "unsupportedLanguage": "Warning: This is not a supported file type",

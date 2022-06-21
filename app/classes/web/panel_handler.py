@@ -6,6 +6,7 @@ import typing as t
 import json
 import logging
 import threading
+import shlex
 import bleach
 import libgravatar
 import requests
@@ -482,6 +483,14 @@ class PanelHandler(BaseHandler):
                 if str(server_id) not in server_ids[:]:
                     user_order.remove(server_id)
             page_data["servers"] = page_servers
+            for server in page_data["servers"]:
+                server_obj = self.controller.servers.get_server_instance_by_id(
+                    server["server_data"]["server_id"]
+                )
+                alert = False
+                if server_obj.last_backup_status():
+                    alert = True
+                server["alert"] = alert
 
             # num players is set to zero here. If we poll all servers while
             # dashboard is loading it takes FOREVER. We leave this to the
@@ -496,6 +505,10 @@ class PanelHandler(BaseHandler):
             server_id = self.check_server_id()
             if server_id is None:
                 return
+
+            server_obj = self.controller.servers.get_server_instance_by_id(server_id)
+            page_data["backup_failed"] = server_obj.last_backup_status()
+            server_obj = None
 
             valid_subpages = [
                 "term",
@@ -627,6 +640,18 @@ class PanelHandler(BaseHandler):
                             "/panel/error?error=Unauthorized access Server Config"
                         )
                         return
+                page_data["java_versions"] = Helpers.find_java_installs()
+                server_obj: Servers = self.controller.servers.get_server_obj(server_id)
+                page_java = []
+                page_data["java_versions"].append("java")
+                for version in page_data["java_versions"]:
+                    if os.name == "nt":
+                        page_java.append(version)
+                    else:
+                        if len(version) > 0:
+                            page_java.append(version)
+
+                page_data["java_versions"] = page_java
 
             if subpage == "files":
                 if (
@@ -1342,6 +1367,8 @@ class PanelHandler(BaseHandler):
                 if Helpers.is_os_windows():
                     log_path.replace(" ", "^ ")
                     log_path = Helpers.wtol_path(log_path)
+                if not self.helper.validate_traversal(server_obj.path, log_path):
+                    log_path = ""
                 executable = self.get_argument("executable", None)
                 execution_command = self.get_argument("execution_command", None)
                 server_ip = self.get_argument("server_ip", None)
@@ -1355,11 +1382,50 @@ class PanelHandler(BaseHandler):
             auto_start = int(float(self.get_argument("auto_start", "0")))
             crash_detection = int(float(self.get_argument("crash_detection", "0")))
             logs_delete_after = int(float(self.get_argument("logs_delete_after", "0")))
+            java_selection = self.get_argument("java_selection", None)
             # subpage = self.get_argument('subpage', None)
 
             server_id = self.check_server_id()
             if server_id is None:
                 return
+            if java_selection:
+                try:
+                    execution_list = shlex.split(execution_command)
+                except ValueError:
+                    self.redirect(
+                        "/panel/error?error=Invalid execution command. Java path"
+                        " must be surrounded by quotes."
+                        " (Are you missing a closing quote?)"
+                    )
+                if (
+                    not any(
+                        java_selection in path for path in Helpers.find_java_installs()
+                    )
+                    and java_selection != "java"
+                ):
+                    self.redirect(
+                        "/panel/error?error=Attack attempted."
+                        + " A copy of this report is being sent to server owner."
+                    )
+                    self.controller.management.add_to_audit_log_raw(
+                        exec_user["username"],
+                        exec_user["user_id"],
+                        server_id,
+                        f"Attempted to send bad java path for {server_id}."
+                        + " Possible attack. Act accordingly.",
+                        self.get_remote_ip(),
+                    )
+                    return
+                if java_selection != "java":
+                    if self.helper.is_os_windows():
+                        execution_list[0] = '"' + java_selection + '/bin/java"'
+                    else:
+                        execution_list[0] = '"' + java_selection + '"'
+                else:
+                    execution_list[0] = "java"
+                execution_command = ""
+                for item in execution_list:
+                    execution_command += item + " "
 
             server_obj: Servers = self.controller.servers.get_server_obj(server_id)
             stale_executable = server_obj.executable
@@ -1389,7 +1455,7 @@ class PanelHandler(BaseHandler):
                 server_obj.path = server_obj.path
                 server_obj.log_path = server_obj.log_path
                 server_obj.executable = server_obj.executable
-                server_obj.execution_command = server_obj.execution_command
+                server_obj.execution_command = execution_command
                 server_obj.server_ip = server_obj.server_ip
                 server_obj.server_port = server_obj.server_port
                 server_obj.executable_update_url = server_obj.executable_update_url
@@ -1433,6 +1499,7 @@ class PanelHandler(BaseHandler):
 
             server_obj = self.controller.servers.get_server_obj(server_id)
             compress = self.get_argument("compress", False)
+            shutdown = self.get_argument("shutdown", False)
             check_changed = self.get_argument("changed")
             if str(check_changed) == str(1):
                 checked = self.get_body_arguments("root_path")
@@ -1448,6 +1515,18 @@ class PanelHandler(BaseHandler):
             max_backups = bleach.clean(self.get_argument("max_backups", None))
 
             server_obj = self.controller.servers.get_server_obj(server_id)
+            if (
+                not backup_path
+                == self.helper.wtol_path(
+                    os.path.join(self.helper.backup_path, server_obj.server_uuid)
+                )
+                and self.helper.wtol_path(self.controller.project_root) in backup_path
+            ):
+                self.redirect(
+                    "/panel/error?error=Nefarious activities detected."
+                    " User attempted to make backup path within Crafty's root."
+                )
+                return
             server_obj.backup_path = backup_path
             self.controller.servers.update_server(server_obj)
             self.controller.management.set_backup_config(
@@ -1455,6 +1534,7 @@ class PanelHandler(BaseHandler):
                 max_backups=max_backups,
                 excluded_dirs=checked,
                 compress=bool(compress),
+                shutdown=bool(shutdown),
             )
 
             self.controller.management.add_to_audit_log(
@@ -1941,7 +2021,10 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid Key ID")
                 return
 
-            if key.user_id != exec_user["user_id"]:
+            if (
+                str(key.user_id) != str(exec_user["user_id"])
+                and not exec_user["superuser"]
+            ):
                 self.redirect(
                     "/panel/error?error=You are not authorized to access this key."
                 )

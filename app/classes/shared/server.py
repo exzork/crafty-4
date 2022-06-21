@@ -9,7 +9,6 @@ import threading
 import logging.config
 import subprocess
 import html
-import tempfile
 
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
@@ -102,12 +101,14 @@ class ServerOutBuf:
 class ServerInstance:
     server_object: Servers
     helper: Helpers
+    file_helper: FileHelpers
     management_helper: HelpersManagement
     stats: Stats
     stats_helper: HelperServerStats
 
-    def __init__(self, server_id, helper, management_helper, stats):
+    def __init__(self, server_id, helper, management_helper, stats, file_helper):
         self.helper = helper
+        self.file_helper = file_helper
         self.management_helper = management_helper
         # holders for our process
         self.process = None
@@ -126,6 +127,7 @@ class ServerInstance:
         self.stats = stats
         self.server_object = HelperServers.get_server_obj(self.server_id)
         self.stats_helper = HelperServerStats(self.server_id)
+        self.last_backup_failed = False
         try:
             tz = get_localzone()
         except ZoneInfoNotFoundError:
@@ -800,10 +802,9 @@ class ServerInstance:
         self.server_scheduler.remove_job("c_" + str(self.server_id))
 
     def agree_eula(self, user_id):
-        file = os.path.join(self.server_path, "eula.txt")
-        f = open(file, "w", encoding="utf-8")
-        f.write("eula=true")
-        f.close()
+        eula_file = os.path.join(self.server_path, "eula.txt")
+        with open(eula_file, "w", encoding="utf-8") as f:
+            f.write("eula=true")
         self.run_threaded_server(user_id)
 
     def backup_server(self):
@@ -846,6 +847,7 @@ class ServerInstance:
                 "backup_reload",
                 {"percent": 0, "total_files": 0},
             )
+        was_server_running = None
         logger.info(f"Starting server {self.name} (ID {self.server_id}) backup")
         server_users = PermissionsServers.get_server_user_list(self.server_id)
         for user in server_users:
@@ -858,6 +860,15 @@ class ServerInstance:
             )
         time.sleep(3)
         conf = HelpersManagement.get_backup_config(self.server_id)
+        if conf["shutdown"]:
+            logger.info(
+                "Found shutdown preference. Delaying"
+                + "backup start. Shutting down server."
+            )
+            if self.check_running():
+                self.stop_server()
+                was_server_running = True
+
         self.helper.ensure_dir_exists(self.settings["backup_path"])
         try:
             backup_filename = (
@@ -869,62 +880,27 @@ class ServerInstance:
                 f" (ID#{self.server_id}, path={self.server_path}) "
                 f"at '{backup_filename}'"
             )
-
-            temp_dir = tempfile.mkdtemp()
-            self.server_scheduler.add_job(
-                self.backup_status,
-                "interval",
-                seconds=1,
-                id="backup_" + str(self.server_id),
-                args=[temp_dir + "/", backup_filename + ".zip"],
-            )
-            # pylint: disable=unexpected-keyword-arg
-            try:
-                FileHelpers.copy_dir(self.server_path, temp_dir, dirs_exist_ok=True)
-            except shutil.Error as e:
-                logger.error(f"Failed to fully complete backup due to shutil error {e}")
             excluded_dirs = HelpersManagement.get_excluded_backup_dirs(self.server_id)
             server_dir = Helpers.get_os_understandable_path(self.settings["path"])
-
-            for my_dir in excluded_dirs:
-                # Take the full path of the excluded dir and replace the
-                # server path with the temp path, this is so that we're
-                # only deleting excluded dirs from the temp path
-                # and not the server path
-                excluded_dir = Helpers.get_os_understandable_path(my_dir).replace(
-                    server_dir, Helpers.get_os_understandable_path(temp_dir)
-                )
-                # Next, check to see if it is a directory
-                if os.path.isdir(excluded_dir):
-                    # If it is a directory,
-                    # recursively delete the entire directory from the backup
-                    try:
-                        FileHelpers.del_dirs(excluded_dir)
-                    except FileNotFoundError:
-                        Console.error(
-                            f"Excluded dir {excluded_dir} not found. Moving on..."
-                        )
-                else:
-                    # If not, just remove the file
-                    try:
-                        os.remove(excluded_dir)
-                    except:
-                        Console.error(
-                            f"Excluded dir {excluded_dir} not found. Moving on..."
-                        )
             if conf["compress"]:
                 logger.debug(
                     "Found compress backup to be true. Calling compressed archive"
                 )
-                FileHelpers.make_compressed_archive(
-                    Helpers.get_os_understandable_path(backup_filename), temp_dir
+                self.file_helper.make_compressed_backup(
+                    Helpers.get_os_understandable_path(backup_filename),
+                    server_dir,
+                    excluded_dirs,
+                    self.server_id,
                 )
             else:
                 logger.debug(
                     "Found compress backup to be false. Calling NON-compressed archive"
                 )
-                FileHelpers.make_archive(
-                    Helpers.get_os_understandable_path(backup_filename), temp_dir
+                self.file_helper.make_backup(
+                    Helpers.get_os_understandable_path(backup_filename),
+                    server_dir,
+                    excluded_dirs,
+                    self.server_id,
                 )
 
             while (
@@ -939,7 +915,6 @@ class ServerInstance:
 
             self.is_backingup = False
             logger.info(f"Backup of server: {self.name} completed")
-            self.server_scheduler.remove_job("backup_" + str(self.server_id))
             results = {"percent": 100, "total_files": 0, "current_file": 0}
             if len(self.helper.websocket_helper.clients) > 0:
                 self.helper.websocket_helper.broadcast_page_params(
@@ -959,12 +934,17 @@ class ServerInstance:
                         HelperUsers.get_user_lang_by_id(user),
                     ).format(self.name),
                 )
+            if was_server_running:
+                logger.info(
+                    "Backup complete. User had shutdown preference. Starting server."
+                )
+                self.start_server(HelperUsers.get_user_id_by_name("system"))
             time.sleep(3)
+            self.last_backup_failed = False
         except:
             logger.exception(
                 f"Failed to create backup of server {self.name} (ID {self.server_id})"
             )
-            self.server_scheduler.remove_job("backup_" + str(self.server_id))
             results = {"percent": 100, "total_files": 0, "current_file": 0}
             if len(self.helper.websocket_helper.clients) > 0:
                 self.helper.websocket_helper.broadcast_page_params(
@@ -974,8 +954,12 @@ class ServerInstance:
                     results,
                 )
             self.is_backingup = False
-        finally:
-            FileHelpers.del_dirs(temp_dir)
+            if was_server_running:
+                logger.info(
+                    "Backup complete. User had shutdown preference. Starting server."
+                )
+                self.start_server(HelperUsers.get_user_id_by_name("system"))
+            self.last_backup_failed = True
 
     def backup_status(self, source_path, dest_path):
         results = Helpers.calc_percent(source_path, dest_path)
@@ -987,6 +971,9 @@ class ServerInstance:
                 "backup_status",
                 results,
             )
+
+    def last_backup_status(self):
+        return self.last_backup_failed
 
     def send_backup_status(self):
         try:
@@ -1093,7 +1080,7 @@ class ServerInstance:
         )
 
         # copies to backup dir
-        Helpers.copy_files(current_executable, backup_executable)
+        FileHelpers.copy_file(current_executable, backup_executable)
 
         # boolean returns true for false for success
         downloaded = Helpers.download_file(

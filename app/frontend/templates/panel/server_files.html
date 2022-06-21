@@ -32,7 +32,12 @@
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-          {% include "parts/server_controls_list.html" %}
+          <span class="d-none d-sm-block">
+            {% include "parts/server_controls_list.html %}
+          </span>
+          <span class="d-block d-sm-none">
+            {% include "parts/m_server_controls_list.html %}
+          </span>
 
           <div class="row">
             <div class="col-md-6 col-sm-12">
@@ -212,7 +217,9 @@
                 display: none;
               }
 
-              html, body, body > .container-scroller {
+              html,
+              body,
+              body>.container-scroller {
                 overflow: initial;
               }
 
@@ -221,7 +228,9 @@
                 position: sticky;
               }
             </style>
-            <div class="col-md-6 col-sm-12">
+            <div id="editor_container" class="col-md-6 col-sm-12">
+              <br>
+              <br>
               <div class="editorManager">
                 <h2 id="fileError"></h2>
                 <div id="editorParent">
@@ -239,6 +248,9 @@
                     data-handler-name="ace/keyboard/emacs">Emacs</button>
                   <button onclick="setKeyboard(event.target)" class="btn btn-secondary"
                     data-handler-name="ace/keyboard/sublime">Sublime</button>
+                  <span class="d-none d-md-block ">&nbsp;&nbsp;&nbsp;<button class="btn btn-info" id="screen-size">{{
+                      translate('serverFiles',
+                      'size', data['lang']) }}</button></span>
                 </div>
                 <h3 id="file_warn"></h3>
                 <button class="btn btn-success" onclick="save()"><i class="fas fa-save"></i> {{ translate('serverFiles',
@@ -285,7 +297,7 @@
       mac: 'Command-S',
       sender: 'editor|cli'
     },
-    exec: function(env, args, request) {
+    exec: function (env, args, request) {
       save()
     }
   });
@@ -408,6 +420,7 @@
           setFileName(event.target.innerText);
           editor.session.setValue(json.content);
           serverFileContent = json.content;
+          setSaveStatus(true);
         }
       },
     });
@@ -530,8 +543,10 @@
     document.getElementById('save_status').style.color = saved ? '#2fb689' : 'gray';
   }
   ['change', 'undo', 'redo'].forEach(event => editor.on(event, (event) => setSaveStatus(serverFileContent === editor.session.getValue())))
+  $('#screen-size').on('click', function (e) {
+    $('#editor_container').toggleClass(`col-md-6`)
 
-
+  });
   setFileName();
   $('#editorParent').toggle(false) // show
   $('#fileError').toggle(false)    // hide
@@ -1097,7 +1112,7 @@
     if (handlerName == 'null') handlerName = null;
     editor.setKeyboardHandler(handlerName, () => {
       if (handlerName == 'ace/keyboard/vim') {
-        require("ace/keyboard/vim").Vim.defineEx('write', 'w', function() {
+        require("ace/keyboard/vim").Vim.defineEx('write', 'w', function () {
           save();
         });
       }

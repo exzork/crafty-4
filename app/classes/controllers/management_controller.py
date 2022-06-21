@@ -17,6 +17,14 @@ class ManagementController:
     def get_latest_hosts_stats():
         return HelpersManagement.get_latest_hosts_stats()
 
+    @staticmethod
+    def set_crafty_api_key(key):
+        HelpersManagement.set_secret_api_key(key)
+
+    @staticmethod
+    def get_crafty_api_key():
+        return HelpersManagement.get_secret_api_key()
+
     # **********************************************************************************
     #                                   Commands Methods
     # **********************************************************************************
@@ -128,9 +136,10 @@ class ManagementController:
         max_backups: int = None,
         excluded_dirs: list = None,
         compress: bool = False,
+        shutdown: bool = False,
     ):
         return self.management_helper.set_backup_config(
-            server_id, backup_path, max_backups, excluded_dirs, compress
+            server_id, backup_path, max_backups, excluded_dirs, compress, shutdown
         )
 
     @staticmethod

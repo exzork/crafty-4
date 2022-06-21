@@ -17,6 +17,15 @@ logger = logging.getLogger(__name__)
 
 
 class ServerHandler(BaseHandler):
+    def get_user_roles(self):
+        user_roles = {}
+        for user_id in self.controller.users.get_all_user_ids():
+            user_roles_list = self.controller.users.get_user_roles_names(user_id)
+            # user_servers =
+            # self.controller.servers.get_authorized_servers(user.user_id)
+            user_roles[user_id] = user_roles_list
+        return user_roles
+
     @tornado.web.authenticated
     def get(self, page):
         (
@@ -271,11 +280,19 @@ class ServerHandler(BaseHandler):
                 )
 
         if page == "step1":
+            if not superuser and not self.controller.crafty_perms.can_create_server(
+                exec_user["user_id"]
+            ):
+                self.redirect(
+                    "/panel/error?error=Unauthorized access: "
+                    "not a server creator or server limit reached"
+                )
+                return
 
             if not superuser:
                 user_roles = self.controller.roles.get_all_roles()
             else:
-                user_roles = self.controller.roles.get_all_roles()
+                user_roles = self.get_user_roles()
             server = bleach.clean(self.get_argument("server", ""))
             server_name = bleach.clean(self.get_argument("server_name", ""))
             min_mem = bleach.clean(self.get_argument("min_memory", ""))
@@ -396,6 +413,14 @@ class ServerHandler(BaseHandler):
             self.redirect("/panel/dashboard")
 
         if page == "bedrock_step1":
+            if not superuser and not self.controller.crafty_perms.can_create_server(
+                exec_user["user_id"]
+            ):
+                self.redirect(
+                    "/panel/error?error=Unauthorized access: "
+                    "not a server creator or server limit reached"
+                )
+                return
             if not superuser:
                 user_roles = self.controller.roles.get_all_roles()
             else:
