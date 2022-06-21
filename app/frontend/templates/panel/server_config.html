@@ -79,6 +79,7 @@
                     placeholder="{{ translate('serverConfig', 'serverExecutable', data['lang']) }}" required>
                 </div>
                 {% end %}
+                {% if data['server_stats']['server_type'] == "minecraft-java" %}
                 <div class="form-group">
                   <label for="java_selection">{{ translate('serverConfig', 'javaVersion', data['lang']) }} <small
                       class="text-muted ml-1"> - EXPERIMENTAL -- PLEASE REPORT ANY BUGS &nbsp; {{
@@ -98,6 +99,8 @@
                     {% end %}
                   </select>
                 </div>
+                {% end %}
+
                 {% if data['super_user'] %}
                 <div class="form-group">
                   <label for="execution_command">{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}
