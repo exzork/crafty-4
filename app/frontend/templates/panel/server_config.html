@@ -50,8 +50,8 @@
                     placeholder="{{ translate('serverConfig', 'serverName', data['lang']) }}" required>
                 </div>
 
+                {% if data['super_user'] %}
                 <div class="form-group">
-                  {% if data['super_user'] %}
                   <label for="server_path">{{ translate('serverConfig', 'serverPath', data['lang']) }} <small
                       class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPathDesc', data['lang']) }}</small>
                   </label>
@@ -78,9 +78,9 @@
                     value="{{ data['server_stats']['server_id']['executable']  }}"
                     placeholder="{{ translate('serverConfig', 'serverExecutable', data['lang']) }}" required>
                 </div>
-
+                {% end %}
                 <div class="form-group">
-                  <label for="executable">{{ translate('serverConfig', 'javaVersion', data['lang']) }} <small
+                  <label for="java_selection">{{ translate('serverConfig', 'javaVersion', data['lang']) }} <small
                       class="text-muted ml-1"> - {{ translate('serverConfig', 'javaVersionDesc', data['lang'])
                       }}</small> </label>
                   <select class="form-select form-control form-control-lg select-css" id="java_selection"
@@ -91,7 +91,7 @@
                     {% end %}
                   </select>
                 </div>
-
+                {% if data['super_user'] %}
                 <div class="form-group">
                   <label for="execution_command">{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}
                     <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverExecutionCommandDesc',
@@ -99,8 +99,8 @@
                   <input type="text" class="form-control" name="execution_command" id="execution_command"
                     value="{{ data['server_stats']['server_id']['execution_command']  }}"
                     placeholder="{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}" required>
-                  {% end %}
                 </div>
+                {% end %}
 
                 <div class="form-group">
                   <label for="stop_command">{{ translate('serverConfig', 'serverStopCommand', data['lang']) }} <small
