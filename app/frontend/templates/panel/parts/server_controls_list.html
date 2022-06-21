@@ -19,10 +19,17 @@
     </li>
     {% end %}
     {% if data['permissions']['Backup'] in data['user_permissions'] %}
+    {% if data['backup_failed'] %}
+    <li class="nav-item term-nav-item">
+        <a style="color: red !important;" class="nav-link {% if data['active_link'] == 'backup' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="false">
+        <i class="fas fa-save"></i>{{ translate('serverDetails', 'backup', data['lang']) }}&nbsp; <i class="fas fa-exclamation-triangle"> </i></a>
+    </li>
+    {% else %}
     <li class="nav-item term-nav-item">
         <a class="nav-link {% if data['active_link'] == 'backup' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="false">
         <i class="fas fa-save"></i>{{ translate('serverDetails', 'backup', data['lang']) }}</a>
     </li>
+    {% end %}
     {% end %}
     {% if data['permissions']['Files'] in data['user_permissions'] %}
     <li class="nav-item term-nav-item">

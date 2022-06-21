@@ -271,6 +271,14 @@ class ServerHandler(BaseHandler):
                 )
 
         if page == "step1":
+            if not superuser and not self.controller.crafty_perms.can_create_server(
+                exec_user["user_id"]
+            ):
+                self.redirect(
+                    "/panel/error?error=Unauthorized access: "
+                    "not a server creator or server limit reached"
+                )
+                return
 
             if not superuser:
                 user_roles = self.controller.roles.get_all_roles()
@@ -396,6 +404,14 @@ class ServerHandler(BaseHandler):
             self.redirect("/panel/dashboard")
 
         if page == "bedrock_step1":
+            if not superuser and not self.controller.crafty_perms.can_create_server(
+                exec_user["user_id"]
+            ):
+                self.redirect(
+                    "/panel/error?error=Unauthorized access: "
+                    "not a server creator or server limit reached"
+                )
+                return
             if not superuser:
                 user_roles = self.controller.roles.get_all_roles()
             else:
