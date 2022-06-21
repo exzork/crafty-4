@@ -1511,6 +1511,17 @@ class PanelHandler(BaseHandler):
             max_backups = bleach.clean(self.get_argument("max_backups", None))
 
             server_obj = self.controller.servers.get_server_obj(server_id)
+            if (
+                not backup_path
+                == self.helper.wtol_path(
+                    os.path.join(self.helper.backup_path, server_obj.server_uuid)
+                )
+                and self.helper.wtol_path(self.controller.project_root) in backup_path
+            ):
+                self.redirect(
+                    "/panel/error?error=Nefarious activities detected."
+                    " User attempted to make backup path within Crafty's root."
+                )
             server_obj.backup_path = backup_path
             self.controller.servers.update_server(server_obj)
             self.controller.management.set_backup_config(
