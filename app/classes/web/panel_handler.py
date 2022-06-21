@@ -6,6 +6,7 @@ import typing as t
 import json
 import logging
 import threading
+import shlex
 import bleach
 import libgravatar
 import requests
@@ -631,6 +632,7 @@ class PanelHandler(BaseHandler):
                             "/panel/error?error=Unauthorized access Server Config"
                         )
                         return
+                page_data["java_versions"] = Helpers.find_java_installs()
 
             if subpage == "files":
                 if (
@@ -1361,11 +1363,21 @@ class PanelHandler(BaseHandler):
             auto_start = int(float(self.get_argument("auto_start", "0")))
             crash_detection = int(float(self.get_argument("crash_detection", "0")))
             logs_delete_after = int(float(self.get_argument("logs_delete_after", "0")))
+            java_selection = self.get_argument("java_selection", None)
             # subpage = self.get_argument('subpage', None)
 
             server_id = self.check_server_id()
             if server_id is None:
                 return
+            execution_list = shlex.split(execution_command)
+            if java_selection:
+                if self.helper.is_os_windows():
+                    execution_list[0] = '"' + java_selection + '/bin/java"'
+                else:
+                    execution_list[0] = '"' + java_selection + '"'
+                execution_command = ""
+                for item in execution_list:
+                    execution_command += item + " "
 
             server_obj: Servers = self.controller.servers.get_server_obj(server_id)
             stale_executable = server_obj.executable
