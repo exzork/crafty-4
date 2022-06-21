@@ -372,6 +372,7 @@
         "noscript": "The file manager does not work without JavaScript",
         "rename": "Rename",
         "renameItemQuestion": "What should the new name be?",
+        "size": "Toggle Editor Size",
         "save": "Save",
         "stayHere": "DO NOT LEAVE THIS PAGE!",
         "unsupportedLanguage": "Warning: This is not a supported file type",
