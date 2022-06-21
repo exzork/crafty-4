@@ -79,18 +79,22 @@
                     placeholder="{{ translate('serverConfig', 'serverExecutable', data['lang']) }}" required>
                 </div>
                 {% end %}
+                {% if data['server_stats']['server_type'] == "minecraft-java" %}
                 <div class="form-group">
-                  <label for="java_selection">{{ translate('serverConfig', 'javaVersion', data['lang']) }} <small
-                      class="text-muted ml-1"> - {{ translate('serverConfig', 'javaVersionDesc', data['lang'])
-                      }}</small> </label>
+                  <label for="java_selection">{{ translate('serverConfig', 'javaVersion', data['lang']) }}
+                    <small class="text-muted ml-1">{{ translate('serverConfig', 'javaVersionDesc', data['lang']) }}</small>
+                  </label>
                   <select class="form-select form-control form-control-lg select-css" id="java_selection"
                     name="java_selection" form="config_form">
-                    <option value="">{{ translate('serverConfig', 'javaNoChange', data['lang'])}}</option>
+                    <option value="">{{ translate('serverConfig',
+                      'javaNoChange', data['lang'])}}</option>
                     {% for path in data['java_versions'] %}
-                    <option value="{{path}}">{{path}}</option>
+                      <option value="{{path}}">{{path}}</option>
                     {% end %}
                   </select>
                 </div>
+                {% end %}
+
                 {% if data['super_user'] %}
                 <div class="form-group">
                   <label for="execution_command">{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}
@@ -100,6 +104,12 @@
                     value="{{ data['server_stats']['server_id']['execution_command']  }}"
                     placeholder="{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}" required>
                 </div>
+                {% else %}
+                <label for="execution_command">{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}
+                <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                  <span style="color: gray;">{{ data['server_stats']['server_id']['execution_command']  }}</span> 🔒
+                </div>
+                <br>
                 {% end %}
 
                 <div class="form-group">

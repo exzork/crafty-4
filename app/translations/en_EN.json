@@ -302,7 +302,7 @@
         "serverExecutable": "Server Executable",
         "serverExecutableDesc": "The server's executable file",
         "javaVersion": "Override current Java Version",
-        "javaVersionDesc": "If we've been able to find local java installs. (Windows 'Oracle' only)",
+        "javaVersionDesc": "If you're going to override java. Make sure your current java path in 'execution command' is wrapped in quotes (default 'java' variable excluded)",
         "javaNoChange": "Do Not Override",
         "serverExecutionCommand": "Server Execution Command",
         "serverExecutionCommandDesc": "What will be launched in a hidden terminal",
