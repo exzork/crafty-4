@@ -81,21 +81,15 @@
                 {% end %}
                 {% if data['server_stats']['server_type'] == "minecraft-java" %}
                 <div class="form-group">
-                  <label for="java_selection">{{ translate('serverConfig', 'javaVersion', data['lang']) }} <small
-                      class="text-muted ml-1"> - EXPERIMENTAL -- PLEASE REPORT ANY BUGS &nbsp; {{
-                      translate('serverConfig', 'javaVersionDesc', data['lang'])
-                      }}</small> </label>
+                  <label for="java_selection">{{ translate('serverConfig', 'javaVersion', data['lang']) }}
+                    <small class="text-muted ml-1">{{ translate('serverConfig', 'javaVersionDesc', data['lang']) }}</small>
+                  </label>
                   <select class="form-select form-control form-control-lg select-css" id="java_selection"
                     name="java_selection" form="config_form">
-                    {% if data['current_java'] %}
-                    <option value="{{data['current_java']}}">{{data['current_java']}}</option>
-                    <option value="">{{ translate('serverConfig', 'javaNoChange', data['lang'])}}</option>
-                    {% else %}
                     <option value="">{{ translate('serverConfig',
                       'javaNoChange', data['lang'])}}</option>
-                    {% end %}
                     {% for path in data['java_versions'] %}
-                    <option value="{{path}}">{{path}}</option>
+                      <option value="{{path}}">{{path}}</option>
                     {% end %}
                   </select>
                 </div>
