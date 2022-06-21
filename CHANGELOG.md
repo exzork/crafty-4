@@ -1,7 +1,11 @@
 # Changelog
 
-## --- [4.0.4] - 2022/06/21
+## --- [4.0.4-hotfix] - 2022/06/21
+### Bug fixes
+- Remove bad check for backups path ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/380))
+<br><br>
 
+## --- [4.0.4] - 2022/06/21
 ### New features
 - Add shutdown on backup feature ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/373))
 - Add detection and dropdown of java versions ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/375))
