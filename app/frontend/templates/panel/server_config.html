@@ -104,6 +104,12 @@
                     value="{{ data['server_stats']['server_id']['execution_command']  }}"
                     placeholder="{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}" required>
                 </div>
+                {% else %}
+                <label for="execution_command">{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}
+                <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                  <span style="color: gray;">{{ data['server_stats']['server_id']['execution_command']  }}</span> 🔒
+                </div>
+                <br>
                 {% end %}
 
                 <div class="form-group">
