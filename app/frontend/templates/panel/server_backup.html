@@ -14,7 +14,8 @@
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
-          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{ data['server_stats']['server_id']['server_name'] }}
+          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{
+          data['server_stats']['server_id']['server_name'] }}
           <br />
           <small>UUID: {{ data['server_stats']['server_id']['server_uuid'] }}</small>
         </h4>
@@ -51,55 +52,85 @@
 
                 {% if data['backing_up'] %}
                 <div class="progress" style="height: 15px;">
-                  <div class="progress-bar progress-bar-striped progress-bar-animated" id="backup_progress_bar" role="progressbar" style="width:{{data['backup_stats']['percent']}}%;" aria-valuenow="{{data['backup_stats']['percent']}}" aria-valuemin="0" aria-valuemax="100">{{ data['backup_stats']['percent'] }}%</div>
+                  <div class="progress-bar progress-bar-striped progress-bar-animated" id="backup_progress_bar"
+                    role="progressbar" style="width:{{data['backup_stats']['percent']}}%;"
+                    aria-valuenow="{{data['backup_stats']['percent']}}" aria-valuemin="0" aria-valuemax="100">{{
+                    data['backup_stats']['percent'] }}%</div>
                 </div>
-                <p>Backing up <span id="total_files">{{data['backup_stats']['total_files']}}</span> Files</p>
+                <p>Backing up <i class="fas fa-spin fa-spinner"></i> <span
+                    id="total_files">{{data['server_stats']['world_size']}}</span></p>
                 {% end %}
 
                 <br>
                 {% if not data['backing_up'] %}
                 <div id="backup_button" class="form-group">
-                  <button class="btn btn-primary" id="backup_now_button">{{ translate('serverBackups', 'backupNow', data['lang']) }}</button>
+                  <button class="btn btn-primary" id="backup_now_button">{{ translate('serverBackups', 'backupNow',
+                    data['lang']) }}</button>
                 </div>
                 {% end %}
                 <div class="form-group">
                   {% if data['super_user'] %}
-                  <label for="server_name">{{ translate('serverBackups', 'storageLocation', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverBackups', 'storageLocationDesc', data['lang']) }}</small> </label>
-                  <input type="text" class="form-control" name="backup_path" id="backup_path" value="{{ data['server_stats']['server_id']['backup_path']  }}" placeholder="{{ translate('serverBackups', 'storageLocation', data['lang']) }}">
+                  <label for="server_name">{{ translate('serverBackups', 'storageLocation', data['lang']) }} <small
+                      class="text-muted ml-1"> - {{ translate('serverBackups', 'storageLocationDesc', data['lang'])
+                      }}</small> </label>
+                  <input type="text" class="form-control" name="backup_path" id="backup_path"
+                    value="{{ data['server_stats']['server_id']['backup_path']  }}"
+                    placeholder="{{ translate('serverBackups', 'storageLocation', data['lang']) }}">
                   {% end %}
                 </div>
 
                 <div class="form-group">
-                  <label for="server_path">{{ translate('serverBackups', 'maxBackups', data['lang']) }} <small class="text-muted ml-1"> - {{ translate('serverBackups', 'maxBackupsDesc', data['lang']) }}</small> </label>
-                  <input type="text" class="form-control" name="max_backups" id="max_backups" value="{{ data['backup_config']['max_backups']  }}" placeholder="{{ translate('serverBackups', 'maxBackups', data['lang']) }}">
+                  <label for="server_path">{{ translate('serverBackups', 'maxBackups', data['lang']) }} <small
+                      class="text-muted ml-1"> - {{ translate('serverBackups', 'maxBackupsDesc', data['lang'])
+                      }}</small> </label>
+                  <input type="text" class="form-control" name="max_backups" id="max_backups"
+                    value="{{ data['backup_config']['max_backups']  }}"
+                    placeholder="{{ translate('serverBackups', 'maxBackups', data['lang']) }}">
                 </div>
                 <div class="form-group">
                   <label for="compress" class="form-check-label ml-4 mb-4"></label>
                   {% if data['backup_config']['compress'] %}
-                  <input type="checkbox" class="form-check-input" id="compress" name="compress"
-                         checked="" value="True">{{ translate('serverBackups', 'compress', data['lang']) }}
+                  <input type="checkbox" class="form-check-input" id="compress" name="compress" checked=""
+                    value="True">{{ translate('serverBackups', 'compress', data['lang']) }}
                   {% else %}
-                  <input type="checkbox" class="form-check-input" id="compress" name="compress"
-                         value="True">{{ translate('serverBackups', 'compress', data['lang']) }}
+                  <input type="checkbox" class="form-check-input" id="compress" name="compress" value="True">{{
+                  translate('serverBackups', 'compress', data['lang']) }}
                   {% end %}
                 </div>
                 <div class="form-group">
-                  <label for="server">{{ translate('serverBackups', 'exclusionsTitle', data['lang']) }} <small> - {{ translate('serverBackups', 'excludedChoose', data['lang']) }}</small></label>
-                  <br>
-                  <button class="btn btn-primary mr-2" id="root_files_button" data-server_path="{{ data['server_stats']['server_id']['path']}}" type="button">{{ translate('serverBackups', 'clickExclude', data['lang']) }}</button>
+                  <label for="shutdown" class="form-check-label ml-4 mb-4"></label>
+                  {% if data['backup_config']['shutdown'] %}
+                  <input type="checkbox" class="form-check-input" id="shutdown" name="shutdown" checked=""
+                    value="True">{{ translate('serverBackups', 'shutdown', data['lang']) }}
+                  {% else %}
+                  <input type="checkbox" class="form-check-input" id="shutdown" name="shutdown" value="True">{{
+                  translate('serverBackups', 'shutdown', data['lang']) }}
+                  {% end %}
                 </div>
-                <input type="number" class="form-control" name="changed" id="changed" value="0" style="visibility: hidden;"></input>
-                <div class="modal fade" id="dir_select" tabindex="-1" role="dialog" aria-labelledby="dir_select" aria-hidden="true">
+                <div class="form-group">
+                  <label for="server">{{ translate('serverBackups', 'exclusionsTitle', data['lang']) }} <small> - {{
+                      translate('serverBackups', 'excludedChoose', data['lang']) }}</small></label>
+                  <br>
+                  <button class="btn btn-primary mr-2" id="root_files_button"
+                    data-server_path="{{ data['server_stats']['server_id']['path']}}" type="button">{{
+                    translate('serverBackups', 'clickExclude', data['lang']) }}</button>
+                </div>
+                <input type="number" class="form-control" name="changed" id="changed" value="0"
+                  style="visibility: hidden;"></input>
+                <div class="modal fade" id="dir_select" tabindex="-1" role="dialog" aria-labelledby="dir_select"
+                  aria-hidden="true">
                   <div class="modal-dialog" role="document">
                     <div class="modal-content">
                       <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLongTitle">{{ translate('serverBackups', 'excludedChoose', data['lang']) }}</h5>
+                        <h5 class="modal-title" id="exampleModalLongTitle">{{ translate('serverBackups',
+                          'excludedChoose', data['lang']) }}</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                           <span aria-hidden="true">&times;</span>
                         </button>
                       </div>
                       <div class="modal-body">
-                        <div class="tree-ctx-item" id="main-tree-div" data-path="" style="overflow: scroll; max-height:75%;">
+                        <div class="tree-ctx-item" id="main-tree-div" data-path=""
+                          style="overflow: scroll; max-height:75%;">
                           <input type="checkbox" id="main-tree-input" name="root_path" value="" disabled>
                           <span id="main-tree" class="files-tree-title tree-caret-down root-dir" data-path="">
                             <i class="far fa-folder"></i>
@@ -110,15 +141,19 @@
                         </div>
                       </div>
                       <div class="modal-footer">
-                        <button type="button" id="modal-cancel" class="btn btn-secondary" data-dismiss="modal">{{ translate('serverBackups', 'cancel', data['lang']) }}</button>
-                        <button type="button" id="modal-okay" data-dismiss="modal" class="btn btn-primary">{{ translate('serverWizard', 'save', data['lang']) }}</button>
+                        <button type="button" id="modal-cancel" class="btn btn-secondary" data-dismiss="modal">{{
+                          translate('serverBackups', 'cancel', data['lang']) }}</button>
+                        <button type="button" id="modal-okay" data-dismiss="modal" class="btn btn-primary">{{
+                          translate('serverWizard', 'save', data['lang']) }}</button>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <button type="submit" class="btn btn-success mr-2">{{ translate('serverBackups', 'save', data['lang']) }}</button>
-                <button type="reset" class="btn btn-light">{{ translate('serverBackups', 'cancel', data['lang']) }}</button>
+                <button type="submit" class="btn btn-success mr-2">{{ translate('serverBackups', 'save', data['lang'])
+                  }}</button>
+                <button type="reset" class="btn btn-light">{{ translate('serverBackups', 'cancel', data['lang'])
+                  }}</button>
               </form>
             </div>
 
@@ -138,13 +173,15 @@
                     {% for backup in data['backup_list'] %}
                     <tr>
                       <td>
-                        <a href="/panel/download_backup?file={{ backup['path'] }}&id={{ data['server_stats']['server_id']['server_id'] }}" class="btn btn-primary">
+                        <a href="/panel/download_backup?file={{ backup['path'] }}&id={{ data['server_stats']['server_id']['server_id'] }}"
+                          class="btn btn-primary">
                           <i class="fas fa-download" aria-hidden="true"></i>
                           {{ translate('serverBackups', 'download', data['lang']) }}
                         </a>
                         <br>
                         <br>
-                        <button data-file="{{ backup['path'] }}" data-backup_path="{{ data['backup_path'] }}" class="btn btn-danger del_button">
+                        <button data-file="{{ backup['path'] }}" data-backup_path="{{ data['backup_path'] }}"
+                          class="btn btn-danger del_button">
                           <i class="fas fa-trash" aria-hidden="true"></i>
                           {{ translate('serverBackups', 'delete', data['lang']) }}
                         </button>
@@ -168,7 +205,8 @@
             <br>
             <br>
             <div class="card-header header-sm d-flex justify-content-between align-items-center">
-              <h4 class="card-title"><i class="fas fa-server"></i> {{ translate('serverBackups', 'excludedBackups', data['lang']) }} <small class="text-muted ml-1"></small> </h4>
+              <h4 class="card-title"><i class="fas fa-server"></i> {{ translate('serverBackups', 'excludedBackups',
+                data['lang']) }} <small class="text-muted ml-1"></small> </h4>
             </div>
             <br>
             <ul>
