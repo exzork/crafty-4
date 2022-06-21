@@ -1520,7 +1520,7 @@ class PanelHandler(BaseHandler):
                 == self.helper.wtol_path(
                     os.path.join(self.helper.backup_path, server_obj.server_uuid)
                 )
-                and self.helper.wtol_path(self.controller.project_root) in backup_path
+                and backup_path.startswith(self.helper.wtol_path(self.controller.project_root))
             ):
                 self.redirect(
                     "/panel/error?error=Nefarious activities detected."
