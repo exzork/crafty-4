@@ -497,6 +497,10 @@ class PanelHandler(BaseHandler):
             if server_id is None:
                 return
 
+            server_obj = self.controller.servers.get_server_instance_by_id(server_id)
+            page_data["backup_failed"] = server_obj.last_backup_status()
+            server_obj = None
+
             valid_subpages = [
                 "term",
                 "logs",
@@ -1435,6 +1439,7 @@ class PanelHandler(BaseHandler):
 
             server_obj = self.controller.servers.get_server_obj(server_id)
             compress = self.get_argument("compress", False)
+            shutdown = self.get_argument("shutdown", False)
             check_changed = self.get_argument("changed")
             if str(check_changed) == str(1):
                 checked = self.get_body_arguments("root_path")
@@ -1457,6 +1462,7 @@ class PanelHandler(BaseHandler):
                 max_backups=max_backups,
                 excluded_dirs=checked,
                 compress=bool(compress),
+                shutdown=bool(shutdown),
             )
 
             self.controller.management.add_to_audit_log(

@@ -98,6 +98,16 @@
                   {% end %}
                 </div>
                 <div class="form-group">
+                  <label for="shutdown" class="form-check-label ml-4 mb-4"></label>
+                  {% if data['backup_config']['shutdown'] %}
+                  <input type="checkbox" class="form-check-input" id="shutdown" name="shutdown" checked=""
+                    value="True">{{ translate('serverBackups', 'shutdown', data['lang']) }}
+                  {% else %}
+                  <input type="checkbox" class="form-check-input" id="shutdown" name="shutdown" value="True">{{
+                  translate('serverBackups', 'shutdown', data['lang']) }}
+                  {% end %}
+                </div>
+                <div class="form-group">
                   <label for="server">{{ translate('serverBackups', 'exclusionsTitle', data['lang']) }} <small> - {{
                       translate('serverBackups', 'excludedChoose', data['lang']) }}</small></label>
                   <br>
