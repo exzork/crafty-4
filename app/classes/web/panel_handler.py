@@ -647,8 +647,9 @@ class PanelHandler(BaseHandler):
                             if temp_version != current_java and version != "java":
                                 page_java.append(version)
                     else:
-                        if version != current_java:
-                            page_java.append(version)
+                        if len(version) > 0:
+                            if version != current_java:
+                                page_java.append(version)
 
                 page_data["java_versions"] = page_java
 
@@ -1387,8 +1388,15 @@ class PanelHandler(BaseHandler):
             server_id = self.check_server_id()
             if server_id is None:
                 return
-            execution_list = shlex.split(execution_command)
             if java_selection:
+                try:
+                    execution_list = shlex.split(execution_command)
+                except ValueError:
+                    self.redirect(
+                        "/panel/error?error=Invalid execution command. Java path"
+                        " must be surrounded by quotes."
+                        " (Are you missing a closing quote?)"
+                    )
                 if not any(
                     java_selection in path for path in Helpers.find_java_installs()
                 ):
