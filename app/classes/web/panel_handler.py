@@ -483,6 +483,14 @@ class PanelHandler(BaseHandler):
                 if str(server_id) not in server_ids[:]:
                     user_order.remove(server_id)
             page_data["servers"] = page_servers
+            for server in page_data["servers"]:
+                server_obj = self.controller.servers.get_server_instance_by_id(
+                    server["server_data"]["server_id"]
+                )
+                alert = False
+                if server_obj.last_backup_status():
+                    alert = True
+                server["alert"] = alert
 
             # num players is set to zero here. If we poll all servers while
             # dashboard is loading it takes FOREVER. We leave this to the
@@ -1389,8 +1397,11 @@ class PanelHandler(BaseHandler):
                         " must be surrounded by quotes."
                         " (Are you missing a closing quote?)"
                     )
-                if not any(
-                    java_selection in path for path in Helpers.find_java_installs()
+                if (
+                    not any(
+                        java_selection in path for path in Helpers.find_java_installs()
+                    )
+                    and java_selection != "java"
                 ):
                     self.redirect(
                         "/panel/error?error=Attack attempted."
@@ -1404,6 +1415,7 @@ class PanelHandler(BaseHandler):
                         + " Possible attack. Act accordingly.",
                         self.get_remote_ip(),
                     )
+                    return
                 if java_selection != "java":
                     if self.helper.is_os_windows():
                         execution_list[0] = '"' + java_selection + '/bin/java"'

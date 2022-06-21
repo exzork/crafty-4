@@ -15,7 +15,11 @@
             <a class="dropdown-item {% if data['active_link'] == 'schedules' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=schedules" role="tab" aria-selected="false"><i class="fas fa-clock"></i> {{ translate('serverDetails', 'schedule', data['lang']) }}</a>
             {% end %}
             {% if data['permissions']['Backup'] in data['user_permissions'] %}
+            {% if data['backup_failed'] %}
+            <a style="color: red !important;" class="dropdown-item {% if data['active_link'] == 'backup' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="false"><i class="fas fa-save"></i> {{ translate('serverDetails', 'backup', data['lang']) }}&nbsp; <i class="fas fa-exclamation-triangle"> </i></a>
+            {% else %}
             <a class="dropdown-item {% if data['active_link'] == 'backup' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=backup" role="tab" aria-selected="false"><i class="fas fa-save"></i> {{ translate('serverDetails', 'backup', data['lang']) }}</a>
+            {% end %}
             {% end %}
             {% if data['permissions']['Files'] in data['user_permissions'] %}
             <a class="dropdown-item {% if data['active_link'] == 'files' %}active{% end %}" href="/panel/server_detail?id={{ data['server_stats']['server_id']['server_id'] }}&subpage=files" role="tab" aria-selected="false"><i class="fas fa-folder-tree"></i> {{ translate('serverDetails', 'files', data['lang']) }}</a>
