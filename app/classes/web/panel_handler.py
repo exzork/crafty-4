@@ -868,6 +868,11 @@ class PanelHandler(BaseHandler):
 
         elif page == "add_schedule":
             server_id = self.get_argument("id", None)
+            if server_id is None:
+                return self.redirect("/panel/error?error=Invalid Schedule ID")
+            server_obj = self.controller.servers.get_server_instance_by_id(server_id)
+            page_data["backup_failed"] = server_obj.last_backup_status()
+            server_obj = None
             page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                 server_id
             )
@@ -926,7 +931,10 @@ class PanelHandler(BaseHandler):
         elif page == "edit_schedule":
             server_id = self.check_server_id()
             if not server_id:
-                return
+                return self.redirect("/panel/error?error=Invalid Schedule ID")
+            server_obj = self.controller.servers.get_server_instance_by_id(server_id)
+            page_data["backup_failed"] = server_obj.last_backup_status()
+            server_obj = None
 
             page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                 server_id
@@ -934,6 +942,7 @@ class PanelHandler(BaseHandler):
             sch_id = self.get_argument("sch_id", None)
             if sch_id is None:
                 self.redirect("/panel/error?error=Invalid Schedule ID")
+                return
             schedule = self.controller.management.get_scheduled_task_model(sch_id)
             page_data[
                 "get_players"
