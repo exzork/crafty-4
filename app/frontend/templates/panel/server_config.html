@@ -36,7 +36,7 @@
 
           <div class="row">
             <div class="col-md-6 col-sm-12">
-              <form class="forms-sample" method="post" action="/panel/server_detail">
+              <form class="forms-sample" method="post" id="config_form" action="/panel/server_detail">
                 {% raw xsrf_form_html() %}
                 <input type="hidden" name="id" value="{{ data['server_stats']['server_id']['server_id'] }}">
                 <input type="hidden" name="subpage" value="config">
@@ -50,8 +50,8 @@
                     placeholder="{{ translate('serverConfig', 'serverName', data['lang']) }}" required>
                 </div>
 
+                {% if data['super_user'] %}
                 <div class="form-group">
-                  {% if data['super_user'] %}
                   <label for="server_path">{{ translate('serverConfig', 'serverPath', data['lang']) }} <small
                       class="text-muted ml-1"> - {{ translate('serverConfig', 'serverPathDesc', data['lang']) }}</small>
                   </label>
@@ -78,7 +78,24 @@
                     value="{{ data['server_stats']['server_id']['executable']  }}"
                     placeholder="{{ translate('serverConfig', 'serverExecutable', data['lang']) }}" required>
                 </div>
+                {% end %}
+                {% if data['server_stats']['server_type'] == "minecraft-java" %}
+                <div class="form-group">
+                  <label for="java_selection">{{ translate('serverConfig', 'javaVersion', data['lang']) }}
+                    <small class="text-muted ml-1">{{ translate('serverConfig', 'javaVersionDesc', data['lang']) }}</small>
+                  </label>
+                  <select class="form-select form-control form-control-lg select-css" id="java_selection"
+                    name="java_selection" form="config_form">
+                    <option value="">{{ translate('serverConfig',
+                      'javaNoChange', data['lang'])}}</option>
+                    {% for path in data['java_versions'] %}
+                      <option value="{{path}}">{{path}}</option>
+                    {% end %}
+                  </select>
+                </div>
+                {% end %}
 
+                {% if data['super_user'] %}
                 <div class="form-group">
                   <label for="execution_command">{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}
                     <small class="text-muted ml-1"> - {{ translate('serverConfig', 'serverExecutionCommandDesc',
@@ -86,8 +103,14 @@
                   <input type="text" class="form-control" name="execution_command" id="execution_command"
                     value="{{ data['server_stats']['server_id']['execution_command']  }}"
                     placeholder="{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}" required>
-                  {% end %}
                 </div>
+                {% else %}
+                <label for="execution_command">{{ translate('serverConfig', 'serverExecutionCommand', data['lang']) }}
+                <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                  <span style="color: gray;">{{ data['server_stats']['server_id']['execution_command']  }}</span> 🔒
+                </div>
+                <br>
+                {% end %}
 
                 <div class="form-group">
                   <label for="stop_command">{{ translate('serverConfig', 'serverStopCommand', data['lang']) }} <small

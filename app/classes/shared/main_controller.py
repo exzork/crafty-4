@@ -34,8 +34,9 @@ logger = logging.getLogger(__name__)
 
 
 class Controller:
-    def __init__(self, database, helper):
+    def __init__(self, database, helper, file_helper):
         self.helper: Helpers = helper
+        self.file_helper: FileHelpers = file_helper
         self.server_jars: ServerJars = ServerJars(helper)
         self.users_helper: HelperUsers = HelperUsers(database, self.helper)
         self.roles_helper: HelperRoles = HelperRoles(database)
@@ -53,7 +54,7 @@ class Controller:
         )
         self.server_perms: ServerPermsController = ServerPermsController()
         self.servers: ServersController = ServersController(
-            self.helper, self.servers_helper, self.management_helper
+            self.helper, self.servers_helper, self.management_helper, self.file_helper
         )
         self.users: UsersController = UsersController(
             self.helper, self.users_helper, self.authentication

@@ -232,6 +232,8 @@ function-naming-style=snake_case
 good-names=e,
            ex,
            f,
+           fd,
+           fn,
            i,
            id,
            ip,

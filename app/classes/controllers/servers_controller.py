@@ -5,6 +5,7 @@ import json
 import typing as t
 
 from app.classes.controllers.roles_controller import RolesController
+from app.classes.shared.file_helpers import FileHelpers
 
 from app.classes.shared.singleton import Singleton
 from app.classes.shared.server import ServerInstance
@@ -28,8 +29,9 @@ logger = logging.getLogger(__name__)
 class ServersController(metaclass=Singleton):
     servers_list: ServerInstance
 
-    def __init__(self, helper, servers_helper, management_helper):
+    def __init__(self, helper, servers_helper, management_helper, file_helper):
         self.helper: Helpers = helper
+        self.file_helper: FileHelpers = file_helper
         self.servers_helper: HelperServers = servers_helper
         self.management_helper = management_helper
         self.servers_list = []
@@ -189,6 +191,7 @@ class ServersController(metaclass=Singleton):
                     self.helper,
                     self.management_helper,
                     self.stats,
+                    self.file_helper,
                 ),
                 "server_settings": settings.props,
             }
