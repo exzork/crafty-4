@@ -243,14 +243,14 @@
                     data-handler-name="ace/keyboard/emacs">Emacs</button>
                   <button onclick="setKeyboard(event.target)" class="btn btn-secondary"
                     data-handler-name="ace/keyboard/sublime">Sublime</button>
-                  &nbsp;&nbsp;&nbsp;<button class="d-none d-md-block btn btn-info" id="screen-size">Toggle Editor
-                    Size</button>
+                  <span class="d-none d-md-block ">&nbsp;&nbsp;&nbsp;<button class="btn btn-info"
+                      id="screen-size">Toggle Editor
+                      Size</button></span>
                 </div>
                 <h3 id="file_warn"></h3>
-                </button>
                 <button class="btn btn-success" onclick="save()"><i class="fas fa-save"></i> {{ translate('serverFiles',
-                  'save', data['lang']) }}
-                  <span style="color: #2fb689; margin-left: 10px;" id="save_status"></span>
+                  'save', data['lang']) }}</button>
+                <span style="color: #2fb689; margin-left: 10px;" id="save_status"></span>
               </div>
             </div>
           </div>
