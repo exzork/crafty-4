@@ -1397,8 +1397,11 @@ class PanelHandler(BaseHandler):
                         " must be surrounded by quotes."
                         " (Are you missing a closing quote?)"
                     )
-                if not any(
-                    java_selection in path for path in Helpers.find_java_installs()
+                if (
+                    not any(
+                        java_selection in path for path in Helpers.find_java_installs()
+                    )
+                    and java_selection != "java"
                 ):
                     self.redirect(
                         "/panel/error?error=Attack attempted."
@@ -1412,6 +1415,7 @@ class PanelHandler(BaseHandler):
                         + " Possible attack. Act accordingly.",
                         self.get_remote_ip(),
                     )
+                    return
                 if java_selection != "java":
                     if self.helper.is_os_windows():
                         execution_list[0] = '"' + java_selection + '/bin/java"'
