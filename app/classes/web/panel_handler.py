@@ -483,6 +483,14 @@ class PanelHandler(BaseHandler):
                 if str(server_id) not in server_ids[:]:
                     user_order.remove(server_id)
             page_data["servers"] = page_servers
+            for server in page_data["servers"]:
+                server_obj = self.controller.servers.get_server_instance_by_id(
+                    server["server_data"]["server_id"]
+                )
+                alert = False
+                if server_obj.last_backup_status():
+                    alert = True
+                server["alert"] = alert
 
             # num players is set to zero here. If we poll all servers while
             # dashboard is loading it takes FOREVER. We leave this to the

@@ -9,14 +9,15 @@
 
 <div class="content-wrapper">
 
-    <!-- Page Title Header Starts-->
+  <!-- Page Title Header Starts-->
   <div class="row page-title-header">
     <div class="col-12">
       <div class="page-header">
         <h4 class="page-title">
-          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{ data['server_stats']['server_id']['server_name'] }}
-            <br />
-            <small>UUID: {{ data['server_stats']['server_id']['server_uuid']  }}</small>
+          {{ translate('serverDetails', 'serverDetails', data['lang']) }} - {{
+          data['server_stats']['server_id']['server_name'] }}
+          <br />
+          <small>UUID: {{ data['server_stats']['server_id']['server_uuid'] }}</small>
         </h4>
       </div>
     </div>
@@ -24,23 +25,30 @@
   </div>
   <!-- Page Title Header Ends-->
 
- {% include "parts/details_stats.html" %}
+  {% include "parts/details_stats.html" %}
 
   <div class="row">
 
     <div class="col-sm-12 grid-margin">
       <div class="card">
         <div class="card-body  pt-0">
-            {% include "parts/server_controls_list.html" %}
+          <span class="d-none d-sm-block">
+            {% include "parts/server_controls_list.html %}
+          </span>
+          <span class="d-block d-sm-none">
+            {% include "parts/m_server_controls_list.html %}
+          </span>
 
-            <div class="col-md-12">
-              <div class="input-group">
-                <div id="virt_console" class="" style="font-size: .8em; padding: 5px 10px; border: 1px solid #383e5d; background-color:#2a2c44;height:500px; overflow: scroll;"></div>
+          <div class="col-md-12">
+            <div class="input-group">
+              <div id="virt_console" class=""
+                style="font-size: .8em; padding: 5px 10px; border: 1px solid #383e5d; background-color:#2a2c44;height:500px; overflow: scroll;">
               </div>
-              <br />
-
-
             </div>
+            <br />
+
+
+          </div>
 
         </div>
       </div>
@@ -57,8 +65,8 @@
 <script>
 
   const serverId = new URLSearchParams(document.location.search).get('id')
-  function get_server_log(){
-    if( !$("#stop_scroll").is(':checked')){
+  function get_server_log() {
+    if (!$("#stop_scroll").is(':checked')) {
       $.ajax({
         type: 'GET',
         url: '/ajax/server_log?id=' + serverId + '&full=1',
@@ -78,17 +86,17 @@
     return r ? r[1] : undefined;
   }
 
-  $( document ).ready(function() {
-    console.log( "ready!" );
+  $(document).ready(function () {
+    console.log("ready!");
     get_server_log()
 
 
   });
 
 
-  function scroll(){
+  function scroll() {
     var logview = $('#virt_console');
-    if(logview.length)
+    if (logview.length)
       logview.scrollTop(logview[0].scrollHeight - logview.height());
   }
 
