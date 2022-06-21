@@ -6,10 +6,10 @@ import typing as t
 import json
 import logging
 import threading
+import shlex
 import bleach
 import libgravatar
 import requests
-import shlex
 import tornado.web
 import tornado.escape
 from tornado import iostream
