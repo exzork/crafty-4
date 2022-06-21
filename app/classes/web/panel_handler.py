@@ -633,6 +633,24 @@ class PanelHandler(BaseHandler):
                         )
                         return
                 page_data["java_versions"] = Helpers.find_java_installs()
+                server_obj: Servers = self.controller.servers.get_server_obj(server_id)
+                current_java = shlex.split(server_obj.execution_command)[0]
+                page_java = []
+                page_data["java_versions"].append("java")
+                page_data["current_java"] = current_java
+                for version in page_data["java_versions"]:
+                    temp_version = version + "/bin/java"
+                    if os.name == "nt":
+                        if version == "java" and current_java != version:
+                            page_java.append(version)
+                        else:
+                            if temp_version != current_java and version != "java":
+                                page_java.append(version)
+                    else:
+                        if version != current_java:
+                            page_java.append(version)
+
+                page_data["java_versions"] = page_java
 
             if subpage == "files":
                 if (
@@ -1371,10 +1389,17 @@ class PanelHandler(BaseHandler):
                 return
             execution_list = shlex.split(execution_command)
             if java_selection:
-                if self.helper.is_os_windows():
-                    execution_list[0] = '"' + java_selection + '/bin/java"'
+                if java_selection != "java":
+                    if (
+                        self.helper.is_os_windows()
+                        and not "/bin/java" in java_selection
+                    ):
+                        if not "/bin/java" in java_selection:
+                            execution_list[0] = '"' + java_selection + '/bin/java"'
+                    else:
+                        execution_list[0] = '"' + java_selection + '"'
                 else:
-                    execution_list[0] = '"' + java_selection + '"'
+                    execution_list[0] = "java"
                 execution_command = ""
                 for item in execution_list:
                     execution_command += item + " "
@@ -1407,7 +1432,7 @@ class PanelHandler(BaseHandler):
                 server_obj.path = server_obj.path
                 server_obj.log_path = server_obj.log_path
                 server_obj.executable = server_obj.executable
-                server_obj.execution_command = server_obj.execution_command
+                server_obj.execution_command = execution_command
                 server_obj.server_ip = server_obj.server_ip
                 server_obj.server_port = server_obj.server_port
                 server_obj.executable_update_url = server_obj.executable_update_url
