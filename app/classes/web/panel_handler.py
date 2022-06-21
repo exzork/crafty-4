@@ -1389,6 +1389,21 @@ class PanelHandler(BaseHandler):
                 return
             execution_list = shlex.split(execution_command)
             if java_selection:
+                if not any(
+                    java_selection in path for path in Helpers.find_java_installs()
+                ):
+                    self.redirect(
+                        "/panel/error?error=Attack attempted."
+                        + " A copy of this report is being sent to server owner."
+                    )
+                    self.controller.management.add_to_audit_log_raw(
+                        exec_user["username"],
+                        exec_user["user_id"],
+                        server_id,
+                        f"Attempted to send bad java path for {server_id}."
+                        + " Possible attack. Act accordingly.",
+                        self.get_remote_ip(),
+                    )
                 if java_selection != "java":
                     if (
                         self.helper.is_os_windows()
