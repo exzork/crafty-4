@@ -15,6 +15,8 @@ import html
 import zipfile
 import pathlib
 import ctypes
+import subprocess
+import itertools
 from datetime import datetime
 from socket import gethostname
 from contextlib import redirect_stderr, suppress
@@ -22,7 +24,6 @@ from contextlib import redirect_stderr, suppress
 from app.classes.shared.null_writer import NullWriter
 from app.classes.shared.console import Console
 from app.classes.shared.installer import installer
-from app.classes.shared.file_helpers import FileHelpers
 from app.classes.shared.translation import Translation
 from app.classes.web.websocket_helper import WebSocketHelper
 
@@ -80,6 +81,60 @@ class Helpers:
         logger.critical(f"Import Error: Unable to load {ex.name} module", exc_info=True)
         print(f"Import Error: Unable to load {ex.name} module")
         installer.do_install()
+
+    @staticmethod
+    def find_java_installs():
+        # If we're windows return oracle java versions,
+        # otherwise java vers need to be manual.
+        if os.name == "nt":
+            # Adapted from LeeKamentsky >>>
+            # https://github.com/LeeKamentsky/python-javabridge/blob/master/javabridge/locate.py
+            jdk_key_paths = (
+                "SOFTWARE\\JavaSoft\\JDK",
+                "SOFTWARE\\JavaSoft\\Java Development Kit",
+            )
+            java_paths = []
+            for jdk_key_path in jdk_key_paths:
+                try:
+                    with suppress(OSError), winreg.OpenKey(
+                        winreg.HKEY_LOCAL_MACHINE, jdk_key_path
+                    ) as kjdk:
+                        for i in itertools.count():
+                            version = winreg.EnumKey(kjdk, i)
+                            kjdk_current = winreg.OpenKey(
+                                winreg.HKEY_LOCAL_MACHINE,
+                                jdk_key_path,
+                            )
+                            kjdk_current = winreg.OpenKey(
+                                winreg.HKEY_LOCAL_MACHINE,
+                                jdk_key_path + "\\" + version,
+                            )
+                            kjdk_current_values = dict(  # pylint: disable=consider-using-dict-comprehension
+                                [
+                                    winreg.EnumValue(kjdk_current, i)[:2]
+                                    for i in range(winreg.QueryInfoKey(kjdk_current)[1])
+                                ]
+                            )
+                            java_paths.append(kjdk_current_values["JavaHome"])
+                except OSError as e:
+                    if e.errno == 2:
+                        continue
+                    raise
+            return java_paths
+
+        # If we get here we're linux so we will use 'update-alternatives'
+        # (If distro does not have update-alternatives then manual input.)
+        try:
+            paths = subprocess.check_output(
+                ["/usr/bin/update-alternatives", "--list", "java"], encoding="utf8"
+            )
+
+            if re.match("^(/[^/ ]*)+/?$", paths):
+                return paths.split("\n")
+
+        except Exception as e:
+            print("Java Detect Error: ", e)
+            logger.error(f"Java Detect Error: {e}")
 
     @staticmethod
     def float_to_string(gbs: float):
@@ -441,53 +496,6 @@ class Helpers:
             return ctypes.windll.shell32.IsUserAnAdmin() == 1
         return os.geteuid() == 0
 
-    @staticmethod
-    def unzip_file(zip_path):
-        new_dir_list = zip_path.split("/")
-        new_dir = ""
-        for i in range(len(new_dir_list) - 1):
-            if i == 0:
-                new_dir += new_dir_list[i]
-            else:
-                new_dir += "/" + new_dir_list[i]
-
-        if Helpers.check_file_perms(zip_path) and os.path.isfile(zip_path):
-            Helpers.ensure_dir_exists(new_dir)
-            temp_dir = tempfile.mkdtemp()
-            try:
-                with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                    zip_ref.extractall(temp_dir)
-                for i in enumerate(zip_ref.filelist):
-                    if len(zip_ref.filelist) > 1 or not zip_ref.filelist[
-                        i
-                    ].filename.endswith("/"):
-                        break
-
-                full_root_path = temp_dir
-
-                for item in os.listdir(full_root_path):
-                    if os.path.isdir(os.path.join(full_root_path, item)):
-                        try:
-                            FileHelpers.move_dir(
-                                os.path.join(full_root_path, item),
-                                os.path.join(new_dir, item),
-                            )
-                        except Exception as ex:
-                            logger.error(f"ERROR IN ZIP IMPORT: {ex}")
-                    else:
-                        try:
-                            FileHelpers.move_file(
-                                os.path.join(full_root_path, item),
-                                os.path.join(new_dir, item),
-                            )
-                        except Exception as ex:
-                            logger.error(f"ERROR IN ZIP IMPORT: {ex}")
-            except Exception as ex:
-                Console.error(ex)
-        else:
-            return "false"
-        return
-
     def ensure_logging_setup(self):
         log_file = os.path.join(os.path.curdir, "logs", "commander.log")
         session_log_file = os.path.join(os.path.curdir, "logs", "session.log")
@@ -832,7 +840,7 @@ class Helpers:
         for item in file_list:
             if os.path.isdir(os.path.join(folder, item)):
                 dir_list.append(item)
-            else:
+            elif str(item) != "crafty.sqlite":
                 unsorted_files.append(item)
         file_list = sorted(dir_list, key=str.casefold) + sorted(
             unsorted_files, key=str.casefold
@@ -863,13 +871,14 @@ class Helpers:
 
     @staticmethod
     def generate_dir(folder, output=""):
+
         dir_list = []
         unsorted_files = []
         file_list = os.listdir(folder)
         for item in file_list:
             if os.path.isdir(os.path.join(folder, item)):
                 dir_list.append(item)
-            else:
+            elif str(item) != "crafty.sqlite":
                 unsorted_files.append(item)
         file_list = sorted(dir_list, key=str.casefold) + sorted(
             unsorted_files, key=str.casefold
@@ -985,14 +994,6 @@ class Helpers:
         return os.path.commonpath([parent_path]) == os.path.commonpath(
             [parent_path, child_path]
         )
-
-    @staticmethod
-    def copy_files(source, dest):
-        if os.path.isfile(source):
-            FileHelpers.copy_file(source, dest)
-            logger.info("Copying jar %s to %s", source, dest)
-        else:
-            logger.info("Source jar does not exist.")
 
     @staticmethod
     def download_file(executable_url, jar_path):

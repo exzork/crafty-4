@@ -5,6 +5,7 @@ import jwt
 from jwt import PyJWTError
 
 from app.classes.models.users import HelperUsers, ApiKeys
+from app.classes.controllers.management_controller import ManagementController
 
 logger = logging.getLogger(__name__)
 
@@ -13,11 +14,14 @@ class Authentication:
     def __init__(self, helper):
         self.helper = helper
         self.secret = "my secret"
-        self.secret = self.helper.get_setting("apikey_secret", None)
-
-        if self.secret is None or self.secret == "random":
+        try:
+            self.secret = ManagementController.get_crafty_api_key()
+            if self.secret == "":
+                self.secret = self.helper.random_string_generator(64)
+                ManagementController.set_crafty_api_key(str(self.secret))
+        except:
             self.secret = self.helper.random_string_generator(64)
-            self.helper.set_setting("apikey_secret", self.secret)
+            ManagementController.set_crafty_api_key(str(self.secret))
 
     def generate(self, user_id, extra=None):
         if extra is None:

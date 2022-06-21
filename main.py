@@ -7,6 +7,7 @@ import argparse
 import logging.config
 import signal
 import peewee
+from app.classes.shared.file_helpers import FileHelpers
 
 from app.classes.shared.import3 import Import3
 from app.classes.shared.console import Console
@@ -132,9 +133,9 @@ if __name__ == "__main__":
         installer.default_settings()
     else:
         Console.debug("Existing install detected")
-
+    file_helper = FileHelpers(helper)
     # now the tables are created, we can load the tasks_manager and server controller
-    controller = Controller(database, helper)
+    controller = Controller(database, helper, file_helper)
     import3 = Import3(helper, controller)
     tasks_manager = TasksManager(helper, controller)
     tasks_manager.start_webserver()

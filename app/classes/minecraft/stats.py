@@ -218,7 +218,7 @@ class Stats:
 
         return level_total_size
 
-    def get_server_players(self, server_id):  # pylint: disable=no-self-use
+    def get_server_players(self, server_id):
 
         server = HelperServers.get_server_data_by_id(server_id)
 
@@ -265,15 +265,24 @@ class Stats:
             logger.info(
                 "Unable to read the server icon due to the following error:", exc_info=e
             )
-
-        ping_data = {
-            "online": online_stats.get("online", 0),
-            "max": online_stats.get("max", 0),
-            "players": online_stats.get("players", 0),
-            "server_description": ping_obj.description,
-            "server_version": ping_obj.version,
-            "server_icon": server_icon,
-        }
+        if ping_obj:
+            ping_data = {
+                "online": online_stats.get("online", 0),
+                "max": online_stats.get("max", 0),
+                "players": online_stats.get("players", 0),
+                "server_description": ping_obj.description,
+                "server_version": ping_obj.version,
+                "server_icon": server_icon,
+            }
+        else:
+            ping_data = {
+                "online": online_stats.get("online", 0),
+                "max": online_stats.get("max", 0),
+                "players": online_stats.get("players", 0),
+                "server_description": "",
+                "server_version": "",
+                "server_icon": server_icon,
+            }
 
         return ping_data
 
