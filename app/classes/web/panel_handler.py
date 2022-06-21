@@ -1526,6 +1526,7 @@ class PanelHandler(BaseHandler):
                     "/panel/error?error=Nefarious activities detected."
                     " User attempted to make backup path within Crafty's root."
                 )
+                return
             server_obj.backup_path = backup_path
             self.controller.servers.update_server(server_obj)
             self.controller.management.set_backup_config(
