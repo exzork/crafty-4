@@ -66,6 +66,7 @@
         "cannotSeeOnMobile": "Not seeing everything on mobile?",
         "cannotSeeOnMobile2": "Try scrolling the table sideways.",
         "clone": "Clone",
+        "cloneConfirm": "Are you sure you would like to clone this server? This process may take a while.",
         "cpuCores": "CPU Cores",
         "cpuCurFreq": "CPU Current Clock",
         "cpuMaxFreq": "CPU Maximum Clock",

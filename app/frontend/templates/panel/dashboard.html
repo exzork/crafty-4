@@ -849,19 +849,41 @@
 
     $(".clone_button").click(function () {
       server_id = $(this).attr("data-id");
-      send_command(server_id, 'clone_server');
-      bootbox.dialog({
-        backdrop: true,
-        title: '{% raw translate("dashboard", "sendingCommand", data["lang"]) %}',
-        message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientClone", data["lang"]) %} </div>',
-        closeButton: false,
+      bootbox.confirm({
+        message: "{{ translate('dashboard', 'cloneConfirm' , data['lang']) }}",
+        buttons: {
+          confirm: {
+            label: "{{ translate('dashboard', 'clone' , data['lang']) }}",
+            className: 'btn-outline-warning'
+          },
+          cancel: {
+            label: '{% raw translate("panelConfig", "cancel", data["lang"]) %}',
+            className: 'btn-secondary'
+          }
+        },
+        callback: function (result) {
+          if (result) {
+            cloneServer(server_id);
+          }
+
+        }
       });
-      setTimeout(function () {
-        location.reload();
-      }, 5000)
     });
 
   });
+
+  function cloneServer(server_id) {
+    send_command(server_id, 'clone_server');
+    bootbox.dialog({
+      backdrop: true,
+      title: '{% raw translate("dashboard", "sendingCommand", data["lang"]) %}',
+      message: '<div align="center"><i class="fas fa-spin fa-spinner"></i> &nbsp; {% raw translate("dashboard", "bePatientClone", data["lang"]) %} </div>',
+      closeButton: false,
+    });
+    setTimeout(function () {
+      location.reload();
+    }, 5000)
+  }
 </script>
 <script src="/static/assets/vendors/js/jquery-ui.js"></script>
 <link rel="stylesheet" href="/static/assets/vendors/css/jquery-ui.css">
