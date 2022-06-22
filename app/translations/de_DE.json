@@ -302,7 +302,7 @@
         "serverExecutable": "Ausführbare Server Datei",
         "serverExecutableDesc": "Die ausführbare Datei des Servers",
         "javaVersion": "Aktuelle Java Version überschreiben",
-        "javaVersionDesc": "Wenn Sie die Java-Version überschreiben möchten: Stellen Sie sicher, dass der 'auszuführende Befehl' in Anführungszeichen geschrieben ist (Ohne abschließende 'Java'-Variable)",
+        "javaVersionDesc": "Wenn Sie die Java-Version überschreiben möchten: Stellen Sie sicher, dass der 'auszuführende Befehl' in Anführungszeichen geschrieben ist (Ausgenommen die Standard-'java'-Variable)",
         "javaNoChange": "Nicht überschreiben",
         "serverExecutionCommand": "Server Ausführungsbefehl",
         "serverExecutionCommandDesc": "Was wird in einer versteckten Konsole gestartet",
