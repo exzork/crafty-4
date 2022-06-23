@@ -126,7 +126,7 @@
             {% if server['stats']['int_ping_results'] != 'False' %}
             <div id="m_server_motd_{{ server['stats']['server_id']['server_id'] }}" class="media">
               {% if server['stats']['desc'] != 'False' %}
-              <img src="/static/assets/images/pack.png" class="mr-3" alt="icon" style="-webkit-filter:grayscale(100%); filter:grayscale(100%)" />
+              <img src="/static/assets/images/pack.png" class="w-25 mr-3" alt="icon" style="-webkit-filter:grayscale(100%); filter:grayscale(100%);" />
               {% end %}
               <div class="media-body">
                 {% if server['stats']['desc'] != 'False' %}
@@ -196,7 +196,7 @@
         }
         else {
           motd = `<img src="/static/assets/images/pack.png" alt="icon" /> `;
-          m_motd = `<img class="mr-3" src="/static/assets/images/pack.png" alt="icon" /> `;
+          m_motd = `<img class="w-25 mr-3" src="/static/assets/images/pack.png" alt="icon" /> `;
         }
 
         motd = motd + `<span id="input_motd_` + server.id + `" class="input_motd">` + server.desc + `</span> <br />`;
