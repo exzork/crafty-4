@@ -117,12 +117,6 @@
         <div id="collapse-{{server['server_data']['server_id']}}" class="collapse"
              aria-labelledby="heading-{{server['server_data']['server_id']}}" data-parent="#accordionServers">
           <div class="card-body">
-            <div id="m_server_version_{{ server['stats']['server_id']['server_id'] }}">
-              {% if server['stats']['version'] != 'False' %}
-              {{ server['stats']['version'] }}
-              {% end %}
-            </div>
-            <br />
             {% if server['stats']['int_ping_results'] != 'False' %}
             <div id="m_server_motd_{{ server['stats']['server_id']['server_id'] }}" class="media">
               {% if server['stats']['desc'] != 'False' %}
@@ -136,6 +130,12 @@
                 </div>
                 {% end %}
               </div>
+            </div>
+            <br />
+            <div id="m_server_version_{{ server['stats']['server_id']['server_id'] }}">
+              {% if server['stats']['version'] != 'False' %}
+              {{ server['stats']['version'] }}
+              {% end %}
             </div>
             {% else %}
             <div class="row">
