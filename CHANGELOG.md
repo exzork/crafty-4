@@ -1,5 +1,14 @@
 # Changelog
 
+## --- [4.0.4] - 2022/06/21
+### New features
+
+### Bug fixes
+
+### Tweaks
+- Rework server list on status page display for use on small screens ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/383))
+<br><br>
+
 ## --- [4.0.4-hotfix2] - 2022/06/21
 ### Bug fixes
 - Fix Traceback on schedule config page ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/381))
