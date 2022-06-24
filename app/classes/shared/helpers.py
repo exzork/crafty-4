@@ -518,7 +518,7 @@ class Helpers:
             logger.critical(f"Unable to write to {self.root_dir} directory!")
             sys.exit(1)
 
-        #    the log directory is there
+        # ensure the log directory is there
         try:
             with suppress(FileExistsError):
                 os.makedirs(os.path.join(self.root_dir, "logs"))
