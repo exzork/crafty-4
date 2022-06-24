@@ -242,7 +242,7 @@ class ServerInstance:
                 "Replacing with full java path."
             )
             # Checks for Oracle Java. Only Oracle Java's helper will cause a re-exec.
-            if "/Oracle/Java/" in str(shutil.which("java")):
+            if "/Oracle/Java/" in str(self.helper.wtol_path(shutil.which("java"))):
                 logger.info(
                     "Oracle Java detected. Changing start command to avoid re-exec."
                 )
@@ -938,7 +938,7 @@ class ServerInstance:
                 logger.info(
                     "Backup complete. User had shutdown preference. Starting server."
                 )
-                self.start_server(HelperUsers.get_user_id_by_name("system"))
+                self.run_threaded_server(HelperUsers.get_user_id_by_name("system"))
             time.sleep(3)
             self.last_backup_failed = False
         except:
@@ -958,7 +958,7 @@ class ServerInstance:
                 logger.info(
                     "Backup complete. User had shutdown preference. Starting server."
                 )
-                self.start_server(HelperUsers.get_user_id_by_name("system"))
+                self.run_threaded_server(HelperUsers.get_user_id_by_name("system"))
             self.last_backup_failed = True
 
     def backup_status(self, source_path, dest_path):
