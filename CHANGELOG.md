@@ -1,5 +1,14 @@
 # Changelog
 
+## --- [4.0.5] - 2022/06/22
+### New features
+None
+### Bug fixes
+- Fix cannot delete backup on page 2 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/382))
+### Tweaks
+None
+<br><br>
+
 ## --- [4.0.4-hotfix2] - 2022/06/21
 ### Bug fixes
 - Fix Traceback on schedule config page ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/381))
