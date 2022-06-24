@@ -1,6 +1,6 @@
 # Changelog
 
-## --- [4.0.5] - 2022/06/22
+## --- [4.0.5] - 2022/06/24
 ### New features
 None
 ### Bug fixes
