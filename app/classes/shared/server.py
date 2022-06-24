@@ -958,7 +958,7 @@ class ServerInstance:
                 logger.info(
                     "Backup complete. User had shutdown preference. Starting server."
                 )
-                self.start_server(HelperUsers.get_user_id_by_name("system"))
+                self.run_threaded_server(HelperUsers.get_user_id_by_name("system"))
             self.last_backup_failed = True
 
     def backup_status(self, source_path, dest_path):
