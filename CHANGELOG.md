@@ -1,10 +1,10 @@
 # Changelog
 
-## --- [4.0.4] - 2022/06/21
+## --- [4.0.5] - 2022/06/22
 ### New features
-
+None
 ### Bug fixes
-
+- Fix cannot delete backup on page 2 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/382))
 ### Tweaks
 - Rework server list on status page display for use on small screens ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/383))
 <br><br>
