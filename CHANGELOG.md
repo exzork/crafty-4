@@ -1,5 +1,16 @@
 # Changelog
 
+## --- [4.0.6] - 2022/TBD
+### New features
+None
+### Bug fixes
+None
+### Tweaks
+None
+### Lang
+- Add string "cloneConfirm" to german translation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/389))
+<br><br>
+
 ## --- [4.0.5] - 2022/06/24
 ### New features
 None
