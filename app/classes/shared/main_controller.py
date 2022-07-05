@@ -792,6 +792,11 @@ class Controller:
         backup_path_components[-1] = new_uuid
         new_bu_path = pathlib.PurePath(os.path.join(*backup_path_components))
         server_obj.backup_path = new_bu_path
+        default_backup_dir = os.path.join(self.helper.backup_path, new_uuid)
+        try:
+            os.rmdir(default_backup_dir)
+        except:
+            logger.error("Could not delete default backup dir")
         self.servers.update_server(server_obj)
         backup_path.rename(new_bu_path)
 
