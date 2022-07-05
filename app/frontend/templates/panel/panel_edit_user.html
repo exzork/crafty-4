@@ -76,28 +76,28 @@
                           }}<small class="text-muted ml-1"> - {{ translate('userConfig', 'userNameDesc', data['lang'])
                             }}</small> </label>
                         <input type="text" class="form-control" name="username" id="username" autocomplete="off"
-                          value="{{ data['user']['username']  }}" placeholder="User Name">
+                          data-lpignore="true" value="{{ data['user']['username']  }}" placeholder="User Name">
                       </div>
                       <div class="form-group">
                         <label class="form-label" for="password0">{{ translate('userConfig', 'password', data['lang'])
                           }}<small class="text-muted ml-1"> - {{ translate('userConfig', 'leaveBlank', data['lang']) }}
                           </small> </label>
                         <input type="password" class="form-control" name="password0" id="password0" value=""
-                          autocomplete="off" placeholder="Password">
+                          autocomplete="new-password" data-lpignore="true" placeholder="Password">
                       </div>
                       <div class="form-group">
                         <label class="form-label" for="password1">{{ translate('userConfig', 'repeat', data['lang']) }}
                           <small class="text-muted ml-1"> - {{ translate('userConfig', 'leaveBlank', data['lang'])
                             }}</small> </label>
                         <input type="password" class="form-control" name="password1" id="password1" value=""
-                          autocomplete="off" placeholder="Repeat Password">
+                          autocomplete="new-password" data-lpignore="true" placeholder="Repeat Password">
                       </div>
                       <div class="form-group">
                         <label class="form-label" for="email">{{ translate('userConfig', 'gravEmail', data['lang'])
                           }}<small class="text-muted ml-1"> - {{ translate('userConfig', 'gravDesc', data['lang'])
                             }}</small> </label>
                         <input type="email" class="form-control" name="email" id="email" autocomplete="off"
-                          value="{{ data['user']['email'] }}" placeholder="Gravatar Email">
+                          data-lpignore="true" value="{{ data['user']['email'] }}" placeholder="Gravatar Email">
                       </div>
                       <div class="form-group">
                         <label class="form-label" for="language">{{ translate('userConfig', 'userLang', data['lang'])
