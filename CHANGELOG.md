@@ -1,6 +1,6 @@
 # Changelog
 
-## --- [4.0.6] - 2022/TBD
+## --- [4.0.6] - 2022/07/06
 ### New features
 None
 ### Bug fixes
