@@ -4,7 +4,6 @@ from pathlib import Path
 import shutil
 import time
 import logging
-import tempfile
 from peewee import DoesNotExist
 
 # TZLocal is set as a hidden import on win pipeline
@@ -85,27 +84,38 @@ class Controller:
         self.users.set_prepare(exec_user["user_id"])
         logger.info("Checking for previous support logs.")
         if exec_user["support_logs"] != "":
-            logger.info(
-                f"Found previous support log request at {exec_user['support_logs']}"
-            )
-            if self.helper.validate_traversal(
-                tempfile.gettempdir(), exec_user["support_logs"]
-            ):
-                logger.debug("No transversal detected. Going for the delete.")
-                self.del_support_file(exec_user["support_logs"])
+            if os.path.exists(exec_user["support_logs"]):
+                logger.info(
+                    f"Found previous support log request at {exec_user['support_logs']}"
+                )
+                if self.helper.validate_traversal(
+                    os.path.join(self.project_root, "temp"), exec_user["support_logs"]
+                ):
+                    logger.debug("No transversal detected. Going for the delete.")
+                    self.del_support_file(exec_user["support_logs"])
         # pausing so on screen notifications can run for user
         time.sleep(7)
         self.helper.websocket_helper.broadcast_user(
             exec_user["user_id"], "notification", "Preparing your support logs"
         )
-        temp_dir = tempfile.mkdtemp()
-        temp_zip_storage = tempfile.mkdtemp()
-        full_temp = os.path.join(temp_dir, "support_logs")
-        os.mkdir(full_temp)
+        self.helper.ensure_dir_exists(
+            os.path.join(self.project_root, "temp", str(exec_user["user_id"]))
+        )
+        temp_dir = os.path.join(
+            self.project_root, "temp", str(exec_user["user_id"]), "support_logs"
+        )
+
+        self.helper.ensure_dir_exists(
+            os.path.join(self.project_root, "temp", str(exec_user["user_id"]), "zip")
+        )
+        temp_zip_storage = os.path.join(
+            self.project_root, "temp", str(exec_user["user_id"]), "zip"
+        )
+        os.mkdir(temp_dir)
         temp_zip_storage = os.path.join(temp_zip_storage, "support_logs")
-        crafty_path = os.path.join(full_temp, "crafty")
+        crafty_path = os.path.join(temp_dir, "crafty")
         os.mkdir(crafty_path)
-        server_path = os.path.join(full_temp, "server")
+        server_path = os.path.join(temp_dir, "server")
         os.mkdir(server_path)
         if exec_user["superuser"]:
             defined_servers = self.servers.list_defined_servers()
@@ -160,15 +170,14 @@ class Controller:
             "interval",
             seconds=1,
             id="logs_" + str(exec_user["user_id"]),
-            args=[full_temp, temp_zip_storage + ".zip", exec_user],
+            args=[temp_dir, temp_zip_storage + ".zip", exec_user],
         )
-        FileHelpers.make_archive(temp_zip_storage, temp_dir)
-
+        FileHelpers.make_compressed_archive(temp_zip_storage, temp_dir)
         if len(self.helper.websocket_helper.clients) > 0:
             self.helper.websocket_helper.broadcast_user(
                 exec_user["user_id"],
                 "support_status_update",
-                Helpers.calc_percent(full_temp, temp_zip_storage + ".zip"),
+                Helpers.calc_percent(temp_dir, temp_zip_storage + ".zip"),
             )
 
         temp_zip_storage += ".zip"
