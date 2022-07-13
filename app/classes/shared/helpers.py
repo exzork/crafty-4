@@ -124,17 +124,24 @@ class Helpers:
 
         # If we get here we're linux so we will use 'update-alternatives'
         # (If distro does not have update-alternatives then manual input.)
+
+        # Sometimes u-a will be in /sbin on some distros (which is annoying.)
+        ua_path = "/usr/bin/update-alternatives"
+        if not os.path.exists(ua_path):
+            logger.warning("update-alternatives not found! Trying /sbin")
+            ua_path = "/usr/sbin/update-alternatives"
+
         try:
             paths = subprocess.check_output(
-                ["/usr/bin/update-alternatives", "--list", "java"], encoding="utf8"
+                [ua_path, "--list", "java"], encoding="utf8"
             )
 
             if re.match("^(/[^/ ]*)+/?$", paths):
                 return paths.split("\n")
 
         except Exception as e:
-            print("Java Detect Error: ", e)
             logger.error(f"Java Detect Error: {e}")
+            return []
 
     @staticmethod
     def float_to_string(gbs: float):

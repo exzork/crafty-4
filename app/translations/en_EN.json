@@ -66,6 +66,7 @@
         "cannotSeeOnMobile": "Not seeing everything on mobile?",
         "cannotSeeOnMobile2": "Try scrolling the table sideways.",
         "clone": "Clone",
+        "cloneConfirm": "Are you sure you would like to clone this server? This process may take a while.",
         "cpuCores": "CPU Cores",
         "cpuCurFreq": "CPU Current Clock",
         "cpuMaxFreq": "CPU Maximum Clock",
@@ -219,7 +220,8 @@
         "superConfirm": "Proceed only if you want this user to have access to EVERYTHING (all user accounts, servers, panel settings, etc.). They can even revoke your superuser rights.",
         "superConfirmTitle": "Enable superuser? Are you sure?",
         "user": "User",
-        "users": "Users"
+        "users": "Users",
+        "match": "Passwords must match"
     },
     "rolesConfig": {
         "config": "Role Config",
