@@ -94,7 +94,7 @@
                           <p>{{schedule.start_time}}</p>
                         </td>
                         <td id="{{schedule.enabled}}" class="action">
-                          <input type="checkbox" class="schedule-enabled-toggle" data-schedule-id="{{schedule.schedule_id}}" data-schedule-enabled="{{ 'true' if schedule.enabled else 'false' }}">
+                            <input style="width: 10px !important;" type="checkbox" class="schedule-enabled-toggle" data-schedule-id="{{schedule.schedule_id}}" data-schedule-enabled="{{ 'true' if schedule.enabled else 'false' }}">
                         </td>
                         <td id="{{schedule.action}}" class="action">
                           <button onclick="window.location.href='/panel/edit_schedule?id={{ data['server_stats']['server_id']['server_id'] }}&sch_id={{schedule.schedule_id}}'" class="btn btn-info">
@@ -214,6 +214,15 @@
     .popover-body {
       color: white !important;
       ;
+    }
+    .toggle-handle {
+      background-color: white !important;
+    }
+    .toggle-on {
+      color: black !important;
+    }
+    .toggle {
+      height: 0px !important;
     }
   </style>
 
