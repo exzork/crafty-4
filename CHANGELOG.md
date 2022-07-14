@@ -2,7 +2,8 @@
 
 ## --- [4.0.6] - 2022/07/06
 ### New features
-None
+- Task toggle (!398+)
+- Basic API for modifying tasks (!398+)
 ### Bug fixes
 - Remove redundant path check on backup restore ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/390))
 - Fix issue with stats pinging on slow starting servers ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/391))
