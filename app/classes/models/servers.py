@@ -1,3 +1,4 @@
+from http import server
 import logging
 import datetime
 import typing as t
@@ -37,6 +38,7 @@ class Servers(BaseModel):
     server_port = IntegerField(default=25565)
     logs_delete_after = IntegerField(default=0)
     type = CharField(default="minecraft-java")
+    show_status = BooleanField(default=1)
 
     class Meta:
         table_name = "servers"
@@ -63,6 +65,7 @@ class HelperServers:
         server_log_file: str,
         server_stop: str,
         server_type: str,
+        show_status: bool,
         server_port: int = 25565,
         server_host: str = "127.0.0.1",
     ) -> int:
@@ -80,6 +83,7 @@ class HelperServers:
             server_type: This is the type of server you're creating.
             server_port: The port the server will be monitored on, defaults to 25565
             server_host: The host the server will be monitored on, defaults to 127.0.0.1
+            show_status: Should Crafty show this server on the public status page
 
         Returns:
             int: The new server's id
@@ -103,6 +107,7 @@ class HelperServers:
                 Servers.stop_command: server_stop,
                 Servers.backup_path: backup_path,
                 Servers.type: server_type,
+                Servers.show_status: show_status,
             }
         ).execute()
 
