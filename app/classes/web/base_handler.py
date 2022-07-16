@@ -10,6 +10,7 @@ from app.classes.models.users import ApiKeys
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.main_controller import Controller
 from app.classes.shared.translation import Translation
+from app.classes.models.management import DatabaseShortcuts
 
 logger = logging.getLogger(__name__)
 
@@ -178,7 +179,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
             exec_user_role = set()
             if superuser:
-                authorized_servers = self.controller.servers.get_all_defined_servers()
+                allowed_servers = self.controller.servers.get_all_defined_servers()
                 exec_user_role.add("Super User")
                 exec_user_crafty_permissions = (
                     self.controller.crafty_perms.list_defined_crafty_permissions()
@@ -204,11 +205,19 @@ class BaseHandler(tornado.web.RequestHandler):
                 authorized_servers = self.controller.servers.get_authorized_servers(
                     user["user_id"]  # TODO: API key authorized servers?
                 )
+                page_servers = []
+                for server in authorized_servers:
+                    if server not in page_servers:
+                        page_servers.append(
+                            DatabaseShortcuts.get_data_obj(server.server_object)
+                        )
+                allowed_servers = page_servers
+                allowed_servers = [str(i) for i in allowed_servers]
 
             logger.debug("Checking results")
             if user:
                 return (
-                    authorized_servers,
+                    allowed_servers,
                     exec_user_crafty_permissions,
                     exec_user_role,
                     superuser,
