@@ -64,7 +64,6 @@ class HelperServers:
         server_log_file: str,
         server_stop: str,
         server_type: str,
-        show_status: bool = 1,
         server_port: int = 25565,
         server_host: str = "127.0.0.1",
     ) -> int:
@@ -106,7 +105,6 @@ class HelperServers:
                 Servers.stop_command: server_stop,
                 Servers.backup_path: backup_path,
                 Servers.type: server_type,
-                Servers.show_status: show_status,
             }
         ).execute()
 
