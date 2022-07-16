@@ -224,11 +224,6 @@ class Stats:
 
         logger.info(f"Getting players for server {server}")
 
-        # get our settings and data dictionaries
-        # server_settings = server.get('server_settings', {})
-        # server_data = server.get('server_data_obj', {})
-
-        # TODO: search server properties file for possible override of 127.0.0.1
         internal_ip = server["server_ip"]
         server_port = server["server_port"]
 
