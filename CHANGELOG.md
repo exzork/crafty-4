@@ -5,6 +5,7 @@
 - Task toggle (!398+)
 - Basic API for modifying tasks (!398+)
 ### Bug fixes
+- Fix an issue where the motd were not displayed properly one small screens ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/402))
 - Remove redundant path check on backup restore ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/390))
 - Fix issue with stats pinging on slow starting servers ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/391))
 - Fix unhandled exeption when serverjars api returns 'None' ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/392))
