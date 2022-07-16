@@ -64,7 +64,7 @@ class HelperServers:
         server_log_file: str,
         server_stop: str,
         server_type: str,
-        show_status: bool,
+        show_status: bool = 1,
         server_port: int = 25565,
         server_host: str = "127.0.0.1",
     ) -> int:
