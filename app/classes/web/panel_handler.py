@@ -875,7 +875,6 @@ class PanelHandler(BaseHandler):
             page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                 server_id
             )
-            page_data["get_players"] = server_obj.get_server_players()
             page_data["active_link"] = "schedules"
             page_data["permissions"] = {
                 "Commands": EnumPermissionsServer.COMMANDS,
@@ -941,7 +940,6 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid Schedule ID")
                 return
             schedule = self.controller.management.get_scheduled_task_model(sch_id)
-            page_data["get_players"] = server_obj.get_server_players()
             page_data["active_link"] = "schedules"
             page_data["permissions"] = {
                 "Commands": EnumPermissionsServer.COMMANDS,
