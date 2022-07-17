@@ -3,6 +3,7 @@ import logging
 from jsonschema import ValidationError, validate
 import orjson
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
+from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.web.base_api_handler import BaseApiHandler
 
 logger = logging.getLogger(__name__)
@@ -628,7 +629,10 @@ class ApiServersIndexHandler(BaseApiHandler):
 
         # TODO: limit some columns for specific permissions
 
-        self.finish_json(200, {"status": "ok", "data": auth_data[0]})
+        servers_data = [
+            DatabaseShortcuts.get_data_obj(x.server_object) for x in auth_data[0]
+        ]
+        self.finish_json(200, {"status": "ok", "data": servers_data})
 
     def post(self):
 
