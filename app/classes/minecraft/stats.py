@@ -85,7 +85,9 @@ class Stats:
         try:
             cpu_freq = psutil.cpu_freq()
         except NotImplementedError:
-            cpu_freq = psutil._common.scpufreq(current=0, min=0, max=0)
+            cpu_freq = None
+        if cpu_freq is None:
+            cpu_freq = psutil._common.scpufreq(current=-1, min=-1, max=-1)
         memory = psutil.virtual_memory()
         try:
             node_stats: NodeStatsDict = {
