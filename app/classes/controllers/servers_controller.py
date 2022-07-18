@@ -2,6 +2,7 @@ import os
 import logging
 import time
 import json
+import pathlib
 import typing as t
 
 from app.classes.controllers.roles_controller import RolesController
@@ -538,7 +539,14 @@ class ServersController(metaclass=Singleton):
                 continue
 
             log_files = list(
-                filter(lambda val: val != latest_log_file, os.listdir(logs_path))
+                filter(
+                    lambda val: val != latest_log_file,
+                    os.listdir(
+                        pathlib.Path(
+                            server["path"], os.path.split(server["log_path"])[0]
+                        )
+                    ),
+                )
             )
             for log_file in log_files:
                 log_file_path = os.path.join(logs_path, log_file)
