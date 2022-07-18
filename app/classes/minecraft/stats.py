@@ -6,11 +6,11 @@ import datetime
 import base64
 import typing as t
 
-from app.classes.shared.null_writer import NullWriter
-from app.classes.minecraft.mc_ping import ping
 from app.classes.models.management import HostStats
 from app.classes.models.servers import HelperServers
+from app.classes.shared.null_writer import NullWriter
 from app.classes.shared.helpers import Helpers
+from app.classes.minecraft.mc_ping import ping
 
 with redirect_stderr(NullWriter()):
     import psutil
@@ -87,7 +87,9 @@ class Stats:
         try:
             cpu_freq = psutil.cpu_freq()
         except NotImplementedError:
-            cpu_freq = psutil._common.scpufreq(current=0, min=0, max=0)
+            cpu_freq = None
+        if cpu_freq is None:
+            cpu_freq = psutil._common.scpufreq(current=-1, min=-1, max=-1)
         memory = psutil.virtual_memory()
         try:
             node_stats: NodeStatsDict = {
