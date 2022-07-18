@@ -1,9 +1,19 @@
 # Changelog
 
-## --- [4.0.6] - 2022/07/06
+## --- [4.0.7] - 2022/07/18
 ### New features
-- Task toggle (!398+)
-- Basic API for modifying tasks (!398+)
+- Task toggle ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/398))
+- Basic API for modifying tasks ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/398))
+- Toggle Visible servers on status page ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/399))
+### Bug fixes
+- Fixes stats recording for Oracle hosts ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/397))
+### Tweaks
+None
+### Lang
+None
+<br><br>
+
+## --- [4.0.6] - 2022/07/06
 ### Bug fixes
 - Fix issue with API Server Instance is not serializable ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/401))
 - Remove redundant path check on backup restore ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/390))
