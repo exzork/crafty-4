@@ -1,9 +1,20 @@
 # Changelog
 
-## --- [4.0.6] - 2022/07/06
+## --- [4.0.7] - 2022/07/18
 ### New features
-- Task toggle (!398+)
-- Basic API for modifying tasks (!398+)
+- Task toggle ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/398))
+- Basic API for modifying tasks ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/398))
+### Bug fixes
+None
+### Tweaks
+None
+### Lang
+None
+
+[*Full Changelog*](../compare/v4.0.6...v4.0.7)
+<br><br>
+
+## --- [4.0.6] - 2022/07/06
 ### Bug fixes
 - Remove redundant path check on backup restore ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/390))
 - Fix issue with stats pinging on slow starting servers ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/391))
