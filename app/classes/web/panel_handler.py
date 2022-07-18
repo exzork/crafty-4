@@ -192,9 +192,9 @@ class PanelHandler(BaseHandler):
         total_players = 0
         for server in page_data["servers"]:
             total_players += len(
-                self.controller.servers.stats.get_server_players(
+                self.controller.servers.get_server_instance_by_id(
                     server["server_data"]["server_id"]
-                )
+                ).get_server_players()
             )
         page_data["num_players"] = total_players
 
@@ -539,9 +539,7 @@ class PanelHandler(BaseHandler):
             except Exception as e:
                 logger.error(f"Failed to get server waiting to start: {e}")
                 page_data["waiting_start"] = False
-            page_data[
-                "get_players"
-            ] = lambda: self.controller.servers.stats.get_server_players(server_id)
+            page_data["get_players"] = server.get_server_players()
             page_data["active_link"] = subpage
             page_data["permissions"] = {
                 "Commands": EnumPermissionsServer.COMMANDS,
@@ -877,9 +875,6 @@ class PanelHandler(BaseHandler):
             page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                 server_id
             )
-            page_data[
-                "get_players"
-            ] = lambda: self.controller.servers.stats.get_server_players(server_id)
             page_data["active_link"] = "schedules"
             page_data["permissions"] = {
                 "Commands": EnumPermissionsServer.COMMANDS,
@@ -945,9 +940,6 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid Schedule ID")
                 return
             schedule = self.controller.management.get_scheduled_task_model(sch_id)
-            page_data[
-                "get_players"
-            ] = lambda: self.controller.servers.stats.get_server_players(server_id)
             page_data["active_link"] = "schedules"
             page_data["permissions"] = {
                 "Commands": EnumPermissionsServer.COMMANDS,
