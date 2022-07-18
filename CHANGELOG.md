@@ -1,5 +1,16 @@
 # Changelog
 
+## --- [4.0.8] - 2022/TBD
+### New features
+TBD
+### Bug fixes
+TBD
+### Tweaks
+TBD
+### Lang
+TBD
+<br><br>
+
 ## --- [4.0.7] - 2022/07/18
 ### New features
 - Task toggle ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/398))
