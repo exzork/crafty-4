@@ -323,7 +323,8 @@
         "stopBeforeDeleting": "Please stop the server before deleting it",
         "update": "Update Executable",
         "yesDelete": "Yes, delete",
-        "yesDeleteFiles": "Yes, delete files"
+        "yesDeleteFiles": "Yes, delete files",
+        "showStatus": "Show On Public Status Page"
     },
     "serverConfigHelp": {
         "desc": "Here is where you can change the configuration of your server",

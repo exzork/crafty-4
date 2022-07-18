@@ -27,6 +27,7 @@
           <span id="sync" style="margin-left: 5px;"><i class="fas fa-sync fa-spin"></i></span></h4>
           {% end %}
           {% for server in data['servers'] %}
+          {% if server['server_data']['show_status'] %}
           <tr>
             <td id="server_name_{{ server['stats']['server_id']['server_id'] }}">
               <i class="fas fa-server"></i>
@@ -70,6 +71,7 @@
               {% end %}
             </td>
           </tr>
+          {% end %}
           {% end %}
         </tbody>
       </table>
