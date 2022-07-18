@@ -1,9 +1,22 @@
 # Changelog
 
-## --- [4.0.6] - 2022/07/06
+## --- [4.0.7] - 2022/07/18
 ### New features
-- Task toggle (!398+)
-- Basic API for modifying tasks (!398+)
+- Task toggle ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/398))
+- Basic API for modifying tasks ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/398))
+- Toggle Visible servers on status page ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/399))
+### Bug fixes
+- Fixes stats recording for Oracle hosts ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/397))
+- Improve the use of the object oriented architecture ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/400))
+- Fix issue with API Server Instance is not serializable ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/401))
+- Fix an issue where the motd were not displayed properly one small screens ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/402))
+### Tweaks
+- Remove server.props requirement ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/403))
+### Lang
+None
+<br><br>
+
+## --- [4.0.6] - 2022/07/06
 ### Bug fixes
 - Remove redundant path check on backup restore ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/390))
 - Fix issue with stats pinging on slow starting servers ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/391))
