@@ -160,7 +160,10 @@ class Controller:
                 final_path += "_" + server["server_uuid"]
                 os.mkdir(final_path)
             try:
-                FileHelpers.copy_file(server["log_path"], final_path)
+                FileHelpers.copy_file(
+                    pathlib.Path(server["path"], server["log_path"]),
+                    final_path,
+                )
             except Exception as e:
                 logger.warning(f"Failed to copy file with error: {e}")
         # Copy crafty logs to archive dir
