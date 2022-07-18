@@ -36,8 +36,6 @@ class PanelHandler(BaseHandler):
         user_roles = {}
         for user_id in self.controller.users.get_all_user_ids():
             user_roles_list = self.controller.users.get_user_roles_names(user_id)
-            # user_servers =
-            # self.controller.servers.get_authorized_servers(user.user_id)
             user_roles[user_id] = user_roles_list
         return user_roles
 
