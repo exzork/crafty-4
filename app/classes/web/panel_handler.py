@@ -531,6 +531,7 @@ class PanelHandler(BaseHandler):
             page_data["downloading"] = self.controller.servers.get_download_status(
                 server_id
             )
+            page_data["server_id"] = server_id
             try:
                 page_data["waiting_start"] = self.controller.servers.get_waiting_start(
                     server_id
