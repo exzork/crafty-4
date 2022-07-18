@@ -12,6 +12,7 @@
 - Fix an issue where the motd were not displayed properly one small screens ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/402))
 ### Tweaks
 - Remove server.props requirement ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/403))
+- Add platform & crafty version info to support logs ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/405))
 ### Lang
 None
 <br><br>
