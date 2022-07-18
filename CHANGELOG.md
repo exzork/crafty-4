@@ -5,13 +5,11 @@
 - Task toggle ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/398))
 - Basic API for modifying tasks ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/398))
 ### Bug fixes
-None
+- Fixes stats recording for Oracle hosts ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/397))
 ### Tweaks
 None
 ### Lang
 None
-
-[*Full Changelog*](../compare/v4.0.6...v4.0.7)
 <br><br>
 
 ## --- [4.0.6] - 2022/07/06
@@ -28,8 +26,6 @@ None
 - Check for passwords matching on client side ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/395))
 ### Lang
 - Add string "cloneConfirm" to german translation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/389))
-
-[*Full Changelog*](../compare/v4.0.5...v4.0.6)
 <br><br>
 
 ## --- [4.0.5] - 2022/06/24
@@ -45,8 +41,6 @@ None
 - Add clone server confirmation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/384))
 ### Lang
 - German translation review, fixed some spelling issues and added some missing strings ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/385))
-
-[*Full Changelog*](../compare/v4.0.4...v4.0.5)
 <br><br>
 
 ## --- [4.0.4-hotfix2] - 2022/06/21
@@ -74,8 +68,6 @@ None
 - - ([Merge Request 2](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/377))
 - Rework server list on dashboard display for use on small screens ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/372))
 - File handling enhancements ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/362))
-
-[*Full Changelog*](../compare/v4.0.3...v4.0.4)
 <br><br>
 
 ## --- [4.0.3] - 2022/06/18
@@ -86,8 +78,6 @@ None
 - API Token authentication hardening ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/364))
 ### Tweaks
 - Add better error logging for statistic collection ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/359))
-
-[*Full Changelog*](../compare/v4.0.2...v4.0.3)
 <br><br>
 
 ## --- [4.0.2-hotfix1] - 2022/06/17
@@ -104,8 +94,6 @@ None
 - - ([Merge Request 2](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/351))
 - Add version inheretence & config check ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/353))
 - Fix support log temp file deletion issue/hang ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/354))
-
-[*Full Changelog*](../compare/v4.0.1...v4.0.2)
 <br><br>
 
 ## --- [4.0.1] - 2022/06/15
