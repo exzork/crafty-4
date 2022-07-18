@@ -11,7 +11,7 @@
 - Fix issue with API Server Instance is not serializable ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/401))
 - Fix an issue where the motd were not displayed properly one small screens ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/402))
 ### Tweaks
-None
+- Remove server.props requirement ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/403))
 ### Lang
 None
 <br><br>

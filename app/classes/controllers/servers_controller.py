@@ -13,7 +13,6 @@ from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.main_models import DatabaseShortcuts
 
-from app.classes.minecraft.server_props import ServerProps
 from app.classes.minecraft.stats import Stats
 
 from app.classes.models.servers import HelperServers
@@ -171,18 +170,6 @@ class ServersController(metaclass=Singleton):
                 )
                 continue
 
-            settings_file = os.path.join(
-                Helpers.get_os_understandable_path(server["path"]), "server.properties"
-            )
-
-            # if the properties file isn't there, let's warn
-            if not Helpers.check_file_exists(settings_file):
-                logger.error(f"Unable to find {settings_file}. Skipping this server.")
-                Console.error(f"Unable to find {settings_file}. Skipping this server.")
-                continue
-
-            settings = ServerProps(settings_file)
-
             temp_server_dict = {
                 "server_id": server.get("server_id"),
                 "server_data_obj": server,
@@ -193,7 +180,6 @@ class ServersController(metaclass=Singleton):
                     self.stats,
                     self.file_helper,
                 ),
-                "server_settings": settings.props,
             }
 
             # setup the server, do the auto start and all that jazz
@@ -349,14 +335,6 @@ class ServersController(metaclass=Singleton):
     @staticmethod
     def get_server_friendly_name(server_id):
         return HelperServers.get_server_friendly_name(server_id)
-
-    def get_server_settings(self, server_id):
-        for server in self.servers_list:
-            if int(server["server_id"]) == int(server_id):
-                return server["server_settings"]
-
-        logger.warning(f"Unable to find server object for server id {server_id}")
-        return False
 
     def crash_detection(self, server_obj):
         svr = self.get_server_instance_by_id(server_obj.server_id)

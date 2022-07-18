@@ -6,8 +6,10 @@ import datetime
 import base64
 import typing as t
 
-from app.classes.shared.null_writer import NullWriter
+from app.classes.minecraft.mc_ping import ping
 from app.classes.models.management import HostStats
+from app.classes.models.servers import HelperServers
+from app.classes.shared.null_writer import NullWriter
 from app.classes.shared.helpers import Helpers
 
 with redirect_stderr(NullWriter()):
@@ -217,6 +219,27 @@ class Stats:
         level_total_size = Helpers.human_readable_file_size(total_size)
 
         return level_total_size
+
+    def get_server_players(self, server_id):
+
+        server = HelperServers.get_server_data_by_id(server_id)
+
+        logger.info(f"Getting players for server {server}")
+
+        internal_ip = server["server_ip"]
+        server_port = server["server_port"]
+
+        logger.debug(f"Pinging {internal_ip} on port {server_port}")
+        if HelperServers.get_server_type_by_id(server_id) != "minecraft-bedrock":
+            int_mc_ping = ping(internal_ip, int(server_port))
+
+            ping_data = {}
+
+            # if we got a good ping return, let's parse it
+            if int_mc_ping:
+                ping_data = Stats.parse_server_ping(int_mc_ping)
+                return ping_data["players"]
+        return []
 
     @staticmethod
     def parse_server_ping(ping_obj: object):
