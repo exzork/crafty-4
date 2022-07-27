@@ -8,7 +8,8 @@ TBD
 ### Tweaks
 TBD
 ### Lang
-TBD
+- Updated `es_ES` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/412))
+- Added `pl_PL` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/412))
 <br><br>
 
 ## --- [4.0.7] - 2022/07/18
