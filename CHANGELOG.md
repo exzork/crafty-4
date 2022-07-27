@@ -4,7 +4,7 @@
 ### New features
 TBD
 ### Bug fixes
-TBD
+- Fix SU status not sticking on user creation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/410))
 ### Tweaks
 TBD
 ### Lang
