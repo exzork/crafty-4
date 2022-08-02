@@ -114,7 +114,7 @@ class ServerJars:
                 logger.error(f"Unable to update serverjars.com cache file: {e}")
 
     def _get_jar_details(self, jar_type="servers"):
-        url = f"/api/fetchAll/{jar_type}"
+        url = f"/api/fetchAll/servers/{jar_type}"
         response = self._get_api_result(url)
         temp = []
         for v in response:
@@ -139,7 +139,7 @@ class ServerJars:
     def a_download_jar(self, server, version, path, server_id):
         # delaying download for server register to finish
         time.sleep(3)
-        fetch_url = f"{self.base_url}/api/fetchJar/{server}/{version}"
+        fetch_url = f"{self.base_url}/api/fetchJar/servers/{server}/{version}"
         server_users = PermissionsServers.get_server_user_list(server_id)
 
         # We need to make sure the server is registered before
